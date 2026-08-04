@@ -10,3 +10,11 @@ publish = false
 ruvo-core = { path = "../../crates/ruvo-core" }
 minijinja = "2"
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+minijinja-autoreload = "2"
+tracing = "0.1"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tempfile = "3"
+http = "1"

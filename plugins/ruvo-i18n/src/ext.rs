@@ -147,7 +147,7 @@ impl I18nExt for Request {
     }
 }
 
-fn scope_of(req: &Request) -> String {
+pub(crate) fn scope_of(req: &Request) -> String {
     req.route_meta::<I18nScope>()
         .map(|s| s.0.to_string())
         .unwrap_or_else(|| ROOT_SCOPE.to_string())

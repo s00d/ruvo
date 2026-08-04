@@ -1,105 +1,35 @@
-//! Cookie-backed sessions for Ruvo.
+//! Cookie-backed sessions for Ruvo (storage via [`ruvo_store::KvStore`]).
 
+use bytes::Bytes;
 use cookie::{Cookie, SameSite};
 use ruvo_cookies::{CookieLayer, Cookies, ResponseCookieExt};
 use ruvo_core::extend::named;
 use ruvo_core::{with_state, App, Plugin};
+use ruvo_store::{namespace, KvStore, MemoryStore as KvMemory};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
-/// Pluggable session backend.
-pub trait SessionStore: Send + Sync + 'static {
-    fn get(&self, id: &str) -> Option<HashMap<String, String>>;
-    fn set(&self, id: &str, data: HashMap<String, String>);
-    fn remove(&self, id: &str);
-}
-
-type SessionEntry = (HashMap<String, String>, Instant);
-
-/// In-memory sessions with TTL.
-#[derive(Clone)]
-pub struct MemoryStore {
-    inner: Arc<Mutex<HashMap<String, SessionEntry>>>,
-    ttl: Duration,
-    max_entries: usize,
-}
-
-impl Default for MemoryStore {
-    fn default() -> Self {
-        Self::new()
+fn encode(data: &HashMap<String, String>) -> Bytes {
+    let mut out = String::new();
+    for (k, v) in data {
+        // simple length-prefixed-ish: key\0value\n
+        out.push_str(k);
+        out.push('\0');
+        out.push_str(v);
+        out.push('\n');
     }
+    Bytes::from(out)
 }
 
-impl MemoryStore {
-    pub fn new() -> Self {
-        Self {
-            inner: Arc::new(Mutex::new(HashMap::new())),
-            ttl: Duration::from_secs(86400),
-            max_entries: 10_000,
+fn decode(bytes: &[u8]) -> HashMap<String, String> {
+    let mut map = HashMap::new();
+    for line in std::str::from_utf8(bytes).unwrap_or("").lines() {
+        if let Some((k, v)) = line.split_once('\0') {
+            map.insert(k.to_string(), v.to_string());
         }
     }
-
-    pub fn with_ttl(mut self, ttl: Duration) -> Self {
-        self.ttl = ttl;
-        self
-    }
-
-    pub fn max_entries(mut self, n: usize) -> Self {
-        self.max_entries = n.max(1);
-        self
-    }
-
-    fn sweep(map: &mut HashMap<String, (HashMap<String, String>, Instant)>, ttl: Duration) {
-        map.retain(|_, (_, at)| at.elapsed() < ttl);
-    }
-}
-
-impl SessionStore for MemoryStore {
-    fn get(&self, id: &str) -> Option<HashMap<String, String>> {
-        let mut map = self.inner.lock().unwrap();
-        if map.len() > self.max_entries {
-            Self::sweep(&mut map, self.ttl);
-        }
-        if let Some((data, at)) = map.get(id) {
-            if at.elapsed() < self.ttl {
-                return Some(data.clone());
-            }
-            map.remove(id);
-        }
-        None
-    }
-
-    fn set(&self, id: &str, data: HashMap<String, String>) {
-        let mut map = self.inner.lock().unwrap();
-        if map.len() >= self.max_entries {
-            Self::sweep(&mut map, self.ttl);
-            while map.len() >= self.max_entries {
-                if let Some(k) = map.keys().next().cloned() {
-                    map.remove(&k);
-                } else {
-                    break;
-                }
-            }
-        }
-        map.insert(id.to_string(), (data, Instant::now()));
-    }
-
-    fn remove(&self, id: &str) {
-        self.inner.lock().unwrap().remove(id);
-    }
-}
-
-/// No-op store (second implementation justifying the trait seam).
-#[derive(Clone, Default)]
-pub struct NullStore;
-
-impl SessionStore for NullStore {
-    fn get(&self, _id: &str) -> Option<HashMap<String, String>> {
-        None
-    }
-    fn set(&self, _id: &str, _data: HashMap<String, String>) {}
-    fn remove(&self, _id: &str) {}
+    map
 }
 
 #[derive(Debug)]
@@ -124,7 +54,6 @@ impl Session {
         self.inner.lock().unwrap().data.get(key).cloned()
     }
 
-    /// Like [`get`](Self::get), or `default` when the key is missing.
     pub fn get_or(&self, key: &str, default: impl Into<String>) -> String {
         self.get(key).unwrap_or_else(|| default.into())
     }
@@ -139,21 +68,34 @@ impl Session {
         let g = self.inner.lock().unwrap();
         (g.id.clone(), g.data.clone(), g.dirty)
     }
+
+    /// Detached empty session (not backed by a store — writes are local only).
+    fn empty() -> Self {
+        Self {
+            inner: Arc::new(Mutex::new(SessionInner {
+                id: String::new(),
+                data: HashMap::new(),
+                dirty: false,
+            })),
+        }
+    }
 }
 
-/// Session middleware plugin.
-pub struct SessionLayer<S: SessionStore> {
-    store: Arc<S>,
+/// Session middleware over a [`KvStore`] (typically `namespace(store, "sess")`).
+pub struct SessionLayer {
+    store: Arc<dyn KvStore>,
     cookie_name: String,
     secure: bool,
+    ttl: Duration,
 }
 
-impl<S: SessionStore> SessionLayer<S> {
-    pub fn new(store: S) -> Self {
+impl SessionLayer {
+    pub fn new(store: Arc<dyn KvStore>) -> Self {
         Self {
-            store: Arc::new(store),
+            store,
             cookie_name: "ruvo_sid".into(),
             secure: false,
+            ttl: Duration::from_secs(86400),
         }
     }
 
@@ -162,51 +104,60 @@ impl<S: SessionStore> SessionLayer<S> {
         self
     }
 
-    /// Set the `Secure` flag on the session cookie (HTTPS only).
     pub fn secure(mut self, secure: bool) -> Self {
         self.secure = secure;
         self
     }
+
+    pub fn ttl(mut self, ttl: Duration) -> Self {
+        self.ttl = ttl;
+        self
+    }
 }
 
-impl<S: SessionStore> Plugin for SessionLayer<S> {
+impl Plugin for SessionLayer {
     fn install(self, app: &mut App) {
         CookieLayer.install(app);
         app.use_middleware(named(
             "session",
             with_state(self, |layer, mut req, next| {
-            async move {
-                let sid = req
-                    .get::<Cookies>()
-                    .and_then(|c| c.get(&layer.cookie_name).map(|s| s.to_string()))
-                    .unwrap_or_else(new_sid);
+                async move {
+                    let sid = req
+                        .get::<Cookies>()
+                        .and_then(|c| c.get(&layer.cookie_name).map(|s| s.to_string()))
+                        .unwrap_or_else(new_sid);
 
-                let data = layer.store.get(&sid).unwrap_or_default();
-                let session = Session {
-                    inner: Arc::new(Mutex::new(SessionInner {
-                        id: sid,
-                        data,
-                        dirty: false,
-                    })),
-                };
-                req.set(session.clone());
+                    let data = layer
+                        .store
+                        .get(&sid)
+                        .await
+                        .map(|b| decode(&b))
+                        .unwrap_or_default();
+                    let session = Session {
+                        inner: Arc::new(Mutex::new(SessionInner {
+                            id: sid,
+                            data,
+                            dirty: false,
+                        })),
+                    };
+                    req.set(session.clone());
 
-                let mut res = next(req).await;
-                let (id, data, dirty) = session.snapshot();
-                if dirty {
-                    layer.store.set(&id, data);
+                    let mut res = next(req).await;
+                    let (id, data, dirty) = session.snapshot();
+                    if dirty {
+                        layer.store.set(&id, encode(&data), Some(layer.ttl)).await;
+                    }
+                    let mut builder = Cookie::build((layer.cookie_name.clone(), id))
+                        .http_only(true)
+                        .same_site(SameSite::Lax)
+                        .path("/");
+                    if layer.secure {
+                        builder = builder.secure(true);
+                    }
+                    res = res.cookie(builder.build());
+                    res
                 }
-                let mut builder = Cookie::build((layer.cookie_name.clone(), id))
-                    .http_only(true)
-                    .same_site(SameSite::Lax)
-                    .path("/");
-                if layer.secure {
-                    builder = builder.secure(true);
-                }
-                res = res.cookie(builder.build());
-                res
-            }
-        }),
+            }),
         ));
     }
 }
@@ -227,8 +178,9 @@ fn new_sid() -> String {
     s
 }
 
-pub fn memory_sessions() -> SessionLayer<MemoryStore> {
-    SessionLayer::new(MemoryStore::new())
+/// Default in-memory sessions (`ruvo_store::MemoryStore` under `sess:`).
+pub fn memory_sessions() -> SessionLayer {
+    SessionLayer::new(Arc::new(namespace(Arc::new(KvMemory::new()), "sess")))
 }
 
 /// Convenient access to the request [`Session`] (empty session if the layer is absent).
@@ -239,34 +191,5 @@ pub trait SessionExt {
 impl SessionExt for ruvo_core::Request {
     fn session(&self) -> Session {
         self.get::<Session>().cloned().unwrap_or_else(Session::empty)
-    }
-}
-
-impl Session {
-    /// Detached empty session (not backed by a store — writes are local only).
-    fn empty() -> Self {
-        Self {
-            inner: Arc::new(Mutex::new(SessionInner {
-                id: String::new(),
-                data: HashMap::new(),
-                dirty: false,
-            })),
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn max_entries_evicts() {
-        let store = MemoryStore::new().max_entries(2);
-        store.set("a", HashMap::from([("k".into(), "1".into())]));
-        store.set("b", HashMap::from([("k".into(), "2".into())]));
-        store.set("c", HashMap::from([("k".into(), "3".into())]));
-        let map = store.inner.lock().unwrap();
-        assert!(map.len() <= 2);
-        assert!(map.contains_key("c"));
     }
 }

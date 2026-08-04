@@ -1,0 +1,19 @@
+[package]
+name = "ruvo-tasks-file"
+version = "0.4.0"
+edition = "2021"
+description = "Maildir-style file TaskStore for Ruvo"
+license = "MIT"
+publish = false
+
+[dependencies]
+bytes = "1"
+ruvo-tasks-store = { path = "../ruvo-tasks-store" }
+tokio = { version = "1", features = ["fs", "io-util", "sync", "rt", "macros", "time"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+
+[dev-dependencies]
+tempfile = "3"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }

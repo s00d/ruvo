@@ -341,7 +341,7 @@ mod tests {
 
         let root = store.get("en", "root").unwrap();
         assert_eq!(root.flat.get("shared").map(|s| s.as_ref()), Some("root"));
-        assert!(root.flat.get("title").is_none());
+        assert!(!root.flat.contains_key("title"));
 
         let blog = store.get("en", "blog").unwrap();
         assert_eq!(blog.flat.get("shared").map(|s| s.as_ref()), Some("blog"));

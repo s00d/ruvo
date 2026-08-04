@@ -6,8 +6,10 @@ mod plural;
 mod resolve;
 mod routes;
 mod store;
+mod template;
 
 pub use ext::{interpolate, I18nExt, I18nRouteExt, I18nScope, I18nState, LocaleCode};
+pub use template::template_fn;
 pub use mount::{mount_localized, PrefixMode};
 pub use plural::{default_plural, PluralFn};
 pub use resolve::{
@@ -127,8 +129,9 @@ impl Plugin for I18n {
             Ok(s) => s,
             Err(err) => {
                 let msg = err.to_string();
-                app.on_startup(move |_| async move {
-                    Err(Error::Internal(format!("i18n: {msg}")))
+                app.on_startup(move |_| {
+                    let msg = msg.clone();
+                    async move { Err(Error::Internal(format!("i18n: {msg}"))) }
                 });
                 return;
             }

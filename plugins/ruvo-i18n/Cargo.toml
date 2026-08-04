@@ -14,6 +14,7 @@ watch = ["dep:notify"]
 [dependencies]
 ruvo-core = { path = "../../crates/ruvo-core" }
 ruvo-cookies = { path = "../ruvo-cookies", optional = true }
+minijinja = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 bytes = "1"
@@ -25,6 +26,8 @@ notify = { version = "6", optional = true, default-features = false, features = 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "test-util"] }
 tempfile = "3"
+http = "1"
 ruvo-core = { path = "../../crates/ruvo-core", features = ["testing"] }
 ruvo-cookies = { path = "../ruvo-cookies" }
 ruvo-openapi = { path = "../ruvo-openapi" }
+ruvo-templates = { path = "../ruvo-templates" }

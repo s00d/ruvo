@@ -1,9 +1,9 @@
 //! Optional CLI helpers for local development (`--host` / `--port` / `--log-level`).
 //!
-//! Deployments should prefer [`App::listen_env`](ruvo_core::App::listen_env) (`PORT`/`HOST`).
+//! Deployments should prefer [`App::bind`](ruvo_core::App::bind)([`Bind::Env`](ruvo_core::Bind::Env)) (`PORT`/`HOST`).
 //! This crate pulls in `clap` — enable only when you want argv parsing.
 
-use ruvo_core::{App, Error, Result};
+use ruvo_core::{App, Bind, Error, Result};
 use std::net::{IpAddr, SocketAddr};
 use tracing_subscriber::EnvFilter;
 
@@ -71,9 +71,10 @@ pub trait ListenArgs {
 }
 
 impl ListenArgs for App {
-    async fn listen_args(self, args: &ServerArgs) -> Result<()> {
+    async fn listen_args(mut self, args: &ServerArgs) -> Result<()> {
+        self.cli_mode(true);
         let addr = args.socket_addr()?;
-        self.listen_on(addr).await
+        self.bind(Bind::Addr(addr)).serve().await
     }
 }
 

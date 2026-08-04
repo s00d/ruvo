@@ -9,8 +9,10 @@ publish = false
 [dependencies]
 ruvo-core = { path = "../../crates/ruvo-core" }
 ruvo-cookies = { path = "../ruvo-cookies" }
+ruvo-store = { path = "../ruvo-store" }
 cookie = { version = "0.18", features = ["percent-encode"] }
 getrandom = "0.2"
+bytes = "1"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

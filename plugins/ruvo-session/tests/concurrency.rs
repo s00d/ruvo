@@ -1,22 +1,24 @@
 //! Concurrent session writes: last writer wins for the whole map (documented contract).
 
+use bytes::Bytes;
 use http::Method;
 use ruvo_core::{App, Plugin, Request, Response};
-use ruvo_session::{memory_sessions, MemoryStore, SessionExt, SessionLayer, SessionStore};
+use ruvo_session::{memory_sessions, SessionExt, SessionLayer};
+use ruvo_store::{namespace, KvStore, MemoryStore};
 use std::sync::Arc;
 use std::time::Duration;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn parallel_writes_same_sid_last_writer_wins() {
-    let store = MemoryStore::new();
+    let kv = Arc::new(MemoryStore::new());
+    let store: Arc<dyn KvStore> = Arc::new(namespace(kv.clone(), "sess"));
     let store_check = store.clone();
 
     let mut app = App::new();
-    SessionLayer::new(store)
+    SessionLayer::new(store.clone())
         .cookie_name("sid")
         .install(&mut app);
     app.get("/a", |req: Request| async move {
-        // Slow enough that both requests load before either persists.
         tokio::time::sleep(Duration::from_millis(30)).await;
         req.session().set("a", "1");
         Response::text("a")
@@ -28,20 +30,19 @@ async fn parallel_writes_same_sid_last_writer_wins() {
     });
     let server = Arc::new(app.build().unwrap());
 
-    // Seed a shared sid via first request.
-    let seed = server
-        .handle_request(Method::GET, "/a", "")
-        .await;
+    let seed = server.handle_request(Method::GET, "/a", "").await;
     let sid = seed
         .headers()
         .get_all("set-cookie")
         .iter()
         .filter_map(|v| v.to_str().ok())
-        .find_map(|v| v.strip_prefix("sid=").map(|s| s.split(';').next().unwrap().to_string()))
+        .find_map(|v| {
+            v.strip_prefix("sid=")
+                .map(|s| s.split(';').next().unwrap().to_string())
+        })
         .expect("sid cookie");
 
-    // Clear store so both subsequent requests start from empty data for that sid.
-    store_check.remove(&sid);
+    store_check.remove(&sid).await;
 
     let s1 = Arc::clone(&server);
     let s2 = Arc::clone(&server);
@@ -66,13 +67,15 @@ async fn parallel_writes_same_sid_last_writer_wins() {
     let _ = ha.await.unwrap();
     let _ = hb.await.unwrap();
 
-    let data = store_check.get(&sid).expect("session persisted");
-    // Contract: whole-map replace → only one key survives.
+    let raw = store_check.get(&sid).await.expect("session persisted");
+    let text = String::from_utf8_lossy(&raw);
+    let has_a = text.contains("a\x001");
+    let has_b = text.contains("b\x002");
     assert!(
-        (data.contains_key("a") && !data.contains_key("b"))
-            || (data.contains_key("b") && !data.contains_key("a")),
-        "expected last-writer-wins single key, got {data:?}"
+        (has_a && !has_b) || (has_b && !has_a),
+        "expected last-writer-wins single key, got {text:?}"
     );
+    let _ = Bytes::new();
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
