@@ -1,6 +1,9 @@
+mod bind;
 mod hooks;
 
-pub(crate) use hooks::{AppInner, ShutdownHook, StartupHook};
+pub(crate) use hooks::{AppInner, ListenParts, ShutdownHook, StartupHook};
+pub use bind::{Bind, BoundApp};
+pub use bind::Http;
 pub use hooks::Server;
 
 use crate::error::{Error, Result};
@@ -8,20 +11,19 @@ use crate::plugin::Plugin;
 use crate::request::Request;
 use crate::response::Response;
 use crate::router::Router;
-use crate::server;
+use crate::service::{BackgroundService, BoxedService};
 use crate::state::StateMap;
 use bytes::Bytes;
 use http::Method;
-use std::future::Future;
 use std::net::{IpAddr, SocketAddr};
 use std::ops::{Deref, DerefMut};
-#[cfg(unix)]
-use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
 const DEFAULT_MAX_BODY: usize = 2 * 1024 * 1024;
 const DEFAULT_MAX_CONNECTIONS: usize = 1024;
+const DEFAULT_MAX_UPGRADED: usize = 1024;
+const DEFAULT_MAX_CONCURRENT_STREAMS: usize = 200;
 const DEFAULT_MAX_HEADERS: usize = 100;
 /// Default drain budget — leave headroom under k8s' 30s `terminationGracePeriodSeconds`.
 const DEFAULT_DRAIN_TIMEOUT: Duration = Duration::from_secs(20);
@@ -31,20 +33,29 @@ const DEFAULT_IDLE_TIMEOUT: Duration = Duration::from_secs(60);
 
 /// Thin wrapper over [`Router`] plus server settings and lifecycle hooks.
 pub struct App {
-    router: Router,
-    max_body_size: usize,
-    max_connections: usize,
-    max_headers: usize,
-    max_buf_size: Option<usize>,
-    request_timeout: Option<Duration>,
-    header_read_timeout: Duration,
-    idle_timeout: Duration,
-    drain_timeout: Duration,
-    keep_alive: bool,
-    listen_addr: Option<SocketAddr>,
-    trust_proxy: bool,
-    on_startup: Vec<StartupHook>,
-    on_shutdown: Vec<ShutdownHook>,
+    pub(crate) router: Router,
+    pub(crate) max_body_size: usize,
+    pub(crate) max_connections: usize,
+    pub(crate) max_upgraded_connections: usize,
+    pub(crate) max_concurrent_streams: usize,
+    pub(crate) max_headers: usize,
+    pub(crate) max_buf_size: Option<usize>,
+    pub(crate) request_timeout: Option<Duration>,
+    pub(crate) header_read_timeout: Duration,
+    pub(crate) idle_timeout: Duration,
+    pub(crate) drain_timeout: Duration,
+    pub(crate) keep_alive: bool,
+    pub(crate) listen_addr: Option<SocketAddr>,
+    pub(crate) trust_proxy: bool,
+    pub(crate) reuseport: bool,
+    /// Set by CLI listen helpers — BackgroundServices skipped unless `service_in_cli`.
+    pub(crate) cli_mode: bool,
+    pub(crate) service_in_cli: bool,
+    pub(crate) hsts: bool,
+    pub(crate) alt_svc: Option<String>,
+    pub(crate) on_startup: Vec<StartupHook>,
+    pub(crate) on_shutdown: Vec<ShutdownHook>,
+    pub(crate) services: Vec<BoxedService>,
 }
 
 impl App {
@@ -53,6 +64,8 @@ impl App {
             router: Router::new(),
             max_body_size: DEFAULT_MAX_BODY,
             max_connections: DEFAULT_MAX_CONNECTIONS,
+            max_upgraded_connections: DEFAULT_MAX_UPGRADED,
+            max_concurrent_streams: DEFAULT_MAX_CONCURRENT_STREAMS,
             max_headers: DEFAULT_MAX_HEADERS,
             max_buf_size: None,
             request_timeout: Some(Duration::from_secs(30)),
@@ -62,8 +75,14 @@ impl App {
             keep_alive: true,
             listen_addr: None,
             trust_proxy: false,
+            reuseport: false,
+            cli_mode: false,
+            service_in_cli: false,
+            hsts: false,
+            alt_svc: None,
             on_startup: Vec::new(),
             on_shutdown: Vec::new(),
+            services: Vec::new(),
         }
     }
 
@@ -75,6 +94,19 @@ impl App {
     /// Cap concurrent TCP/UDS connections (default 1024).
     pub fn max_connections(&mut self, n: usize) -> &mut Self {
         self.max_connections = n.max(1);
+        self
+    }
+
+    /// Cap concurrent HTTP upgrades (WebSocket, …). Excess → **503** + `Retry-After`.
+    pub fn max_upgraded_connections(&mut self, n: usize) -> &mut Self {
+        self.max_upgraded_connections = n.max(1);
+        self
+    }
+
+    /// Cap concurrent HTTP/2 streams per connection (default 200).
+    /// Excess streams → `GOAWAY`/stream-level rejection handled by hyper.
+    pub fn max_concurrent_streams(&mut self, n: usize) -> &mut Self {
+        self.max_concurrent_streams = n.max(1);
         self
     }
 
@@ -92,6 +124,10 @@ impl App {
     }
 
     /// Per-request timeout around the handler (default 30s). `None` disables.
+    ///
+    /// Measured: timeout ends when the handler returns a [`Response`]. Streaming
+    /// response bodies (SSE) continue afterward and are **not** cut by this timer.
+    /// Idle between stream chunks is governed by TCP/keep-alive, not this setting.
     pub fn request_timeout(&mut self, timeout: Option<Duration>) -> &mut Self {
         self.request_timeout = timeout;
         self
@@ -124,8 +160,8 @@ impl App {
         self
     }
 
-    /// Bind address for [`Self::listen`] (default `0.0.0.0:port` — IPv4 only;
-    /// use `[::]` / `listen_str` for dual-stack where the OS supports it).
+    /// Bind address for [`Self::bind`](App::bind) (default `0.0.0.0:port` — IPv4 only;
+    /// use [`Bind::Str`] or [`Bind::Addr`] with `[::]:port` for dual-stack where the OS supports it).
     pub fn listen_addr(&mut self, addr: SocketAddr) -> &mut Self {
         self.listen_addr = Some(addr);
         self
@@ -137,29 +173,57 @@ impl App {
         self
     }
 
+    /// Enable `SO_REUSEPORT` on TCP bind (requires feature `listen-reuseport`).
+    pub fn listen_reuseport(&mut self, enabled: bool) -> &mut Self {
+        self.reuseport = enabled;
+        self
+    }
+
+    /// Mark this app as running under the CLI helper (skips BackgroundServices by default).
+    pub fn cli_mode(&mut self, enabled: bool) -> &mut Self {
+        self.cli_mode = enabled;
+        self
+    }
+
+    /// Start BackgroundServices even when [`Self::cli_mode`] is set (default `false`).
+    pub fn service_in_cli(&mut self, enabled: bool) -> &mut Self {
+        self.service_in_cli = enabled;
+        self
+    }
+
     pub fn install<P: Plugin>(&mut self, plugin: P) -> &mut Self {
         plugin.install(self);
+        self
+    }
+
+    /// Register a process-local [`BackgroundService`].
+    ///
+    /// Lifecycle: `compile → on_startup → services → accept`;
+    /// stop: `stop accept → drain → stop services → on_shutdown`.
+    pub fn service<S: BackgroundService + 'static>(&mut self, service: S) -> &mut Self {
+        self.services.push(Box::new(service));
         self
     }
 
     /// Run before accepting connections. `Err` prevents the server from starting.
     pub fn on_startup<F, Fut>(&mut self, f: F) -> &mut Self
     where
-        F: FnOnce(Arc<StateMap>) -> Fut + Send + 'static,
+        F: Fn(Arc<StateMap>) -> Fut + Send + Sync + 'static,
         Fut: std::future::Future<Output = Result<()>> + Send + 'static,
     {
         self.on_startup
-            .push(Box::new(move |state| Box::pin(f(state))));
+            .push(Arc::new(move |state| Box::pin(f(state))));
         self
     }
 
-    /// Run after the accept loop stops and connections drain.
+    /// Run after the accept loop stops, connections drain, and services stop.
     pub fn on_shutdown<F, Fut>(&mut self, f: F) -> &mut Self
     where
-        F: FnOnce() -> Fut + Send + 'static,
+        F: Fn() -> Fut + Send + Sync + 'static,
         Fut: std::future::Future<Output = ()> + Send + 'static,
     {
-        self.on_shutdown.push(Box::new(move || Box::pin(f())));
+        self.on_shutdown
+            .push(Arc::new(move || Box::pin(f())));
         self
     }
 
@@ -188,101 +252,22 @@ impl App {
         self.handle(req).await
     }
 
-    /// Run startup hooks only (for tests). Uses a clone of router state.
+    /// Run startup hooks via [`Server::run_startup`] (non-destructive).
     #[cfg(any(test, feature = "testing"))]
-    pub async fn run_startup(&mut self) -> Result<Arc<StateMap>> {
-        let state = Arc::new(self.router.state.clone_map());
-        let hooks = std::mem::take(&mut self.on_startup);
-        for hook in hooks {
-            hook(Arc::clone(&state)).await?;
-        }
-        Ok(state)
+    pub async fn run_startup(&self) -> Result<Arc<StateMap>> {
+        self.build()?.run_startup().await
     }
 
-    /// Run shutdown hooks only (for tests).
+    /// Run shutdown hooks via [`Server::run_shutdown`] (non-destructive).
     #[cfg(any(test, feature = "testing"))]
-    pub async fn run_shutdown(&mut self) {
-        let hooks = std::mem::take(&mut self.on_shutdown);
-        for hook in hooks {
-            hook().await;
+    pub async fn run_shutdown(&self) {
+        if let Ok(server) = self.build() {
+            server.run_shutdown().await;
         }
-    }
-
-    pub async fn listen(self, port: u16) -> Result<()> {
-        server::listen(self, Some(port), None, None).await
-    }
-
-    /// Listen on an explicit socket address.
-    pub async fn listen_on(self, addr: SocketAddr) -> Result<()> {
-        server::listen(self, None, Some(addr), None).await
-    }
-
-    /// Parse `"host:port"` / `"[::1]:3000"` and listen.
-    pub async fn listen_str(self, addr: &str) -> Result<()> {
-        let addr: SocketAddr = addr
-            .parse()
-            .map_err(|e| Error::Internal(format!("listen_str: invalid address {addr:?}: {e}")))?;
-        self.listen_on(addr).await
-    }
-
-    /// `PORT` from the environment (Heroku/Railway/Fly/Cloud Run), else `default_port`.
-    /// Optional `HOST` (IP; default `0.0.0.0`).
-    pub async fn listen_env(self, default_port: u16) -> Result<()> {
-        let addr = addr_from_env(default_port)?;
-        self.listen_on(addr).await
-    }
-
-    /// Like [`listen`](Self::listen), but also stops when `shutdown` completes
-    /// (in addition to Ctrl-C / SIGTERM).
-    pub async fn listen_with_shutdown<F>(self, port: u16, shutdown: F) -> Result<()>
-    where
-        F: Future<Output = ()> + Send + 'static,
-    {
-        server::listen(self, Some(port), None, Some(Box::pin(shutdown))).await
-    }
-
-    /// Like [`listen_on`](Self::listen_on) with a programmatic shutdown future.
-    pub async fn listen_on_with_shutdown<F>(self, addr: SocketAddr, shutdown: F) -> Result<()>
-    where
-        F: Future<Output = ()> + Send + 'static,
-    {
-        server::listen(self, None, Some(addr), Some(Box::pin(shutdown))).await
-    }
-
-    /// Listen on an already-bound [`tokio::net::TcpListener`].
-    pub async fn listen_listener(self, listener: tokio::net::TcpListener) -> Result<()> {
-        server::listen_with_listener(self, listener, None).await
-    }
-
-    /// Listen on a bound TCP listener with programmatic shutdown.
-    pub async fn listen_listener_with_shutdown<F>(
-        self,
-        listener: tokio::net::TcpListener,
-        shutdown: F,
-    ) -> Result<()>
-    where
-        F: Future<Output = ()> + Send + 'static,
-    {
-        server::listen_with_listener(self, listener, Some(Box::pin(shutdown))).await
-    }
-
-    /// Listen on a Unix domain socket (behind nginx / local IPC). Unix only.
-    #[cfg(unix)]
-    pub async fn listen_uds(self, path: impl AsRef<Path>) -> Result<()> {
-        server::listen_uds(self, path.as_ref(), None).await
-    }
-
-    /// Unix domain socket + programmatic shutdown.
-    #[cfg(unix)]
-    pub async fn listen_uds_with_shutdown<F>(self, path: impl AsRef<Path>, shutdown: F) -> Result<()>
-    where
-        F: Future<Output = ()> + Send + 'static,
-    {
-        server::listen_uds(self, path.as_ref(), Some(Box::pin(shutdown))).await
     }
 }
 
-fn addr_from_env(default_port: u16) -> Result<SocketAddr> {
+pub(crate) fn addr_from_env(default_port: u16) -> Result<SocketAddr> {
     let port = std::env::var("PORT")
         .ok()
         .and_then(|p| p.parse::<u16>().ok())

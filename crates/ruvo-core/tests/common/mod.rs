@@ -1,7 +1,7 @@
 //! Shared helpers for integration tests (real TCP listener).
 
 use bytes::Bytes;
-use ruvo_core::App;
+use ruvo_core::{App, Bind};
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
@@ -15,13 +15,16 @@ pub struct LiveServer {
 
 impl LiveServer {
     pub async fn spawn(app: App) -> Self {
-        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        listener.set_nonblocking(true).unwrap();
         let addr = listener.local_addr().unwrap();
         let (tx, rx) = oneshot::channel::<()>();
         let join = tokio::spawn(async move {
-            app.listen_listener_with_shutdown(listener, async move {
+            app.bind(Bind::Listener(listener))
+            .shutdown(async move {
                 let _ = rx.await;
             })
+            .serve()
             .await
         });
         tokio::time::sleep(std::time::Duration::from_millis(30)).await;

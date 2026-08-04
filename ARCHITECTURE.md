@@ -7,8 +7,8 @@ plugins add optional middleware and helpers.
 
 ```text
 accept
-  → server/conn (semaphore, JoinSet, hyper HTTP/1)
-  → to_ruvo_request
+  → server/conn (semaphore, JoinSet, hyper auto HTTP/1.1+HTTP/2 + with_upgrades)
+  → to_ruvo_request (+ optional OnUpgrade)
   → CompiledRouter::dispatch
   → root middleware (onion)
   → matchit route match
@@ -20,18 +20,66 @@ accept
 
 `App::build()` compiles routes once into a cheap-to-clone [`Server`]. Prefer
 `Server::handle` (or `handle_request`) in tests and embedded use so the matcher
-is not rebuilt per request.
+is not rebuilt per request. `Server::state` / `Server::run_startup` (feature
+`testing`) are non-destructive.
 
 `handle_request(method, path, body)` is thin sugar over `Request::builder` with
 **no custom headers**. For cookies, `Content-Type`, etc. use
 `Request::builder().header(...).build()` and `handle`.
 
+## Lifecycle
+
+```text
+start: compile → on_startup → BackgroundServices → accept
+stop:  stop accept → drain connections → stop services → on_shutdown
+```
+
+CLI listen (`listen_args`) sets `cli_mode` and **does not** start
+`BackgroundService`s unless `.service_in_cli(true)`.
+
+## TLS (feature `tls`)
+
+TLS terminates in the accept task (not the accept loop): `TcpStream` →
+`tokio-rustls` handshake (with timeout) → generic IO into hyper auto (HTTP/1.1+HTTP/2).
+`OnUpgrade` / WebSocket need no TLS-specific code (WSS is WS over TLS).
+
+Hot reload: `ResolvesServerCert` + `ArcSwap<CertifiedKey>` — call
+`TlsRuntime::reload()` or replace PEM on disk and reload. Optional
+`.redirect_http(80)` and `.hsts(true)`.
+
+`dev-tls` uses `rcgen` for local self-signed certs.
+
+## Env (plugin `ruvo-env`)
+
+Call `ruvo_env::load()` explicitly at the top of `main` (never inside
+`App::new()`). Cascade: `.env` → `.env.local` → `.env.{mode}` →
+`.env.{mode}.local`; real process env always wins.
+
+## Store encryption (feature `store-crypto`)
+
+`Encrypted<S: KvStore>` wraps any backend; values are XChaCha20-Poly1305,
+keys use stable HMAC tails for `clear_prefix`. `incr` bypasses encryption.
+
+## UDP
+
+Plain datagrams only — no DTLS. Encrypted datagrams: future `ruvo-quic`.
+
+## Long-lived connections
+
+| Kind | How |
+|------|-----|
+| HTTP upgrade (WS) | Route handler + `req.on_upgrade()`; budget via `max_upgraded_connections` → **503** + `Retry-After` |
+| SSE / stream body | Normal `Response`; `request_timeout` ends when the handler **returns** — stream chunks after that are not cut by it |
+| Raw Hyper | `Router::raw` — **last resort**; skips middleware |
+
+Upgraded / service state is **process-local** (not shared across processes).
+
 ## Public surface: root vs `extend`
 
 | Surface | Audience | Examples |
 |---------|----------|----------|
-| **crate root** | Applications | `App`, `Server`, `Router`, `Request`, `Response`, typed bodies (`Html`/`Json`/…), `Error`/`Result`/`IntoResponse`, `Plugin`, `Next`, `logger`, `with_state`, `ClientAddr` |
-| **`extend`** | Plugins / advanced | `Handler`/`IntoHandler`, `ErrorResponse`, middleware traits, `named`/`with_leaked`, bodies (`Body`, `HttpBody`), path helpers, `RouteEntry`/`RouteTable`, `Extensions`/`TypeMap` (`StateMap` alias), `MatchedMeta`, `RequestBuilder` |
+| **crate root** | Applications | `App`, `Server`, `Router`, `Request`, `Response`, typed bodies (`Html`/`Json`/…), `Error`/`Result`/`IntoResponse`, `Plugin`, `Next`, `logger`, `with_state`, `ClientAddr`, `BackgroundService`, `OnUpgrade` |
+| **`extend`** | Plugins / advanced | `Handler`/`IntoHandler`, `ErrorResponse`, middleware traits, `named`/`with_leaked`, bodies (`Body`, `HttpBody`), path helpers, `RouteEntry`/`RouteTable`, `Extensions`/`TypeMap` (`StateMap` alias), `MatchedMeta`, `RequestBuilder`, `wait_shutdown` |
 
 Route metadata is a [`TypeMap`](crates/ruvo-core/src/state.rs) on each HTTP route (`route_meta`).
 **Same type twice — last wins**; different types never conflict. After a match,
@@ -43,10 +91,10 @@ The `ruvo` facade re-exports the same root list and `ruvo::extend`.
 
 | Layer | Owns |
 |-------|------|
-| **ruvo-core** | App/Router/Server, dispatch, Request/Response, middleware traits, listen/drain, `ClientAddr`, route `TypeMap` |
-| **plugins** | Optional features: cookies, session, rate-limit, cors, compress, static, multipart, templates, vld, openapi, i18n |
+| **ruvo-core** | App/Router/Server, dispatch, Request/Response, middleware traits, listen/drain, `ClientAddr`, route `TypeMap`, `BackgroundService`, `OnUpgrade` |
+| **plugins** | Optional features: cookies, session, rate-limit, cors, compress, static, multipart, templates, vld, openapi, i18n, ws, tasks, store, udp, sse |
 
-Plugins depend on `ruvo_core` (and sometimes other plugins). Core does not depend on plugins.
+Plugins depend on `ruvo_core` (and sometimes other plugins). Core does not depend on plugins. **KvStore is not in core** — wire via `app.state(...)`.
 
 ## Tests
 
@@ -55,5 +103,6 @@ Plugins depend on `ruvo_core` (and sometimes other plugins). Core does not depen
 | `src/**` `#[cfg(test)]` | Unit tests of **private** helpers (`collect_limited`, path normalize, …) |
 | `crates/*/tests/` and `plugins/*/tests/` | Integration against the **public** API (`root` + `extend`) |
 
-Feature `testing` exposes `App::run_startup` / `run_shutdown` for lifecycle tests
+Feature `testing` exposes `App::run_startup` / `run_shutdown` (delegating to `Server`) for lifecycle tests
 (`cargo test --features testing` or `--all-features`).
+Feature `listen-reuseport` enables `App::listen_reuseport(true)` (`SO_REUSEPORT`).

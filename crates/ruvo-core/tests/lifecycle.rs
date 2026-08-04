@@ -1,5 +1,5 @@
 use http::Method;
-use ruvo_core::{App, Error, Request, Response};
+use ruvo_core::{App, Bind, Error, Request, Response};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
@@ -31,6 +31,24 @@ async fn shutdown_hook_runs() {
     assert_eq!(flag.load(Ordering::SeqCst), 1);
 }
 
+#[cfg(feature = "testing")]
+#[tokio::test]
+async fn run_startup_is_non_destructive() {
+    let mut app = App::new();
+    let n = Arc::new(AtomicUsize::new(0));
+    let n2 = Arc::clone(&n);
+    app.on_startup(move |_s| {
+        let n2 = Arc::clone(&n2);
+        async move {
+            n2.fetch_add(1, Ordering::SeqCst);
+            Ok(())
+        }
+    });
+    app.run_startup().await.unwrap();
+    app.run_startup().await.unwrap();
+    assert_eq!(n.load(Ordering::SeqCst), 2);
+}
+
 #[tokio::test]
 async fn build_reuses_compiled_server() {
     let mut app = App::new();
@@ -47,15 +65,18 @@ async fn listen_with_shutdown_stops() {
     let mut app = App::new();
     app.get("/", |_r: Request| async { Response::text("ok") });
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
     let addr = listener.local_addr().unwrap();
 
     let (tx, rx) = tokio::sync::oneshot::channel::<()>();
     let server = tokio::spawn(async move {
-        app.listen_listener_with_shutdown(listener, async move {
-            let _ = rx.await;
-        })
-        .await
+        app.bind(Bind::Listener(listener))
+            .shutdown(async move {
+                let _ = rx.await;
+            })
+            .serve()
+            .await
     });
 
     tokio::time::sleep(std::time::Duration::from_millis(50)).await;
@@ -65,5 +86,93 @@ async fn listen_with_shutdown_stops() {
         .expect("server should stop")
         .expect("join");
     assert!(res.is_ok(), "{res:?}");
-    let _ = tokio::net::TcpListener::bind(addr).await.unwrap();
+    let _ = std::net::TcpListener::bind(addr).unwrap();
+}
+
+struct FlagService {
+    name: &'static str,
+    flag: Arc<AtomicUsize>,
+}
+
+impl ruvo_core::BackgroundService for FlagService {
+    fn name(&self) -> &str {
+        self.name
+    }
+
+    fn run(
+        self: Box<Self>,
+        _state: Arc<ruvo_core::extend::StateMap>,
+        mut shutdown: ruvo_core::Shutdown,
+    ) -> ruvo_core::extend::BoxFuture<()> {
+        Box::pin(async move {
+            self.flag.fetch_add(1, Ordering::SeqCst);
+            shutdown.recv().await;
+        })
+    }
+}
+
+#[tokio::test]
+async fn cli_mode_skips_background_services() {
+    let flag = Arc::new(AtomicUsize::new(0));
+    let mut app = App::new();
+    app.cli_mode(true);
+    app.service(FlagService {
+        name: "probe",
+        flag: Arc::clone(&flag),
+    });
+
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    let (tx, rx) = tokio::sync::oneshot::channel::<()>();
+    let server = tokio::spawn(async move {
+        app.bind(Bind::Listener(listener))
+            .shutdown(async move {
+                let _ = rx.await;
+            })
+            .serve()
+            .await
+    });
+
+    tokio::time::sleep(std::time::Duration::from_millis(80)).await;
+    assert_eq!(flag.load(Ordering::SeqCst), 0, "cli_mode must skip services");
+    let _ = tx.send(());
+    let _ = tokio::time::timeout(std::time::Duration::from_secs(2), server)
+        .await
+        .expect("server stop")
+        .expect("join");
+}
+
+#[tokio::test]
+async fn service_in_cli_starts_background_services() {
+    let flag = Arc::new(AtomicUsize::new(0));
+    let mut app = App::new();
+    app.cli_mode(true).service_in_cli(true);
+    app.service(FlagService {
+        name: "probe",
+        flag: Arc::clone(&flag),
+    });
+
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    let (tx, rx) = tokio::sync::oneshot::channel::<()>();
+    let server = tokio::spawn(async move {
+        app.bind(Bind::Listener(listener))
+            .shutdown(async move {
+                let _ = rx.await;
+            })
+            .serve()
+            .await
+    });
+
+    tokio::time::sleep(std::time::Duration::from_millis(80)).await;
+    assert_eq!(
+        flag.load(Ordering::SeqCst),
+        1,
+        "service_in_cli must start services"
+    );
+    let _ = tx.send(());
+    let _ = tokio::time::timeout(std::time::Duration::from_secs(2), server)
+        .await
+        .expect("server stop")
+        .expect("join");
 }

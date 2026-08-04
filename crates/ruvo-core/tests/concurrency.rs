@@ -112,9 +112,12 @@ async fn max_connections_rejects_overflow() {
         overflow.push(tokio::spawn(async move { http_get(addr, "/hold").await }));
     }
     for h in overflow {
-        match tokio::time::timeout(Duration::from_millis(200), h).await {
-            Ok(Ok((status, _))) if status == 200 => {}
-            _ => rejected += 1,
+        let rejected_one = !matches!(
+            tokio::time::timeout(Duration::from_millis(200), h).await,
+            Ok(Ok((200, _)))
+        );
+        if rejected_one {
+            rejected += 1;
         }
     }
     assert!(rejected >= 3, "expected most overflow rejected, got rejected={rejected}");

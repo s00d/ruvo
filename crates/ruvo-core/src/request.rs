@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::response::HttpBody;
+use crate::response::{HttpBody, Response};
 use crate::server::collect_limited;
 use crate::state::{Extensions, StateMap};
 use bytes::Bytes;
@@ -304,6 +304,15 @@ impl Request {
 
     pub fn take<T: Send + Sync + 'static>(&mut self) -> Option<T> {
         self.extensions.remove::<T>()
+    }
+
+    /// Take a pending HTTP/1 upgrade (WebSocket, …).
+    ///
+    /// Returns **503** + `Retry-After` when [`crate::App::max_upgraded_connections`]
+    /// is exhausted. Missing upgrade → `None` (not an error).
+    pub fn on_upgrade(&mut self) -> Option<std::result::Result<crate::OnUpgrade, Response>> {
+        let pending = self.take::<crate::upgrade::PendingUpgrade>()?;
+        Some(crate::upgrade::take_upgrade(pending).map_err(|b| *b))
     }
 
     /// Typed metadata from the matched route (`route_meta` / plugin helpers).

@@ -5,6 +5,9 @@ use hyper::{Request as HyperRequest, Response as HyperResponse};
 use std::sync::Arc;
 
 /// Escape-hatch handler: full Hyper request in, Hyper response out.
+///
+/// **Last resort.** Prefer normal routes + [`crate::Request::on_upgrade`] for
+/// WebSockets. Raw handlers skip middleware, auth, rate-limit, and session.
 pub type RawHandler =
     Arc<dyn Fn(HyperRequest<Incoming>) -> BoxFuture<HyperResponse<ResponseBody>> + Send + Sync>;
 

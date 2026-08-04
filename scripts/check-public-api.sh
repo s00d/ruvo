@@ -14,16 +14,27 @@ trap 'rm -rf "$tmpdir"' EXIT
 check_crate() {
   local crate="$1"
   local baseline="api/${crate}.txt"
-  cargo +nightly public-api -p "$crate" --simplified >"$tmpdir/current.txt"
+  local features="${2:-}"
+  local -a feat_args=()
+  if [[ -n "$features" ]]; then
+    feat_args=(--features "$features")
+  fi
+  cargo +nightly public-api -p "$crate" --simplified "${feat_args[@]}" >"$tmpdir/current.txt"
   if ! diff -u "$baseline" "$tmpdir/current.txt"; then
     echo >&2
     echo "Public API of $crate drifted from $baseline" >&2
     echo "If the change is intentional, regenerate with:" >&2
-    echo "  cargo +nightly public-api -p $crate --simplified > $baseline" >&2
+    if [[ -n "$features" ]]; then
+      echo "  cargo +nightly public-api -p $crate --features $features --simplified > $baseline" >&2
+    else
+      echo "  cargo +nightly public-api -p $crate --simplified > $baseline" >&2
+    fi
     exit 1
   fi
   echo "public-api baseline OK ($crate)"
 }
 
-check_crate ruvo-core
-check_crate ruvo
+check_crate ruvo-core "tls,dev-tls"
+check_crate ruvo "tls,dev-tls,env,store-crypto"
+check_crate ruvo-store unstable-store
+check_crate ruvo-tasks-store unstable-store

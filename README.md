@@ -3,7 +3,7 @@
 Express-like HTTP for Rust: `App`, `Router`, middleware, plugins — Hyper stays hidden.
 
 ```rust
-use ruvo::{logger, App, Cors, Request, Response, Result, Router};
+use ruvo::{logger, App, Bind, Cors, Request, Response, Result, Router};
 
 fn blog_routes() -> Router {
     let mut r = Router::new();
@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
         app.get("/health", |_| async { Response::json(&serde_json::json!({ "ok": true })) });
     });
     app.raw("/raw", |req| async move { /* hyper Response */ todo!() });
-    app.listen(3000).await
+    app.bind(Bind::Port(3000)).serve().await
 }
 ```
 
@@ -81,7 +81,7 @@ app.raw("/ws", |req: hyper::Request<Incoming>| async move { ... });
 | `cookies` | `CookieLayer` + `Cookies` + `ResponseCookieExt` (`.cookie()`) |
 | `compress` | gzip/br response compression |
 | `rate-limit` | in-memory sliding window by IP |
-| `session` | `SessionStore` + `MemoryStore` / `NullStore` |
+| `session` | `SessionLayer` + `MemoryStore` (`KvStore`) |
 | `templates` | `TemplateEngine` + MiniJinja |
 | `multipart` | `MultipartExt` (`multer`) for file uploads |
 | `cli` | `ServerArgs` / `ListenArgs` (`clap`) for local `--host`/`--port`/`--log-level` |
@@ -100,7 +100,7 @@ Call `ruvo::init_tracing()` in `main` (or `ServerArgs::init_tracing()` with `cli
 ## Core ideas
 
 - `App` is `DerefMut<Router>` — one routing API
-- Routes compile once at `listen` (`matchit` + precomputed middleware chains)
+- Routes compile once at `serve` (`matchit` + precomputed middleware chains)
 - Response body: bytes or stream; `take_body` / `collect` / `set_body` for middleware
 - Lifecycle: `on_startup` (fail → no listen) / `on_shutdown` after connection drain
 - Introspection: `app.route_entries()`
@@ -108,13 +108,25 @@ Call `ruvo::init_tracing()` in `main` (or `ServerArgs::init_tracing()` with `cli
 - Handlers may return `Html` / `Json` (`IntoResponse`) instead of building `Response` by hand
 - `not_found` / `error_handler` / `max_body_size` (default 2 MiB → 413)
 - Graceful shutdown on Ctrl-C and SIGTERM (Unix); connection `JoinSet` drain (`drain_timeout`, default 20s)
-- Listen: `listen(port)`, `listen_on(addr)`, `listen_str("127.0.0.1:3000")`, `listen_env(default_port)` (`PORT`/`HOST`), `listen_listener`, `listen_uds` (Unix), `*_with_shutdown(fut)` for tests / embedding
-- `listen(port)` binds `0.0.0.0` (IPv4). For dual-stack use `listen_str("[::]:3000")` where the OS allows it
+- Bind / serve: `app.bind(Bind::Port(3000)).serve().await`, `Bind::Addr`, `Bind::Env { default_port }` (`PORT`/`HOST`), `Bind::Listener` for tests, `Bind::Uds(path)` (Unix); optional `.shutdown(fut)` before `.serve()`
+- `Bind::Port(n)` binds `0.0.0.0` (IPv4). For dual-stack use `Bind::Addr("[::]:3000".parse()?)` where the OS allows it
 - Limits: `max_connections`, `request_timeout`, `header_read_timeout` / `idle_timeout` (keep-alive quiet wait), `max_headers`, `max_buf_size`, `keep_alive`
 
 ## TLS / HTTP2
 
-Ruvo speaks HTTP/1.1 cleartext. Put nginx, Caddy, or Cloudflare in front for TLS and HTTP/2.
+With feature `tls` (and `dev-tls` for local self-signed certs):
+
+```rust
+ruvo_env::load()?; // optional: TLS_CERT, TLS_KEY, APP_KEY from .env
+app.bind(Bind::Port(443))
+    .tls(Tls::from_pem("cert.pem", "key.pem")?)?
+    .serve()
+    .await
+```
+
+WSS works automatically over HTTPS (`OnUpgrade` is TLS-agnostic).
+SSE works over HTTP/2 too (reduces browser connection limits by multiplexing).
+UDP has no DTLS — use a reverse proxy or future `ruvo-quic` for encrypted datagrams.
 
 ## Workspace
 

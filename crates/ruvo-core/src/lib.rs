@@ -23,10 +23,14 @@ mod request;
 mod response;
 mod router;
 mod server;
+mod service;
 mod state;
+mod upgrade;
+#[cfg(feature = "tls")]
+mod tls;
 
 // Application-facing API (~16–18 names).
-pub use app::{App, Server};
+pub use app::{App, Bind, BoundApp, Http, Server};
 pub use error::{Error, IntoResponse, Result};
 pub use middleware::{logger, with_state, Next};
 pub use plugin::Plugin;
@@ -34,6 +38,12 @@ pub use request::Request;
 pub use response::{Html, Json, NoContent, Redirect, Response, Text};
 pub use router::Router;
 pub use server::ClientAddr;
+pub use service::{BackgroundService, Shutdown};
+#[cfg(any(test, feature = "testing"))]
+pub use service::{shutdown_channel, ShutdownSender};
+pub use upgrade::{OnUpgrade, UpgradePermit};
+#[cfg(feature = "tls")]
+pub use tls::Tls;
 
 /// Extension / plugin-author API (handlers, bodies, route introspection, …).
 pub mod extend {
@@ -49,5 +59,6 @@ pub mod extend {
     pub use crate::router::{
         join_paths, normalize_path, to_brace_path, RouteEntry, RouteTable,
     };
+    pub use crate::service::wait_shutdown;
     pub use crate::state::{Extensions, MatchedMeta, StateMap, TypeMap};
 }
