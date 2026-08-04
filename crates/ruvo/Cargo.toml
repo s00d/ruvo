@@ -20,6 +20,19 @@ vld = ["dep:ruvo-vld", "dep:vld"]
 openapi = ["dep:ruvo-openapi"]
 i18n = ["dep:ruvo-i18n"]
 i18n-cookie = ["i18n", "cookies", "ruvo-i18n/cookie"]
+ws = ["dep:ruvo-ws"]
+store = ["dep:ruvo-store"]
+store-file = ["store", "dep:ruvo-store-file"]
+tasks-store = ["dep:ruvo-tasks-store"]
+tasks-file = ["tasks-store", "dep:ruvo-tasks-file"]
+tasks = ["tasks-store", "dep:ruvo-tasks"]
+udp = ["dep:ruvo-udp"]
+quic-udp = ["dep:ruvo-quic"]
+sse-feed = ["dep:ruvo-sse"]
+env = ["dep:ruvo-env"]
+tls = ["ruvo-core/tls"]
+dev-tls = ["tls", "ruvo-core/dev-tls"]
+store-crypto = ["store", "ruvo-store/store-crypto"]
 # vld + DocVldExt sugar (needs both plugins + vld openapi schemas)
 vld-openapi = ["vld", "openapi", "ruvo-vld/openapi", "vld/openapi"]
 testing = ["ruvo-core/testing"]
@@ -38,6 +51,16 @@ ruvo-cli = { path = "../../plugins/ruvo-cli", optional = true }
 ruvo-vld = { path = "../../plugins/ruvo-vld", optional = true }
 ruvo-openapi = { path = "../../plugins/ruvo-openapi", optional = true }
 ruvo-i18n = { path = "../../plugins/ruvo-i18n", optional = true }
+ruvo-ws = { path = "../../plugins/ruvo-ws", optional = true }
+ruvo-store = { path = "../../plugins/ruvo-store", optional = true }
+ruvo-store-file = { path = "../../plugins/ruvo-store-file", optional = true }
+ruvo-tasks-store = { path = "../../plugins/ruvo-tasks-store", optional = true }
+ruvo-tasks-file = { path = "../../plugins/ruvo-tasks-file", optional = true }
+ruvo-tasks = { path = "../../plugins/ruvo-tasks", optional = true }
+ruvo-udp = { path = "../../plugins/ruvo-udp", optional = true }
+ruvo-quic = { path = "../../plugins/ruvo-quic", optional = true }
+ruvo-sse = { path = "../../plugins/ruvo-sse", optional = true }
+ruvo-env = { path = "../../plugins/ruvo-env", optional = true }
 vld = { version = "0.4", optional = true, default-features = true, features = ["serialize"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -109,5 +132,40 @@ path = "examples/i18n.rs"
 required-features = ["i18n"]
 
 [[example]]
-name = "raw-ws-stub"
-path = "examples/raw_ws_stub.rs"
+name = "templates-i18n"
+path = "examples/templates_i18n.rs"
+required-features = ["i18n", "templates"]
+
+[[example]]
+name = "raw-echo"
+path = "examples/raw_echo.rs"
+
+[[example]]
+name = "ws_chat"
+path = "examples/ws_chat.rs"
+required-features = ["ws"]
+
+[[example]]
+name = "bench_loaded"
+path = "examples/bench_loaded.rs"
+required-features = ["cors", "cookies", "session", "rate-limit"]
+
+[[example]]
+name = "tasks"
+path = "examples/tasks.rs"
+required-features = ["tasks"]
+
+[[example]]
+name = "udp_echo"
+path = "examples/udp_echo.rs"
+required-features = ["udp"]
+
+[[example]]
+name = "tls_hello"
+path = "examples/tls_hello.rs"
+required-features = ["dev-tls", "cors"]
+
+[[example]]
+name = "quic_udp_echo"
+path = "examples/quic_udp_echo.rs"
+required-features = ["quic-udp"]

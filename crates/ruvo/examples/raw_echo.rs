@@ -1,10 +1,10 @@
-//! Raw Hyper escape hatch (not a real WebSocket — just proves `app.raw`).
+//! Raw Hyper escape hatch (last resort — prefer normal routes + `on_upgrade` for WS).
 use bytes::Bytes;
 use http_body_util::{BodyExt, Full};
 use hyper::body::Incoming;
 use hyper::{Request as HyperRequest, Response as HyperResponse};
 use ruvo::extend::{BoxError, ResponseBody};
-use ruvo::{init_tracing, App, Response, Result};
+use ruvo::{Bind, init_tracing, App, Response, Result};
 use std::convert::Infallible;
 
 #[tokio::main]
@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
     let mut app = App::new();
 
     app.get("/", |_| async {
-        Response::html(include_str!("raw_ws_stub/views/index.html"))
+        Response::html(include_str!("raw_echo/views/index.html"))
     });
 
     app.raw("/raw", |req: HyperRequest<Incoming>| async move {
@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
             .unwrap()
     });
 
-    app.listen(3007).await
+    app.bind(Bind::Port(3007)).serve().await
 }
 
 #[allow(dead_code)]

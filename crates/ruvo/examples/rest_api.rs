@@ -1,5 +1,5 @@
 //! JSON REST skeleton.
-use ruvo::{init_tracing, App, Json, Request, Result};
+use ruvo::{Bind, init_tracing, App, Json, Request, Result};
 use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Default)]
@@ -17,7 +17,7 @@ async fn main() -> Result<()> {
     app.post("/items", create);
     app.get("/items/:id", show);
 
-    app.listen(3001).await
+    app.bind(Bind::Port(3001)).serve().await
 }
 
 async fn list(req: Request) -> Json<Vec<String>> {

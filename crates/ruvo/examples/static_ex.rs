@@ -1,5 +1,5 @@
 //! Static files with ETag / Range.
-use ruvo::{init_tracing, App, Response, Result, Static};
+use ruvo::{Bind, init_tracing, App, Response, Result, Static};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -12,5 +12,5 @@ async fn main() -> Result<()> {
     app.get("/", |_| async {
         Response::html(include_str!("static_ex/views/index.html"))
     });
-    app.listen(3005).await
+    app.bind(Bind::Port(3005)).serve().await
 }

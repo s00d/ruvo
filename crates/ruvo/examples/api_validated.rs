@@ -4,7 +4,7 @@
 //! cargo run -p ruvo --example api-validated --features vld-openapi
 //! ```
 
-use ruvo::{
+use ruvo::{Bind, 
     doc_schema, init_tracing, App, Doc, DocVldExt, IntoResponse, Json, OpenApi, OpenApiDocExt,
     Request, Response, Result, ValidationError, ValidationExt,
 };
@@ -68,7 +68,7 @@ async fn main() -> Result<()> {
     init_tracing();
     let app = build_app();
     tracing::info!("API http://127.0.0.1:3000  docs http://127.0.0.1:3000/docs");
-    app.listen(3000).await
+    app.bind(Bind::Port(3000)).serve().await
 }
 
 async fn list(req: Request) -> Json<Vec<User>> {

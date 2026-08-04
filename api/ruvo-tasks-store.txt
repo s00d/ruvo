@@ -1,0 +1,112 @@
+pub mod ruvo_tasks_store
+pub mod ruvo_tasks_store::conformance
+pub async fn ruvo_tasks_store::conformance::run(alloc::sync::Arc<dyn ruvo_tasks_store::TaskStore>)
+pub enum ruvo_tasks_store::TaskError
+pub ruvo_tasks_store::TaskError::Duplicate
+pub ruvo_tasks_store::TaskError::Msg(alloc::string::String)
+pub ruvo_tasks_store::TaskError::NotFound
+impl core::error::Error for ruvo_tasks_store::TaskError
+impl core::fmt::Debug for ruvo_tasks_store::TaskError
+pub fn ruvo_tasks_store::TaskError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for ruvo_tasks_store::TaskError
+pub fn ruvo_tasks_store::TaskError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for ruvo_tasks_store::TaskError
+impl core::marker::Send for ruvo_tasks_store::TaskError
+impl core::marker::Sync for ruvo_tasks_store::TaskError
+impl core::marker::Unpin for ruvo_tasks_store::TaskError
+impl core::marker::UnsafeUnpin for ruvo_tasks_store::TaskError
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_tasks_store::TaskError
+impl core::panic::unwind_safe::UnwindSafe for ruvo_tasks_store::TaskError
+pub enum ruvo_tasks_store::TaskStatus
+pub ruvo_tasks_store::TaskStatus::Done
+pub ruvo_tasks_store::TaskStatus::Failed
+pub ruvo_tasks_store::TaskStatus::Pending
+pub ruvo_tasks_store::TaskStatus::Running
+impl core::clone::Clone for ruvo_tasks_store::TaskStatus
+pub fn ruvo_tasks_store::TaskStatus::clone(&self) -> ruvo_tasks_store::TaskStatus
+impl core::cmp::Eq for ruvo_tasks_store::TaskStatus
+impl core::cmp::PartialEq for ruvo_tasks_store::TaskStatus
+pub fn ruvo_tasks_store::TaskStatus::eq(&self, &ruvo_tasks_store::TaskStatus) -> bool
+impl core::fmt::Debug for ruvo_tasks_store::TaskStatus
+pub fn ruvo_tasks_store::TaskStatus::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for ruvo_tasks_store::TaskStatus
+impl core::marker::StructuralPartialEq for ruvo_tasks_store::TaskStatus
+impl core::marker::Freeze for ruvo_tasks_store::TaskStatus
+impl core::marker::Send for ruvo_tasks_store::TaskStatus
+impl core::marker::Sync for ruvo_tasks_store::TaskStatus
+impl core::marker::Unpin for ruvo_tasks_store::TaskStatus
+impl core::marker::UnsafeUnpin for ruvo_tasks_store::TaskStatus
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_tasks_store::TaskStatus
+impl core::panic::unwind_safe::UnwindSafe for ruvo_tasks_store::TaskStatus
+pub struct ruvo_tasks_store::EnqueueOpts
+pub ruvo_tasks_store::EnqueueOpts::dedup_key: core::option::Option<alloc::string::String>
+pub ruvo_tasks_store::EnqueueOpts::payload: bytes::bytes::Bytes
+pub ruvo_tasks_store::EnqueueOpts::queue: alloc::string::String
+pub ruvo_tasks_store::EnqueueOpts::run_at: core::option::Option<std::time::SystemTime>
+impl !core::marker::Freeze for ruvo_tasks_store::EnqueueOpts
+impl core::marker::Send for ruvo_tasks_store::EnqueueOpts
+impl core::marker::Sync for ruvo_tasks_store::EnqueueOpts
+impl core::marker::Unpin for ruvo_tasks_store::EnqueueOpts
+impl core::marker::UnsafeUnpin for ruvo_tasks_store::EnqueueOpts
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_tasks_store::EnqueueOpts
+impl core::panic::unwind_safe::UnwindSafe for ruvo_tasks_store::EnqueueOpts
+pub struct ruvo_tasks_store::MemoryStore
+impl ruvo_tasks_store::MemoryStore
+pub fn ruvo_tasks_store::MemoryStore::new() -> Self
+impl core::clone::Clone for ruvo_tasks_store::MemoryStore
+pub fn ruvo_tasks_store::MemoryStore::clone(&self) -> ruvo_tasks_store::MemoryStore
+impl core::default::Default for ruvo_tasks_store::MemoryStore
+pub fn ruvo_tasks_store::MemoryStore::default() -> ruvo_tasks_store::MemoryStore
+impl ruvo_tasks_store::TaskStore for ruvo_tasks_store::MemoryStore
+pub fn ruvo_tasks_store::MemoryStore::claim<'a>(&'a self, &'a str, &'a str, core::time::Duration, usize) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<ruvo_tasks_store::Task>, ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::complete<'a>(&'a self, &'a str) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<(), ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::enqueue<'a>(&'a self, ruvo_tasks_store::EnqueueOpts) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<alloc::string::String, ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::fail<'a>(&'a self, &'a str, core::option::Option<std::time::SystemTime>) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<(), ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::heartbeat<'a>(&'a self, &'a str, core::time::Duration) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<(), ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::list<'a>(&'a self, &'a str, usize) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<ruvo_tasks_store::Task>, ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::reap<'a>(&'a self, std::time::SystemTime) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<u64, ruvo_tasks_store::TaskError>>
+impl core::marker::Freeze for ruvo_tasks_store::MemoryStore
+impl core::marker::Send for ruvo_tasks_store::MemoryStore
+impl core::marker::Sync for ruvo_tasks_store::MemoryStore
+impl core::marker::Unpin for ruvo_tasks_store::MemoryStore
+impl core::marker::UnsafeUnpin for ruvo_tasks_store::MemoryStore
+impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_tasks_store::MemoryStore
+impl !core::panic::unwind_safe::UnwindSafe for ruvo_tasks_store::MemoryStore
+pub struct ruvo_tasks_store::Task
+pub ruvo_tasks_store::Task::attempts: u32
+pub ruvo_tasks_store::Task::dedup_key: core::option::Option<alloc::string::String>
+pub ruvo_tasks_store::Task::id: alloc::string::String
+pub ruvo_tasks_store::Task::lease_until: core::option::Option<std::time::SystemTime>
+pub ruvo_tasks_store::Task::payload: bytes::bytes::Bytes
+pub ruvo_tasks_store::Task::queue: alloc::string::String
+pub ruvo_tasks_store::Task::run_at: std::time::SystemTime
+pub ruvo_tasks_store::Task::status: ruvo_tasks_store::TaskStatus
+pub ruvo_tasks_store::Task::worker: core::option::Option<alloc::string::String>
+impl core::clone::Clone for ruvo_tasks_store::Task
+pub fn ruvo_tasks_store::Task::clone(&self) -> ruvo_tasks_store::Task
+impl core::fmt::Debug for ruvo_tasks_store::Task
+pub fn ruvo_tasks_store::Task::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl !core::marker::Freeze for ruvo_tasks_store::Task
+impl core::marker::Send for ruvo_tasks_store::Task
+impl core::marker::Sync for ruvo_tasks_store::Task
+impl core::marker::Unpin for ruvo_tasks_store::Task
+impl core::marker::UnsafeUnpin for ruvo_tasks_store::Task
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_tasks_store::Task
+impl core::panic::unwind_safe::UnwindSafe for ruvo_tasks_store::Task
+pub trait ruvo_tasks_store::TaskStore: core::marker::Send + core::marker::Sync + 'static
+pub fn ruvo_tasks_store::TaskStore::claim<'a>(&'a self, &'a str, &'a str, core::time::Duration, usize) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<ruvo_tasks_store::Task>, ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::TaskStore::complete<'a>(&'a self, &'a str) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<(), ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::TaskStore::enqueue<'a>(&'a self, ruvo_tasks_store::EnqueueOpts) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<alloc::string::String, ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::TaskStore::fail<'a>(&'a self, &'a str, core::option::Option<std::time::SystemTime>) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<(), ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::TaskStore::heartbeat<'a>(&'a self, &'a str, core::time::Duration) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<(), ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::TaskStore::list<'a>(&'a self, &'a str, usize) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<ruvo_tasks_store::Task>, ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::TaskStore::reap<'a>(&'a self, std::time::SystemTime) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<u64, ruvo_tasks_store::TaskError>>
+impl ruvo_tasks_store::TaskStore for ruvo_tasks_store::MemoryStore
+pub fn ruvo_tasks_store::MemoryStore::claim<'a>(&'a self, &'a str, &'a str, core::time::Duration, usize) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<ruvo_tasks_store::Task>, ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::complete<'a>(&'a self, &'a str) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<(), ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::enqueue<'a>(&'a self, ruvo_tasks_store::EnqueueOpts) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<alloc::string::String, ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::fail<'a>(&'a self, &'a str, core::option::Option<std::time::SystemTime>) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<(), ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::heartbeat<'a>(&'a self, &'a str, core::time::Duration) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<(), ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::list<'a>(&'a self, &'a str, usize) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<ruvo_tasks_store::Task>, ruvo_tasks_store::TaskError>>
+pub fn ruvo_tasks_store::MemoryStore::reap<'a>(&'a self, std::time::SystemTime) -> ruvo_tasks_store::BoxFuture<'a, core::result::Result<u64, ruvo_tasks_store::TaskError>>
+pub type ruvo_tasks_store::BoxFuture<'a, T> = core::pin::Pin<alloc::boxed::Box<(dyn core::future::future::Future<Output = T> + core::marker::Send + 'a)>>

@@ -1,0 +1,60 @@
+pub mod ruvo_store
+pub mod ruvo_store::conformance
+pub async fn ruvo_store::conformance::run(alloc::sync::Arc<dyn ruvo_store::KvStore>)
+pub struct ruvo_store::MemoryStore
+impl ruvo_store::MemoryStore
+pub fn ruvo_store::MemoryStore::new() -> Self
+pub fn ruvo_store::MemoryStore::with_shards(usize) -> Self
+impl core::clone::Clone for ruvo_store::MemoryStore
+pub fn ruvo_store::MemoryStore::clone(&self) -> ruvo_store::MemoryStore
+impl core::default::Default for ruvo_store::MemoryStore
+pub fn ruvo_store::MemoryStore::default() -> Self
+impl ruvo_store::KvStore for ruvo_store::MemoryStore
+pub fn ruvo_store::MemoryStore::clear_prefix<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, u64>
+pub fn ruvo_store::MemoryStore::get<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, core::option::Option<bytes::bytes::Bytes>>
+pub fn ruvo_store::MemoryStore::incr<'a>(&'a self, &'a str, i64, core::option::Option<core::time::Duration>) -> ruvo_store::BoxFuture<'a, u64>
+pub fn ruvo_store::MemoryStore::remove<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, ()>
+pub fn ruvo_store::MemoryStore::set<'a>(&'a self, &'a str, bytes::bytes::Bytes, core::option::Option<core::time::Duration>) -> ruvo_store::BoxFuture<'a, ()>
+impl core::marker::Freeze for ruvo_store::MemoryStore
+impl core::marker::Send for ruvo_store::MemoryStore
+impl core::marker::Sync for ruvo_store::MemoryStore
+impl core::marker::Unpin for ruvo_store::MemoryStore
+impl core::marker::UnsafeUnpin for ruvo_store::MemoryStore
+impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_store::MemoryStore
+impl !core::panic::unwind_safe::UnwindSafe for ruvo_store::MemoryStore
+pub struct ruvo_store::Namespace
+impl core::clone::Clone for ruvo_store::Namespace
+pub fn ruvo_store::Namespace::clone(&self) -> ruvo_store::Namespace
+impl ruvo_store::KvStore for ruvo_store::Namespace
+pub fn ruvo_store::Namespace::clear_prefix<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, u64>
+pub fn ruvo_store::Namespace::get<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, core::option::Option<bytes::bytes::Bytes>>
+pub fn ruvo_store::Namespace::incr<'a>(&'a self, &'a str, i64, core::option::Option<core::time::Duration>) -> ruvo_store::BoxFuture<'a, u64>
+pub fn ruvo_store::Namespace::remove<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, ()>
+pub fn ruvo_store::Namespace::set<'a>(&'a self, &'a str, bytes::bytes::Bytes, core::option::Option<core::time::Duration>) -> ruvo_store::BoxFuture<'a, ()>
+impl core::marker::Freeze for ruvo_store::Namespace
+impl core::marker::Send for ruvo_store::Namespace
+impl core::marker::Sync for ruvo_store::Namespace
+impl core::marker::Unpin for ruvo_store::Namespace
+impl core::marker::UnsafeUnpin for ruvo_store::Namespace
+impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_store::Namespace
+impl !core::panic::unwind_safe::UnwindSafe for ruvo_store::Namespace
+pub trait ruvo_store::KvStore: core::marker::Send + core::marker::Sync + 'static
+pub fn ruvo_store::KvStore::clear_prefix<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, u64>
+pub fn ruvo_store::KvStore::get<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, core::option::Option<bytes::bytes::Bytes>>
+pub fn ruvo_store::KvStore::incr<'a>(&'a self, &'a str, i64, core::option::Option<core::time::Duration>) -> ruvo_store::BoxFuture<'a, u64>
+pub fn ruvo_store::KvStore::remove<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, ()>
+pub fn ruvo_store::KvStore::set<'a>(&'a self, &'a str, bytes::bytes::Bytes, core::option::Option<core::time::Duration>) -> ruvo_store::BoxFuture<'a, ()>
+impl ruvo_store::KvStore for ruvo_store::MemoryStore
+pub fn ruvo_store::MemoryStore::clear_prefix<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, u64>
+pub fn ruvo_store::MemoryStore::get<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, core::option::Option<bytes::bytes::Bytes>>
+pub fn ruvo_store::MemoryStore::incr<'a>(&'a self, &'a str, i64, core::option::Option<core::time::Duration>) -> ruvo_store::BoxFuture<'a, u64>
+pub fn ruvo_store::MemoryStore::remove<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, ()>
+pub fn ruvo_store::MemoryStore::set<'a>(&'a self, &'a str, bytes::bytes::Bytes, core::option::Option<core::time::Duration>) -> ruvo_store::BoxFuture<'a, ()>
+impl ruvo_store::KvStore for ruvo_store::Namespace
+pub fn ruvo_store::Namespace::clear_prefix<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, u64>
+pub fn ruvo_store::Namespace::get<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, core::option::Option<bytes::bytes::Bytes>>
+pub fn ruvo_store::Namespace::incr<'a>(&'a self, &'a str, i64, core::option::Option<core::time::Duration>) -> ruvo_store::BoxFuture<'a, u64>
+pub fn ruvo_store::Namespace::remove<'a>(&'a self, &'a str) -> ruvo_store::BoxFuture<'a, ()>
+pub fn ruvo_store::Namespace::set<'a>(&'a self, &'a str, bytes::bytes::Bytes, core::option::Option<core::time::Duration>) -> ruvo_store::BoxFuture<'a, ()>
+pub fn ruvo_store::namespace(alloc::sync::Arc<dyn ruvo_store::KvStore>, &str) -> ruvo_store::Namespace
+pub type ruvo_store::BoxFuture<'a, T> = core::pin::Pin<alloc::boxed::Box<(dyn core::future::future::Future<Output = T> + core::marker::Send + 'a)>>

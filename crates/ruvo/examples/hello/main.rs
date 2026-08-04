@@ -1,4 +1,4 @@
-use ruvo::{init_tracing, logger, App, Cors, Request, Response, Result, Router};
+use ruvo::{Bind, init_tracing, logger, App, Cors, Request, Response, Result, Router};
 
 mod modules {
     pub mod auth;
@@ -48,7 +48,7 @@ async fn main() -> Result<()> {
         Response::html(include_str!("views/not_found.html")).status(404)
     });
 
-    app.listen(3000).await
+    app.bind(Bind::Port(3000)).serve().await
 }
 
 async fn home(req: Request) -> Response {

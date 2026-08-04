@@ -1,5 +1,5 @@
 //! Auth demo: extensions + cookie sessions.
-use ruvo::{init_tracing, memory_sessions, App, Html, Redirect, Request, Result, SessionExt};
+use ruvo::{Bind, init_tracing, memory_sessions, App, Html, Redirect, Request, Result, SessionExt};
 
 fn render(template: &str, vars: &[(&str, &str)]) -> String {
     let mut out = template.to_string();
@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     app.post("/login", login);
     app.post("/logout", logout);
 
-    app.listen(3003).await
+    app.bind(Bind::Port(3003)).serve().await
 }
 
 async fn home(req: Request) -> Html<String> {

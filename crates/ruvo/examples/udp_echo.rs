@@ -1,0 +1,15 @@
+//! UDP echo via BackgroundService.
+
+use ruvo::{Bind, init_tracing, App, Result, UdpService};
+use std::net::SocketAddr;
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    init_tracing();
+    let mut app = App::new();
+    let addr: SocketAddr = "127.0.0.1:9999".parse().unwrap();
+    app.service(UdpService::echo(addr));
+    app.get("/", |_| async { ruvo::Response::text("udp echo on :9999") });
+    tracing::info!("HTTP :3011 + UDP echo :9999");
+    app.bind(Bind::Port(3011)).serve().await
+}

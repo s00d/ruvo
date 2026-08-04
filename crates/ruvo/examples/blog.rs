@@ -1,5 +1,5 @@
 //! Modular blog via `routes() -> Router` + mount.
-use ruvo::{init_tracing, App, Request, Response, Result, Router};
+use ruvo::{Bind, init_tracing, App, Request, Response, Result, Router};
 
 fn render(template: &str, vars: &[(&str, &str)]) -> String {
     let mut out = template.to_string();
@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
     app.get("/", |_| async {
         Response::html(include_str!("blog/views/root.html"))
     });
-    app.listen(3002).await
+    app.bind(Bind::Port(3002)).serve().await
 }
 
 async fn index(_: Request) -> Response {

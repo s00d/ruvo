@@ -4,9 +4,18 @@
 //! Application names live at the crate root; plugin authors use [`extend`].
 
 pub use ruvo_core::{
-    logger, with_state, App, ClientAddr, Error, Html, IntoResponse, Json, NoContent, Next, Plugin,
-    Redirect, Request, Response, Result, Router, Server, Text,
+    logger, with_state, App, BackgroundService, Bind, BoundApp, ClientAddr, Error, Html, Http,
+    IntoResponse, Json, NoContent, Next, OnUpgrade, Plugin, Redirect, Request, Response, Result,
+    Router, Server, Shutdown, Text,
 };
+#[cfg(feature = "tls")]
+pub use ruvo_core::Tls;
+
+#[cfg(feature = "env")]
+pub use ruvo_env::{self, require as env_require, EnvError};
+
+#[cfg(feature = "store-crypto")]
+pub use ruvo_store::{encrypted, encrypted_ns, AppKey, Encrypted};
 
 /// Extension API (handlers, bodies, route table, …) — see `ruvo_core::extend`.
 pub mod extend {
@@ -29,12 +38,36 @@ pub use ruvo_compress::Compress;
 pub use ruvo_rate_limit::RateLimit;
 
 #[cfg(feature = "session")]
-pub use ruvo_session::{
-    memory_sessions, MemoryStore, NullStore, Session, SessionExt, SessionLayer, SessionStore,
+pub use ruvo_session::{memory_sessions, Session, SessionExt, SessionLayer};
+
+#[cfg(feature = "store")]
+pub use ruvo_store::{namespace, KvStore, MemoryStore as KvMemoryStore, Namespace};
+
+#[cfg(feature = "store-file")]
+pub use ruvo_store_file::{Durability, FileStore as KvFileStore};
+
+#[cfg(feature = "tasks-store")]
+pub use ruvo_tasks_store::{
+    EnqueueOpts, MemoryStore as TaskMemoryStore, Task, TaskError, TaskStatus, TaskStore,
 };
 
+#[cfg(feature = "tasks-file")]
+pub use ruvo_tasks_file::FileTaskStore;
+
+#[cfg(feature = "tasks")]
+pub use ruvo_tasks::{bearer_guard, TaskBackend, Tasks};
+
+#[cfg(feature = "udp")]
+pub use ruvo_udp::UdpService;
+
+#[cfg(feature = "quic-udp")]
+pub use ruvo_quic::{QuicDatagramClient, QuicDatagramService};
+
+#[cfg(feature = "sse-feed")]
+pub use ruvo_sse::{sse_response, SseChannel, SseEvent};
+
 #[cfg(feature = "templates")]
-pub use ruvo_templates::{MiniJinjaEngine, TemplateEngine};
+pub use ruvo_templates::{MiniJinjaEngine, MiniJinjaTemplates, RenderExt, Templates, TemplateEngine};
 
 #[cfg(feature = "multipart")]
 pub use ruvo_multipart::{MultipartExt, MultipartField};
@@ -53,7 +86,13 @@ pub use ruvo_openapi::{undocumented, Doc, OpenApi, OpenApiDocExt};
 
 #[cfg(feature = "i18n")]
 pub use ruvo_i18n::{
-    mount_localized, I18n, I18nExt, I18nRouteExt, I18nScope, Locale, PrefixMode, ROOT_SCOPE,
+    mount_localized, template_fn, I18n, I18nExt, I18nRouteExt, I18nScope, Locale, PrefixMode,
+    ROOT_SCOPE,
+};
+
+#[cfg(feature = "ws")]
+pub use ruvo_ws::{
+    origin_allowed, upgrade_ws, Hub, Message, RoomHandle, Ws, WsRouteExt, WsSession,
 };
 
 #[cfg(feature = "vld-openapi")]
@@ -72,6 +111,3 @@ pub fn init_tracing() {
         .with_target(false)
         .try_init();
 }
-
-#[cfg(test)]
-mod tests_extra;

@@ -1,6 +1,6 @@
 //! i18n example: SSR page + JSON catalog for the frontend.
 
-use ruvo::{
+use ruvo::{Bind, 
     mount_localized, App, I18n, I18nExt, I18nRouteExt, Locale, PrefixMode, Plugin, Request,
     Response,
 };
@@ -44,5 +44,5 @@ async fn main() -> ruvo::Result<()> {
         .and_then(|s| s.parse().ok())
         .unwrap_or(3000);
     println!("i18n example on http://127.0.0.1:{port} (try /en/ and /de/)");
-    app.listen(port).await
+    app.bind(Bind::Port(port)).serve().await
 }

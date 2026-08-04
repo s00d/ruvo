@@ -1,7 +1,7 @@
 //! Minimal Server-Sent Events example.
 
 use futures_util::stream;
-use ruvo::{init_tracing, App, Response, Result};
+use ruvo::{Bind, init_tracing, App, Response, Result};
 use std::convert::Infallible;
 use std::time::Duration;
 
@@ -20,5 +20,5 @@ async fn main() -> Result<()> {
         Response::sse(ticks)
     });
     tracing::info!("SSE on http://127.0.0.1:3000/events");
-    app.listen(3000).await
+    app.bind(Bind::Port(3000)).serve().await
 }
