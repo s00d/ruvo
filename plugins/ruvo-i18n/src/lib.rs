@@ -1,0 +1,242 @@
+//! Two-level i18n for Ruvo (root + page scopes).
+
+mod ext;
+mod mount;
+mod plural;
+mod resolve;
+mod routes;
+mod store;
+
+pub use ext::{interpolate, I18nExt, I18nRouteExt, I18nScope, I18nState, LocaleCode};
+pub use mount::{mount_localized, PrefixMode};
+pub use plural::{default_plural, PluralFn};
+pub use resolve::{
+    negotiate_accept_language, resolve_server_locale, LocaleSource, ResolveOptions,
+};
+pub use store::{get_by_path, load_store, Locale, Scope, Store, ROOT_SCOPE};
+
+use arc_swap::ArcSwap;
+use ext::MissingHandler;
+use ruvo_core::extend::named;
+use ruvo_core::{with_state, App, Error, Plugin};
+use std::collections::HashSet;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+
+/// Marker: `GET /_i18n/all.json` is allowed.
+#[derive(Clone, Copy)]
+pub struct AllJsonEnabled(pub bool);
+
+/// I18n plugin.
+pub struct I18n {
+    dir: PathBuf,
+    locales: Vec<Locale>,
+    default: String,
+    fallback: String,
+    path_prefix: bool,
+    cookie_name: Option<String>,
+    set_locale_cookie: bool,
+    enable_all_json: bool,
+    plural_fn: Option<PluralFn>,
+    missing_handler: Option<MissingHandler>,
+    #[cfg(feature = "watch")]
+    watch: bool,
+}
+
+impl I18n {
+    pub fn new(dir: impl Into<PathBuf>, locales: Vec<Locale>) -> Self {
+        let default = locales
+            .first()
+            .map(|l| l.code.clone())
+            .unwrap_or_else(|| "en".into());
+        Self {
+            dir: dir.into(),
+            locales,
+            fallback: default.clone(),
+            default,
+            path_prefix: true,
+            cookie_name: None,
+            set_locale_cookie: false,
+            enable_all_json: false,
+            plural_fn: None,
+            missing_handler: None,
+            #[cfg(feature = "watch")]
+            watch: false,
+        }
+    }
+
+    pub fn default_locale(mut self, code: impl Into<String>) -> Self {
+        self.default = code.into();
+        self
+    }
+
+    pub fn fallback(mut self, code: impl Into<String>) -> Self {
+        self.fallback = code.into();
+        self
+    }
+
+    pub fn path_prefix(mut self, enabled: bool) -> Self {
+        self.path_prefix = enabled;
+        self
+    }
+
+    /// Enable cookie locale resolution (requires feature `cookie` + `CookieLayer`).
+    #[cfg(feature = "cookie")]
+    pub fn cookie(mut self, name: impl Into<String>) -> Self {
+        self.cookie_name = Some(name.into());
+        self
+    }
+
+    #[cfg(feature = "cookie")]
+    pub fn set_locale_cookie(mut self, yes: bool) -> Self {
+        self.set_locale_cookie = yes;
+        self
+    }
+
+    pub fn enable_all_json(mut self, yes: bool) -> Self {
+        self.enable_all_json = yes;
+        self
+    }
+
+    pub fn plural_fn<F>(mut self, f: F) -> Self
+    where
+        F: Fn(&str, i64, &str, &[&str]) -> String + Send + Sync + 'static,
+    {
+        self.plural_fn = Some(Arc::new(f));
+        self
+    }
+
+    pub fn missing_handler<F>(mut self, f: F) -> Self
+    where
+        F: Fn(&str, &str, &str) + Send + Sync + 'static,
+    {
+        self.missing_handler = Some(Arc::new(f));
+        self
+    }
+
+    #[cfg(feature = "watch")]
+    pub fn watch(mut self, yes: bool) -> Self {
+        self.watch = yes;
+        self
+    }
+}
+
+impl Plugin for I18n {
+    fn install(self, app: &mut App) {
+        let store = match load_store(&self.dir, &self.locales) {
+            Ok(s) => s,
+            Err(err) => {
+                let msg = err.to_string();
+                app.on_startup(move |_| async move {
+                    Err(Error::Internal(format!("i18n: {msg}")))
+                });
+                return;
+            }
+        };
+
+        let swap = Arc::new(ArcSwap::from_pointee(store));
+        let state = I18nState {
+            store: Arc::clone(&swap),
+            fallback: self.fallback.clone().into_boxed_str(),
+            plural_fn: self.plural_fn.clone(),
+            missing_handler: self.missing_handler.clone(),
+            missing_keys: Arc::new(Mutex::new(HashSet::new())),
+        };
+        app.state(state);
+        app.state(AllJsonEnabled(self.enable_all_json));
+
+        let codes: Vec<String> = self.locales.iter().map(|l| l.code.clone()).collect();
+        let mut resolve_opts = ResolveOptions::new(codes, self.default.clone());
+        resolve_opts.path_prefix = self.path_prefix;
+        resolve_opts.cookie_name = self.cookie_name.clone();
+
+        #[cfg(feature = "cookie")]
+        if self.cookie_name.is_some() {
+            app.on_startup(|state| async move {
+                if state.get::<ruvo_cookies::CookieLayerPresent>().is_none() {
+                    return Err(Error::Internal(
+                        "i18n: cookie locale resolve enabled but CookieLayer is not installed — \
+                         call CookieLayer.install before I18n"
+                            .into(),
+                    ));
+                }
+                Ok(())
+            });
+        }
+
+        let set_cookie = self.set_locale_cookie;
+        let cookie_name = self.cookie_name.clone();
+        let opts = resolve_opts;
+
+        app.use_middleware(named(
+            "i18n",
+            with_state(
+                (opts, set_cookie, cookie_name),
+                |cfg, mut req, next| async move {
+                    let (opts, set_cookie, cookie_name) = &*cfg;
+                    let resolved = resolve_server_locale(&req, opts);
+                    req.set(LocaleCode(resolved.code.clone().into_boxed_str()));
+                    let mut res = next(req).await;
+                    res = res
+                        .header("content-language", &resolved.code)
+                        .header("vary", "accept-language");
+                    #[cfg(feature = "cookie")]
+                    if *set_cookie {
+                        if let Some(name) = cookie_name {
+                            use ruvo_cookies::{CookieBuilder, ResponseCookieExt};
+                            res = res.cookie(
+                                CookieBuilder::build((name.clone(), resolved.code.clone()))
+                                    .path("/")
+                                    .build(),
+                            );
+                        }
+                    }
+                    #[cfg(not(feature = "cookie"))]
+                    let _ = (set_cookie, cookie_name);
+                    res
+                },
+            ),
+        ));
+
+        // Exact paths before param routes.
+        app.get("/_i18n/locales.json", routes::locales_json);
+        app.get("/_i18n/all.json", routes::all_json);
+        app.get("/_i18n/_missing.json", routes::missing_json);
+        // `/_i18n/en.json` and `/_i18n/en/blog.json` (`.json` stripped in handler).
+        app.get("/_i18n/:locale", routes::locale_or_scope_json);
+        app.get("/_i18n/:locale/:scope", routes::locale_or_scope_json);
+
+        #[cfg(feature = "watch")]
+        if self.watch {
+            spawn_watch(self.dir.clone(), self.locales.clone(), Arc::clone(&swap));
+        }
+    }
+}
+
+#[cfg(feature = "watch")]
+fn spawn_watch(dir: PathBuf, locales: Vec<Locale>, swap: Arc<ArcSwap<Store>>) {
+    use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+    std::thread::spawn(move || {
+        let (tx, rx) = std::sync::mpsc::channel();
+        let mut watcher = match RecommendedWatcher::new(tx, notify::Config::default()) {
+            Ok(w) => w,
+            Err(err) => {
+                tracing::error!("i18n watch: {err}");
+                return;
+            }
+        };
+        if let Err(err) = watcher.watch(&dir, RecursiveMode::Recursive) {
+            tracing::error!("i18n watch: {err}");
+            return;
+        }
+        for _ in rx {
+            match load_store(&dir, &locales) {
+                Ok(store) => {
+                    tracing::info!("i18n: reloaded translations");
+                    swap.store(Arc::new(store));
+                }
+                Err(err) => tracing::error!("i18n reload failed: {err}"),
+            }
+        }
+    });
+}

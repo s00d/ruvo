@@ -1,0 +1,18 @@
+[package]
+name = "ruvo-compress"
+version = "0.4.0"
+edition = "2021"
+description = "Response compression plugin for Ruvo"
+license = "MIT"
+publish = false
+
+[dependencies]
+ruvo-core = { path = "../../crates/ruvo-core" }
+async-compression = { version = "0.4", features = ["tokio", "gzip", "brotli"] }
+bytes = "1"
+http = "1"
+tokio = { version = "1", features = ["io-util"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+http-body-util = "0.1"

@@ -1,0 +1,105 @@
+use crate::error::{Error, IntoResponse, Result};
+use crate::request::Request;
+use crate::response::Response;
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
+
+pub type BoxFuture<T> = Pin<Box<dyn Future<Output = T> + Send>>;
+
+/// Type-erased async handler: `Request -> Response` (middleware / outer chain).
+pub type Handler = Arc<dyn Fn(Request) -> BoxFuture<Response> + Send + Sync>;
+
+/// Leaf handler that may return [`Error`] for `error_handler`.
+pub type FallibleHandler =
+    Arc<dyn Fn(Request) -> BoxFuture<Result<Response>> + Send + Sync>;
+
+pub(crate) type ErrorHandlerFn =
+    Arc<dyn Fn(Error) -> BoxFuture<Response> + Send + Sync>;
+
+/// Convert async functions into a [`FallibleHandler`].
+pub trait IntoHandler<T> {
+    fn into_handler(self) -> FallibleHandler;
+}
+
+pub struct ResponseMarker;
+pub struct ResultMarker;
+
+impl<F, Fut, R> IntoHandler<(ResponseMarker,)> for F
+where
+    F: Fn(Request) -> Fut + Send + Sync + 'static,
+    Fut: Future<Output = R> + Send + 'static,
+    R: IntoResponse,
+{
+    fn into_handler(self) -> FallibleHandler {
+        Arc::new(move |req| {
+            let fut = self(req);
+            Box::pin(async move { Ok(fut.await.into_response()) })
+        })
+    }
+}
+
+impl<F, Fut, R> IntoHandler<(ResultMarker,)> for F
+where
+    F: Fn(Request) -> Fut + Send + Sync + 'static,
+    Fut: Future<Output = Result<R>> + Send + 'static,
+    R: IntoResponse,
+{
+    fn into_handler(self) -> FallibleHandler {
+        Arc::new(move |req| {
+            let fut = self(req);
+            Box::pin(async move { Ok(fut.await?.into_response()) })
+        })
+    }
+}
+
+/// Marker for handler errors that map via [`IntoResponse`] (not `error_handler`).
+///
+/// Implement for plugin error newtypes (e.g. validation). Do **not** implement for [`Error`].
+pub trait ErrorResponse: IntoResponse {}
+
+/// `Result<T, E>` where `E: ErrorResponse`.
+pub struct FallibleResponseMarker;
+
+impl<F, Fut, R, E> IntoHandler<(FallibleResponseMarker, E)> for F
+where
+    F: Fn(Request) -> Fut + Send + Sync + 'static,
+    Fut: Future<Output = std::result::Result<R, E>> + Send + 'static,
+    R: IntoResponse,
+    E: ErrorResponse + 'static,
+{
+    fn into_handler(self) -> FallibleHandler {
+        Arc::new(move |req| {
+            let fut = self(req);
+            Box::pin(async move {
+                match fut.await {
+                    Ok(r) => Ok(r.into_response()),
+                    Err(e) => Ok(e.into_response()),
+                }
+            })
+        })
+    }
+}
+
+impl IntoHandler<()> for FallibleHandler {
+    fn into_handler(self) -> FallibleHandler {
+        self
+    }
+}
+
+/// Wrap a fallible leaf so middleware chains see a plain [`Handler`].
+pub fn wrap_errors(handler: FallibleHandler, eh: Option<ErrorHandlerFn>) -> Handler {
+    Arc::new(move |req| {
+        let handler = Arc::clone(&handler);
+        let eh = eh.clone();
+        Box::pin(async move {
+            match handler(req).await {
+                Ok(res) => res,
+                Err(err) => match &eh {
+                    Some(hook) => hook(err).await,
+                    None => err.into_response(),
+                },
+            }
+        })
+    })
+}

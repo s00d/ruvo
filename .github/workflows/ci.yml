@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Test
+        run: cargo test --workspace --all-features
+      - name: Test no-default-features
+        run: cargo test --workspace --no-default-features
+      - name: Clippy
+        run: cargo clippy --workspace --all-features --all-targets -- -D warnings
+      - name: Examples
+        run: cargo build --examples --all-features
+      - name: Core alone
+        run: cargo test -p ruvo-core
+      - name: Plugin crates
+        run: cargo check -p ruvo-static -p ruvo-cors -p ruvo-cookies -p ruvo-session -p ruvo-compress -p ruvo-rate-limit -p ruvo-templates -p ruvo-multipart -p ruvo-cli -p ruvo-vld -p ruvo-openapi
+
+  public-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - name: Install cargo-public-api
+        run: cargo install cargo-public-api --locked
+      - name: Check public API baselines
+        run: bash scripts/check-public-api.sh

@@ -1,0 +1,16 @@
+[package]
+name = "ruvo-openapi"
+version = "0.4.0"
+edition = "2021"
+description = "OpenAPI document generation and /docs UI for Ruvo"
+license = "MIT"
+publish = false
+
+[dependencies]
+ruvo-core = { path = "../../crates/ruvo-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+http = "1"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

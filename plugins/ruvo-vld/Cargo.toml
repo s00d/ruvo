@@ -1,0 +1,23 @@
+[package]
+name = "ruvo-vld"
+version = "0.4.0"
+edition = "2021"
+description = "vld validation integration for Ruvo"
+license = "MIT"
+publish = false
+
+[features]
+default = []
+openapi = ["dep:ruvo-openapi", "vld/openapi"]
+
+[dependencies]
+ruvo-core = { path = "../../crates/ruvo-core" }
+ruvo-openapi = { path = "../ruvo-openapi", optional = true }
+vld = { version = "0.4", features = ["serialize"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bytes = "1"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+http = "1"

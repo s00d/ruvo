@@ -1,0 +1,17 @@
+[package]
+name = "ruvo-session"
+version = "0.4.0"
+edition = "2021"
+description = "Session plugin for Ruvo"
+license = "MIT"
+publish = false
+
+[dependencies]
+ruvo-core = { path = "../../crates/ruvo-core" }
+ruvo-cookies = { path = "../ruvo-cookies" }
+cookie = { version = "0.18", features = ["percent-encode"] }
+getrandom = "0.2"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+http = "1"
