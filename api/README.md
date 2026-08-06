@@ -6,8 +6,8 @@ Text dumps from [`cargo-public-api`](https://github.com/cargo-public-api/cargo-p
 |------|---------|----------|
 | `ruvo-core.txt` | `ruvo-core` | default (+ `tls` when TLS API changes) |
 | `ruvo.txt` | `ruvo` facade re-exports | default |
-| `ruvo-store.txt` | `ruvo-store` | `unstable-store` |
-| `ruvo-tasks-store.txt` | `ruvo-tasks-store` | `unstable-store` |
+| `ruvo-store.txt` | `ruvo-store` | `unstable-store` (compat flag; trait is stable) |
+| `ruvo-tasks-store.txt` | `ruvo-tasks-store` | `unstable-store` (compat flag; trait is stable) |
 
 Regenerate:
 

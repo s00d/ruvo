@@ -1,3 +1,4 @@
 [workspace]
 resolver = "2"
 members = ["crates/*", "plugins/*"]
+exclude = ["ci-smoke-min", "ci-smoke-api", "ci-smoke-web", ".ci-gen"]

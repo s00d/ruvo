@@ -1,6 +1,6 @@
 //! Simple chat over WebSocket at `/ws`.
 
-use ruvo::{Bind, init_tracing, App, Html, Result, Ws, WsRouteExt};
+use ruvo::{App, Html, Result, Ws, WsRouteExt};
 use ruvo_ws::Message;
 
 const CHAT_HTML: &str = r#"<!doctype html>
@@ -44,7 +44,6 @@ const CHAT_HTML: &str = r#"<!doctype html>
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
 
     let mut app = App::new();
     app.install(Ws::new());
@@ -64,5 +63,5 @@ async fn main() -> Result<()> {
     });
 
     tracing::info!("chat on http://127.0.0.1:3000/ (ws /ws)");
-    app.bind(Bind::Port(3000)).serve().await
+    app.listen(3000).await
 }

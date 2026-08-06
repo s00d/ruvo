@@ -1,11 +1,10 @@
 //! MiniJinja templates with ambient i18n `t(...)`.
 
-use ruvo::{Bind, init_tracing, App, I18n, I18nExt, Locale, Plugin, RenderExt, Request, Result, Templates, template_fn};
+use ruvo::{App, I18n, I18nExt, Locale, Plugin, RenderExt, Request, Result, Templates, template_fn};
 use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
 
     let locales_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/i18n_locales");
     let views_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/templates_i18n/views");
@@ -33,6 +32,5 @@ async fn main() -> Result<()> {
         )
         .unwrap_or_else(|e| e.into_response())
     });
-
-    app.bind(Bind::Port(3006)).serve().await
+    app.listen(3006).await
 }

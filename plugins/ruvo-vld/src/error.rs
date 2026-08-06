@@ -1,7 +1,6 @@
 use ruvo_core::extend::ErrorResponse;
-use ruvo_core::{Error, IntoResponse, Json, Response};
+use ruvo_core::{Error, IntoResponse, Json, Request, Response};
 use serde::Serialize;
-use serde_json::json;
 use vld::error::{IssueCode, PathSegment, ValidationIssue, VldError};
 
 /// Newtype so Ruvo can implement [`IntoResponse`] (orphan rule).
@@ -48,6 +47,70 @@ impl ValidationError {
             422
         }
     }
+
+    /// Build a response, optionally using Accept / flash (feature `flash`).
+    pub fn respond(self, req: &Request) -> Response {
+        #[cfg(feature = "flash")]
+        {
+            if wants_html(req) {
+                return self.respond_flash(req);
+            }
+        }
+        let _ = req;
+        self.into_response()
+    }
+
+    #[cfg(feature = "flash")]
+    fn respond_flash(self, req: &Request) -> Response {
+        use ruvo_session::SessionExt;
+        use serde_json::json;
+
+        let session = req.session();
+        let mut errors = serde_json::Map::new();
+        for issue in &self.0.issues {
+            let path = format_path(&issue.path);
+            let key = if path.is_empty() {
+                "_form".into()
+            } else {
+                path
+            };
+            errors.insert(key, json!(issue.message));
+        }
+        session.set(
+            "flash_errors",
+            serde_json::to_string(&errors).unwrap_or_else(|_| "{}".into()),
+        );
+        // old input: best-effort from query for GET-like; body already consumed for POST
+        let mut old = serde_json::Map::new();
+        for (k, v) in &req.query {
+            old.insert(k.clone(), json!(v));
+        }
+        for (k, v) in &req.params {
+            old.insert(k.clone(), json!(v));
+        }
+        session.set(
+            "flash_old",
+            serde_json::to_string(&old).unwrap_or_else(|_| "{}".into()),
+        );
+
+        let location = req
+            .header("referer")
+            .filter(|s| !s.is_empty())
+            .unwrap_or("/")
+            .to_string();
+        Response::empty()
+            .status(302)
+            .header("location", location)
+    }
+}
+
+#[cfg(feature = "flash")]
+fn wants_html(req: &Request) -> bool {
+    let accept = req.header("accept").unwrap_or("*/*");
+    if accept.contains("application/json") && !accept.contains("text/html") {
+        return false;
+    }
+    accept.contains("text/html")
 }
 
 fn is_client_syntax(issue: &ValidationIssue) -> bool {
@@ -58,7 +121,7 @@ fn is_client_syntax(issue: &ValidationIssue) -> bool {
     }
 }
 
-fn format_path(path: &[PathSegment]) -> String {
+pub(crate) fn format_path(path: &[PathSegment]) -> String {
     let mut out = String::new();
     for (i, seg) in path.iter().enumerate() {
         if i > 0 {
@@ -72,7 +135,7 @@ fn format_path(path: &[PathSegment]) -> String {
     out
 }
 
-fn issue_code_slug(code: &IssueCode) -> String {
+pub(crate) fn issue_code_slug(code: &IssueCode) -> String {
     match code {
         IssueCode::InvalidType { .. } => "invalid_type".into(),
         IssueCode::TooSmall { .. } => "too_small".into(),
@@ -120,8 +183,13 @@ impl IntoResponse for ValidationError {
             error: "validation_failed",
             issues,
         };
-        let _ = json!({ "error": "validation_failed" });
         Json(body).into_response().status(status)
+    }
+}
+
+impl From<ValidationError> for Error {
+    fn from(err: ValidationError) -> Self {
+        Error::Response(Box::new(err.into_response()))
     }
 }
 

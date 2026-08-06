@@ -1,0 +1,9 @@
+[package]
+name = "{{name}}"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ruvo = { path = "../crates/ruvo", features = ["cli"] }
+ruvo-env = { path = "../plugins/ruvo-env" }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

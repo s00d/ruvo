@@ -11,8 +11,10 @@ use crate::handler::{ErrorHandlerFn, FallibleHandler, IntoHandler};
 use crate::middleware::{IntoMwEntry, MwEntry};
 use crate::raw::{IntoRawHandler, RawHandler};
 use crate::response::Response;
+use crate::route_value::{MetaMap, RouteValue};
 use crate::state::TypeMap;
 use http::Method;
+use std::collections::HashMap;
 use std::sync::Arc;
 
 struct RouteDef {
@@ -21,7 +23,7 @@ struct RouteDef {
     path: String,
     middleware: Vec<MwEntry>,
     handler: FallibleHandler,
-    meta: TypeMap,
+    meta: MetaMap,
 }
 
 struct RawDef {
@@ -36,7 +38,7 @@ pub enum RouteEntry {
         method: Method,
         path: String,
         /// Typed metadata bag (one value per `TypeId`; last insert wins).
-        meta: TypeMap,
+        meta: MetaMap,
     },
     Raw {
         path: String,
@@ -47,13 +49,23 @@ pub enum RouteEntry {
 #[derive(Clone)]
 pub struct RouteTable(pub Vec<RouteEntry>);
 
+/// Catchers registered on one router, later scoped by mount prefix.
+pub(crate) type CatcherMap = HashMap<u16, FallibleHandler>;
+
 /// Express-style router. Return from modules and `app.mount("/blog", routes())`.
 pub struct Router {
     routes: Vec<RouteDef>,
     raw_routes: Vec<RawDef>,
     middleware: Vec<MwEntry>,
     pub(crate) state: TypeMap,
-    not_found: Option<FallibleHandler>,
+    /// Router/app-level [`RouteValue`] defaults (overridden per route).
+    pub(crate) defaults: MetaMap,
+    /// After `get`/`post`/…, [`Self::with`] writes to the last route.
+    last_was_route: bool,
+    /// Status → handler for this router's mount prefix (empty = app root).
+    catchers: CatcherMap,
+    /// Catchers collected from mounted children: `(prefix, status → handler)`.
+    scoped_catchers: Vec<(String, CatcherMap)>,
     error_handler: Option<ErrorHandlerFn>,
 }
 
@@ -64,7 +76,10 @@ impl Router {
             raw_routes: Vec::new(),
             middleware: Vec::new(),
             state: TypeMap::new(),
-            not_found: None,
+            defaults: MetaMap::new(),
+            last_was_route: false,
+            catchers: HashMap::new(),
+            scoped_catchers: Vec::new(),
             error_handler: None,
         }
     }
@@ -93,7 +108,23 @@ impl Router {
                 .collect(),
             middleware: self.middleware.clone(),
             state: self.state.clone_map(),
-            not_found: self.not_found.as_ref().map(Arc::clone),
+            defaults: self.defaults.clone(),
+            last_was_route: self.last_was_route,
+            catchers: self
+                .catchers
+                .iter()
+                .map(|(s, h)| (*s, Arc::clone(h)))
+                .collect(),
+            scoped_catchers: self
+                .scoped_catchers
+                .iter()
+                .map(|(p, m)| {
+                    (
+                        p.clone(),
+                        m.iter().map(|(s, h)| (*s, Arc::clone(h))).collect(),
+                    )
+                })
+                .collect(),
             error_handler: self.error_handler.as_ref().map(Arc::clone),
         }
     }
@@ -102,19 +133,62 @@ impl Router {
     where
         M: IntoMwEntry,
     {
+        self.last_was_route = false;
         self.middleware.push(mw.into_mw_entry());
         self
     }
 
-    /// Attach typed metadata to the last registered HTTP route.
+    /// Attach a [`RouteValue`] to the last HTTP route, or to router defaults.
     ///
-    /// Same `T` twice keeps the **last** value. Different types never conflict.
-    pub fn route_meta<T>(&mut self, value: T) -> &mut Self
+    /// After `get`/`post`/…, writes to that route. Otherwise writes to router/app
+    /// defaults (inherited by routes: route > router > app).
+    pub fn with<T: RouteValue>(&mut self, value: T) -> &mut Self {
+        if self.last_was_route {
+            if let Some(r) = self.routes.last_mut() {
+                r.meta.insert(value);
+            }
+        } else {
+            self.defaults.insert(value);
+        }
+        self
+    }
+
+    /// Update a [`RouteValue`] on the last route (insert `T::default()` if missing).
+    pub fn with_update<T, F>(&mut self, f: F) -> &mut Self
     where
-        T: Send + Sync + 'static,
+        T: RouteValue + Clone + Default,
+        F: FnOnce(&mut T),
     {
         if let Some(r) = self.routes.last_mut() {
+            let mut v = r.meta.get::<T>().map(|a| (*a).clone()).unwrap_or_default();
+            f(&mut v);
+            r.meta.insert(v);
+            self.last_was_route = true;
+        }
+        self
+    }
+
+    /// Push middleware onto the last registered HTTP route only.
+    pub fn route_middleware<M>(&mut self, mw: M) -> &mut Self
+    where
+        M: IntoMwEntry,
+    {
+        if let Some(r) = self.routes.last_mut() {
+            let entry = mw.into_mw_entry();
+            if !r.middleware.iter().any(|e| e.name == entry.name) {
+                r.middleware.push(entry);
+            }
+        }
+        self
+    }
+
+    /// Alias for [`Self::with`] (writes to the last route when present).
+    pub fn route_meta<T: RouteValue>(&mut self, value: T) -> &mut Self {
+        if let Some(r) = self.routes.last_mut() {
             r.meta.insert(value);
+            self.last_was_route = true;
+        } else {
+            self.defaults.insert(value);
         }
         self
     }
@@ -188,8 +262,12 @@ impl Router {
             let mut mw = child_mw.clone();
             mw.extend(route.middleware);
             route.middleware = mw;
+            let mut meta = other.defaults.clone();
+            meta.extend(route.meta);
+            route.meta = meta;
             self.routes.push(route);
         }
+        self.last_was_route = false;
 
         for mut raw in other.raw_routes {
             raw.path = join_paths(&prefix, &raw.path);
@@ -198,8 +276,12 @@ impl Router {
 
         self.state.extend(other.state);
 
-        if self.not_found.is_none() {
-            self.not_found = other.not_found;
+        if !other.catchers.is_empty() {
+            self.scoped_catchers.push((prefix.clone(), other.catchers));
+        }
+        for (child_prefix, map) in other.scoped_catchers {
+            self.scoped_catchers
+                .push((join_paths(&prefix, &child_prefix), map));
         }
         if self.error_handler.is_none() {
             self.error_handler = other.error_handler;
@@ -218,12 +300,25 @@ impl Router {
         self.mount(prefix, child)
     }
 
+    /// Register a catcher for HTTP `status` in this router's mount scope.
+    ///
+    /// At dispatch, the catcher with the **longest** matching prefix wins.
+    /// `not_found` is sugar for `catch(404, …)`.
+    pub fn catch<H, T>(&mut self, status: u16, handler: H) -> &mut Self
+    where
+        H: IntoHandler<T>,
+    {
+        self.last_was_route = false;
+        self.catchers.insert(status, handler.into_handler());
+        self
+    }
+
+    /// Sugar for [`Self::catch`]`(404, handler)`.
     pub fn not_found<H, T>(&mut self, handler: H) -> &mut Self
     where
         H: IntoHandler<T>,
     {
-        self.not_found = Some(handler.into_handler());
-        self
+        self.catch(404, handler)
     }
 
     /// Called when a leaf handler returns `Err`. Request is already consumed.
@@ -240,10 +335,12 @@ impl Router {
     pub fn route_entries(&self) -> Vec<RouteEntry> {
         let mut out = Vec::new();
         for r in &self.routes {
+            let mut meta = self.defaults.clone();
+            meta.extend(r.meta.clone());
             out.push(RouteEntry::Http {
                 method: r.method.clone(),
                 path: r.path.clone(),
-                meta: r.meta.clone(),
+                meta,
             });
         }
         for r in &self.raw_routes {
@@ -254,21 +351,76 @@ impl Router {
         out
     }
 
+    /// Run [`RouteValue::check`] for router defaults and every route.
+    pub(crate) fn check_route_values(
+        &self,
+        state: &crate::state::StateMap,
+        installed_plugins: &std::collections::HashSet<&'static str>,
+    ) -> Result<(), String> {
+        use crate::route_value::BuildCtx;
+        let ctx = BuildCtx {
+            state,
+            installed_plugins,
+            route_path: "<defaults>",
+            route_method: None,
+        };
+        self.defaults.check_all(&ctx)?;
+        for r in &self.routes {
+            let mut meta = self.defaults.clone();
+            meta.extend(r.meta.clone());
+            let ctx = BuildCtx {
+                state,
+                installed_plugins,
+                route_path: &r.path,
+                route_method: Some(&r.method),
+            };
+            meta.check_all(&ctx)?;
+        }
+        Ok(())
+    }
+
     /// Human-readable route map (method, path, middleware names).
     pub fn explain(&self) -> String {
         use std::fmt::Write;
         let mut out = String::new();
         let _ = writeln!(out, "root_middleware: [{}]", format_mw_names(&self.middleware));
-        let _ = writeln!(out, "not_found: {}", self.not_found.is_some());
         let _ = writeln!(out, "error_handler: {}", self.error_handler.is_some());
+        let mut catch_lines = Vec::new();
+        if !self.catchers.is_empty() {
+            let mut codes: Vec<_> = self.catchers.keys().copied().collect();
+            codes.sort_unstable();
+            catch_lines.push(format!("/ → {:?}", codes));
+        }
+        for (prefix, map) in &self.scoped_catchers {
+            let mut codes: Vec<_> = map.keys().copied().collect();
+            codes.sort_unstable();
+            let p = if prefix.is_empty() { "/" } else { prefix.as_str() };
+            catch_lines.push(format!("{p} → {:?}", codes));
+        }
+        let _ = writeln!(out, "catchers: [{}]", catch_lines.join("; "));
+        if !self.defaults.is_empty() {
+            let _ = writeln!(out, "defaults: [{}]", self.defaults.labels().join(" "));
+        }
         for r in &self.routes {
-            let _ = writeln!(
-                out,
-                "{} {} mw=[{}]",
-                r.method,
-                r.path,
-                format_mw_names(&r.middleware)
-            );
+            let labels = r.meta.labels();
+            if labels.is_empty() {
+                let _ = writeln!(
+                    out,
+                    "{} {} mw=[{}]",
+                    r.method,
+                    r.path,
+                    format_mw_names(&r.middleware)
+                );
+            } else {
+                let _ = writeln!(
+                    out,
+                    "{} {} mw=[{}] {}",
+                    r.method,
+                    r.path,
+                    format_mw_names(&r.middleware),
+                    labels.join(" ")
+                );
+            }
         }
         for r in &self.raw_routes {
             let _ = writeln!(out, "RAW {} mw=[]", r.path);
@@ -286,8 +438,9 @@ impl Router {
             // Module stack is baked at `mount`, not here — keeps root mw outer-only.
             middleware: Vec::new(),
             handler: handler.into_handler(),
-            meta: TypeMap::new(),
+            meta: MetaMap::new(),
         });
+        self.last_was_route = true;
         self
     }
 }

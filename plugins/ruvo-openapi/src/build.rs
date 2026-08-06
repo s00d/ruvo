@@ -1,4 +1,5 @@
 use crate::doc::Doc;
+use crate::validate_meta::OpenApiValidate;
 use http::Method;
 use ruvo_core::extend::{to_brace_path, RouteEntry, RouteTable};
 use serde_json::{json, Map, Value};
@@ -63,8 +64,9 @@ pub fn build_document(table: &RouteTable, opts: &BuildOptions<'_>) -> Value {
             continue;
         };
 
+        let oav = meta.get::<OpenApiValidate>();
         let method_key = method_name(method);
-        let operation = operation_object(path, doc.as_deref());
+        let operation = operation_object(path, doc.as_deref(), oav.as_deref());
 
         paths
             .entry(brace)
@@ -110,14 +112,26 @@ fn method_name(method: &Method) -> &'static str {
     }
 }
 
-fn operation_object(express_path: &str, doc: Option<&Doc>) -> Value {
+fn operation_object(
+    express_path: &str,
+    doc: Option<&Doc>,
+    oav: Option<&OpenApiValidate>,
+) -> Value {
     let mut op = Map::new();
     let mut parameters = Vec::new();
 
-    // Path params from template.
+    let params_schema = oav
+        .and_then(|o| o.params.as_ref())
+        .or_else(|| doc.and_then(|d| d.params_schema.as_ref()));
+    let query_schema = oav
+        .and_then(|o| o.query.as_ref())
+        .or_else(|| doc.and_then(|d| d.query_schema.as_ref()));
+    let body_schema = oav
+        .and_then(|o| o.body.as_ref())
+        .or_else(|| doc.and_then(|d| d.body_schema.as_ref()));
+
     for name in path_param_names(express_path) {
-        let schema = doc
-            .and_then(|d| d.params_schema.as_ref())
+        let schema = params_schema
             .and_then(|s| property_schema(s, &name))
             .unwrap_or_else(|| json!({ "type": "string" }));
         parameters.push(json!({
@@ -128,45 +142,43 @@ fn operation_object(express_path: &str, doc: Option<&Doc>) -> Value {
         }));
     }
 
-    if let Some(doc) = doc {
-        if let Some(query) = &doc.query_schema {
-            if let Some(props) = query.get("properties").and_then(|p| p.as_object()) {
-                let required = query
-                    .get("required")
-                    .and_then(|r| r.as_array())
-                    .cloned()
-                    .unwrap_or_default();
-                for (name, schema) in props {
-                    let req = required.iter().any(|v| v.as_str() == Some(name.as_str()));
-                    parameters.push(json!({
-                        "name": name,
-                        "in": "query",
-                        "required": req,
-                        "schema": schema,
-                    }));
-                }
-            } else {
+    if let Some(query) = query_schema {
+        if let Some(props) = query.get("properties").and_then(|p| p.as_object()) {
+            let required = query
+                .get("required")
+                .and_then(|r| r.as_array())
+                .cloned()
+                .unwrap_or_default();
+            for (name, schema) in props {
+                let req = required.iter().any(|v| v.as_str() == Some(name.as_str()));
                 parameters.push(json!({
-                    "name": "query",
+                    "name": name,
                     "in": "query",
-                    "schema": query,
+                    "required": req,
+                    "schema": schema,
                 }));
             }
+        } else {
+            parameters.push(json!({
+                "name": "query",
+                "in": "query",
+                "schema": query,
+            }));
         }
+    }
 
-        if let Some(body) = &doc.body_schema {
-            op.insert(
-                "requestBody".into(),
-                json!({
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": body
-                        }
+    if let Some(body) = body_schema {
+        op.insert(
+            "requestBody".into(),
+            json!({
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": body
                     }
-                }),
-            );
-        }
+                }
+            }),
+        );
     }
 
     if !parameters.is_empty() {
@@ -188,24 +200,21 @@ fn operation_object(express_path: &str, doc: Option<&Doc>) -> Value {
                 }),
             );
         }
-        if doc.body_schema.is_some() || doc.query_schema.is_some() {
-            responses.entry("422".to_string()).or_insert_with(|| {
-                json!({
-                    "description": "Validation failed",
-                    "content": {
-                        "application/json": {
-                            "schema": validation_error_schema()
-                        }
+    }
+    if body_schema.is_some() || query_schema.is_some() {
+        responses.entry("422".to_string()).or_insert_with(|| {
+            json!({
+                "description": "Validation failed",
+                "content": {
+                    "application/json": {
+                        "schema": validation_error_schema()
                     }
-                })
-            });
-        }
+                }
+            })
+        });
     }
     if responses.is_empty() {
-        responses.insert(
-            "200".into(),
-            json!({ "description": "OK" }),
-        );
+        responses.insert("200".into(), json!({ "description": "OK" }));
     }
     op.insert("responses".into(), Value::Object(responses));
 

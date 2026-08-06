@@ -23,12 +23,14 @@ http = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_urlencoded = "0.7"
+toml = { version = "0.8", default-features = false, features = ["parse"] }
 bytes = "1"
 mime_guess = "2"
 thiserror = "2"
 percent-encoding = "2"
 matchit = "0.9"
 tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 socket2 = { version = "0.5", optional = true, features = ["all"] }
 rustls = { version = "0.23", optional = true, default-features = false, features = ["ring", "std", "tls12", "logging"] }

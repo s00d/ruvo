@@ -20,6 +20,30 @@ pub enum Bind {
     Uds(PathBuf),
 }
 
+impl From<u16> for Bind {
+    fn from(port: u16) -> Self {
+        Self::Port(port)
+    }
+}
+
+impl From<SocketAddr> for Bind {
+    fn from(addr: SocketAddr) -> Self {
+        Self::Addr(addr)
+    }
+}
+
+impl From<&str> for Bind {
+    fn from(s: &str) -> Self {
+        Self::Str(s.to_string())
+    }
+}
+
+impl From<String> for Bind {
+    fn from(s: String) -> Self {
+        Self::Str(s)
+    }
+}
+
 /// HTTP protocol mode for a bound app.
 ///
 /// `all` is preparation for HTTP/3 discovery: TCP responses advertise `Alt-Svc`.
@@ -60,15 +84,22 @@ pub struct BoundApp {
 
 impl App {
     /// Choose a bind target; call [`.serve()`](BoundApp::serve) (optionally after [`.shutdown(...)`](BoundApp::shutdown)).
-    pub fn bind(self, target: Bind) -> BoundApp {
+    pub fn bind(self, target: impl Into<Bind>) -> BoundApp {
         BoundApp {
             app: self,
-            bind: target,
+            bind: target.into(),
             http: Http::h1_h2(),
             shutdown: None,
             #[cfg(feature = "tls")]
             tls: None,
         }
+    }
+
+    /// Bind `0.0.0.0:port`, run CLI if present, otherwise serve.
+    ///
+    /// Prefer this for the common case; use [`Self::bind`] for TLS, UDS, or custom addresses.
+    pub async fn listen(self, port: u16) -> Result<()> {
+        self.bind(port).run().await
     }
 }
 
@@ -79,6 +110,22 @@ impl BoundApp {
     pub fn http(mut self, http: Http) -> Self {
         self.http = http;
         self
+    }
+
+    /// Enable `SO_REUSEPORT` on TCP bind (requires feature `listen-reuseport`).
+    pub fn reuseport(mut self, enabled: bool) -> Self {
+        self.app.reuseport = enabled;
+        self
+    }
+
+    /// CLI commands then [`Self::serve`]. Same built-in commands as [`App::run`].
+    pub async fn run(self) -> Result<()> {
+        crate::tracing_init::ensure_tracing();
+        let args: Vec<String> = std::env::args().skip(1).collect();
+        if self.app.run_cli_command(&args).await? {
+            return Ok(());
+        }
+        self.serve_inner().await
     }
 
     fn apply_http_mode(mut app: App, http: Http, port: Option<u16>) -> App {
@@ -117,8 +164,14 @@ impl BoundApp {
         Ok(self)
     }
 
-    #[cfg(feature = "tls")]
+    /// Serve HTTP (no CLI). Prefer [`Self::run`] from `main` so `check`/`routes` work.
     pub async fn serve(self) -> Result<()> {
+        crate::tracing_init::ensure_tracing();
+        self.serve_inner().await
+    }
+
+    #[cfg(feature = "tls")]
+    async fn serve_inner(self) -> Result<()> {
         let http = self.http;
         match self.bind {
             Bind::Port(port) => {
@@ -155,7 +208,7 @@ impl BoundApp {
     }
 
     #[cfg(not(feature = "tls"))]
-    pub async fn serve(self) -> Result<()> {
+    async fn serve_inner(self) -> Result<()> {
         let http = self.http;
         match self.bind {
             Bind::Port(port) => {

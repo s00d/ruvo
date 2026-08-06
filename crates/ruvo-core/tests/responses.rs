@@ -7,6 +7,24 @@ use std::convert::Infallible;
 use std::panic::AssertUnwindSafe;
 
 #[tokio::test]
+async fn error_handler_skips_response_errors() {
+    let mut app = App::new();
+    app.error_handler(|_err| async move {
+        Response::text("should-not-run").status(418)
+    });
+    app.get(
+        "/custom",
+        (|_r: Request| async {
+            Err::<Response, Error>(Error::custom(409, "nope"))
+        })
+        .into_handler(),
+    );
+    let res = app.handle_request(Method::GET, "/custom", "").await;
+    assert_eq!(res.status_code().as_u16(), 409);
+    assert_eq!(res.body_bytes(), Some(b"nope".as_slice()));
+}
+
+#[tokio::test]
 async fn error_handler_catches_handler_err() {
     let mut app = App::new();
     app.error_handler(|err| async move {

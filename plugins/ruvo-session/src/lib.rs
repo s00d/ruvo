@@ -2,8 +2,8 @@
 
 use bytes::Bytes;
 use cookie::{Cookie, SameSite};
-use ruvo_cookies::{CookieLayer, Cookies, ResponseCookieExt};
-use ruvo_core::extend::named;
+use ruvo_cookies::{CookieLayerPresent, Cookies, ResponseCookieExt};
+use ruvo_core::extend::{named, Needs};
 use ruvo_core::{with_state, App, Plugin};
 use ruvo_store::{namespace, KvStore, MemoryStore as KvMemory};
 use std::collections::HashMap;
@@ -116,8 +116,32 @@ impl SessionLayer {
 }
 
 impl Plugin for SessionLayer {
+    fn id(&self) -> &'static str {
+        "session"
+    }
+
+    fn requires(&self) -> &'static [&'static str] {
+        &["cookies"]
+    }
+
     fn install(self, app: &mut App) {
-        CookieLayer.install(app);
+        let store_check = Arc::clone(&self.store);
+        app.register_check("kv", move |_state| {
+            let store = Arc::clone(&store_check);
+            async move {
+                let probe = "__ruvo_check__";
+                store
+                    .set(probe, Bytes::from_static(b"1"), Some(Duration::from_secs(5)))
+                    .await;
+                let got = store.get(probe).await;
+                store.remove(probe).await;
+                if got.is_none() {
+                    return Err(ruvo_core::Error::Internal("kv store probe failed".into()));
+                }
+                Ok(())
+            }
+        });
+
         app.use_middleware(named(
             "session",
             with_state(self, |layer, mut req, next| {
@@ -159,6 +183,7 @@ impl Plugin for SessionLayer {
                 }
             }),
         ));
+        app.with(Needs::<CookieLayerPresent>::new());
     }
 }
 

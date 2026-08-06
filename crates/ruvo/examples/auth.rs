@@ -1,5 +1,5 @@
 //! Auth demo: extensions + cookie sessions.
-use ruvo::{Bind, init_tracing, memory_sessions, App, Html, Redirect, Request, Result, SessionExt};
+use ruvo::{memory_sessions, App, Html, Redirect, Request, Result, SessionExt};
 
 fn render(template: &str, vars: &[(&str, &str)]) -> String {
     let mut out = template.to_string();
@@ -11,15 +11,13 @@ fn render(template: &str, vars: &[(&str, &str)]) -> String {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
     let mut app = App::new();
     app.install(memory_sessions());
 
     app.get("/", home);
     app.post("/login", login);
     app.post("/logout", logout);
-
-    app.bind(Bind::Port(3003)).serve().await
+    app.listen(3003).await
 }
 
 async fn home(req: Request) -> Html<String> {

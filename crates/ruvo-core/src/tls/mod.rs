@@ -30,6 +30,10 @@ impl ResolvesServerCert for ReloadingResolver {
 }
 
 /// TLS settings for [`crate::BoundApp::tls`].
+///
+/// [`Clone`] shares the hot-reload resolver: HTTPS and QUIC must use clones of
+/// the same `Tls` so `reload()` updates both.
+#[derive(Clone)]
 pub struct Tls {
     cert_path: PathBuf,
     key_path: PathBuf,
@@ -266,7 +270,7 @@ pub(crate) async fn spawn_http_redirect(
     }
 }
 
-#[cfg(all(test, feature = "tls"))]
+#[cfg(all(test, feature = "dev-tls"))]
 mod tests {
     use super::*;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -276,16 +280,9 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let cert = dir.path().join("cert.pem");
         let key = dir.path().join("key.pem");
-        #[cfg(feature = "dev-tls")]
-        {
-            let ck = rcgen::generate_simple_self_signed(vec!["localhost".into()]).unwrap();
-            std::fs::write(&cert, ck.cert.pem()).unwrap();
-            std::fs::write(&key, ck.key_pair.serialize_pem()).unwrap();
-        }
-        #[cfg(not(feature = "dev-tls"))]
-        {
-            panic!("dev-tls feature required for tls unit tests");
-        }
+        let ck = rcgen::generate_simple_self_signed(vec!["localhost".into()]).unwrap();
+        std::fs::write(&cert, ck.cert.pem()).unwrap();
+        std::fs::write(&key, ck.key_pair.serialize_pem()).unwrap();
         (dir, cert, key)
     }
 

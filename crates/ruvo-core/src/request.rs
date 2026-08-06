@@ -181,6 +181,11 @@ impl Request {
             .map_err(|e| Error::BadRequest(format!("query error: {e}")))
     }
 
+    /// Raw query string without leading `?` (for nested parsers like `serde_qs`).
+    pub fn raw_query(&self) -> &str {
+        &self.raw_query
+    }
+
     pub fn query(&self, key: &str) -> Option<&str> {
         self.query.get(key).map(|s| s.as_str())
     }
@@ -255,10 +260,23 @@ impl Request {
     async fn collect_body(&mut self, by: &'static str) -> Result<Bytes> {
         match std::mem::replace(&mut self.body, ReqBody::Taken { by }) {
             ReqBody::Bytes(b) => {
+                if b.len() > self.body_limit {
+                    return Err(Error::PayloadTooLarge);
+                }
                 self.body = ReqBody::Bytes(b.clone());
                 Ok(b)
             }
             ReqBody::Stream(stream) => {
+                if let Some(cl) = self
+                    .headers
+                    .get(http::header::CONTENT_LENGTH)
+                    .and_then(|v| v.to_str().ok())
+                    .and_then(|s| s.parse::<usize>().ok())
+                {
+                    if cl > self.body_limit {
+                        return Err(Error::PayloadTooLarge);
+                    }
+                }
                 let collected = collect_limited(stream, self.body_limit).await?;
                 self.body = ReqBody::Bytes(collected.clone());
                 Ok(collected)
@@ -280,6 +298,15 @@ impl Request {
                 std::any::type_name::<T>()
             )
         })
+    }
+
+    /// Like [`Self::state`], but returns `T::default()` when unset.
+    pub fn state_or_default<T>(&self) -> Arc<T>
+    where
+        T: Default + Send + Sync + 'static,
+    {
+        self.try_state()
+            .unwrap_or_else(|| Arc::new(T::default()))
     }
 
     pub fn try_state<T>(&self) -> Option<Arc<T>>
@@ -315,13 +342,19 @@ impl Request {
         Some(crate::upgrade::take_upgrade(pending).map_err(|b| *b))
     }
 
-    /// Typed metadata from the matched route (`route_meta` / plugin helpers).
+    /// Typed metadata from the matched route ([`crate::Router::with`] / plugin helpers).
     pub fn route_meta<T>(&self) -> Option<Arc<T>>
     where
-        T: Send + Sync + 'static,
+        T: crate::route_value::RouteValue,
     {
         self.get::<crate::state::MatchedMeta>()
             .and_then(|m| m.0.get::<T>())
+    }
+
+    /// Remaining request budget from [`crate::limits::Deadline`], if set.
+    pub fn deadline_remaining(&self) -> Option<std::time::Duration> {
+        self.get::<crate::limits::Deadline>()
+            .map(|d| d.remaining())
     }
 }
 

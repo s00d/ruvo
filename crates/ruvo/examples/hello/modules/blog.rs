@@ -1,4 +1,4 @@
-use ruvo::{Error, Request, Response, Router};
+use ruvo::{Error, Json, Next, Request, Response, Router, Text};
 
 pub fn routes() -> Router {
     let mut r = Router::new();
@@ -13,8 +13,8 @@ pub fn routes() -> Router {
     r
 }
 
-async fn list_posts(_req: Request) -> Response {
-    Response::json(&serde_json::json!({
+async fn list_posts(_req: Request) -> Json<serde_json::Value> {
+    Json(serde_json::json!({
         "posts": [
             { "id": 1, "title": "Hello Ruvo" },
             { "id": 2, "title": "Express vibes" }
@@ -22,15 +22,15 @@ async fn list_posts(_req: Request) -> Response {
     }))
 }
 
-async fn show_post(req: Request) -> Response {
+async fn show_post(req: Request) -> Json<serde_json::Value> {
     let id = req.param("id").unwrap_or("?");
-    Response::json(&serde_json::json!({
+    Json(serde_json::json!({
         "id": id,
         "title": format!("Post {id}")
     }))
 }
 
-async fn admin_only(mut req: Request, next: ruvo::Next) -> Response {
+async fn admin_only(mut req: Request, next: Next) -> Response {
     match req.header("x-admin") {
         Some("1") => {
             req.set(AdminUser {
@@ -46,10 +46,10 @@ struct AdminUser {
     name: String,
 }
 
-async fn dashboard(req: Request) -> Response {
+async fn dashboard(req: Request) -> Text<String> {
     let name = req
         .get::<AdminUser>()
         .map(|u| u.name.as_str())
         .unwrap_or("?");
-    Response::text(format!("admin dashboard ({name})"))
+    Text(format!("admin dashboard ({name})"))
 }

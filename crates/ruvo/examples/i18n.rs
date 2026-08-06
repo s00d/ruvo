@@ -1,15 +1,11 @@
 //! i18n example: SSR page + JSON catalog for the frontend.
 
-use ruvo::{Bind, 
-    mount_localized, App, I18n, I18nExt, I18nRouteExt, Locale, PrefixMode, Plugin, Request,
-    Response,
-};
+use ruvo::prelude::*;
+use ruvo::{mount_localized, I18n, I18nExt, I18nRouteExt, Locale, PrefixMode, Plugin};
 use std::path::PathBuf;
 
 #[tokio::main]
-async fn main() -> ruvo::Result<()> {
-    ruvo::init_tracing();
-
+async fn main() -> Result<()> {
     let locales_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("examples/i18n_locales");
     let locales = vec![
         Locale::new("en").with_name("English"),
@@ -34,7 +30,7 @@ async fn main() -> ruvo::Result<()> {
                 title = req.t("title"),
                 about = req.t("nav.about"),
             );
-            Response::html(html)
+            Html(html)
         })
         .i18n_scope("blog");
     });
@@ -44,5 +40,5 @@ async fn main() -> ruvo::Result<()> {
         .and_then(|s| s.parse().ok())
         .unwrap_or(3000);
     println!("i18n example on http://127.0.0.1:{port} (try /en/ and /de/)");
-    app.bind(Bind::Port(port)).serve().await
+    app.listen(port).await
 }

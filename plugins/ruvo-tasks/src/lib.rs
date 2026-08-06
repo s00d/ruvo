@@ -3,8 +3,8 @@
 mod worker;
 
 use bytes::Bytes;
-use ruvo_core::{App, Plugin, Request, Response};
-use ruvo_tasks_store::{EnqueueOpts, Task, TaskStore};
+use ruvo_core::{App, Error, IntoResponse, Plugin, Request, Response};
+use ruvo_tasks_store::{EnqueueOpts, Task, TaskError, TaskStore};
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -17,6 +17,32 @@ pub(crate) type HandlerMap = Arc<HashMap<String, Handler>>;
 type Guard = Arc<dyn Fn(&Request) -> bool + Send + Sync>;
 
 use worker::TaskWorker;
+
+/// HTTP-facing wrapper around [`TaskError`] that maps into [`Error::Response`].
+#[derive(Debug)]
+pub struct HttpTaskError(pub TaskError);
+
+impl From<TaskError> for HttpTaskError {
+    fn from(err: TaskError) -> Self {
+        Self(err)
+    }
+}
+
+impl IntoResponse for HttpTaskError {
+    fn into_response(self) -> Response {
+        match self.0 {
+            TaskError::NotFound => Response::text("not found").status(404),
+            TaskError::Duplicate => Response::text("duplicate").status(409),
+            TaskError::Msg(msg) => Response::text(msg).status(500),
+        }
+    }
+}
+
+impl From<HttpTaskError> for Error {
+    fn from(err: HttpTaskError) -> Self {
+        Error::Response(Box::new(err.into_response()))
+    }
+}
 
 /// Registers handlers and runs a worker as [`BackgroundService`].
 pub struct Tasks {
@@ -104,6 +130,20 @@ impl Plugin for Tasks {
     fn install(self, app: &mut App) {
         let store = self.store.clone();
         app.state(TaskBackend(store.clone()));
+
+        let store_check = store.clone();
+        let queue_check = self.queue.clone();
+        app.register_check("tasks", move |_state| {
+            let store = Arc::clone(&store_check);
+            let queue = queue_check.clone();
+            async move {
+                store
+                    .list(&queue, 1)
+                    .await
+                    .map_err(|e| ruvo_core::Error::Internal(format!("tasks store: {e}")))?;
+                Ok(())
+            }
+        });
 
         if self.exposed {
             let Some(guard) = self.http_guard.clone() else {

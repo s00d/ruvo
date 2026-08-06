@@ -238,17 +238,19 @@ impl Plugin for MiniJinjaTemplatesBuilder {
         let globals = Arc::new(self.globals);
         let per_request = Arc::new(self.per_request);
         let dir = self.dir;
+        let check_dir = dir.clone();
         let engine = if self.autoreload {
             let dir_str = dir
                 .to_str()
                 .unwrap_or_else(|| panic!("template dir path must be valid UTF-8: {dir:?}"))
                 .to_string();
+            let dir_load = dir.clone();
             let reloader = AutoReloader::new(move |notifier| {
                 notifier.watch_path(dir_str.as_str(), true);
                 let mut env = Environment::new();
                 env.set_auto_escape_callback(|_| AutoEscape::Html);
                 env.set_debug(cfg!(debug_assertions));
-                env.set_loader(path_loader(&dir));
+                env.set_loader(path_loader(&dir_load));
                 Ok(env)
             });
             MiniJinjaTemplatesEngine::Reload(Arc::new(reloader))
@@ -265,7 +267,51 @@ impl Plugin for MiniJinjaTemplatesBuilder {
             globals,
             per_request,
         });
+
+        app.register_check("templates", move |_state| {
+            let dir = check_dir.clone();
+            async move { compile_templates_in_dir(&dir) }
+        });
     }
+}
+
+fn compile_templates_in_dir(dir: &Path) -> Result<()> {
+    let mut env = Environment::new();
+    env.set_auto_escape_callback(|_| AutoEscape::Html);
+    env.set_loader(path_loader(dir));
+    for entry in walkdir_templates(dir)? {
+        let rel = entry
+            .strip_prefix(dir)
+            .unwrap_or(entry.as_path())
+            .to_string_lossy()
+            .replace('\\', "/");
+        env.get_template(&rel)
+            .map_err(|e| Error::Internal(format!("template `{rel}`: {e}")))?;
+    }
+    Ok(())
+}
+
+fn walkdir_templates(dir: &Path) -> Result<Vec<PathBuf>> {
+    let mut out = Vec::new();
+    fn walk(dir: &Path, out: &mut Vec<PathBuf>) -> Result<()> {
+        let rd = std::fs::read_dir(dir).map_err(|e| Error::Internal(format!("templates: {e}")))?;
+        for ent in rd {
+            let ent = ent.map_err(|e| Error::Internal(format!("templates: {e}")))?;
+            let path = ent.path();
+            if path.is_dir() {
+                walk(&path, out)?;
+            } else if path
+                .extension()
+                .and_then(|e| e.to_str())
+                .is_some_and(|e| matches!(e, "html" | "j2" | "jinja" | "jinja2" | "txt"))
+            {
+                out.push(path);
+            }
+        }
+        Ok(())
+    }
+    walk(dir, &mut out)?;
+    Ok(out)
 }
 
 /// Extension that renders a template into a HTML response.

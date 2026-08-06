@@ -1,4 +1,5 @@
-use ruvo_core::{App, Bind, Http, Request, Response};
+use ruvo_core::{App,  Http, Request, Response};
+use ruvo_core::extend::Bind;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 

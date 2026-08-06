@@ -26,6 +26,10 @@ impl Cookies {
 pub struct CookieLayer;
 
 impl Plugin for CookieLayer {
+    fn id(&self) -> &'static str {
+        "cookies"
+    }
+
     fn install(self, app: &mut App) {
         app.state(CookieLayerPresent);
         app.use_middleware(named("cookies", |mut req: Request, next: Next| async move {

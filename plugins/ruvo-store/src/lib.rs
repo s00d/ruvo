@@ -1,8 +1,8 @@
 //! Byte-oriented key-value store for Ruvo plugins (sessions, cache, CSRF, rate-limit).
 //!
-//! **Unstable** until a Postgres backend freezes the trait.
-//! Enable feature `unstable-store` (default). **Not in ruvo-core** — wire with
-//! `app.state(store.namespace("sess"))`.
+//! Trait is stable (memory + file + postgres + sqlite backends).
+//! Enable feature `unstable-store` for backwards-compatible feature flags.
+//! **Not in ruvo-core** — wire with `app.state(store.namespace("sess"))`.
 
 #[cfg(feature = "store-crypto")]
 mod encrypted;

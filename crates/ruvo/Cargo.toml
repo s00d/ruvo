@@ -9,6 +9,7 @@ license = "MIT"
 default = ["static-files"]
 static-files = ["dep:ruvo-static"]
 cors = ["dep:ruvo-cors"]
+shield = ["dep:ruvo-shield"]
 cookies = ["dep:ruvo-cookies"]
 compress = ["dep:ruvo-compress"]
 rate-limit = ["dep:ruvo-rate-limit"]
@@ -23,8 +24,12 @@ i18n-cookie = ["i18n", "cookies", "ruvo-i18n/cookie"]
 ws = ["dep:ruvo-ws"]
 store = ["dep:ruvo-store"]
 store-file = ["store", "dep:ruvo-store-file"]
+store-postgres = ["store", "db", "dep:ruvo-store-postgres"]
+store-sqlite = ["store", "dep:ruvo-store-sqlite"]
 tasks-store = ["dep:ruvo-tasks-store"]
 tasks-file = ["tasks-store", "dep:ruvo-tasks-file"]
+tasks-postgres = ["tasks-store", "db", "dep:ruvo-tasks-postgres"]
+tasks-sqlite = ["tasks-store", "dep:ruvo-tasks-sqlite"]
 tasks = ["tasks-store", "dep:ruvo-tasks"]
 udp = ["dep:ruvo-udp"]
 quic-udp = ["dep:ruvo-quic"]
@@ -35,12 +40,20 @@ dev-tls = ["tls", "ruvo-core/dev-tls"]
 store-crypto = ["store", "ruvo-store/store-crypto"]
 # vld + DocVldExt sugar (needs both plugins + vld openapi schemas)
 vld-openapi = ["vld", "openapi", "ruvo-vld/openapi", "vld/openapi"]
+vld-flash = ["vld", "session", "ruvo-vld/flash"]
+vld-flash-templates = ["vld-flash", "templates", "ruvo-vld/flash-templates"]
+vld-form = ["vld", "multipart", "ruvo-vld/form"]
+vld-i18n = ["vld", "i18n", "ruvo-vld/i18n"]
+http-client = ["dep:ruvo-http"]
+db = ["dep:ruvo-db", "dep:sea-orm"]
 testing = ["ruvo-core/testing"]
 
 [dependencies]
 ruvo-core = { path = "../ruvo-core" }
+sea-orm = { version = "2.0", optional = true, default-features = false, features = ["sqlx-postgres", "runtime-tokio-rustls"] }
 ruvo-static = { path = "../../plugins/ruvo-static", optional = true }
 ruvo-cors = { path = "../../plugins/ruvo-cors", optional = true }
+ruvo-shield = { path = "../../plugins/ruvo-shield", optional = true }
 ruvo-cookies = { path = "../../plugins/ruvo-cookies", optional = true }
 ruvo-session = { path = "../../plugins/ruvo-session", optional = true }
 ruvo-compress = { path = "../../plugins/ruvo-compress", optional = true }
@@ -54,13 +67,19 @@ ruvo-i18n = { path = "../../plugins/ruvo-i18n", optional = true }
 ruvo-ws = { path = "../../plugins/ruvo-ws", optional = true }
 ruvo-store = { path = "../../plugins/ruvo-store", optional = true }
 ruvo-store-file = { path = "../../plugins/ruvo-store-file", optional = true }
+ruvo-store-postgres = { path = "../../plugins/ruvo-store-postgres", optional = true }
+ruvo-store-sqlite = { path = "../../plugins/ruvo-store-sqlite", optional = true }
 ruvo-tasks-store = { path = "../../plugins/ruvo-tasks-store", optional = true }
 ruvo-tasks-file = { path = "../../plugins/ruvo-tasks-file", optional = true }
+ruvo-tasks-postgres = { path = "../../plugins/ruvo-tasks-postgres", optional = true }
+ruvo-tasks-sqlite = { path = "../../plugins/ruvo-tasks-sqlite", optional = true }
 ruvo-tasks = { path = "../../plugins/ruvo-tasks", optional = true }
 ruvo-udp = { path = "../../plugins/ruvo-udp", optional = true }
 ruvo-quic = { path = "../../plugins/ruvo-quic", optional = true }
 ruvo-sse = { path = "../../plugins/ruvo-sse", optional = true }
 ruvo-env = { path = "../../plugins/ruvo-env", optional = true }
+ruvo-db = { path = "../../plugins/ruvo-db", optional = true }
+ruvo-http = { path = "../../plugins/ruvo-http", optional = true }
 vld = { version = "0.4", optional = true, default-features = true, features = ["serialize"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -78,6 +97,10 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 tracing = "0.1"
+sea-orm = { version = "2.0", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
+sea-orm-migration = { version = "2.0", features = ["sqlx-postgres", "runtime-tokio-rustls"] }
+async-trait = "0.1"
+ruvo-env = { path = "../../plugins/ruvo-env" }
 
 [[example]]
 name = "hello"
@@ -123,8 +146,18 @@ path = "examples/api_validated.rs"
 required-features = ["vld-openapi"]
 
 [[example]]
+name = "crud"
+path = "examples/crud/main.rs"
+required-features = ["db", "vld", "env"]
+
+[[example]]
 name = "sse"
 path = "examples/sse.rs"
+
+[[example]]
+name = "sse_feed"
+path = "examples/sse_feed.rs"
+required-features = ["sse-feed"]
 
 [[example]]
 name = "i18n"
@@ -168,4 +201,4 @@ required-features = ["dev-tls", "cors"]
 [[example]]
 name = "quic_udp_echo"
 path = "examples/quic_udp_echo.rs"
-required-features = ["quic-udp"]
+required-features = ["quic-udp", "tls"]

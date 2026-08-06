@@ -12,7 +12,7 @@ struct MyCors {
 }
 
 impl Plugin for MyCors {
-    fn install(self, app: &mut App) {
+    fn install(self, app: &mut ruvo_core::App) {
         app.use_middleware(with_leaked(self, |cors, req, next| async move {
             if req.method == http::Method::OPTIONS {
                 return Response::empty()
@@ -32,7 +32,7 @@ struct MyStatic {
 }
 
 impl Plugin for MyStatic {
-    fn install(self, app: &mut App) {
+    fn install(self, app: &mut ruvo_core::App) {
         let dir = Arc::new(self.dir);
         let mount = self.mount;
         let wildcard = format!("{mount}/*path");
@@ -108,4 +108,36 @@ async fn nested_router_static_sees_module_middleware() {
         .handle_request(http::Method::GET, "/admin/files/secret.txt", "")
         .await;
     assert_eq!(res.status_code().as_u16(), 401);
+}
+
+/// Core must stay domain-free: no ORM / sqlx / vld in `ruvo-core` itself.
+///
+/// Catches the mirror of "plugin written outside" — editing the core *for* a plugin.
+#[test]
+fn core_has_no_domain_deps() {
+    let manifest = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../ruvo-core/Cargo.toml"
+    ));
+    for banned in ["sea-orm", "sqlx", "vld"] {
+        assert!(
+            !manifest.contains(banned),
+            "ruvo-core/Cargo.toml must not mention `{banned}` (domain leak into core)"
+        );
+    }
+
+    let status = std::process::Command::new(env!("CARGO"))
+        .args([
+            "check",
+            "-p",
+            "ruvo-core",
+            "--manifest-path",
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../Cargo.toml"),
+        ])
+        .status()
+        .expect("spawn cargo check -p ruvo-core");
+    assert!(
+        status.success(),
+        "ruvo-core must build with its default (non-domain) features"
+    );
 }

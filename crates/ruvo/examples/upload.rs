@@ -1,9 +1,8 @@
 //! Multipart file upload demo.
-use ruvo::{Bind, init_tracing, App, Json, MultipartExt, Request, Result};
+use ruvo::{App, Json, MultipartExt, Request, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
     let mut app = App::new();
     app.max_body_size(8 * 1024 * 1024);
 
@@ -11,8 +10,7 @@ async fn main() -> Result<()> {
         ruvo::Response::html(include_str!("upload/views/index.html"))
     });
     app.post("/upload", upload);
-
-    app.bind(Bind::Port(3004)).serve().await
+    app.listen(3004).await
 }
 
 async fn upload(mut req: Request) -> Result<Json<serde_json::Value>> {

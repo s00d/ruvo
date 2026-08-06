@@ -78,3 +78,47 @@ async fn payload_too_large_maps_413() {
     let res = Error::PayloadTooLarge.into_response();
     assert_eq!(res.status_code().as_u16(), 413);
 }
+
+#[tokio::test]
+async fn max_body_route_overrides_app() {
+    use ruvo_core::extend::MaxBody;
+
+    let mut app = App::new();
+    app.max_body_size(10);
+    app.post("/small", |mut req: Request| async move {
+        let _ = req.body().await?;
+        Ok::<_, Error>(Response::text("ok"))
+    });
+    app.post("/upload", |mut req: Request| async move {
+        let b = req.body().await?;
+        Ok::<_, Error>(Response::text(format!("{}", b.len())))
+    })
+    .with(MaxBody::bytes(100));
+
+    let big = "x".repeat(50);
+    let deny = app
+        .handle(
+            Request::builder()
+                .method(Method::POST)
+                .path("/small")
+                .body(big.clone())
+                .body_limit(10)
+                .build(),
+        )
+        .await;
+    assert_eq!(deny.status_code().as_u16(), 413);
+
+    let allow = app
+        .handle(
+            Request::builder()
+                .method(Method::POST)
+                .path("/upload")
+                .body(big)
+                .body_limit(10)
+                .build(),
+        )
+        .await;
+    assert_eq!(allow.status_code().as_u16(), 200);
+    assert_eq!(allow.body_bytes(), Some(b"50".as_slice()));
+}
+

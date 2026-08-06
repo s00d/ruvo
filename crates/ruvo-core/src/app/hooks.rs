@@ -9,7 +9,6 @@ use crate::state::StateMap;
 use crate::upgrade::UpgradeBudget;
 use bytes::Bytes;
 use http::Method;
-use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
@@ -22,9 +21,7 @@ pub(crate) type ShutdownHook = Arc<dyn Fn() -> BoxFuture<()> + Send + Sync>;
 #[derive(Clone)]
 pub struct Server {
     pub(crate) inner: Arc<AppInner>,
-    #[allow(dead_code)] // used under feature `testing`
     pub(crate) startups: Vec<StartupHook>,
-    #[allow(dead_code)]
     pub(crate) shutdowns: Vec<ShutdownHook>,
 }
 
@@ -80,9 +77,22 @@ pub(crate) struct ListenParts {
 }
 
 impl App {
+    fn validate_plugin_requires(&self) -> Result<()> {
+        if let Some((plugin, dep)) = self.missing_plugin_requires.first().copied() {
+            return Err(crate::error::Error::Internal(format!(
+                "plugin `{plugin}` requires `{dep}`; install `{dep}` before `{plugin}`"
+            )));
+        }
+        Ok(())
+    }
+
     /// Compile routes once into a [`Server`]. Prefer this over repeated [`App::handle`].
     pub fn build(&self) -> Result<Server> {
+        self.validate_plugin_requires()?;
         let router = self.router.clone_for_compile();
+        router
+            .check_route_values(&self.router.state, &self.installed_plugins)
+            .map_err(crate::error::Error::Internal)?;
         let explain = router.explain();
         let route_count = router.route_entries().len();
         let compiled = Arc::new(compile_router(router)?);
@@ -99,11 +109,15 @@ impl App {
     }
 
     pub(crate) fn into_listen_parts(mut self) -> Result<ListenParts> {
+        self.validate_plugin_requires()?;
         let services = std::mem::take(&mut self.services);
         let startups = self.on_startup.clone();
         let shutdowns = self.on_shutdown.clone();
         let start_services = !self.cli_mode || self.service_in_cli;
 
+        self.router
+            .check_route_values(&self.router.state, &self.installed_plugins)
+            .map_err(crate::error::Error::Internal)?;
         let explain = self.router.explain();
         let route_count = self.router.route_entries().len();
         let settings = AppSettings::from(&self);
@@ -132,7 +146,6 @@ pub(crate) struct AppSettings {
     pub idle_timeout: Duration,
     pub drain_timeout: Duration,
     pub keep_alive: bool,
-    pub listen_addr: Option<SocketAddr>,
     pub trust_proxy: bool,
     pub reuseport: bool,
     pub hsts: bool,
@@ -153,7 +166,6 @@ impl From<&App> for AppSettings {
             idle_timeout: app.idle_timeout,
             drain_timeout: app.drain_timeout,
             keep_alive: app.keep_alive,
-            listen_addr: app.listen_addr,
             trust_proxy: app.trust_proxy,
             reuseport: app.reuseport,
             hsts: app.hsts,
@@ -175,7 +187,6 @@ pub(crate) struct AppInner {
     pub(crate) idle_timeout: Duration,
     pub(crate) drain_timeout: Duration,
     pub(crate) keep_alive: bool,
-    pub(crate) listen_addr: Option<SocketAddr>,
     pub(crate) trust_proxy: bool,
     pub(crate) reuseport: bool,
     pub(crate) hsts: bool,
@@ -204,7 +215,6 @@ impl AppInner {
             idle_timeout: s.idle_timeout,
             drain_timeout: s.drain_timeout,
             keep_alive: s.keep_alive,
-            listen_addr: s.listen_addr,
             trust_proxy: s.trust_proxy,
             reuseport: s.reuseport,
             hsts: s.hsts,

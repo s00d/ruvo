@@ -1,11 +1,10 @@
 //! SSE feed with channel + Last-Event-ID + keep-alive.
 
-use ruvo::{Bind, init_tracing, sse_response, App, Request, Result, SseChannel, SseEvent};
+use ruvo::{sse_response, App, Request, Result, SseChannel, SseEvent};
 use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
     let channel = SseChannel::new(64);
     let pub_ch = channel.clone();
     tokio::spawn(async move {
@@ -34,5 +33,5 @@ es.onmessage=e=>{o.textContent+=e.data+'\n'};
         )
     });
     tracing::info!("SSE feed http://127.0.0.1:3012/events");
-    app.bind(Bind::Port(3012)).serve().await
+    app.listen(3012).await
 }

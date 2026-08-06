@@ -1,4 +1,4 @@
-use ruvo::{Request, Response, Router};
+use ruvo::{Html, Json, Request, Router};
 use serde::Deserialize;
 
 pub fn routes() -> Router {
@@ -8,8 +8,8 @@ pub fn routes() -> Router {
     r
 }
 
-async fn login_form(_req: Request) -> Response {
-    Response::html(include_str!("../views/login.html"))
+async fn login_form(_req: Request) -> Html<&'static str> {
+    Html(include_str!("../views/login.html"))
 }
 
 #[derive(Deserialize)]
@@ -17,7 +17,7 @@ struct LoginBody {
     user: Option<String>,
 }
 
-async fn login_submit(mut req: Request) -> Response {
+async fn login_submit(mut req: Request) -> Json<serde_json::Value> {
     let user = match req.content_type() {
         Some(ct) if ct.contains("json") => req
             .json::<LoginBody>()
@@ -32,7 +32,7 @@ async fn login_submit(mut req: Request) -> Response {
     }
     .unwrap_or_else(|| "anonymous".into());
 
-    Response::json(&serde_json::json!({
+    Json(serde_json::json!({
         "message": format!("welcome, {user}"),
     }))
 }

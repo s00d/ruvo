@@ -1,17 +1,21 @@
 //! QUIC datagrams echo via BackgroundService.
+//!
+//! One [`Tls`] is cloned into QUIC and HTTPS so `reload()` updates both.
 
 use bytes::Bytes;
-use ruvo::{init_tracing, App, Bind, QuicDatagramService, Result};
+use ruvo::prelude::*;
+use ruvo::{QuicDatagramService, Tls};
 use std::net::SocketAddr;
 use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
     let mut app = App::new();
 
     // Certificate files must exist in current working directory.
     // Example: `cert.pem` + `key.pem`.
+    let tls = Tls::from_pem("cert.pem", "key.pem")?;
+
     let quic_bind: SocketAddr = "127.0.0.1:9999".parse().unwrap();
     let alpn = vec![b"ruvo-quic-udp".to_vec()];
 
@@ -21,18 +25,14 @@ async fn main() -> Result<()> {
         })
     });
 
-    let svc = QuicDatagramService::from_pem(
+    app.service(QuicDatagramService::from_tls(
         quic_bind,
-        "cert.pem",
-        "key.pem",
+        tls.clone(),
         alpn,
         true,
         handler,
-    )?;
+    )?);
+    app.get("/", || async { "quic datagrams echo" });
 
-    app.service(svc);
-    app.get("/", |_| async { ruvo::Response::text("quic datagrams echo") });
-
-    app.bind(Bind::Port(3011)).serve().await
+    app.bind("0.0.0.0:3011").tls(tls)?.run().await
 }
-

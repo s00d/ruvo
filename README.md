@@ -3,31 +3,26 @@
 Express-like HTTP for Rust: `App`, `Router`, middleware, plugins — Hyper stays hidden.
 
 ```rust
-use ruvo::{logger, App, Bind, Cors, Request, Response, Result, Router};
+use ruvo::prelude::*;
+use ruvo::Cors;
 
-fn blog_routes() -> Router {
-    let mut r = Router::new();
-    r.get("/", list);
-    r.get("/:slug", show);
-    r
-}
+mod modules;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let mut app = App::new();
     app.use_middleware(logger());
     app.install(Cors::new().origin("*"));
-    app.mount("/blog", blog_routes());
-    app.install(Static::new("/assets", "./public"));
-    app.install(|app| {
-        app.get("/health", |_| async { Response::json(&serde_json::json!({ "ok": true })) });
-    });
-    app.raw("/raw", |req| async move { /* hyper Response */ todo!() });
-    app.bind(Bind::Port(3000)).serve().await
+
+    app.get("/", home);
+    app.get("/health", || async { Json(serde_json::json!({ "ok": true })) });
+    modules::register(&mut app);
+
+    app.listen(3000).await
 }
 ```
 
-Use `ruvo::{App, Cors, Static, ...}` as needed.
+Fifteen lines, no `unwrap`, no `map_err`, no bind enums in app code. Use `ruvo::{Cors, Static, …}` for plugins; everyday names come from [`prelude`](crates/ruvo/src/lib.rs).
 
 ## Extension model
 
@@ -40,94 +35,69 @@ app.install(|app| { app.get("/x", handler); });
 app.install(Cors::new());
 ```
 
-Modules return a `Router` and get mounted:
+Modules register themselves:
 
 ```rust
-app.mount("/blog", blog::routes());
+mod modules;
+modules::register(&mut app);
 ```
 
-Middleware can stash typed values:
+## Features (plugins)
 
-```rust
-req.set(user);
-let user = req.get::<User>();
-```
+Enable crates from the workspace:
 
-Plugin / middleware state — use helpers instead of cloning fields into futures:
-
-```rust
-use ruvo::with_state;
-
-app.use_middleware(with_state(cfg, |cfg, req, next| async move {
-    // cfg: Arc<_> — one clone hidden inside with_state
-    next(req).await
-}));
-```
-
-Immutable process-lifetime config: `with_leaked(cfg, |cfg, req, next| …)` (`&'static`, no Arc).
-
-Raw escape hatch (WebSocket/SSE/custom):
-
-```rust
-app.raw("/ws", |req: hyper::Request<Incoming>| async move { ... });
-```
-
-## Features
-
-| Feature | What |
-|---------|------|
-| `static-files` (default) | `Static` plugin (`Response::file` / `file_in` are always core) |
-| `cors` | `Cors` plugin |
-| `cookies` | `CookieLayer` + `Cookies` + `ResponseCookieExt` (`.cookie()`) |
-| `compress` | gzip/br response compression |
-| `rate-limit` | in-memory sliding window by IP |
-| `session` | `SessionLayer` + `MemoryStore` (`KvStore`) |
-| `templates` | `TemplateEngine` + MiniJinja |
-| `multipart` | `MultipartExt` (`multer`) for file uploads |
-| `cli` | `ServerArgs` / `ListenArgs` (`clap`) for local `--host`/`--port`/`--log-level` |
-
-## Examples
+| Feature | Crate |
+|---------|--------|
+| `static-files` (default) | `ruvo-static` |
+| `cors` | `ruvo-cors` |
+| `cookies` | `ruvo-cookies` |
+| `session` | `ruvo-session` (+ cookies) |
+| `compress` | `ruvo-compress` |
+| `rate-limit` | `ruvo-rate-limit` |
+| `templates` | `ruvo-templates` |
+| `multipart` | `ruvo-multipart` |
+| `cli` | `ruvo-cli` |
+| `vld` | `ruvo-vld` + `vld` |
+| `openapi` | `ruvo-openapi` |
+| `vld-openapi` | vld + openapi sugar |
+| `i18n` | `ruvo-i18n` |
+| `ws` | `ruvo-ws` |
+| `store` / `store-file` / `store-postgres` / `store-sqlite` | KV (`ruvo::store::{Memory,File,…}`) |
+| `tasks` / `tasks-file` / `tasks-postgres` / `tasks-sqlite` | queue (`ruvo::tasks::{Memory,File,…}`) |
+| `db` | SeaORM Postgres (`ruvo-db`) |
+| `udp` / `quic-udp` / `sse-feed` / `env` / `tls` | networking / TLS |
 
 ```bash
-cargo run -p ruvo --example hello --all-features
-cargo run -p ruvo --example rest-api
-cargo run -p ruvo --example upload --features multipart
-cargo run -p ruvo --example cli --features cli -- --port 3010 --log-level debug
+cargo add ruvo --features cors,session
 ```
 
-Call `ruvo::init_tracing()` in `main` (or `ServerArgs::init_tracing()` with `cli`) so listening banners and `logger()` middleware are visible.
+## Logging
 
-## Core ideas
+`listen` / `run` / `serve` install a default `tracing` subscriber via `try_init` (`RUST_LOG`, default `ruvo=info`). Set `RUVO_LOG=off` to skip. With `cli`, `ServerArgs::init_tracing()` still applies `--log-level`.
 
-- `App` is `DerefMut<Router>` — one routing API
-- Routes compile once at `serve` (`matchit` + precomputed middleware chains)
-- Response body: bytes or stream; `take_body` / `collect` / `set_body` for middleware
-- Lifecycle: `on_startup` (fail → no listen) / `on_shutdown` after connection drain
-- Introspection: `app.route_entries()`
-- `req.state::<T>()` panics if missing; `try_state` for Option
-- Handlers may return `Html` / `Json` (`IntoResponse`) instead of building `Response` by hand
-- `not_found` / `error_handler` / `max_body_size` (default 2 MiB → 413)
-- Graceful shutdown on Ctrl-C and SIGTERM (Unix); connection `JoinSet` drain (`drain_timeout`, default 20s)
-- Bind / serve: `app.bind(Bind::Port(3000)).serve().await`, `Bind::Addr`, `Bind::Env { default_port }` (`PORT`/`HOST`), `Bind::Listener` for tests, `Bind::Uds(path)` (Unix); optional `.shutdown(fut)` before `.serve()`
-- `Bind::Port(n)` binds `0.0.0.0` (IPv4). For dual-stack use `Bind::Addr("[::]:3000".parse()?)` where the OS allows it
-- Limits: `max_connections`, `request_timeout`, `header_read_timeout` / `idle_timeout` (keep-alive quiet wait), `max_headers`, `max_buf_size`, `keep_alive`
+## Layout
 
-## TLS / HTTP2
+- `crates/ruvo` — facade (`prelude`, `store`, `tasks`, `AppError`)
+- `crates/ruvo-core` — `App`, router, request/response, server
+- `crates/cargo-ruvo` — `cargo ruvo new` / `generate`
+- `plugins/*` — optional crates behind features
 
-With feature `tls` (and `dev-tls` for local self-signed certs):
+## Bind / listen
+
+- `app.listen(3000).await` — common case (CLI + serve on `0.0.0.0:port`)
+- `app.bind("127.0.0.1:8080").serve().await` — custom address (`Bind` lives in `ruvo::extend`)
+- `app.bind("[::]:8443").tls(t)?.http(Http::all()).serve().await` — TLS / HTTP modes
+- `Bind::Port(n)` binds IPv4 `0.0.0.0`; dual-stack via `"[::]:3000"` where the OS allows it
+
+## Custom error pages / panic
 
 ```rust
-ruvo_env::load()?; // optional: TLS_CERT, TLS_KEY, APP_KEY from .env
-app.bind(Bind::Port(443))
-    .tls(Tls::from_pem("cert.pem", "key.pem")?)?
-    .serve()
-    .await
+app.not_found(|| async { Html("nope").into_response().status(404) });
+app.error_handler(|err| async move { /* … */ });
 ```
 
-WSS works automatically over HTTPS (`OnUpgrade` is TLS-agnostic).
-SSE works over HTTP/2 too (reduces browser connection limits by multiplexing).
-UDP has no DTLS — use a reverse proxy or future `ruvo-quic` for encrypted datagrams.
+Handler panics become **500** (`CatchUnwind`); prefer `Result` / typed errors over `panic!`.
 
-## Workspace
+## Stability / versions
 
-Virtual workspace: facade in `crates/ruvo/`, core in `crates/ruvo-core/`, plugins under `plugins/`. Depend on the `ruvo` facade; features select plugins. Not published separately yet.
+Pre-1.0: breaking changes without a major bump. `ruvo` **0.4** tracks `ruvo-core` **0.4**.

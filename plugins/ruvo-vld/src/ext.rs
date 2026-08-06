@@ -1,6 +1,7 @@
+use crate::validate::{read_params_value, read_query_value};
 use crate::ValidationError;
 use ruvo_core::Request;
-use serde_json::{Map, Value};
+use serde_json::Value;
 use vld::schema::VldParse;
 
 /// Validate request body / query / path params with `vld` `schema!` types.
@@ -27,18 +28,12 @@ impl ValidationExt for Request {
     }
 
     fn validate_query<T: VldParse>(&self) -> Result<T, ValidationError> {
-        let mut map = Map::new();
-        for (k, v) in &self.query {
-            map.insert(k.clone(), Value::String(v.clone()));
-        }
-        T::vld_parse_value(&Value::Object(map)).map_err(ValidationError::from)
+        let value = read_query_value(self);
+        T::vld_parse_value(&value).map_err(ValidationError::from)
     }
 
     fn validate_params<T: VldParse>(&self) -> Result<T, ValidationError> {
-        let mut map = Map::new();
-        for (k, v) in &self.params {
-            map.insert(k.clone(), Value::String(v.clone()));
-        }
-        T::vld_parse_value(&Value::Object(map)).map_err(ValidationError::from)
+        let value = read_params_value(self);
+        T::vld_parse_value(&value).map_err(ValidationError::from)
     }
 }

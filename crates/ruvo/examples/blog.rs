@@ -1,5 +1,5 @@
 //! Modular blog via `routes() -> Router` + mount.
-use ruvo::{Bind, init_tracing, App, Request, Response, Result, Router};
+use ruvo::prelude::*;
 
 fn render(template: &str, vars: &[(&str, &str)]) -> String {
     let mut out = template.to_string();
@@ -19,26 +19,23 @@ fn blog_routes() -> Router {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
     let mut app = App::new();
     app.mount("/blog", blog_routes());
-    app.get("/", |_| async {
-        Response::html(include_str!("blog/views/root.html"))
-    });
-    app.bind(Bind::Port(3002)).serve().await
+    app.get("/", || async { Html(include_str!("blog/views/root.html")) });
+    app.listen(3002).await
 }
 
-async fn index(_: Request) -> Response {
-    Response::html(include_str!("blog/views/index.html"))
+async fn index(_: Request) -> Html<&'static str> {
+    Html(include_str!("blog/views/index.html"))
 }
 
-async fn new_post(_: Request) -> Response {
-    Response::text(include_str!("blog/views/new.txt").trim())
+async fn new_post(_: Request) -> Text<&'static str> {
+    Text(include_str!("blog/views/new.txt").trim())
 }
 
-async fn show(req: Request) -> Response {
+async fn show(req: Request) -> Html<String> {
     let slug = req.param("slug").unwrap_or("?");
-    Response::html(render(
+    Html(render(
         include_str!("blog/views/show.html"),
         &[("slug", slug)],
     ))

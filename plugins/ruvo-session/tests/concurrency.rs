@@ -2,7 +2,8 @@
 
 use bytes::Bytes;
 use http::Method;
-use ruvo_core::{App, Plugin, Request, Response};
+use ruvo_cookies::CookieLayer;
+use ruvo_core::{App, Request, Response};
 use ruvo_session::{memory_sessions, SessionExt, SessionLayer};
 use ruvo_store::{namespace, KvStore, MemoryStore};
 use std::sync::Arc;
@@ -15,9 +16,8 @@ async fn parallel_writes_same_sid_last_writer_wins() {
     let store_check = store.clone();
 
     let mut app = App::new();
-    SessionLayer::new(store.clone())
-        .cookie_name("sid")
-        .install(&mut app);
+    app.install(CookieLayer);
+    app.install(SessionLayer::new(store.clone()).cookie_name("sid"));
     app.get("/a", |req: Request| async move {
         tokio::time::sleep(Duration::from_millis(30)).await;
         req.session().set("a", "1");
@@ -81,7 +81,8 @@ async fn parallel_writes_same_sid_last_writer_wins() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn memory_sessions_smoke() {
     let mut app = App::new();
-    memory_sessions().install(&mut app);
+    app.install(CookieLayer);
+    app.install(memory_sessions());
     app.get("/", |req: Request| async move {
         req.session().set("k", "v");
         Response::text("ok")

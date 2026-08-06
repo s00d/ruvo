@@ -4,10 +4,7 @@
 //! cargo run -p ruvo --example api-validated --features vld-openapi
 //! ```
 
-use ruvo::{Bind, 
-    doc_schema, init_tracing, App, Doc, DocVldExt, IntoResponse, Json, OpenApi, OpenApiDocExt,
-    Request, Response, Result, ValidationError, ValidationExt,
-};
+use ruvo::{doc_schema, App, Doc, DocVldExt, IntoResponse, Json, OpenApi, OpenApiDocExt, Request, Response, Result, ValidationError, ValidationExt};
 use serde_json::json;
 use std::sync::{Arc, Mutex};
 
@@ -65,10 +62,9 @@ fn build_app() -> App {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
     let app = build_app();
     tracing::info!("API http://127.0.0.1:3000  docs http://127.0.0.1:3000/docs");
-    app.bind(Bind::Port(3000)).serve().await
+    app.listen(3000).await
 }
 
 async fn list(req: Request) -> Json<Vec<User>> {

@@ -1,12 +1,11 @@
 //! Loaded scale profile: logger + cors + cookies + session + rate-limit.
 //! Used by `bench/scale.sh` — not a product demo.
 
-use ruvo::{Bind, init_tracing, logger, App, Cors, RateLimit, Request, Response, Result, SessionExt};
+use ruvo::{logger, App, Cors, RateLimit, Request, Response, Result, SessionExt};
 use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
 
     let mut app = App::new();
     app.use_middleware(logger());
@@ -21,6 +20,5 @@ async fn main() -> Result<()> {
         req.session().set("hits", hits.to_string());
         Response::text(format!("ok {hits}"))
     });
-
-    app.bind(Bind::Port(3001)).serve().await
+    app.listen(3001).await
 }

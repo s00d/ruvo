@@ -1,5 +1,5 @@
 //! JSON REST skeleton.
-use ruvo::{Bind, init_tracing, App, Json, Request, Result};
+use ruvo::prelude::*;
 use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Default)]
@@ -9,15 +9,13 @@ struct Db {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
     let mut app = App::new();
     app.state(Db::default());
 
     app.get("/items", list);
     app.post("/items", create);
     app.get("/items/:id", show);
-
-    app.bind(Bind::Port(3001)).serve().await
+    app.listen(3001).await
 }
 
 async fn list(req: Request) -> Json<Vec<String>> {

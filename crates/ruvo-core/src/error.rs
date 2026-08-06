@@ -27,11 +27,20 @@ pub enum Error {
 
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
+
+    /// Pre-built HTTP response (plugin/domain errors). Skips `error_handler`.
+    #[error("response")]
+    Response(Box<Response>),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 impl Error {
+    /// Build [`Error::Response`] from a status and any [`IntoResponse`] body.
+    pub fn custom(status: u16, body: impl IntoResponse) -> Self {
+        Error::Response(Box::new(body.into_response().status(status)))
+    }
+
     pub fn into_response(self) -> Response {
         match self {
             Error::NotFound => Response::text("Not Found").status(404),
@@ -42,6 +51,7 @@ impl Error {
             Error::Internal(msg) => Response::text(msg).status(500),
             Error::Json(err) => Response::text(format!("JSON error: {err}")).status(400),
             Error::Io(err) => Response::text(format!("IO error: {err}")).status(500),
+            Error::Response(res) => *res,
         }
     }
 }

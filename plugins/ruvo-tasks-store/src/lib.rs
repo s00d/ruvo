@@ -1,7 +1,7 @@
 //! Task queue store for Ruvo.
 //!
-//! **Unstable** until a Postgres backend freezes the trait.
-//! Enable feature `unstable-store` (default). Queue claim/lease is **not** plain KvStore.
+//! Trait is stable (memory + file + postgres + sqlite backends).
+//! Queue claim/lease is **not** plain KvStore.
 
 use bytes::Bytes;
 use std::collections::HashMap;

@@ -56,7 +56,7 @@ async fn undocumented_lists_missing_docs() {
 
 #[test]
 fn brace_wildcards_skipped_in_document() {
-    let mut meta = ruvo_core::extend::TypeMap::new();
+    let mut meta = ruvo_core::extend::MetaMap::new();
     meta.insert(Doc::new().ok_schema(json!({})));
     let table = ruvo_core::extend::RouteTable(vec![ruvo_core::extend::RouteEntry::Http {
         method: Method::GET,

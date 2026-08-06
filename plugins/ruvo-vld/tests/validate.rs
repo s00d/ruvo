@@ -89,3 +89,263 @@ async fn validate_query_smoke() {
     let q: Q = req.validate_query().unwrap();
     assert_eq!(q.q, "hi");
 }
+
+ruvo_vld::doc_schema!(CreateUser, IdParams);
+
+#[tokio::test]
+async fn validate_body_hook_and_valid() {
+    use ruvo_vld::{ValidExt, ValidateRouteExt};
+
+    let mut app = App::new();
+    app.post("/users", |req: Request| async move {
+        let u = req.valid::<CreateUser>();
+        Response::text(u.name.clone())
+    })
+    .validate_body::<CreateUser>();
+
+    let server = app.build().unwrap();
+    let ok = server
+        .handle(
+            Request::builder()
+                .method(Method::POST)
+                .path("/users")
+                .body(r#"{"name":"Alex","email":"a@b.co"}"#)
+                .build(),
+        )
+        .await;
+    assert_eq!(ok.body_bytes(), Some(b"Alex".as_slice()));
+
+    let bad = server
+        .handle(
+            Request::builder()
+                .method(Method::POST)
+                .path("/users")
+                .body(r#"{"name":"A","email":"bad"}"#)
+                .build(),
+        )
+        .await;
+    assert_eq!(bad.status_code().as_u16(), 422);
+}
+
+#[tokio::test]
+async fn validate_params_coerces_via_schema() {
+    use ruvo_vld::{ValidExt, ValidateRouteExt};
+
+    vld::schema! {
+        #[derive(Debug, Clone)]
+        pub struct NumId {
+            pub id: f64 => vld::number().min(1.0),
+        }
+    }
+    ruvo_vld::doc_schema!(NumId);
+
+    let mut app = App::new();
+    app.get("/n/:id", |req: Request| async move {
+        let p = req.valid::<NumId>();
+        Response::text((p.id as i64).to_string())
+    })
+    .validate_params::<NumId>();
+
+    let server = app.build().unwrap();
+    let res = server.handle_request(Method::GET, "/n/42", "").await;
+    assert_eq!(res.body_bytes(), Some(b"42".as_slice()));
+}
+
+#[tokio::test]
+async fn openapi_reads_validate_meta() {
+    use ruvo_openapi::{build_document, BuildOptions, OpenApiValidate};
+    use ruvo_vld::ValidateRouteExt;
+
+    let mut app = App::new();
+    app.post("/users", |_r: Request| async { Response::text("ok") })
+        .validate_body::<CreateUser>();
+
+    let entries = app.route_entries();
+    let meta = match &entries[0] {
+        ruvo_core::extend::RouteEntry::Http { meta, .. } => meta,
+        _ => panic!("http"),
+    };
+    assert!(meta.get::<OpenApiValidate>().unwrap().body.is_some());
+
+    let table = ruvo_core::extend::RouteTable(entries);
+    let doc = build_document(
+        &table,
+        &BuildOptions {
+            title: "t",
+            version: "1",
+            servers: &[],
+            docs_prefix: "/docs",
+        },
+    );
+    assert!(doc["paths"]["/users"]["post"]["requestBody"].is_object());
+}
+
+#[tokio::test]
+async fn nested_query_via_serde_qs() {
+    use ruvo_vld::ValidationExt;
+
+    vld::schema! {
+        #[derive(Debug, Clone)]
+        pub struct Filter {
+            pub name: String => vld::string().min(1),
+        }
+    }
+    vld::schema! {
+        #[derive(Debug, Clone)]
+        pub struct NestedQ {
+            pub filter: Filter => vld::nested(Filter::parse_value),
+        }
+    }
+
+    let req = Request::builder()
+        .method(Method::GET)
+        .path("/?filter[name]=ada")
+        .build();
+    let q: NestedQ = req.validate_query().unwrap();
+    assert_eq!(q.filter.name, "ada");
+}
+
+#[tokio::test]
+async fn validate_all_params_override_body() {
+    use ruvo_vld::{ValidExt, ValidateRouteExt};
+
+    vld::schema! {
+        #[derive(Debug, Clone)]
+        pub struct PatchUser {
+            pub id: String => vld::string().min(1),
+            pub name: String => vld::string().min(1),
+        }
+    }
+    ruvo_vld::doc_schema!(PatchUser);
+
+    let mut app = App::new();
+    app.post("/u/:id", |req: Request| async move {
+        let u = req.valid::<PatchUser>();
+        Response::text(format!("{}:{}", u.id, u.name))
+    })
+    .validate_all::<PatchUser>();
+
+    let server = app.build().unwrap();
+    let res = server
+        .handle(
+            Request::builder()
+                .method(Method::POST)
+                .path("/u/from-path")
+                .body(r#"{"id":"from-body","name":"Ada"}"#)
+                .build(),
+        )
+        .await;
+    assert_eq!(res.body_bytes(), Some(b"from-path:Ada".as_slice()));
+}
+
+#[tokio::test]
+async fn missing_validate_routes_coverage() {
+    use ruvo_core::extend::RouteTable;
+    use ruvo_vld::{missing_validate_routes, ValidateRouteExt};
+
+    let mut bare = App::new();
+    bare.post("/x", |_r: Request| async { Response::text("ok") });
+    let bare_missing = missing_validate_routes(&RouteTable(bare.route_entries()));
+    assert!(
+        bare_missing.iter().any(|s| s.contains("POST") && s.contains("/x")),
+        "{bare_missing:?}"
+    );
+
+    let mut ok = App::new();
+    ok.post("/x", |_r: Request| async { Response::text("ok") })
+        .validate_body::<CreateUser>();
+    let ok_missing = missing_validate_routes(&RouteTable(ok.route_entries()));
+    assert!(ok_missing.is_empty(), "{ok_missing:?}");
+}
+
+#[cfg(feature = "flash")]
+#[tokio::test]
+async fn flash_html_accept_redirects() {
+    use ruvo_vld::ValidateRouteExt;
+
+    let mut app = App::new();
+    app.post("/users", |_r: Request| async { Response::text("ok") })
+        .validate_body::<CreateUser>();
+
+    let server = app.build().unwrap();
+
+    let html = server
+        .handle(
+            Request::builder()
+                .method(Method::POST)
+                .path("/users")
+                .header("accept", "text/html")
+                .header("referer", "/form")
+                .body(r#"{"name":"A","email":"bad"}"#)
+                .build(),
+        )
+        .await;
+    assert_eq!(html.status_code().as_u16(), 302);
+    assert_eq!(
+        html.headers()
+            .get("location")
+            .and_then(|v| v.to_str().ok()),
+        Some("/form")
+    );
+
+    let json = server
+        .handle(
+            Request::builder()
+                .method(Method::POST)
+                .path("/users")
+                .header("accept", "application/json")
+                .body(r#"{"name":"A","email":"bad"}"#)
+                .build(),
+        )
+        .await;
+    assert_eq!(json.status_code().as_u16(), 422);
+}
+
+#[cfg(feature = "form")]
+#[tokio::test]
+async fn validate_form_multipart_text() {
+    use bytes::Bytes;
+    use ruvo_vld::{ValidExt, ValidateRouteExt};
+
+    vld::schema! {
+        #[derive(Debug, Clone)]
+        pub struct FormUser {
+            pub name: String => vld::string().min(2),
+            pub email: String => vld::string().email(),
+        }
+    }
+    ruvo_vld::doc_schema!(FormUser);
+
+    let mut app = App::new();
+    app.post("/users", |req: Request| async move {
+        let u = req.valid::<FormUser>();
+        Response::text(u.name.clone())
+    })
+    .validate_form::<FormUser>();
+
+    let boundary = "----ruvoBound";
+    let parts = concat!(
+        "Content-Disposition: form-data; name=\"name\"\r\n\r\n",
+        "Alex\r\n",
+        "------ruvoBound\r\n",
+        "Content-Disposition: form-data; name=\"email\"\r\n\r\n",
+        "a@b.co\r\n",
+    );
+    let body = Bytes::from(format!("--{boundary}\r\n{parts}--{boundary}--\r\n"));
+
+    let server = app.build().unwrap();
+    let res = server
+        .handle(
+            Request::builder()
+                .method(Method::POST)
+                .path("/users")
+                .header(
+                    "content-type",
+                    format!("multipart/form-data; boundary={boundary}"),
+                )
+                .body(body)
+                .build(),
+        )
+        .await;
+    assert_eq!(res.body_bytes(), Some(b"Alex".as_slice()));
+}

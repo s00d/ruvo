@@ -37,7 +37,6 @@ pub async fn listen(
         start_services,
     } = app.into_listen_parts()?;
     let bind = addr
-        .or(inner.listen_addr)
         .or_else(|| port.map(|p| SocketAddr::from(([0, 0, 0, 0], p))))
         .ok_or_else(|| Error::Internal("listen: port or address required".into()))?;
     let listener = bind_tcp(bind, inner.reuseport).await?;
@@ -69,7 +68,6 @@ pub async fn listen(
         start_services,
     } = app.into_listen_parts()?;
     let bind = addr
-        .or(inner.listen_addr)
         .or_else(|| port.map(|p| SocketAddr::from(([0, 0, 0, 0], p))))
         .ok_or_else(|| Error::Internal("listen: port or address required".into()))?;
     let listener = bind_tcp(bind, inner.reuseport).await?;
@@ -95,7 +93,7 @@ async fn bind_tcp(bind: SocketAddr, reuseport: bool) -> Result<TcpListener> {
         #[cfg(not(feature = "listen-reuseport"))]
         {
             return Err(Error::Internal(
-                "listen_reuseport requires feature `listen-reuseport`".into(),
+                "BoundApp::reuseport(true) requires feature `listen-reuseport`".into(),
             ));
         }
     }

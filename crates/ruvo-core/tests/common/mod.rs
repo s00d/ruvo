@@ -1,7 +1,8 @@
 //! Shared helpers for integration tests (real TCP listener).
 
 use bytes::Bytes;
-use ruvo_core::{App, Bind};
+use ruvo_core::{App, };
+use ruvo_core::extend::Bind;
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;

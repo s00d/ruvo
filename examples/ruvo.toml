@@ -1,0 +1,13 @@
+# App-level defaults only (route/router overrides use `.with(MaxBody::…)` in code).
+# Profile: RUVO_PROFILE, else `debug` / `release` from build.
+
+[default]
+max_body = "2 MiB"
+request_timeout = "30s"
+max_connections = 1024
+
+[debug]
+max_connections = 64
+
+[release]
+max_connections = 4096

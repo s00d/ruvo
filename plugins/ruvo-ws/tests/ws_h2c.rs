@@ -4,7 +4,8 @@ use http_body_util::Empty;
 use hyper::Request as HyperRequest;
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::TokioExecutor;
-use ruvo_core::{App, Bind, Plugin};
+use ruvo_core::{App,  Plugin};
+use ruvo_core::extend::Bind;
 use ruvo_ws::{Ws, WsRouteExt};
 
 #[tokio::test]

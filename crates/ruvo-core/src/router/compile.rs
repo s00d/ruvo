@@ -1,11 +1,12 @@
-use super::{to_matchit_path, Router};
-use crate::handler::{wrap_errors, BoxFuture, ErrorHandlerFn, FallibleHandler, Handler};
+use super::{to_matchit_path, CatcherMap, Router};
+use crate::handler::{wrap_errors, ErrorHandlerFn, FallibleHandler, Handler};
 use crate::middleware::{chain_from_entries, MwEntry};
 use crate::raw::RawHandler;
 use crate::request::{percent_decode, Request};
 use crate::response::Response;
-use crate::state::{MatchedMeta, TypeMap};
-use http::{HeaderValue, Method};
+use crate::route_value::MetaMap;
+use crate::state::{Extensions, MatchedMeta, TypeMap};
+use http::{HeaderMap, HeaderValue, Method};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
@@ -28,9 +29,50 @@ impl CompiledRouter {
     }
 }
 
+/// Longest-prefix status catchers.
+pub(crate) struct CatcherTable {
+    /// Sorted by prefix length descending.
+    entries: Vec<(String, HashMap<u16, Handler>)>,
+}
+
+impl CatcherTable {
+    fn from_scopes(scopes: Vec<(String, CatcherMap)>, eh: Option<ErrorHandlerFn>) -> Self {
+        let mut entries: Vec<(String, HashMap<u16, Handler>)> = scopes
+            .into_iter()
+            .map(|(prefix, map)| {
+                let handlers = map
+                    .into_iter()
+                    .map(|(status, h)| (status, wrap_errors(h, eh.clone())))
+                    .collect();
+                (prefix, handlers)
+            })
+            .collect();
+        entries.sort_by_key(|b| std::cmp::Reverse(b.0.len()));
+        Self { entries }
+    }
+
+    fn find(&self, path: &str, status: u16) -> Option<&Handler> {
+        for (prefix, map) in &self.entries {
+            if prefix_matches(path, prefix) {
+                if let Some(h) = map.get(&status) {
+                    return Some(h);
+                }
+            }
+        }
+        None
+    }
+}
+
+fn prefix_matches(path: &str, prefix: &str) -> bool {
+    if prefix.is_empty() {
+        return true;
+    }
+    path == prefix || path.starts_with(&format!("{prefix}/"))
+}
+
 struct InnerRouter {
     table: matchit::Router<HashMap<Method, Handler>>,
-    not_found: Handler,
+    catchers: Arc<CatcherTable>,
 }
 
 impl InnerRouter {
@@ -40,7 +82,7 @@ impl InnerRouter {
 
         let matched = match self.table.at(&path) {
             Ok(m) => m,
-            Err(_) => return (self.not_found)(req).await,
+            Err(_) => return invoke_catcher(&self.catchers, req, 404).await,
         };
 
         let mut params = HashMap::new();
@@ -67,11 +109,30 @@ impl InnerRouter {
             return handler(req).await;
         }
 
+        if self.catchers.find(&path, 405).is_some() {
+            return invoke_catcher(&self.catchers, req, 405).await;
+        }
+
         let mut res = Response::text("Method Not Allowed").status(405);
         if let Ok(v) = HeaderValue::from_str(&allow_header(methods.keys())) {
             res.headers.insert(http::header::ALLOW, v);
         }
         res
+    }
+}
+
+async fn invoke_catcher(catchers: &CatcherTable, req: Request, status: u16) -> Response {
+    match catchers.find(&req.path, status) {
+        Some(h) => h(req).await.status(status),
+        None => default_status_response(status),
+    }
+}
+
+fn default_status_response(status: u16) -> Response {
+    match status {
+        404 => Response::text("Not Found").status(404),
+        405 => Response::text("Method Not Allowed").status(405),
+        _ => Response::text(format!("Error {status}")).status(status),
     }
 }
 
@@ -81,16 +142,21 @@ pub(crate) fn compile_router(router: Router) -> crate::error::Result<CompiledRou
         raw_routes,
         middleware: root_mw,
         mut state,
-        not_found,
+        defaults,
+        last_was_route: _,
+        catchers,
+        scoped_catchers,
         error_handler,
     } = router;
 
     let mut entries = Vec::with_capacity(routes.len() + raw_routes.len());
     for r in &routes {
+        let mut meta = defaults.clone();
+        meta.extend(r.meta.clone());
         entries.push(super::RouteEntry::Http {
             method: r.method.clone(),
             path: r.path.clone(),
-            meta: r.meta.clone(),
+            meta,
         });
     }
     for r in &raw_routes {
@@ -101,13 +167,22 @@ pub(crate) fn compile_router(router: Router) -> crate::error::Result<CompiledRou
     state.insert(super::RouteTable(entries));
 
     let eh = error_handler.clone();
-    type MethodMap = HashMap<Method, (Vec<MwEntry>, FallibleHandler, TypeMap)>;
+
+    let mut scopes = scoped_catchers;
+    if !catchers.is_empty() {
+        scopes.push((String::new(), catchers));
+    }
+    let catcher_table = Arc::new(CatcherTable::from_scopes(scopes, eh.clone()));
+
+    type MethodMap = HashMap<Method, (Vec<MwEntry>, FallibleHandler, MetaMap)>;
     let mut by_path: HashMap<String, MethodMap> = HashMap::new();
 
     for route in routes {
+        let mut meta = defaults.clone();
+        meta.extend(route.meta);
         by_path.entry(route.path.clone()).or_default().insert(
             route.method.clone(),
-            (route.middleware, route.handler, route.meta),
+            (route.middleware, route.handler, meta),
         );
     }
 
@@ -117,8 +192,10 @@ pub(crate) fn compile_router(router: Router) -> crate::error::Result<CompiledRou
         let matchit_path = to_matchit_path(&path);
         let mut map = HashMap::new();
         for (method, (mw, fallible, meta)) in methods {
-            let leaf = wrap_errors(with_matched_meta(fallible, meta), eh.clone());
-            map.insert(method, chain_from_entries(&mw, leaf));
+            // MatchedMeta / MaxBody before route middleware so meta-driven mw (e.g. vld) works.
+            let leaf = wrap_with_catchers(fallible, eh.clone(), Arc::clone(&catcher_table));
+            let with_mw = chain_from_entries(&mw, leaf);
+            map.insert(method, inject_matched_meta(with_mw, meta));
         }
         table.insert(matchit_path.clone(), map).map_err(|err| {
             crate::error::Error::Internal(format!(
@@ -140,14 +217,10 @@ pub(crate) fn compile_router(router: Router) -> crate::error::Result<CompiledRou
             })?;
     }
 
-    let not_found: Handler = match not_found {
-        Some(h) => wrap_errors(h, eh.clone()),
-        None => Arc::new(|_req: Request| {
-            Box::pin(async { Response::text("Not Found").status(404) }) as BoxFuture<Response>
-        }),
-    };
-
-    let inner = Arc::new(InnerRouter { table, not_found });
+    let inner = Arc::new(InnerRouter {
+        table,
+        catchers: Arc::clone(&catcher_table),
+    });
     let inner_dispatch: Handler = Arc::new(move |req| {
         let inner = Arc::clone(&inner);
         Box::pin(async move { inner.dispatch(req).await })
@@ -163,16 +236,109 @@ pub(crate) fn compile_router(router: Router) -> crate::error::Result<CompiledRou
     })
 }
 
-/// Inject [`MatchedMeta`] so handlers/plugins can read typed route metadata.
-fn with_matched_meta(handler: FallibleHandler, meta: TypeMap) -> FallibleHandler {
+/// Inject [`MatchedMeta`] (and apply MaxBody / RequestTimeout) **before** the
+/// rest of the handler chain so route middleware can read meta.
+fn inject_matched_meta(handler: Handler, meta: MetaMap) -> Handler {
     Arc::new(move |mut req| {
         let handler = Arc::clone(&handler);
         let meta = meta.clone();
         Box::pin(async move {
+            if let Some(max) = meta.get::<crate::limits::MaxBody>() {
+                req.body_limit = max.0;
+            }
+            let timeout = meta.get::<crate::limits::RequestTimeout>().map(|t| t.0);
             req.set(MatchedMeta(meta));
-            handler(req).await
+            match timeout {
+                Some(dur) => {
+                    crate::limits::tighten_deadline(
+                        &mut req,
+                        std::time::Instant::now() + dur,
+                    );
+                    match tokio::time::timeout(dur, handler(req)).await {
+                        Ok(res) => res,
+                        Err(_) => Response::text("Request Timeout").status(504),
+                    }
+                }
+                None => handler(req).await,
+            }
         })
     })
+}
+
+/// Run `error_handler` on `Err`, then replace the response via a status catcher
+/// when one is registered for the final status (request body already consumed).
+fn wrap_with_catchers(
+    handler: FallibleHandler,
+    eh: Option<ErrorHandlerFn>,
+    catchers: Arc<CatcherTable>,
+) -> Handler {
+    Arc::new(move |req| {
+        let handler = Arc::clone(&handler);
+        let eh = eh.clone();
+        let catchers = Arc::clone(&catchers);
+        Box::pin(async move {
+            let snap = CatcherSnap::from_request(&req);
+            let res = match handler(req).await {
+                Ok(res) => res,
+                Err(crate::error::Error::Response(res)) => *res,
+                Err(err) => match &eh {
+                    Some(hook) => hook(err).await,
+                    None => err.into_response(),
+                },
+            };
+            let status = res.status_code().as_u16();
+            match catchers.find(&snap.path, status) {
+                Some(catcher) => catcher(snap.into_request()).await.status(status),
+                None => res,
+            }
+        })
+    })
+}
+
+/// Snapshot of request fields needed to invoke a catcher after the leaf ran.
+struct CatcherSnap {
+    method: Method,
+    path: String,
+    headers: HeaderMap,
+    query: HashMap<String, String>,
+    scheme: String,
+    host: String,
+    raw_query: String,
+    body_limit: usize,
+    state: Arc<TypeMap>,
+}
+
+impl CatcherSnap {
+    fn from_request(req: &Request) -> Self {
+        Self {
+            method: req.method.clone(),
+            path: req.path.clone(),
+            headers: req.headers.clone(),
+            query: req.query.clone(),
+            scheme: req.scheme.clone(),
+            host: req.host.clone(),
+            raw_query: req.raw_query.clone(),
+            body_limit: req.body_limit(),
+            state: Arc::clone(&req.state),
+        }
+    }
+
+    fn into_request(self) -> Request {
+        Request {
+            method: self.method,
+            path: self.path,
+            headers: self.headers,
+            params: HashMap::new(),
+            query: self.query,
+            scheme: self.scheme,
+            host: self.host,
+            raw_query: self.raw_query,
+            body: crate::request::ReqBody::Taken { by: "catcher" },
+            body_limit: self.body_limit,
+            state: self.state,
+            extensions: Extensions::new(),
+        }
+    }
 }
 
 fn allow_header<'a>(methods: impl Iterator<Item = &'a Method>) -> String {

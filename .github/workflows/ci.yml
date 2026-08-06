@@ -23,7 +23,51 @@ jobs:
       - name: Core alone
         run: cargo test -p ruvo-core
       - name: Plugin crates
-        run: cargo check -p ruvo-static -p ruvo-cors -p ruvo-cookies -p ruvo-session -p ruvo-compress -p ruvo-rate-limit -p ruvo-templates -p ruvo-multipart -p ruvo-cli -p ruvo-vld -p ruvo-openapi
+        run: cargo check -p ruvo-static -p ruvo-cors -p ruvo-shield -p ruvo-cookies -p ruvo-session -p ruvo-compress -p ruvo-rate-limit -p ruvo-templates -p ruvo-multipart -p ruvo-cli -p ruvo-vld -p ruvo-openapi -p ruvo-db -p ruvo-store-postgres -p ruvo-tasks-postgres
+      - name: cargo-ruvo template smoke
+        run: |
+          cargo check -p cargo-ruvo
+          rm -rf ci-smoke-min ci-smoke-api ci-smoke-web .ci-gen
+          cargo run -p cargo-ruvo -- new ci-smoke-min --minimal
+          cargo run -p cargo-ruvo -- new ci-smoke-api --api
+          cargo run -p cargo-ruvo -- new ci-smoke-web --web
+          cargo check --manifest-path ci-smoke-min/Cargo.toml
+          cargo check --manifest-path ci-smoke-api/Cargo.toml
+          cargo check --manifest-path ci-smoke-web/Cargo.toml
+          rm -rf .ci-gen && mkdir .ci-gen && cd .ci-gen
+          cargo run -p cargo-ruvo --manifest-path ../Cargo.toml -- new app --minimal
+          cd app
+          cargo run -p cargo-ruvo --manifest-path ../../Cargo.toml -- generate model user --fields "name:string,email:string:unique,age:int?"
+          cargo run -p cargo-ruvo --manifest-path ../../Cargo.toml -- generate crud user
+          test -f src/entities/user.rs
+          test -f src/modules/user/handlers.rs
+
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ruvo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/ruvo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build crud example
+        run: cargo build -p ruvo --example crud --features "db,vld,env"
+      - name: Migrate + smoke
+        run: |
+          cargo run -p ruvo --example crud --features "db,vld,env" -- migrate
+          cargo check -p ruvo-store-postgres -p ruvo-tasks-postgres
 
   public-api:
     runs-on: ubuntu-latest

@@ -1,0 +1,8 @@
+[package]
+name = "{{name}}"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ruvo = { path = "../crates/ruvo" }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

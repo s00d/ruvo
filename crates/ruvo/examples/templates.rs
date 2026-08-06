@@ -1,5 +1,5 @@
 //! MiniJinja templates loaded from files.
-use ruvo::{Bind, init_tracing, App, Request, Response, Result, RenderExt, Templates};
+use ruvo::{App, Request, Response, Result, RenderExt, Templates};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -9,13 +9,12 @@ struct Page {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
     let mut app = App::new();
     let views_dir = concat!(env!("CARGO_MANIFEST_DIR"), "/examples/templates/views");
     app.install(Templates::minijinja(views_dir));
 
     app.get("/", home);
-    app.bind(Bind::Port(3006)).serve().await
+    app.listen(3006).await
 }
 
 async fn home(req: Request) -> Response {

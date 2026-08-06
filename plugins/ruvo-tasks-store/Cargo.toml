@@ -2,7 +2,7 @@
 name = "ruvo-tasks-store"
 version = "0.4.0"
 edition = "2021"
-description = "TaskStore trait + memory backend (unstable until Postgres freeze)"
+description = "TaskStore trait + memory backend"
 license = "MIT"
 publish = false
 

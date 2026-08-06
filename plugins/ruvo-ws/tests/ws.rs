@@ -1,7 +1,8 @@
 //! WebSocket plugin tests.
 
 use http::Method;
-use ruvo_core::{App, Bind, Plugin, Request};
+use ruvo_core::{App,  Plugin, Request};
+use ruvo_core::extend::Bind;
 use ruvo_ws::{origin_allowed, Message, Ws, WsRouteExt};
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 

@@ -89,4 +89,4 @@ impl Extensions {
 
 /// Route metadata bag attached to the request after a successful match.
 #[derive(Clone)]
-pub struct MatchedMeta(pub TypeMap);
+pub struct MatchedMeta(pub crate::route_value::MetaMap);

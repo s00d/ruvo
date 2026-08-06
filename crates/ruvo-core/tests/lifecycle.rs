@@ -1,5 +1,8 @@
 use http::Method;
-use ruvo_core::{App, Bind, Error, Request, Response};
+use ruvo_core::{App,  Request, Response};
+use ruvo_core::extend::Bind;
+#[cfg(feature = "testing")]
+use ruvo_core::Error;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 

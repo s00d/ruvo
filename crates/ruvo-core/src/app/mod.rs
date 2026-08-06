@@ -2,11 +2,11 @@ mod bind;
 mod hooks;
 
 pub(crate) use hooks::{AppInner, ListenParts, ShutdownHook, StartupHook};
-pub use bind::{Bind, BoundApp};
-pub use bind::Http;
+pub use bind::{Bind, BoundApp, Http};
 pub use hooks::Server;
 
 use crate::error::{Error, Result};
+use crate::handler::BoxFuture;
 use crate::plugin::Plugin;
 use crate::request::Request;
 use crate::response::Response;
@@ -15,10 +15,18 @@ use crate::service::{BackgroundService, BoxedService};
 use crate::state::StateMap;
 use bytes::Bytes;
 use http::Method;
+use std::collections::{HashMap, HashSet};
+use std::fs;
 use std::net::{IpAddr, SocketAddr};
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 use std::time::Duration;
+
+pub(crate) type CliCommandFn =
+    Arc<dyn Fn(Arc<StateMap>, Vec<String>) -> BoxFuture<Result<()>> + Send + Sync>;
+
+pub(crate) type CheckFn =
+    Arc<dyn Fn(Arc<StateMap>) -> BoxFuture<Result<()>> + Send + Sync>;
 
 const DEFAULT_MAX_BODY: usize = 2 * 1024 * 1024;
 const DEFAULT_MAX_CONNECTIONS: usize = 1024;
@@ -45,7 +53,6 @@ pub struct App {
     pub(crate) idle_timeout: Duration,
     pub(crate) drain_timeout: Duration,
     pub(crate) keep_alive: bool,
-    pub(crate) listen_addr: Option<SocketAddr>,
     pub(crate) trust_proxy: bool,
     pub(crate) reuseport: bool,
     /// Set by CLI listen helpers — BackgroundServices skipped unless `service_in_cli`.
@@ -53,9 +60,13 @@ pub struct App {
     pub(crate) service_in_cli: bool,
     pub(crate) hsts: bool,
     pub(crate) alt_svc: Option<String>,
+    pub(crate) installed_plugins: HashSet<&'static str>,
+    pub(crate) missing_plugin_requires: Vec<(&'static str, &'static str)>,
     pub(crate) on_startup: Vec<StartupHook>,
     pub(crate) on_shutdown: Vec<ShutdownHook>,
     pub(crate) services: Vec<BoxedService>,
+    pub(crate) cli_commands: HashMap<&'static str, CliCommandFn>,
+    pub(crate) checks: Vec<(&'static str, CheckFn)>,
 }
 
 impl App {
@@ -73,21 +84,47 @@ impl App {
             idle_timeout: DEFAULT_IDLE_TIMEOUT,
             drain_timeout: DEFAULT_DRAIN_TIMEOUT,
             keep_alive: true,
-            listen_addr: None,
             trust_proxy: false,
             reuseport: false,
             cli_mode: false,
             service_in_cli: false,
             hsts: false,
             alt_svc: None,
+            installed_plugins: HashSet::new(),
+            missing_plugin_requires: Vec::new(),
             on_startup: Vec::new(),
             on_shutdown: Vec::new(),
             services: Vec::new(),
+            cli_commands: HashMap::new(),
+            checks: Vec::new(),
         }
+    }
+
+    /// Register a plugin CLI command handled by [`Self::run`] (e.g. `"migrate"`).
+    pub fn register_cli<F, Fut>(&mut self, name: &'static str, f: F) -> &mut Self
+    where
+        F: Fn(Arc<StateMap>, Vec<String>) -> Fut + Send + Sync + 'static,
+        Fut: std::future::Future<Output = Result<()>> + Send + 'static,
+    {
+        self.cli_commands
+            .insert(name, Arc::new(move |state, args| Box::pin(f(state, args))));
+        self
+    }
+
+    /// Register a named health check run by `myapp check` (after startup hooks).
+    pub fn register_check<F, Fut>(&mut self, name: &'static str, f: F) -> &mut Self
+    where
+        F: Fn(Arc<StateMap>) -> Fut + Send + Sync + 'static,
+        Fut: std::future::Future<Output = Result<()>> + Send + 'static,
+    {
+        self.checks
+            .push((name, Arc::new(move |state| Box::pin(f(state)))));
+        self
     }
 
     pub fn max_body_size(&mut self, bytes: usize) -> &mut Self {
         self.max_body_size = bytes;
+        self.router.defaults.insert(crate::limits::MaxBody::bytes(bytes));
         self
     }
 
@@ -130,6 +167,11 @@ impl App {
     /// Idle between stream chunks is governed by TCP/keep-alive, not this setting.
     pub fn request_timeout(&mut self, timeout: Option<Duration>) -> &mut Self {
         self.request_timeout = timeout;
+        if let Some(d) = timeout {
+            self.router
+                .defaults
+                .insert(crate::limits::RequestTimeout(d));
+        }
         self
     }
 
@@ -160,22 +202,9 @@ impl App {
         self
     }
 
-    /// Bind address for [`Self::bind`](App::bind) (default `0.0.0.0:port` — IPv4 only;
-    /// use [`Bind::Str`] or [`Bind::Addr`] with `[::]:port` for dual-stack where the OS supports it).
-    pub fn listen_addr(&mut self, addr: SocketAddr) -> &mut Self {
-        self.listen_addr = Some(addr);
-        self
-    }
-
     /// When true, `ClientAddr` may use `X-Forwarded-For` / `Forwarded` (only behind a trusted proxy).
     pub fn trust_proxy(&mut self, trust: bool) -> &mut Self {
         self.trust_proxy = trust;
-        self
-    }
-
-    /// Enable `SO_REUSEPORT` on TCP bind (requires feature `listen-reuseport`).
-    pub fn listen_reuseport(&mut self, enabled: bool) -> &mut Self {
-        self.reuseport = enabled;
         self
     }
 
@@ -192,8 +221,114 @@ impl App {
     }
 
     pub fn install<P: Plugin>(&mut self, plugin: P) -> &mut Self {
+        let plugin_id = plugin.id();
+        for dep in plugin.requires() {
+            if !self.installed_plugins.contains(dep) {
+                self.missing_plugin_requires.push((plugin_id, dep));
+            }
+        }
         plugin.install(self);
+        self.installed_plugins.insert(plugin_id);
         self
+    }
+
+    /// Primary app entrypoint: run as a server process.
+    ///
+    /// CLI mode:
+    /// - `check`
+    /// - `routes`
+    /// - `openapi --out <path>`
+    /// - `tasks`
+    /// - `i18n missing`
+    ///
+    /// Non-CLI mode binds via [`Bind::Env`] (`HOST`/`PORT`, default port `3000`).
+    /// Prefer [`App::bind`] + [`BoundApp::run`] when the address is fixed in code.
+    pub async fn run(self) -> Result<()> {
+        self.bind(Bind::Env { default_port: 3000 }).run().await
+    }
+
+    pub(crate) async fn run_cli_command(&self, args: &[String]) -> Result<bool> {
+        let Some(cmd) = args.first().map(String::as_str) else {
+            return Ok(false);
+        };
+
+        let server = self.build()?;
+        let state = server.state();
+        for hook in &server.startups {
+            hook(Arc::clone(&state)).await?;
+        }
+
+        let rest: Vec<String> = args.iter().skip(1).cloned().collect();
+        let handled = if let Some(handler) = self.cli_commands.get(cmd) {
+            handler(Arc::clone(&state), rest).await?;
+            true
+        } else {
+            match cmd {
+                "check" => {
+                    // `build()` already ran — plugin `requires()` are satisfied.
+                    println!("ok plugins");
+                    for (name, check) in &self.checks {
+                        check(Arc::clone(&state)).await.map_err(|e| {
+                            Error::Internal(format!("check `{name}` failed: {e}"))
+                        })?;
+                        println!("ok {name}");
+                    }
+                    println!("ok");
+                    true
+                }
+                "routes" => {
+                    println!("{}", self.explain());
+                    true
+                }
+                "openapi" => {
+                    let out_idx = args.iter().position(|a| a == "--out");
+                    let out_path = out_idx
+                        .and_then(|idx| args.get(idx + 1))
+                        .ok_or_else(|| Error::Internal("openapi requires --out <path>".into()))?;
+                    let res = server
+                        .handle_request(Method::GET, "/docs/openapi.json", "")
+                        .await;
+                    if !res.status_code().is_success() {
+                        return Err(Error::Internal(format!(
+                            "openapi endpoint failed with status {}",
+                            res.status_code()
+                        )));
+                    }
+                    let bytes = res
+                        .body_bytes()
+                        .ok_or_else(|| Error::Internal("openapi body is streaming".into()))?;
+                    fs::write(out_path, bytes).map_err(|e| {
+                        Error::Internal(format!("failed writing openapi to {out_path}: {e}"))
+                    })?;
+                    println!("wrote {}", out_path);
+                    true
+                }
+                "tasks" => {
+                    println!("tasks command is plugin-specific; use task HTTP endpoints or plugin-provided commands");
+                    true
+                }
+                "i18n" if args.get(1).map(String::as_str) == Some("missing") => {
+                    let res = server
+                        .handle_request(Method::GET, "/_i18n/_missing.json", "")
+                        .await;
+                    if let Some(body) = res.body_bytes() {
+                        println!("{}", String::from_utf8_lossy(body));
+                    } else {
+                        println!("i18n missing endpoint returned streaming body");
+                    }
+                    true
+                }
+                "i18n" => false,
+                _ => false,
+            }
+        };
+
+        if handled {
+            for hook in &server.shutdowns {
+                hook().await;
+            }
+        }
+        Ok(handled)
     }
 
     /// Register a process-local [`BackgroundService`].

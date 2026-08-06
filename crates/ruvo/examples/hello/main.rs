@@ -1,15 +1,19 @@
-use ruvo::{Bind, init_tracing, logger, App, Cors, Request, Response, Result, Router};
+use ruvo::prelude::*;
+use ruvo::{Cors, Json, Static};
 
-mod modules {
-    pub mod auth;
-    pub mod blog;
-}
-
-use modules::{auth, blog};
+mod modules;
 
 #[derive(Clone)]
 struct AppConfig {
     app_name: String,
+}
+
+impl Default for AppConfig {
+    fn default() -> Self {
+        Self {
+            app_name: "ruvo".into(),
+        }
+    }
 }
 
 fn render(template: &str, vars: &[(&str, &str)]) -> String {
@@ -22,49 +26,31 @@ fn render(template: &str, vars: &[(&str, &str)]) -> String {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
-
     let mut app = App::new();
-
     app.state(AppConfig {
         app_name: "ruvo-hello".into(),
     });
-
     app.use_middleware(logger());
     app.install(Cors::new().origin("*"));
 
     app.get("/", home);
+    app.get("/health", || async { Json(serde_json::json!({ "ok": true })) });
+    modules::register(&mut app);
 
-    app.mount("/auth", auth::routes());
-    app.mount("/blog", blog::routes());
-
-    app.install(|app: &mut App| {
-        app.get("/health", health);
+    app.install(Static::new(
+        "/assets",
+        concat!(env!("CARGO_MANIFEST_DIR"), "/examples/hello/public"),
+    ));
+    app.not_found(|| async {
+        Html(include_str!("views/not_found.html"))
+            .into_response()
+            .status(404)
     });
 
-    app.install(ruvo::Static::new("/assets", concat!(env!("CARGO_MANIFEST_DIR"), "/examples/hello/public")));
-
-    app.not_found(|_req: Request| async {
-        Response::html(include_str!("views/not_found.html")).status(404)
-    });
-
-    app.bind(Bind::Port(3000)).serve().await
+    app.listen(3000).await
 }
 
-async fn home(req: Request) -> Response {
-    let name = req
-        .try_state::<AppConfig>()
-        .map(|c| c.app_name.clone())
-        .unwrap_or_else(|| "ruvo".into());
-    Response::html(render(
-        include_str!("views/home.html"),
-        &[("name", &name)],
-    ))
+async fn home(req: Request) -> Html<String> {
+    let name = req.state_or_default::<AppConfig>().app_name.clone();
+    Html(render(include_str!("views/home.html"), &[("name", &name)]))
 }
-
-async fn health(_req: Request) -> Response {
-    Response::json(&serde_json::json!({ "ok": true }))
-}
-
-#[allow(dead_code)]
-fn _router_type(_: Router) {}

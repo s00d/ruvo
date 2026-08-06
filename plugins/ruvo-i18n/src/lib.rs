@@ -148,6 +148,17 @@ impl Plugin for I18n {
         app.state(state);
         app.state(AllJsonEnabled(self.enable_all_json));
 
+        let locales_dir = self.dir.clone();
+        let locales_meta = self.locales.clone();
+        app.register_check("i18n", move |_state| {
+            let dir = locales_dir.clone();
+            let locales = locales_meta.clone();
+            async move {
+                load_store(&dir, &locales)?;
+                Ok(())
+            }
+        });
+
         let codes: Vec<String> = self.locales.iter().map(|l| l.code.clone()).collect();
         let mut resolve_opts = ResolveOptions::new(codes, self.default.clone());
         resolve_opts.path_prefix = self.path_prefix;

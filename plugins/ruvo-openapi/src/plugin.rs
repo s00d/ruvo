@@ -1,9 +1,11 @@
 use crate::build::{build_document, BuildOptions};
 use crate::doc::Doc;
-use ruvo_core::extend::RouteTable;
+use ruvo_core::extend::{RouteTable, RouteValue};
 use ruvo_core::{App, Plugin, Request, Response};
 use std::path::PathBuf;
 use std::sync::Arc;
+
+impl RouteValue for Doc {}
 
 /// Attach [`Doc`] metadata to the last registered HTTP route.
 pub trait OpenApiDocExt {
@@ -12,14 +14,14 @@ pub trait OpenApiDocExt {
 
 impl OpenApiDocExt for App {
     fn doc(&mut self, doc: Doc) -> &mut Self {
-        self.route_meta(doc);
+        self.with(doc);
         self
     }
 }
 
 impl OpenApiDocExt for ruvo_core::Router {
     fn doc(&mut self, doc: Doc) -> &mut Self {
-        self.route_meta(doc);
+        self.with(doc);
         self
     }
 }
@@ -122,6 +124,24 @@ impl Plugin for OpenApi {
             }
         })
         .doc(Doc::skip());
+
+        let mount_check = mount.clone();
+        app.register_check("openapi", move |state| {
+            let mount = mount_check.clone();
+            async move {
+                let Some(table) = state.get::<RouteTable>() else {
+                    return Ok(());
+                };
+                let missing = crate::undocumented_from_table(table.as_ref(), &mount);
+                if !missing.is_empty() {
+                    return Err(ruvo_core::Error::Internal(format!(
+                        "undocumented routes: {}",
+                        missing.join(", ")
+                    )));
+                }
+                Ok(())
+            }
+        });
     }
 }
 

@@ -1,5 +1,30 @@
 pub mod ruvo_core
 pub mod ruvo_core::extend
+pub enum ruvo_core::extend::Bind
+pub ruvo_core::extend::Bind::Addr(core::net::socket_addr::SocketAddr)
+pub ruvo_core::extend::Bind::Env
+pub ruvo_core::extend::Bind::Env::default_port: u16
+pub ruvo_core::extend::Bind::Listener(std::net::tcp::TcpListener)
+pub ruvo_core::extend::Bind::Port(u16)
+pub ruvo_core::extend::Bind::Str(alloc::string::String)
+pub ruvo_core::extend::Bind::Uds(std::path::PathBuf)
+impl ruvo_core::extend::Bind
+pub fn ruvo_core::extend::Bind::str(impl core::convert::Into<alloc::string::String>) -> Self
+impl core::convert::From<&str> for ruvo_core::extend::Bind
+pub fn ruvo_core::extend::Bind::from(&str) -> Self
+impl core::convert::From<alloc::string::String> for ruvo_core::extend::Bind
+pub fn ruvo_core::extend::Bind::from(alloc::string::String) -> Self
+impl core::convert::From<core::net::socket_addr::SocketAddr> for ruvo_core::extend::Bind
+pub fn ruvo_core::extend::Bind::from(core::net::socket_addr::SocketAddr) -> Self
+impl core::convert::From<u16> for ruvo_core::extend::Bind
+pub fn ruvo_core::extend::Bind::from(u16) -> Self
+impl core::marker::Freeze for ruvo_core::extend::Bind
+impl core::marker::Send for ruvo_core::extend::Bind
+impl core::marker::Sync for ruvo_core::extend::Bind
+impl core::marker::Unpin for ruvo_core::extend::Bind
+impl core::marker::UnsafeUnpin for ruvo_core::extend::Bind
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::Bind
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::Bind
 pub enum ruvo_core::extend::Body
 pub ruvo_core::extend::Body::Bytes(bytes::bytes::Bytes)
 pub ruvo_core::extend::Body::Stream(ruvo_core::extend::ResponseBody)
@@ -129,6 +154,8 @@ impl ruvo_core::extend::IntoHandler<()> for ruvo_core::extend::FallibleHandler
 pub fn ruvo_core::extend::FallibleHandler::into_handler(self) -> ruvo_core::extend::FallibleHandler
 impl<F, Fut, R, E> ruvo_core::extend::IntoHandler<(ruvo_core::handler::FallibleResponseMarker, E)> for F where F: core::ops::function::Fn(ruvo_core::Request) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = core::result::Result<R, E>> + core::marker::Send + 'static, R: ruvo_core::IntoResponse, E: ruvo_core::extend::ErrorResponse + 'static
 pub fn F::into_handler(self) -> ruvo_core::extend::FallibleHandler
+impl<F, Fut, R> ruvo_core::extend::IntoHandler<(ruvo_core::handler::NoArgResponseMarker)> for F where F: core::ops::function::Fn() -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = R> + core::marker::Send + 'static, R: ruvo_core::IntoResponse
+pub fn F::into_handler(self) -> ruvo_core::extend::FallibleHandler
 impl<F, Fut, R> ruvo_core::extend::IntoHandler<(ruvo_core::handler::ResponseMarker)> for F where F: core::ops::function::Fn(ruvo_core::Request) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = R> + core::marker::Send + 'static, R: ruvo_core::IntoResponse
 pub fn F::into_handler(self) -> ruvo_core::extend::FallibleHandler
 impl<F, Fut, R> ruvo_core::extend::IntoHandler<(ruvo_core::handler::ResultMarker)> for F where F: core::ops::function::Fn(ruvo_core::Request) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = ruvo_core::Result<R>> + core::marker::Send + 'static, R: ruvo_core::IntoResponse
@@ -153,6 +180,7 @@ impl ruvo_core::extend::IntoRawHandler for ruvo_core::extend::RawHandler
 pub fn ruvo_core::extend::RawHandler::into_raw_handler(self) -> ruvo_core::extend::RawHandler
 impl<F, Fut> ruvo_core::extend::IntoRawHandler for F where F: core::ops::function::Fn(http::request::Request<hyper::body::incoming::Incoming>) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = http::response::Response<ruvo_core::extend::ResponseBody>> + core::marker::Send + 'static
 pub fn F::into_raw_handler(self) -> ruvo_core::extend::RawHandler
+pub fn ruvo_core::extend::ensure_tracing()
 pub fn ruvo_core::extend::join_paths(&str, &str) -> alloc::string::String
 pub fn ruvo_core::extend::named(impl core::convert::Into<alloc::string::String>, impl ruvo_core::extend::IntoMiddleware) -> ruvo_core::extend::MwEntry
 pub fn ruvo_core::extend::normalize_path(&str) -> alloc::string::String
@@ -168,23 +196,6 @@ pub type ruvo_core::extend::Middleware = alloc::sync::Arc<(dyn core::ops::functi
 pub type ruvo_core::extend::RawHandler = alloc::sync::Arc<(dyn core::ops::function::Fn(http::request::Request<hyper::body::incoming::Incoming>) -> ruvo_core::extend::BoxFuture<http::response::Response<ruvo_core::extend::ResponseBody>> + core::marker::Send + core::marker::Sync)>
 pub type ruvo_core::extend::ResponseBody = ruvo_core::extend::HttpBody
 pub type ruvo_core::extend::StateMap = ruvo_core::extend::TypeMap
-pub enum ruvo_core::Bind
-pub ruvo_core::Bind::Addr(core::net::socket_addr::SocketAddr)
-pub ruvo_core::Bind::Env
-pub ruvo_core::Bind::Env::default_port: u16
-pub ruvo_core::Bind::Listener(std::net::tcp::TcpListener)
-pub ruvo_core::Bind::Port(u16)
-pub ruvo_core::Bind::Str(alloc::string::String)
-pub ruvo_core::Bind::Uds(std::path::PathBuf)
-impl ruvo_core::Bind
-pub fn ruvo_core::Bind::str(impl core::convert::Into<alloc::string::String>) -> Self
-impl core::marker::Freeze for ruvo_core::Bind
-impl core::marker::Send for ruvo_core::Bind
-impl core::marker::Sync for ruvo_core::Bind
-impl core::marker::Unpin for ruvo_core::Bind
-impl core::marker::UnsafeUnpin for ruvo_core::Bind
-impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Bind
-impl core::panic::unwind_safe::UnwindSafe for ruvo_core::Bind
 pub enum ruvo_core::Error
 pub ruvo_core::Error::BadRequest(alloc::string::String)
 pub ruvo_core::Error::Internal(alloc::string::String)
@@ -193,8 +204,10 @@ pub ruvo_core::Error::Json(serde_json::error::Error)
 pub ruvo_core::Error::MethodNotAllowed
 pub ruvo_core::Error::NotFound
 pub ruvo_core::Error::PayloadTooLarge
+pub ruvo_core::Error::Response(alloc::boxed::Box<ruvo_core::Response>)
 pub ruvo_core::Error::Unauthorized
 impl ruvo_core::Error
+pub fn ruvo_core::Error::custom(u16, impl ruvo_core::IntoResponse) -> Self
 pub fn ruvo_core::Error::into_response(self) -> ruvo_core::Response
 impl core::convert::From<core::io::error::Error> for ruvo_core::Error
 pub fn ruvo_core::Error::from(core::io::error::Error) -> Self
@@ -215,9 +228,34 @@ impl core::marker::Unpin for ruvo_core::Error
 impl core::marker::UnsafeUnpin for ruvo_core::Error
 impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Error
 impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::Error
+pub enum ruvo_core::Http
+pub ruvo_core::Http::All
+pub ruvo_core::Http::H1
+pub ruvo_core::Http::H1H2
+impl ruvo_core::Http
+pub const fn ruvo_core::Http::all() -> Self
+pub const fn ruvo_core::Http::h1() -> Self
+pub const fn ruvo_core::Http::h1_h2() -> Self
+impl core::clone::Clone for ruvo_core::Http
+pub fn ruvo_core::Http::clone(&self) -> ruvo_core::Http
+impl core::cmp::Eq for ruvo_core::Http
+impl core::cmp::PartialEq for ruvo_core::Http
+pub fn ruvo_core::Http::eq(&self, &ruvo_core::Http) -> bool
+impl core::fmt::Debug for ruvo_core::Http
+pub fn ruvo_core::Http::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for ruvo_core::Http
+impl core::marker::StructuralPartialEq for ruvo_core::Http
+impl core::marker::Freeze for ruvo_core::Http
+impl core::marker::Send for ruvo_core::Http
+impl core::marker::Sync for ruvo_core::Http
+impl core::marker::Unpin for ruvo_core::Http
+impl core::marker::UnsafeUnpin for ruvo_core::Http
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Http
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::Http
 pub struct ruvo_core::App
 impl ruvo_core::App
-pub fn ruvo_core::App::bind(self, ruvo_core::Bind) -> ruvo_core::BoundApp
+pub fn ruvo_core::App::bind(self, impl core::convert::Into<ruvo_core::extend::Bind>) -> ruvo_core::BoundApp
+pub async fn ruvo_core::App::listen(self, u16) -> ruvo_core::Result<()>
 impl ruvo_core::App
 pub fn ruvo_core::App::build(&self) -> ruvo_core::Result<ruvo_core::Server>
 impl ruvo_core::App
@@ -230,17 +268,19 @@ pub fn ruvo_core::App::header_read_timeout(&mut self, core::time::Duration) -> &
 pub fn ruvo_core::App::idle_timeout(&mut self, core::time::Duration) -> &mut Self
 pub fn ruvo_core::App::install<P: ruvo_core::Plugin>(&mut self, P) -> &mut Self
 pub fn ruvo_core::App::keep_alive(&mut self, bool) -> &mut Self
-pub fn ruvo_core::App::listen_addr(&mut self, core::net::socket_addr::SocketAddr) -> &mut Self
-pub fn ruvo_core::App::listen_reuseport(&mut self, bool) -> &mut Self
 pub fn ruvo_core::App::max_body_size(&mut self, usize) -> &mut Self
 pub fn ruvo_core::App::max_buf_size(&mut self, usize) -> &mut Self
+pub fn ruvo_core::App::max_concurrent_streams(&mut self, usize) -> &mut Self
 pub fn ruvo_core::App::max_connections(&mut self, usize) -> &mut Self
 pub fn ruvo_core::App::max_headers(&mut self, usize) -> &mut Self
 pub fn ruvo_core::App::max_upgraded_connections(&mut self, usize) -> &mut Self
 pub fn ruvo_core::App::new() -> Self
 pub fn ruvo_core::App::on_shutdown<F, Fut>(&mut self, F) -> &mut Self where F: core::ops::function::Fn() -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = ()> + core::marker::Send + 'static
 pub fn ruvo_core::App::on_startup<F, Fut>(&mut self, F) -> &mut Self where F: core::ops::function::Fn(alloc::sync::Arc<ruvo_core::extend::StateMap>) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = ruvo_core::Result<()>> + core::marker::Send + 'static
+pub fn ruvo_core::App::register_check<F, Fut>(&mut self, &'static str, F) -> &mut Self where F: core::ops::function::Fn(alloc::sync::Arc<ruvo_core::extend::StateMap>) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = ruvo_core::Result<()>> + core::marker::Send + 'static
+pub fn ruvo_core::App::register_cli<F, Fut>(&mut self, &'static str, F) -> &mut Self where F: core::ops::function::Fn(alloc::sync::Arc<ruvo_core::extend::StateMap>, alloc::vec::Vec<alloc::string::String>) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = ruvo_core::Result<()>> + core::marker::Send + 'static
 pub fn ruvo_core::App::request_timeout(&mut self, core::option::Option<core::time::Duration>) -> &mut Self
+pub async fn ruvo_core::App::run(self) -> ruvo_core::Result<()>
 pub fn ruvo_core::App::service<S: ruvo_core::BackgroundService + 'static>(&mut self, S) -> &mut Self
 pub fn ruvo_core::App::service_in_cli(&mut self, bool) -> &mut Self
 pub fn ruvo_core::App::trust_proxy(&mut self, bool) -> &mut Self
@@ -260,6 +300,9 @@ impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::App
 impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::App
 pub struct ruvo_core::BoundApp
 impl ruvo_core::BoundApp
+pub fn ruvo_core::BoundApp::http(self, ruvo_core::Http) -> Self
+pub fn ruvo_core::BoundApp::reuseport(self, bool) -> Self
+pub async fn ruvo_core::BoundApp::run(self) -> ruvo_core::Result<()>
 pub async fn ruvo_core::BoundApp::serve(self) -> ruvo_core::Result<()>
 pub fn ruvo_core::BoundApp::shutdown<F>(self, F) -> Self where F: core::future::future::Future<Output = ()> + core::marker::Send + 'static
 pub fn ruvo_core::BoundApp::tls(self, ruvo_core::Tls) -> ruvo_core::Result<Self>
@@ -368,6 +411,7 @@ pub fn ruvo_core::Request::route_meta<T>(&self) -> core::option::Option<alloc::s
 pub fn ruvo_core::Request::scheme(&self) -> &str
 pub fn ruvo_core::Request::set<T: core::marker::Send + core::marker::Sync + 'static>(&mut self, T)
 pub fn ruvo_core::Request::state<T>(&self) -> alloc::sync::Arc<T> where T: core::marker::Send + core::marker::Sync + 'static
+pub fn ruvo_core::Request::state_or_default<T>(&self) -> alloc::sync::Arc<T> where T: core::default::Default + core::marker::Send + core::marker::Sync + 'static
 pub fn ruvo_core::Request::take<T: core::marker::Send + core::marker::Sync + 'static>(&mut self) -> core::option::Option<T>
 pub async fn ruvo_core::Request::text(&mut self) -> ruvo_core::Result<alloc::string::String>
 pub fn ruvo_core::Request::try_state<T>(&self) -> core::option::Option<alloc::sync::Arc<T>> where T: core::marker::Send + core::marker::Sync + 'static
@@ -403,6 +447,8 @@ pub fn ruvo_core::Response::take_body(&mut self) -> ruvo_core::extend::Body
 pub fn ruvo_core::Response::text(impl core::convert::Into<alloc::string::String>) -> Self
 impl core::default::Default for ruvo_core::Response
 pub fn ruvo_core::Response::default() -> Self
+impl core::fmt::Debug for ruvo_core::Response
+pub fn ruvo_core::Response::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl ruvo_core::IntoResponse for ruvo_core::Response
 pub fn ruvo_core::Response::into_response(self) -> ruvo_core::Response
 impl !core::marker::Freeze for ruvo_core::Response
@@ -480,11 +526,17 @@ impl<T> core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Text<T> where T: 
 impl<T> core::panic::unwind_safe::UnwindSafe for ruvo_core::Text<T> where T: core::panic::unwind_safe::UnwindSafe
 pub struct ruvo_core::Tls
 impl ruvo_core::Tls
+pub fn ruvo_core::Tls::build_https_server_config(&self, alloc::vec::Vec<alloc::vec::Vec<u8>>) -> rustls::server::server_conn::ServerConfig
+pub fn ruvo_core::Tls::build_quic_server_config(&self, alloc::vec::Vec<alloc::vec::Vec<u8>>) -> rustls::server::server_conn::ServerConfig
 pub fn ruvo_core::Tls::from_pem(impl core::convert::AsRef<std::path::Path>, impl core::convert::AsRef<std::path::Path>) -> ruvo_core::Result<Self>
 pub fn ruvo_core::Tls::handshake_timeout(self, core::time::Duration) -> Self
 pub fn ruvo_core::Tls::hsts(self, bool) -> Self
 pub fn ruvo_core::Tls::redirect_http(self, u16) -> Self
+pub fn ruvo_core::Tls::reload(&self) -> ruvo_core::Result<()>
+pub fn ruvo_core::Tls::resolver(&self) -> alloc::sync::Arc<dyn rustls::server::server_conn::ResolvesServerCert>
 pub fn ruvo_core::Tls::self_signed(&[&str]) -> ruvo_core::Result<Self>
+impl core::clone::Clone for ruvo_core::Tls
+pub fn ruvo_core::Tls::clone(&self) -> ruvo_core::Tls
 impl core::marker::Freeze for ruvo_core::Tls
 impl core::marker::Send for ruvo_core::Tls
 impl core::marker::Sync for ruvo_core::Tls
@@ -530,9 +582,13 @@ pub fn core::option::Option<T>::into_response(self) -> ruvo_core::Response
 impl<T: serde_core::ser::Serialize> ruvo_core::IntoResponse for ruvo_core::Json<T>
 pub fn ruvo_core::Json<T>::into_response(self) -> ruvo_core::Response
 pub trait ruvo_core::Plugin
+pub fn ruvo_core::Plugin::id(&self) -> &'static str
 pub fn ruvo_core::Plugin::install(self, &mut ruvo_core::App)
+pub fn ruvo_core::Plugin::requires(&self) -> &'static [&'static str]
 impl<F> ruvo_core::Plugin for F where F: core::ops::function::FnOnce(&mut ruvo_core::App)
+pub fn F::id(&self) -> &'static str
 pub fn F::install(self, &mut ruvo_core::App)
+pub fn F::requires(&self) -> &'static [&'static str]
 pub fn ruvo_core::logger() -> ruvo_core::extend::Middleware
 pub fn ruvo_core::with_state<S, F, Fut>(S, F) -> ruvo_core::extend::Middleware where S: core::marker::Send + core::marker::Sync + 'static, F: core::ops::function::Fn(alloc::sync::Arc<S>, ruvo_core::Request, ruvo_core::Next) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = ruvo_core::Response> + core::marker::Send + 'static
 pub type ruvo_core::Next = alloc::boxed::Box<(dyn core::ops::function::FnOnce(ruvo_core::Request) -> ruvo_core::extend::BoxFuture<ruvo_core::Response> + core::marker::Send)>

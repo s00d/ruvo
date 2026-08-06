@@ -34,8 +34,29 @@ start: compile → on_startup → BackgroundServices → accept
 stop:  stop accept → drain connections → stop services → on_shutdown
 ```
 
-CLI listen (`listen_args`) sets `cli_mode` and **does not** start
-`BackgroundService`s unless `.service_in_cli(true)`.
+`app.run()` is the primary entrypoint: it parses CLI commands (`check`, `routes`,
+`openapi --out`, `tasks`, `i18n missing`, plus plugin-registered commands such as
+`migrate`) and exits, or starts the server path.
+CLI command mode runs startup/shutdown hooks and skips the accept loop.
+
+Plugin errors that already know their HTTP shape use [`Error::Response`] /
+[`Error::custom`]; `wrap_errors` does **not** pass them through `error_handler`.
+Validation (`ruvo-vld`) and SeaORM `DbErr` convert into that bridge so handlers
+stay on `ruvo_core::Result` with `?`.
+
+## Database (plugin `ruvo-db`, feature `db`)
+
+One SeaORM/sqlx Postgres pool per process:
+
+```text
+Db::from_env() → on_startup connect+ping → req.db() → ConnectionTrait
+transaction() middleware → commit on 2xx / rollback otherwise
+myapp migrate|status|down via App::register_cli
+```
+
+Raw backends (`ruvo-store-postgres`, `ruvo-tasks-postgres`) reuse
+`DatabaseConnection::get_postgres_connection_pool()` — ORM and queues share the
+same pool; they do not open a second connection string.
 
 ## TLS (feature `tls`)
 
@@ -92,7 +113,7 @@ The `ruvo` facade re-exports the same root list and `ruvo::extend`.
 | Layer | Owns |
 |-------|------|
 | **ruvo-core** | App/Router/Server, dispatch, Request/Response, middleware traits, listen/drain, `ClientAddr`, route `TypeMap`, `BackgroundService`, `OnUpgrade` |
-| **plugins** | Optional features: cookies, session, rate-limit, cors, compress, static, multipart, templates, vld, openapi, i18n, ws, tasks, store, udp, sse |
+| **plugins** | Optional features: cookies, session, rate-limit, cors, compress, static, multipart, templates, vld, openapi, i18n, ws, tasks, store, udp, sse, **db** (SeaORM), store-postgres, tasks-postgres |
 
 Plugins depend on `ruvo_core` (and sometimes other plugins). Core does not depend on plugins. **KvStore is not in core** — wire via `app.state(...)`.
 
@@ -105,4 +126,4 @@ Plugins depend on `ruvo_core` (and sometimes other plugins). Core does not depen
 
 Feature `testing` exposes `App::run_startup` / `run_shutdown` (delegating to `Server`) for lifecycle tests
 (`cargo test --features testing` or `--all-features`).
-Feature `listen-reuseport` enables `App::listen_reuseport(true)` (`SO_REUSEPORT`).
+Feature `listen-reuseport` enables `BoundApp::reuseport(true)` (`SO_REUSEPORT`).

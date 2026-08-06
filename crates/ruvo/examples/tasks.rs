@@ -1,12 +1,12 @@
 //! Task worker example — enqueue via HTTP with bearer guard.
 
-use ruvo::{Bind, bearer_guard, init_tracing, App, Request, Response, Result, TaskMemoryStore, Tasks};
+use ruvo::prelude::*;
+use ruvo::{bearer_guard, Tasks};
 use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_tracing();
-    let store = Arc::new(TaskMemoryStore::new());
+    let store = Arc::new(ruvo::tasks::Memory::new());
     let mut app = App::new();
     app.install(
         Tasks::new(store)
@@ -17,8 +17,8 @@ async fn main() -> Result<()> {
             .exposed()
             .guard(bearer_guard("secret")),
     );
-    app.get("/", |_req: Request| async {
-        Response::text("POST /_tasks/enqueue with Authorization: Bearer secret")
+    app.get("/", || async {
+        "POST /_tasks/enqueue with Authorization: Bearer secret"
     });
-    app.bind(Bind::Port(3010)).serve().await
+    app.listen(3010).await
 }

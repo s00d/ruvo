@@ -1,0 +1,26 @@
+[package]
+name = "ruvo-http"
+version = "0.4.0"
+edition = "2021"
+description = "Outbound HTTP client bound to request deadline and tracing"
+license = "MIT"
+publish = false
+
+[dependencies]
+ruvo-core = { path = "../../crates/ruvo-core" }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"] }
+http = "1"
+bytes = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+tracing = "0.1"
+tokio = { version = "1", features = ["time", "sync"] }
+url = "2"
+toml = { version = "0.8", default-features = false, features = ["parse"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "test-util", "time"] }
+ruvo-core = { path = "../../crates/ruvo-core", features = ["testing"] }
+serde_json = "1"
+http = "1"

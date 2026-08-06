@@ -3,6 +3,7 @@
 use crate::plural::{pluralize, PluralFn};
 use crate::store::{Store, ROOT_SCOPE};
 use arc_swap::ArcSwap;
+use ruvo_core::extend::RouteValue;
 use ruvo_core::{App, Request, Router};
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
@@ -10,6 +11,8 @@ use std::sync::{Arc, Mutex};
 /// Page scope attached via [`I18nRouteExt::i18n_scope`].
 #[derive(Debug, Clone)]
 pub struct I18nScope(pub Box<str>);
+
+impl RouteValue for I18nScope {}
 
 impl I18nScope {
     pub fn as_str(&self) -> &str {
@@ -87,13 +90,13 @@ pub trait I18nRouteExt {
 
 impl I18nRouteExt for Router {
     fn i18n_scope(&mut self, scope: impl Into<String>) -> &mut Self {
-        self.route_meta(I18nScope(scope.into().into_boxed_str()))
+        self.with(I18nScope(scope.into().into_boxed_str()))
     }
 }
 
 impl I18nRouteExt for App {
     fn i18n_scope(&mut self, scope: impl Into<String>) -> &mut Self {
-        Router::route_meta(self, I18nScope(scope.into().into_boxed_str()));
+        self.with(I18nScope(scope.into().into_boxed_str()));
         self
     }
 }

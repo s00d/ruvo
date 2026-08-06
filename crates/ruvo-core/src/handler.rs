@@ -81,6 +81,23 @@ where
     }
 }
 
+/// `Fn() -> Fut` handlers that ignore the request (e.g. `|| async { "ok" }`).
+pub struct NoArgResponseMarker;
+
+impl<F, Fut, R> IntoHandler<(NoArgResponseMarker,)> for F
+where
+    F: Fn() -> Fut + Send + Sync + 'static,
+    Fut: Future<Output = R> + Send + 'static,
+    R: IntoResponse,
+{
+    fn into_handler(self) -> FallibleHandler {
+        Arc::new(move |_req| {
+            let fut = self();
+            Box::pin(async move { Ok(fut.await.into_response()) })
+        })
+    }
+}
+
 impl IntoHandler<()> for FallibleHandler {
     fn into_handler(self) -> FallibleHandler {
         self
@@ -95,6 +112,8 @@ pub fn wrap_errors(handler: FallibleHandler, eh: Option<ErrorHandlerFn>) -> Hand
         Box::pin(async move {
             match handler(req).await {
                 Ok(res) => res,
+                // Plugin already decided status/body — do not run error_handler.
+                Err(Error::Response(res)) => *res,
                 Err(err) => match &eh {
                     Some(hook) => hook(err).await,
                     None => err.into_response(),
