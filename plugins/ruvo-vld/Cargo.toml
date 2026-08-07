@@ -11,14 +11,13 @@ default = []
 openapi = ["dep:ruvo-openapi", "vld/openapi"]
 flash = ["dep:ruvo-session"]
 flash-templates = ["flash", "dep:ruvo-templates", "dep:minijinja"]
-form = ["dep:ruvo-multipart"]
+form = ["ruvo-core/multipart"]
 i18n = ["dep:ruvo-i18n"]
 
 [dependencies]
 ruvo-core = { path = "../../crates/ruvo-core" }
 ruvo-openapi = { path = "../ruvo-openapi", optional = true }
 ruvo-session = { path = "../ruvo-session", optional = true }
-ruvo-multipart = { path = "../ruvo-multipart", optional = true }
 ruvo-i18n = { path = "../ruvo-i18n", optional = true }
 ruvo-templates = { path = "../ruvo-templates", optional = true }
 minijinja = { version = "2", optional = true }
@@ -34,7 +33,6 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 http = "1"
 bytes = "1"
 ruvo-openapi = { path = "../ruvo-openapi" }
-ruvo-core = { path = "../../crates/ruvo-core", features = ["testing"] }
-ruvo-multipart = { path = "../ruvo-multipart" }
+ruvo-core = { path = "../../crates/ruvo-core", features = ["testing", "multipart"] }
 ruvo-session = { path = "../ruvo-session" }
 vld = { version = "0.4", features = ["serialize", "openapi"] }

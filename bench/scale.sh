@@ -19,14 +19,13 @@ fi
 run_profile() {
   local name="$1"
   local port="$2"
-  local example="$3"
-  local features="$4"
-  local cookie_hdr="${5:-}"
+  local pkg="$3"
+  local cookie_hdr="${4:-}"
 
   echo "## $name" >&2
   for w in $WORKERS; do
     echo "building/running $name workers=$w ..." >&2
-    TOKIO_WORKER_THREADS="$w" cargo run -q -p ruvo --example "$example" --features "$features" >/tmp/ruvo-scale-$name-$w.log 2>&1 &
+    TOKIO_WORKER_THREADS="$w" cargo run -q -p "$pkg" >/tmp/ruvo-scale-$name-$w.log 2>&1 &
     local pid=$!
     cleanup() { kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; }
     trap cleanup EXIT
@@ -69,8 +68,8 @@ echo "|---------|---------|-------|-----|-----|"
 
 cd "$ROOT"
 if [[ "$PROFILE" == "hello" || "$PROFILE" == "both" ]]; then
-  run_profile hello 3000 hello "static-files,cors,cookies"
+  run_profile hello 3000 hello
 fi
 if [[ "$PROFILE" == "loaded" || "$PROFILE" == "both" ]]; then
-  run_profile loaded 3001 bench_loaded "cors,cookies,session,rate-limit" cookie
+  run_profile loaded 3001 bench_loaded cookie
 fi

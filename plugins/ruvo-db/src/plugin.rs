@@ -45,6 +45,12 @@ impl Plugin for Db {
         "db"
     }
 
+    fn meta(&self) -> ruvo_core::PluginMeta {
+        ruvo_core::PluginMeta::new("Database")
+            .description("SeaORM Postgres pool and migrate CLI hooks")
+            .version(env!("CARGO_PKG_VERSION"))
+    }
+
     fn install(self, app: &mut App) {
         if self.url.is_empty() {
             app.on_startup(|_state| async {

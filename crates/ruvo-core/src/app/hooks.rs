@@ -83,6 +83,9 @@ impl App {
                 "plugin `{plugin}` requires `{dep}`; install `{dep}` before `{plugin}`"
             )));
         }
+        if let Some(msg) = self.plugin_sdk_errors.first() {
+            return Err(crate::error::Error::Internal(msg.clone()));
+        }
         Ok(())
     }
 

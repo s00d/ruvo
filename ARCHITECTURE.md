@@ -99,8 +99,8 @@ Upgraded / service state is **process-local** (not shared across processes).
 
 | Surface | Audience | Examples |
 |---------|----------|----------|
-| **crate root** | Applications | `App`, `Server`, `Router`, `Request`, `Response`, typed bodies (`Html`/`Json`/…), `Error`/`Result`/`IntoResponse`, `Plugin`, `Next`, `logger`, `with_state`, `ClientAddr`, `BackgroundService`, `OnUpgrade` |
-| **`extend`** | Plugins / advanced | `Handler`/`IntoHandler`, `ErrorResponse`, middleware traits, `named`/`with_leaked`, bodies (`Body`, `HttpBody`), path helpers, `RouteEntry`/`RouteTable`, `Extensions`/`TypeMap` (`StateMap` alias), `MatchedMeta`, `RequestBuilder`, `wait_shutdown` |
+| **crate root** | Applications | `App`, `Server`, `Router`, `Request`, `Response`, typed bodies (`Html`/`Json`/…), `Error`/`Result`/`IntoResponse`, `Plugin`, `Next`, `logger`, `with_state`, `ClientAddr`, `BackgroundService`, `OnUpgrade`, `Cell`, `Slot`, `LogConfig`/`LogRotate` |
+| **`extend`** | Plugins / advanced | `Handler`/`IntoHandler`, `ErrorResponse`, middleware traits, `named`/`with_leaked`, bodies (`Body`, `HttpBody`), path helpers, `RouteEntry`/`RouteTable`, `Extensions`/`TypeMap` (`StateMap` alias), `MatchedMeta`, `RequestBuilder`, `wait_shutdown`, `Cell`, `Slot` |
 
 Route metadata is a [`TypeMap`](crates/ruvo-core/src/state.rs) on each HTTP route (`route_meta`).
 **Same type twice — last wins**; different types never conflict. After a match,
@@ -112,8 +112,9 @@ The `ruvo` facade re-exports the same root list and `ruvo::extend`.
 
 | Layer | Owns |
 |-------|------|
-| **ruvo-core** | App/Router/Server, dispatch, Request/Response, middleware traits, listen/drain, `ClientAddr`, route `TypeMap`, `BackgroundService`, `OnUpgrade` |
-| **plugins** | Optional features: cookies, session, rate-limit, cors, compress, static, multipart, templates, vld, openapi, i18n, ws, tasks, store, udp, sse, **db** (SeaORM), store-postgres, tasks-postgres |
+| **ruvo-core** | App/Router/Server, dispatch, Request/Response, middleware traits, listen/drain, `ClientAddr`, route `TypeMap`, `BackgroundService`, `OnUpgrade`, `Cell`/`Slot` (cross-task share) |
+| **ruvo-core** (+ feature `multipart`) | Unified request input: urlencoded / multipart → `Request::input` / `form` / `Upload::save`; responses `file` / `download` |
+| **plugins** | Optional features: cookies, session, csrf, rate-limit, cors, compress, static, templates, vld, openapi, i18n, ws, tasks, store, udp, sse, mail (lettre), passport / passport-jwt / passport-oauth, http-client, **db** (SeaORM), store-postgres, tasks-postgres |
 
 Plugins depend on `ruvo_core` (and sometimes other plugins). Core does not depend on plugins. **KvStore is not in core** — wire via `app.state(...)`.
 

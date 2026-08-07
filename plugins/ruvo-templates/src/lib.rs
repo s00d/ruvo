@@ -2,13 +2,63 @@
 
 use minijinja::{path_loader, AutoEscape, Environment, Value};
 use minijinja_autoreload::AutoReloader;
-use ruvo_core::{Error, Plugin, Request, Response, Result};
+use ruvo_core::{App, Error, Plugin, Request, Response, Result};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 type PerRequestProvider = Arc<dyn Fn(&Request) -> Value + Send + Sync>;
+
+/// Shared ambient per-request helpers (plugins register into this at install).
+#[derive(Default)]
+pub struct TemplateHelpers {
+    map: Mutex<HashMap<String, PerRequestProvider>>,
+}
+
+impl TemplateHelpers {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn register<F>(&self, name: impl Into<String>, provider: F)
+    where
+        F: Fn(&Request) -> Value + Send + Sync + 'static,
+    {
+        self.map
+            .lock()
+            .unwrap()
+            .insert(name.into(), Arc::new(provider));
+    }
+
+    fn snapshot(&self) -> Vec<(String, PerRequestProvider)> {
+        self.map
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|(k, v)| (k.clone(), Arc::clone(v)))
+            .collect()
+    }
+}
+
+/// Get-or-create [`TemplateHelpers`] on the app and register a per-request provider.
+pub fn register_per_request<F>(app: &mut App, name: impl Into<String>, provider: F)
+where
+    F: Fn(&Request) -> Value + Send + Sync + 'static,
+{
+    let helpers = ensure_helpers(app);
+    helpers.register(name, provider);
+}
+
+fn ensure_helpers(app: &mut App) -> Arc<TemplateHelpers> {
+    if let Some(h) = app.try_state::<TemplateHelpers>() {
+        return h;
+    }
+    let helpers = TemplateHelpers::new();
+    app.state(helpers);
+    app.try_state::<TemplateHelpers>()
+        .expect("TemplateHelpers just inserted")
+}
 
 /// Pluggable template engine.
 ///
@@ -115,6 +165,7 @@ pub struct MiniJinjaTemplates {
     engine: MiniJinjaTemplatesEngine,
     globals: Arc<HashMap<String, Value>>,
     per_request: Arc<HashMap<String, PerRequestProvider>>,
+    helpers: Arc<TemplateHelpers>,
 }
 
 #[derive(Clone)]
@@ -127,6 +178,9 @@ impl MiniJinjaTemplates {
     pub fn render_html<T: Serialize>(&self, req: &Request, name: &str, ctx: T) -> Result<Response> {
         let mut merged: HashMap<String, Value> = (*self.globals).clone();
 
+        for (k, provider) in self.helpers.snapshot() {
+            merged.insert(k, provider(req));
+        }
         for (k, provider) in self.per_request.iter() {
             merged.insert(k.clone(), (provider)(req));
         }
@@ -234,7 +288,12 @@ impl MiniJinjaTemplatesBuilder {
 }
 
 impl Plugin for MiniJinjaTemplatesBuilder {
+    fn id(&self) -> &'static str {
+        "templates"
+    }
+
     fn install(self, app: &mut ruvo_core::App) {
+        let helpers = ensure_helpers(app);
         let globals = Arc::new(self.globals);
         let per_request = Arc::new(self.per_request);
         let dir = self.dir;
@@ -266,6 +325,7 @@ impl Plugin for MiniJinjaTemplatesBuilder {
             engine,
             globals,
             per_request,
+            helpers,
         });
 
         app.register_check("templates", move |_state| {

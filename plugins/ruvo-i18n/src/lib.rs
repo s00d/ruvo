@@ -126,6 +126,24 @@ impl I18n {
 }
 
 impl Plugin for I18n {
+    fn id(&self) -> &'static str {
+        "i18n"
+    }
+
+    fn meta(&self) -> ruvo_core::PluginMeta {
+        ruvo_core::PluginMeta::new("I18n")
+            .description("Locales, catalogs, optional path prefix and cookie")
+            .version(env!("CARGO_PKG_VERSION"))
+    }
+
+    fn requires(&self) -> &'static [&'static str] {
+        #[cfg(feature = "cookie")]
+        if self.cookie_name.is_some() {
+            return &["cookies"];
+        }
+        &[]
+    }
+
     fn install(self, app: &mut App) {
         let store = match load_store(&self.dir, &self.locales) {
             Ok(s) => s,
@@ -152,6 +170,12 @@ impl Plugin for I18n {
         app.state(state);
         app.state(AllJsonEnabled(self.enable_all_json));
 
+        #[cfg(feature = "templates")]
+        {
+            use crate::template::template_fn;
+            ruvo_templates::register_per_request(app, "t", template_fn);
+        }
+
         let locales_dir = self.dir.clone();
         let locales_meta = self.locales.clone();
         app.register_check("i18n", move |_state| {
@@ -167,20 +191,6 @@ impl Plugin for I18n {
         let mut resolve_opts = ResolveOptions::new(codes, self.default.clone());
         resolve_opts.path_prefix = self.path_prefix;
         resolve_opts.cookie_name = self.cookie_name.clone();
-
-        #[cfg(feature = "cookie")]
-        if self.cookie_name.is_some() {
-            app.on_startup(|state| async move {
-                if state.get::<ruvo_cookies::CookieLayerPresent>().is_none() {
-                    return Err(Error::Internal(
-                        "i18n: cookie locale resolve enabled but CookieLayer is not installed — \
-                         call CookieLayer.install before I18n"
-                            .into(),
-                    ));
-                }
-                Ok(())
-            });
-        }
 
         let set_cookie = self.set_locale_cookie;
         let cookie_name = self.cookie_name.clone();

@@ -1,0 +1,20 @@
+[package]
+name = "ruvo-csrf"
+version = "0.4.0"
+edition = "2021"
+description = "CSRF protection plugin for Ruvo (session double-submit)"
+license = "MIT"
+publish = false
+
+[dependencies]
+ruvo-core = { path = "../../crates/ruvo-core" }
+ruvo-session = { path = "../ruvo-session" }
+ruvo-cookies = { path = "../ruvo-cookies" }
+getrandom = "0.2"
+http = "1"
+serde_urlencoded = "0.7"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+ruvo-cookies = { path = "../ruvo-cookies" }
+ruvo-store = { path = "../ruvo-store" }

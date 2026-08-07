@@ -65,6 +65,12 @@ pub fn render_html(meta: &ResolvedMeta) -> String {
             escape(img)
         ));
     }
+    if let Some(ref published) = meta.published {
+        out.push_str(&format!(
+            "<meta property=\"article:published_time\" content=\"{}\">\n",
+            published.to_rfc3339()
+        ));
+    }
     if let Some(ref sn) = meta.site_name {
         out.push_str(&format!(
             "<meta property=\"og:site_name\" content=\"{}\">\n",
@@ -85,7 +91,14 @@ pub fn render_html(meta: &ResolvedMeta) -> String {
     }
 
     // Twitter
-    out.push_str("<meta name=\"twitter:card\" content=\"summary_large_image\">\n");
+    let card = if meta.image.is_some() {
+        "summary_large_image"
+    } else {
+        "summary"
+    };
+    out.push_str(&format!(
+        "<meta name=\"twitter:card\" content=\"{card}\">\n"
+    ));
     if let Some(ref site) = meta.twitter_site {
         out.push_str(&format!(
             "<meta name=\"twitter:site\" content=\"{}\">\n",

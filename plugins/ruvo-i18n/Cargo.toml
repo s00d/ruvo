@@ -10,10 +10,12 @@ publish = false
 default = []
 cookie = ["dep:ruvo-cookies"]
 watch = ["dep:notify"]
+templates = ["dep:ruvo-templates"]
 
 [dependencies]
 ruvo-core = { path = "../../crates/ruvo-core" }
 ruvo-cookies = { path = "../ruvo-cookies", optional = true }
+ruvo-templates = { path = "../ruvo-templates", optional = true }
 minijinja = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

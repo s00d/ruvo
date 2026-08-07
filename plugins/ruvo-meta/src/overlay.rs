@@ -14,6 +14,7 @@ struct MetaOverlayData {
     published: Option<DateTime<Utc>>,
     og_type: Option<String>,
     jsonld: Vec<Value>,
+    manual: bool,
 }
 
 /// Shared per-request overlay (cheap to clone into middleware after `next`).
@@ -70,6 +71,11 @@ impl MetaOverlay {
         self
     }
 
+    pub fn manual(&self) -> &Self {
+        self.inner.lock().unwrap().manual = true;
+        self
+    }
+
     pub(crate) fn snapshot(&self) -> OverlaySnapshot {
         let g = self.inner.lock().unwrap();
         OverlaySnapshot {
@@ -81,6 +87,7 @@ impl MetaOverlay {
             published: g.published,
             og_type: g.og_type.clone(),
             jsonld: g.jsonld.clone(),
+            manual: g.manual,
         }
     }
 }
@@ -92,8 +99,8 @@ pub(crate) struct OverlaySnapshot {
     pub image: Option<String>,
     pub noindex: Option<bool>,
     pub canonical_path: Option<String>,
-    #[allow(dead_code)]
     pub published: Option<DateTime<Utc>>,
     pub og_type: Option<String>,
     pub jsonld: Vec<Value>,
+    pub manual: bool,
 }

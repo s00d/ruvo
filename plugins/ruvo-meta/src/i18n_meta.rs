@@ -9,12 +9,26 @@ pub fn enrich(req: &Request, defaults: &MetaDefaults, resolved: &mut ResolvedMet
     let Some(state) = req.try_state::<I18nState>() else {
         return;
     };
+    enrich_parts(
+        state.as_ref(),
+        req.locale(),
+        &req.path,
+        defaults,
+        resolved,
+    );
+}
+
+pub fn enrich_parts(
+    state: &I18nState,
+    current: &str,
+    path: &str,
+    defaults: &MetaDefaults,
+    resolved: &mut ResolvedMeta,
+) {
     let locales: Vec<Locale> = state.store.load().locales.clone();
     if locales.is_empty() {
         return;
     }
-
-    let current = req.locale().to_string();
 
     if let Some(cur) = locales.iter().find(|l| l.code == current) {
         if cur.seo {
@@ -28,9 +42,8 @@ pub fn enrich(req: &Request, defaults: &MetaDefaults, resolved: &mut ResolvedMet
     };
 
     let codes: Vec<&str> = locales.iter().map(|l| l.code.as_str()).collect();
-    let bare = strip_locale_prefix(&req.path, &codes);
+    let bare = strip_locale_prefix(path, &codes);
 
-    // Same default for loop + x-default: first locale with seo: true.
     let default_code = locales
         .iter()
         .find(|l| l.seo)

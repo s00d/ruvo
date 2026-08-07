@@ -1,0 +1,14 @@
+[package]
+name = "api_oauth"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "api_oauth"
+path = "src/main.rs"
+
+[dependencies]
+ruvo = { path = "../../../crates/ruvo", features = ["passport-oauth", "env", "cli"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tracing = "0.1"

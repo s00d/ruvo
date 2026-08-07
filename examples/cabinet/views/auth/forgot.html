@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="vue-auth" class="mx-auto max-w-md">
+  <h1 class="font-display text-3xl font-semibold text-mist-100">{{ t("auth.forgot_title") }}</h1>
+  {% if sent %}<p class="mt-3 text-sm text-tide-400">{{ t("auth.forgot_sent") }}</p>{% endif %}
+  <p v-if="error" class="mt-3 text-sm text-red-300" v-text="error"></p>
+  <form class="mt-6 grid gap-4 rounded-xl border border-white/10 bg-ink-800/50 p-5" @submit="submit">
+    <label class="grid gap-1.5 text-sm text-mist-300">
+      {{ t("auth.email") }}
+      <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100 outline-none ring-tide-400/40 focus:ring-2" name="email" type="email" required>
+    </label>
+    <button
+      type="submit"
+      class="rounded-md bg-tide-500 px-4 py-2.5 font-semibold text-ink-950 transition hover:bg-tide-400 disabled:opacity-50"
+      :disabled="busy"
+    >{{ t("auth.send_reset") }}</button>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+RuvoAuth.mount("#vue-auth", {
+  data() {
+    return { error: "", busy: false };
+  },
+  methods: {
+    async submit(e) {
+      e.preventDefault();
+      this.busy = true;
+      this.error = "";
+      try {
+        await RuvoAuth.api.post("/forgot-password", RuvoAuth.formFields(e.target));
+        location.href = "/forgot-password?sent=1";
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+        this.busy = false;
+      }
+    },
+  },
+});
+</script>
+{% endblock %}

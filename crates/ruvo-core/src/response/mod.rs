@@ -255,6 +255,26 @@ impl Response {
         file::serve_in(dir.as_ref(), relative.as_ref()).await
     }
 
+    /// [`Self::file`] plus `Content-Disposition: attachment`.
+    pub async fn download(path: impl AsRef<Path>) -> Self {
+        let path = path.as_ref();
+        let name = path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("download");
+        Self::file(path).await.attachment(name)
+    }
+
+    /// [`Self::file_in`] plus `Content-Disposition: attachment`.
+    pub async fn download_in(dir: impl AsRef<Path>, relative: impl AsRef<Path>) -> Self {
+        let relative = relative.as_ref();
+        let name = relative
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("download");
+        Self::file_in(dir, relative).await.attachment(name)
+    }
+
     pub(crate) fn clear_body(&mut self) {
         self.body = Body::Bytes(Bytes::new());
     }

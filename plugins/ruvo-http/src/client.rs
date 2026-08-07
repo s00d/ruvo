@@ -521,6 +521,12 @@ impl Plugin for Http {
         "http"
     }
 
+    fn meta(&self) -> ruvo_core::PluginMeta {
+        ruvo_core::PluginMeta::new("HTTP client")
+            .description("Outbound HTTP client with SSRF guards and named configs")
+            .version(env!("CARGO_PKG_VERSION"))
+    }
+
     fn install(self, app: &mut App) {
         let mut named_clients = self.named;
         if let Some(doc) = app.config_doc() {

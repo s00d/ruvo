@@ -1,7 +1,6 @@
 //! Sitemap generation from RouteTable + providers.
 
 use crate::canonical::absolute_url;
-use crate::defaults::MetaDefaults;
 use crate::page::MetaPage;
 use bytes::Bytes;
 use chrono::{DateTime, Utc};
@@ -172,27 +171,96 @@ pub async fn collect_entries(
     state: &Arc<StateMap>,
     registry: &SitemapRegistry,
 ) -> Result<Vec<Entry>, String> {
+    collect_entries_with(state, registry, &CollectOpts::default()).await
+}
+
+#[derive(Debug, Clone)]
+pub struct CollectOpts {
+    pub from_routes: bool,
+    pub excludes: Vec<String>,
+    pub includes: Vec<Entry>,
+}
+
+impl Default for CollectOpts {
+    fn default() -> Self {
+        Self {
+            from_routes: true,
+            excludes: Vec::new(),
+            includes: Vec::new(),
+        }
+    }
+}
+
+/// Glob-ish match: `/admin`, `/admin/*`, `/api*`.
+pub fn path_excluded(path: &str, patterns: &[String]) -> bool {
+    patterns.iter().any(|p| match_exclude(path, p))
+}
+
+fn match_exclude(path: &str, pattern: &str) -> bool {
+    if let Some(prefix) = pattern.strip_suffix("/*") {
+        path == prefix || path.starts_with(&format!("{prefix}/"))
+    } else if let Some(prefix) = pattern.strip_suffix('*') {
+        path.starts_with(prefix)
+    } else {
+        path == pattern
+    }
+}
+
+pub async fn collect_entries_with(
+    state: &Arc<StateMap>,
+    registry: &SitemapRegistry,
+    opts: &CollectOpts,
+) -> Result<Vec<Entry>, String> {
     let mut entries = Vec::new();
-    if let Some(table) = state.get::<RouteTable>() {
-        for entry in &table.0 {
-            if let RouteEntry::Http {
-                method,
-                path,
-                meta,
-            } = entry
-            {
-                if should_include_route(method, path.as_str(), meta) {
-                    entries.push(Entry::new(path.clone()));
+    let mut seen = std::collections::HashSet::new();
+
+    if opts.from_routes {
+        if let Some(table) = state.get::<RouteTable>() {
+            for entry in &table.0 {
+                if let RouteEntry::Http {
+                    method,
+                    path,
+                    meta,
+                } = entry
+                {
+                    if !should_include_route(method, path.as_str(), meta) {
+                        continue;
+                    }
+                    if path_excluded(path, &opts.excludes) {
+                        continue;
+                    }
+                    if seen.insert(path.clone()) {
+                        entries.push(Entry::new(path.clone()));
+                    }
                 }
             }
         }
     }
+
+    for e in &opts.includes {
+        if path_excluded(&e.path, &opts.excludes) {
+            continue;
+        }
+        if seen.insert(e.path.clone()) {
+            entries.push(e.clone());
+        }
+    }
+
     for p in &registry.providers {
         let ctx = SitemapCtx {
             state: Arc::clone(state),
         };
-        let extra = (p.run)(ctx).await.map_err(|e| format!("sitemap provider `{}`: {e}", p.pattern))?;
-        entries.extend(extra);
+        let extra = (p.run)(ctx)
+            .await
+            .map_err(|e| format!("sitemap provider `{}`: {e}", p.pattern))?;
+        for e in extra {
+            if path_excluded(&e.path, &opts.excludes) {
+                continue;
+            }
+            if seen.insert(e.path.clone()) {
+                entries.push(e);
+            }
+        }
     }
     Ok(entries)
 }
@@ -298,18 +366,15 @@ fn xml_escape(s: &str) -> String {
 pub async fn build_sitemap_body(
     state: &Arc<StateMap>,
     registry: &SitemapRegistry,
-    defaults: &MetaDefaults,
+    public_url: &str,
     hreflang: Option<&HreflangOpts>,
+    opts: &CollectOpts,
 ) -> Result<Bytes, String> {
-    let public = defaults
-        .public_url
-        .as_deref()
-        .ok_or_else(|| "meta: public_url required for sitemap".to_string())?;
-    let entries = collect_entries(state, registry).await?;
+    let entries = collect_entries_with(state, registry, opts).await?;
     let xml = if entries.len() > MAX_URLS_PER_FILE {
-        render_sitemap_index(public, entries.len())
+        render_sitemap_index(public_url, entries.len())
     } else {
-        render_urlset(public, &entries, hreflang)
+        render_urlset(public_url, &entries, hreflang)
     };
     Ok(Bytes::from(xml))
 }

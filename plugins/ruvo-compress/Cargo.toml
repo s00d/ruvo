@@ -8,7 +8,7 @@ publish = false
 
 [dependencies]
 ruvo-core = { path = "../../crates/ruvo-core" }
-async-compression = { version = "0.4", features = ["tokio", "gzip", "brotli"] }
+async-compression = { version = "0.4", features = ["tokio", "gzip", "deflate", "brotli"] }
 bytes = "1"
 http = "1"
 tokio = { version = "1", features = ["io-util"] }

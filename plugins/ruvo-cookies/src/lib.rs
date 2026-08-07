@@ -30,6 +30,12 @@ impl Plugin for CookieLayer {
         "cookies"
     }
 
+    fn meta(&self) -> ruvo_core::PluginMeta {
+        ruvo_core::PluginMeta::new("Cookies")
+            .description("Parse Cookie header into request-local Cookies")
+            .version(env!("CARGO_PKG_VERSION"))
+    }
+
     fn install(self, app: &mut App) {
         app.state(CookieLayerPresent);
         app.use_middleware(named("cookies", |mut req: Request, next: Next| async move {

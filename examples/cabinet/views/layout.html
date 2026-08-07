@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: { 950: '#0a1214', 900: '#0f1a1e', 800: '#152429', 700: '#1e333a', 500: '#3d5c66' },
+            mist: { 100: '#e8f1f3', 200: '#c5d8de', 400: '#7a9aa5', 500: '#5a7d88' },
+            tide: { 400: '#2bb8a8', 500: '#1a9e90', 600: '#158277' },
+          },
+          fontFamily: {
+            display: ['Fraunces', 'Georgia', 'serif'],
+            sans: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          },
+          keyframes: {
+            rise: {
+              '0%': { opacity: '0', transform: 'translateY(12px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+          },
+          animation: {
+            rise: 'rise 0.55s ease-out both',
+            'fade-in': 'fadeIn 0.35s ease-out both',
+          },
+        },
+      },
+    };
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      body {
+        @apply font-sans text-mist-100 antialiased min-h-screen;
+        background:
+          radial-gradient(900px 480px at 12% -8%, rgba(43, 184, 168, 0.18), transparent 55%),
+          radial-gradient(700px 400px at 92% 8%, rgba(90, 125, 136, 0.22), transparent 50%),
+          linear-gradient(165deg, #0f1a1e 0%, #0a1214 55%, #0c1619 100%);
+      }
+      ::selection { @apply bg-tide-500/40 text-white; }
+    }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body class="flex flex-col">
+  <div
+    id="vue-nav"
+    data-vue="nav"
+    class="sticky top-0 z-40 border-b border-white/5 bg-ink-950/70 backdrop-blur-md"
+  >
+    <header class="mx-auto flex max-w-3xl items-center justify-between gap-4 px-5 py-3.5">
+      <a
+        href="/"
+        class="font-display text-lg font-semibold tracking-tight text-mist-100 transition-colors duration-200 hover:text-tide-400"
+      >{{ t("nav.brand") }}</a>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center rounded-md border border-white/10 px-2.5 py-1.5 text-mist-200 md:hidden"
+        @click="open = !open"
+        :aria-expanded="open ? 'true' : 'false'"
+        aria-controls="site-nav"
+      >
+        <span class="sr-only">Menu</span>
+        <svg v-if="!open" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <nav
+        id="site-nav"
+        class="absolute left-0 right-0 top-full flex-col gap-1 border-b border-white/5 bg-ink-950/95 px-5 py-3 md:static md:flex md:flex-row md:items-center md:gap-4 md:border-0 md:bg-transparent md:p-0"
+        :class="open ? 'flex animate-fade-in' : 'hidden md:flex'"
+      >
+        <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/">{{ t("nav.home") }}</a>
+        {% if user %}
+          <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/cabinet">{{ t("nav.cabinet") }}</a>
+          <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/cabinet/notes">{{ t("nav.notes") }}</a>
+          <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/cabinet/profile">{{ t("nav.profile") }}</a>
+          {% if user.email_verified %}
+            <span class="hidden text-xs text-tide-400 md:inline">✓</span>
+          {% endif %}
+          {% if user.two_factor_enabled %}
+            <span class="hidden text-xs text-tide-400 md:inline">2FA</span>
+          {% endif %}
+          <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/cabinet/live">{{ t("nav.live") }}</a>
+          <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/cabinet/fetch">{{ t("nav.fetch") }}</a>
+          <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/docs">API</a>
+          {% if csrf %}
+          <button
+            type="button"
+            class="mt-1 rounded-md border border-white/10 px-3 py-1 text-sm text-mist-200 transition hover:border-tide-400/40 hover:text-tide-400 disabled:opacity-50 md:mt-0"
+            :disabled="logoutBusy"
+            @click="logout"
+          >{{ t("nav.logout") }}</button>
+          {% endif %}
+        {% else %}
+          <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/login">{{ t("nav.login") }}</a>
+          <a
+            class="rounded-md bg-tide-500 px-3 py-1 text-sm font-semibold text-ink-950 transition hover:bg-tide-400"
+            href="/register"
+          >{{ t("nav.register") }}</a>
+        {% endif %}
+      </nav>
+    </header>
+  </div>
+
+  <main class="mx-auto w-full max-w-3xl flex-1 animate-rise px-5 py-10 pb-16">
+    {% if errors %}
+    <div id="vue-flash" data-vue="flash" class="mb-6" v-show="visible">
+      <ul class="rounded-lg border border-red-400/30 bg-red-950/40 px-4 py-3 text-sm text-red-200">
+        {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+      </ul>
+      <button
+        type="button"
+        class="mt-2 text-xs text-mist-400 underline-offset-2 hover:text-mist-200 hover:underline"
+        @click="dismiss"
+      >Dismiss</button>
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="px-5 pb-10 text-center text-sm text-mist-500">
+    <p>{{ t("footer.plugins") }}</p>
+  </footer>
+
+  <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="/assets/js/auth-api.js"></script>
+  <script src="/assets/js/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

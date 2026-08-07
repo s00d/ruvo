@@ -2,7 +2,8 @@
 
 use crate::defaults::MetaDefaults;
 use crate::page::MetaPage;
-use crate::sitemap::{collect_entries, path_is_dynamic, SitemapRegistry};
+use crate::robots::RobotsConfig;
+use crate::sitemap::{collect_entries, collect_entries_with, path_is_dynamic, CollectOpts, SitemapRegistry};
 use http::Method;
 use ruvo_core::extend::{RouteEntry, RouteTable};
 use ruvo_core::{App, Error};
@@ -10,20 +11,25 @@ use std::collections::HashSet;
 use std::path::Path;
 use std::sync::Arc;
 
-pub fn register_meta_check(app: &mut App, registry: Arc<SitemapRegistry>) {
+pub fn register_meta_check(app: &mut App) {
     app.register_check("meta", move |state| {
-        let registry = Arc::clone(&registry);
         async move {
             let defaults = state
                 .get::<MetaDefaults>()
                 .map(|d| (*d).clone())
                 .unwrap_or_default();
 
+            let robots_blocked = state
+                .get::<RobotsConfig>()
+                .map(|c| c.block_all)
+                .unwrap_or(false)
+                || defaults.robots_block_all;
+
             // staging profile must block robots
             let profile = std::env::var("RUVO_PROFILE").unwrap_or_default();
-            if profile == "staging" && !defaults.robots_block_all {
+            if profile == "staging" && !robots_blocked {
                 return Err(Error::Internal(
-                    "meta: staging profile requires robots = block-all (set [staging.meta])".into(),
+                    "meta: staging profile requires robots block_all (Robots::block_all or [robots]/block_all = true)".into(),
                 ));
             }
 
@@ -36,10 +42,17 @@ pub fn register_meta_check(app: &mut App, registry: Arc<SitemapRegistry>) {
                 check_image_exists(img)?;
             }
 
-            // providers
-            let _ = collect_entries(&state, &registry)
-                .await
-                .map_err(Error::Internal)?;
+            if let Some(registry) = state.get::<Arc<SitemapRegistry>>() {
+                if let Some(opts) = state.get::<Arc<CollectOpts>>() {
+                    let _ = collect_entries_with(&state, registry.as_ref(), opts.as_ref())
+                        .await
+                        .map_err(Error::Internal)?;
+                } else {
+                    let _ = collect_entries(&state, registry.as_ref())
+                        .await
+                        .map_err(Error::Internal)?;
+                }
+            }
 
             Ok(())
         }
@@ -83,11 +96,17 @@ fn check_titles(table: &RouteTable, defaults: &MetaDefaults) -> Result<(), Error
     }
     if missing.is_empty() {
         Ok(())
-    } else {
+    } else if defaults.check_strict {
         Err(Error::Internal(format!(
             "meta: indexable routes need title+description: {}",
             missing.join(", ")
         )))
+    } else {
+        tracing::warn!(
+            "meta: indexable routes missing title+description: {}",
+            missing.join(", ")
+        );
+        Ok(())
     }
 }
 

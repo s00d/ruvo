@@ -40,3 +40,21 @@ async fn concurrent_allows_respect_max() {
     assert_eq!(ok.load(Ordering::SeqCst), 10);
     assert_eq!(limited.load(Ordering::SeqCst), 90);
 }
+
+#[tokio::test]
+async fn sets_ratelimit_headers() {
+    let mut app = App::new();
+    RateLimit::new(5, Duration::from_secs(60)).install(&mut app);
+    app.get("/", |_r: Request| async { Response::text("ok") });
+
+    let res = app.handle_request(Method::GET, "/", "").await;
+    assert_eq!(res.status_code().as_u16(), 200);
+    assert_eq!(
+        res.headers()
+            .get("ratelimit-limit")
+            .and_then(|v| v.to_str().ok()),
+        Some("5")
+    );
+    assert!(res.headers().get("ratelimit-remaining").is_some());
+    assert!(res.headers().get("ratelimit-reset").is_some());
+}

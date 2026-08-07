@@ -1,0 +1,3 @@
+# Local SQLite databases (created at runtime)
+data/*.db
+data/*.db-*

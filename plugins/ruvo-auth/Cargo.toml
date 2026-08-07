@@ -1,0 +1,40 @@
+[package]
+name = "ruvo-auth"
+version = "0.4.0"
+edition = "2021"
+description = "Fortify-style authentication for Ruvo (register, 2FA, reset, roles)"
+license = "MIT"
+publish = false
+
+[features]
+default = []
+vld = ["dep:ruvo-vld", "dep:vld", "ruvo-vld/form", "ruvo-vld/flash", "ruvo-vld/openapi", "vld/openapi"]
+
+[dependencies]
+ruvo-core = { path = "../../crates/ruvo-core", features = ["multipart"] }
+ruvo-db = { path = "../ruvo-db" }
+ruvo-passport = { path = "../ruvo-passport", features = ["jwt", "session"] }
+ruvo-mail = { path = "../ruvo-mail" }
+ruvo-session = { path = "../ruvo-session" }
+ruvo-vld = { path = "../ruvo-vld", optional = true, features = ["form", "flash"] }
+vld = { version = "0.4", optional = true, features = ["serialize"] }
+sea-orm = { version = "2.0", default-features = false, features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono"] }
+sea-orm-migration = { version = "2.0", default-features = false, features = ["sqlx-postgres", "runtime-tokio-rustls"] }
+async-trait = "0.1"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+getrandom = "0.2"
+hmac = "0.12"
+totp-rs = { version = "5", features = ["gen_secret", "otpauth"] }
+urlencoding = "2"
+http = "1"
+tracing = "0.1"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+ruvo-core = { path = "../../crates/ruvo-core", features = ["testing", "multipart"] }
+ruvo-session = { path = "../ruvo-session" }
+ruvo-vld = { path = "../ruvo-vld", features = ["form", "flash"] }
+vld = { version = "0.4", features = ["serialize"] }

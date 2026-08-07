@@ -1,0 +1,119 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="vue-two-factor" class="mx-auto max-w-lg">
+  <h1 class="font-display text-3xl font-semibold text-mist-100">{{ t("auth.two_factor") }}</h1>
+  <p v-if="error" class="mt-3 text-sm text-red-300" v-text="error"></p>
+
+  <template v-if="enabled">
+    <p class="mt-4 text-mist-300">{{ t("auth.two_factor_enabled_help") }}</p>
+    <form class="mt-4 grid max-w-md gap-3" @submit.prevent="disable">
+      <input
+        class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100"
+        type="password"
+        placeholder="{{ t('auth.password') }}"
+        v-model="password"
+        required
+      >
+      <button
+        type="submit"
+        class="rounded-md border border-red-400/40 px-4 py-2 text-red-200 disabled:opacity-50"
+        :disabled="busy"
+      >{{ t("auth.disable_2fa") }}</button>
+    </form>
+  </template>
+
+  <template v-else>
+    <div class="mt-4" v-if="!setup">
+      <button
+        type="button"
+        class="rounded-md bg-tide-500 px-4 py-2.5 font-semibold text-ink-950 disabled:opacity-50"
+        :disabled="busy"
+        @click="enable"
+      >{{ t("auth.enable_2fa") }}</button>
+    </div>
+    <div class="mt-4" v-else>
+      <p class="text-sm text-mist-400">{{ t("auth.scan_qr") }}</p>
+      <p class="mt-2 break-all font-mono text-xs text-tide-400" v-text="otpauthUrl"></p>
+      <p class="mt-2 text-sm text-mist-300">
+        {{ t("auth.secret") }}: <code v-text="secret"></code>
+      </p>
+      <ul class="mt-3 grid grid-cols-2 gap-1 font-mono text-xs text-mist-200">
+        <li v-for="c in recoveryCodes" :key="c" v-text="c"></li>
+      </ul>
+      <form class="mt-4 grid max-w-md gap-3" @submit.prevent="confirm">
+        <input
+          class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100"
+          inputmode="numeric"
+          v-model="code"
+          required
+        >
+        <button
+          type="submit"
+          class="rounded-md bg-tide-500 px-4 py-2.5 font-semibold text-ink-950 disabled:opacity-50"
+          :disabled="busy"
+        >{{ t("auth.confirm") }}</button>
+      </form>
+    </div>
+  </template>
+
+  <p class="mt-6"><a class="text-tide-400" href="/cabinet/profile">{{ t("cabinet.profile") }}</a></p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+RuvoAuth.mount("#vue-two-factor", {
+  data() {
+    return {
+      enabled: {% if user.two_factor_enabled %}true{% else %}false{% endif %},
+      error: "",
+      busy: false,
+      setup: false,
+      secret: "",
+      otpauthUrl: "",
+      recoveryCodes: [],
+      code: "",
+      password: "",
+    };
+  },
+  methods: {
+    async enable() {
+      this.busy = true;
+      this.error = "";
+      try {
+        const { data } = await RuvoAuth.api.post("/two-factor", {});
+        this.setup = true;
+        this.secret = data.secret || "";
+        this.otpauthUrl = data.otpauth_url || "";
+        this.recoveryCodes = data.recovery_codes || [];
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+      } finally {
+        this.busy = false;
+      }
+    },
+    async confirm() {
+      this.busy = true;
+      this.error = "";
+      try {
+        await RuvoAuth.api.post("/two-factor/confirm", { code: this.code });
+        location.reload();
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+        this.busy = false;
+      }
+    },
+    async disable() {
+      this.busy = true;
+      this.error = "";
+      try {
+        await RuvoAuth.api.post("/two-factor/disable", { password: this.password });
+        location.reload();
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+        this.busy = false;
+      }
+    },
+  },
+});
+</script>
+{% endblock %}

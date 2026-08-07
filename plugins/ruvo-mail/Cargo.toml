@@ -1,0 +1,28 @@
+[package]
+name = "ruvo-mail"
+version = "0.4.0"
+edition = "2021"
+description = "Outbound email for Ruvo (lettre SMTP / fake / file)"
+license = "MIT"
+publish = false
+
+[dependencies]
+ruvo-core = { path = "../../crates/ruvo-core" }
+lettre = { version = "0.11", default-features = false, features = [
+    "builder",
+    "hostname",
+    "smtp-transport",
+    "pool",
+    "tokio1",
+    "tokio1-rustls",
+    "ring",
+    "rustls-platform-verifier",
+    "file-transport",
+] }
+tokio = { version = "1", features = ["fs", "io-util"] }
+tracing = "0.1"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs"] }
+tempfile = "3"
+http = "1"

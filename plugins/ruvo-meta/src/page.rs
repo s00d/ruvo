@@ -13,6 +13,8 @@ pub struct MetaPage {
     pub canonical_path: Option<String>,
     pub moved_to: Option<String>,
     pub og_type: Option<String>,
+    /// Skip automatic HTML head injection for this route.
+    pub manual: bool,
 }
 
 impl MetaPage {
@@ -52,6 +54,11 @@ impl MetaPage {
 
     pub fn og_type(mut self, t: impl Into<String>) -> Self {
         self.og_type = Some(t.into());
+        self
+    }
+
+    pub fn manual(mut self) -> Self {
+        self.manual = true;
         self
     }
 }

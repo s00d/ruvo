@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="vue-auth" class="mx-auto max-w-md">
+  <h1 class="font-display text-3xl font-semibold text-mist-100">{{ t("auth.verify_title") }}</h1>
+  {% if sent %}<p class="mt-3 text-sm text-tide-400">{{ t("auth.verify_sent") }}</p>{% endif %}
+  {% if error %}<p class="mt-3 text-sm text-red-300">{{ error }}</p>{% endif %}
+  <p v-if="error" class="mt-3 text-sm text-red-300" v-text="error"></p>
+  {% if user and user.email_verified %}
+    <p class="mt-4 text-mist-300">{{ t("auth.already_verified") }}</p>
+  {% elif user %}
+    <p class="mt-4 text-mist-300">{{ t("auth.verify_help") }}</p>
+    <form class="mt-4" @submit="submit">
+      <button
+        type="submit"
+        class="rounded-md bg-tide-500 px-4 py-2.5 font-semibold text-ink-950 disabled:opacity-50"
+        :disabled="busy"
+      >{{ t("auth.resend") }}</button>
+    </form>
+  {% else %}
+    <p class="mt-4 text-mist-300"><a class="text-tide-400" href="/login">{{ t("auth.login") }}</a></p>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+RuvoAuth.mount("#vue-auth", {
+  data() {
+    return { error: "", busy: false };
+  },
+  methods: {
+    async submit(e) {
+      e.preventDefault();
+      this.busy = true;
+      this.error = "";
+      try {
+        await RuvoAuth.api.post("/email/verification-notification", {});
+        location.href = "/email/verify?sent=1";
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+        this.busy = false;
+      }
+    },
+  },
+});
+</script>
+{% endblock %}

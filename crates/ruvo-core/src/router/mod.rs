@@ -201,6 +201,14 @@ impl Router {
         self
     }
 
+    /// Shared app state inserted via [`Self::state`], if present.
+    pub fn try_state<T>(&self) -> Option<std::sync::Arc<T>>
+    where
+        T: Send + Sync + 'static,
+    {
+        self.state.get::<T>()
+    }
+
     pub fn get<H, T>(&mut self, path: &str, handler: H) -> &mut Self
     where
         H: IntoHandler<T>,

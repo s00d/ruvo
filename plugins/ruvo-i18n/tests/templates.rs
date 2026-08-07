@@ -39,10 +39,11 @@ async fn template_fn_translates_plural_and_interpolation() {
     .unwrap();
 
     let mut app = App::new();
-    I18n::new(locales_dir.path(), vec![Locale::new("en"), Locale::new("de")])
-        .fallback("en")
-        .path_prefix(false)
-        .install(&mut app);
+    app.install(
+        I18n::new(locales_dir.path(), vec![Locale::new("en"), Locale::new("de")])
+            .fallback("en")
+            .path_prefix(false),
+    );
     app.install(
         Templates::minijinja(views.path())
             .autoreload(false)
@@ -96,9 +97,10 @@ async fn template_fn_local_ctx_overrides_ambient_t() {
     .unwrap();
 
     let mut app = App::new();
-    I18n::new(locales_dir.path(), vec![Locale::new("en")])
-        .path_prefix(false)
-        .install(&mut app);
+    app.install(
+        I18n::new(locales_dir.path(), vec![Locale::new("en")])
+            .path_prefix(false),
+    );
     app.install(
         Templates::minijinja(views.path())
             .autoreload(false)

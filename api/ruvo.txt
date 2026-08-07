@@ -1,27 +1,39 @@
 pub mod ruvo
+pub use ruvo::AppStore
 pub use ruvo::BackgroundService
+pub use ruvo::Cell
 pub use ruvo::ClientAddr
+pub use ruvo::ConfigDoc
 pub use ruvo::EnvError
 pub use ruvo::Error
+pub use ruvo::FormData
 pub use ruvo::Html
 pub use ruvo::Http
 pub use ruvo::IntoResponse
 pub use ruvo::Json
 pub use ruvo::KvStore
+pub use ruvo::LogConfig
+pub use ruvo::LogRotate
 pub use ruvo::Namespace
 pub use ruvo::Next
 pub use ruvo::NoContent
 pub use ruvo::OnUpgrade
+pub use ruvo::PLUGIN_SDK_VERSION
 pub use ruvo::Plugin
+pub use ruvo::PluginMeta
+pub use ruvo::PluginSdkVersion
 pub use ruvo::Redirect
 pub use ruvo::Request
 pub use ruvo::Response
 pub use ruvo::Router
 pub use ruvo::Server
 pub use ruvo::Shutdown
+pub use ruvo::Slot
 pub use ruvo::Static
+pub use ruvo::TestClient
 pub use ruvo::Text
 pub use ruvo::Tls
+pub use ruvo::Upload
 pub use ruvo::env_require
 pub use ruvo::logger
 pub use ruvo::namespace
@@ -70,6 +82,7 @@ impl !core::panic::unwind_safe::UnwindSafe for ruvo::App
 pub type ruvo::prelude::Result<T> = core::result::Result<T, ruvo::AppError>
 pub mod ruvo::store
 pub use ruvo::store::AppKey
+pub use ruvo::store::AppStore
 pub use ruvo::store::Encrypted
 pub use ruvo::store::KvStore
 pub use ruvo::store::Memory
@@ -77,6 +90,21 @@ pub use ruvo::store::Namespace
 pub use ruvo::store::encrypted
 pub use ruvo::store::encrypted_ns
 pub use ruvo::store::namespace
+pub struct ruvo::store::SharedStore(pub ruvo_store::AppStore)
+impl ruvo::SharedStore
+pub fn ruvo::SharedStore::memory() -> Self
+pub fn ruvo::SharedStore::new(alloc::sync::Arc<dyn ruvo_store::KvStore>) -> Self
+impl ruvo_core::plugin::Plugin for ruvo::SharedStore
+pub fn ruvo::SharedStore::id(&self) -> &'static str
+pub fn ruvo::SharedStore::install(self, &mut ruvo_core::app::App)
+pub fn ruvo::SharedStore::meta(&self) -> ruvo_core::plugin::PluginMeta
+impl core::marker::Freeze for ruvo::SharedStore
+impl core::marker::Send for ruvo::SharedStore
+impl core::marker::Sync for ruvo::SharedStore
+impl core::marker::Unpin for ruvo::SharedStore
+impl core::marker::UnsafeUnpin for ruvo::SharedStore
+impl !core::panic::unwind_safe::RefUnwindSafe for ruvo::SharedStore
+impl !core::panic::unwind_safe::UnwindSafe for ruvo::SharedStore
 pub enum ruvo::AppError
 pub ruvo::AppError::Core(ruvo_core::error::Error)
 impl core::convert::From<ruvo_core::error::Error> for ruvo::AppError
@@ -132,5 +160,20 @@ impl core::marker::Unpin for ruvo::BoundApp
 impl core::marker::UnsafeUnpin for ruvo::BoundApp
 impl !core::panic::unwind_safe::RefUnwindSafe for ruvo::BoundApp
 impl !core::panic::unwind_safe::UnwindSafe for ruvo::BoundApp
+pub struct ruvo::SharedStore(pub ruvo_store::AppStore)
+impl ruvo::SharedStore
+pub fn ruvo::SharedStore::memory() -> Self
+pub fn ruvo::SharedStore::new(alloc::sync::Arc<dyn ruvo_store::KvStore>) -> Self
+impl ruvo_core::plugin::Plugin for ruvo::SharedStore
+pub fn ruvo::SharedStore::id(&self) -> &'static str
+pub fn ruvo::SharedStore::install(self, &mut ruvo_core::app::App)
+pub fn ruvo::SharedStore::meta(&self) -> ruvo_core::plugin::PluginMeta
+impl core::marker::Freeze for ruvo::SharedStore
+impl core::marker::Send for ruvo::SharedStore
+impl core::marker::Sync for ruvo::SharedStore
+impl core::marker::Unpin for ruvo::SharedStore
+impl core::marker::UnsafeUnpin for ruvo::SharedStore
+impl !core::panic::unwind_safe::RefUnwindSafe for ruvo::SharedStore
+impl !core::panic::unwind_safe::UnwindSafe for ruvo::SharedStore
 pub fn ruvo::init_tracing()
 pub type ruvo::Result<T> = core::result::Result<T, ruvo::AppError>

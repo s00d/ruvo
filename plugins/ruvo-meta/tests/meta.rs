@@ -1,7 +1,8 @@
 use http::Method;
 use ruvo_core::{App, Json, Request, Response};
 use ruvo_meta::{
-    absolute_url, render_html, resolve_meta, strip_tracking, Article, Meta, MetaExt, TrailingSlash,
+    absolute_url, render_html, resolve_meta, strip_tracking, Article, Meta, MetaExt, Robots,
+    Sitemap, TrailingSlash,
 };
 use serde_json::json;
 
@@ -87,11 +88,80 @@ async fn handler_noindex_sets_x_robots_tag_on_json() {
 }
 
 #[tokio::test]
+async fn injects_head_into_bare_html() {
+    use ruvo_core::Html;
+
+    let mut app = App::new();
+    app.install(Meta::new().public_url("https://ex.com").site_name("S"));
+    app.get("/about", || async { Html("<h1>About</h1>".to_string()) })
+        .with(
+            Meta::page()
+                .title("About")
+                .description("About page"),
+        );
+
+    let server = app.build().unwrap();
+    let body = String::from_utf8(
+        server
+            .handle_request(Method::GET, "/about", "")
+            .await
+            .body_bytes()
+            .unwrap()
+            .to_vec(),
+    )
+    .unwrap();
+    assert!(body.contains("<title>About</title>"), "{body}");
+    assert!(body.contains("About page"), "{body}");
+    assert!(body.contains("<h1>About</h1>"), "{body}");
+}
+
+#[tokio::test]
+async fn manual_skips_inject() {
+    use ruvo_core::Html;
+
+    let mut app = App::new();
+    app.install(Meta::new().public_url("https://ex.com"));
+    app.get("/raw", || async { Html("<h1>Raw</h1>".to_string()) })
+        .with(Meta::page().title("T").description("d").manual());
+
+    let server = app.build().unwrap();
+    let body = String::from_utf8(
+        server
+            .handle_request(Method::GET, "/raw", "")
+            .await
+            .body_bytes()
+            .unwrap()
+            .to_vec(),
+    )
+    .unwrap();
+    assert_eq!(body, "<h1>Raw</h1>");
+}
+
+#[tokio::test]
+async fn moved_to_redirects_301() {
+    let mut app = App::new();
+    app.install(Meta::new().public_url("https://ex.com"));
+    app.get("/old", || async { Response::text("should not see") })
+        .with(Meta::page().moved_to("/new").title("x").description("y"));
+
+    let server = app.build().unwrap();
+    let res = server.handle_request(Method::GET, "/old", "").await;
+    assert_eq!(res.status_code().as_u16(), 301);
+    assert_eq!(
+        res.headers()
+            .get("location")
+            .and_then(|v| v.to_str().ok()),
+        Some("/new")
+    );
+}
+
+#[tokio::test]
 async fn sitemap_excludes_noindex_and_doc() {
     use ruvo_openapi::{Doc, OpenApiDocExt};
 
     let mut app = App::new();
     app.install(Meta::new().public_url("https://ex.com"));
+    app.install(Sitemap::new());
     app.get("/about", |_r: Request| async { Response::text("ok") })
         .with(Meta::page().title("A").description("d"));
     app.get("/secret", |_r: Request| async { Response::text("ok") })
@@ -110,6 +180,37 @@ async fn sitemap_excludes_noindex_and_doc() {
 }
 
 #[tokio::test]
+async fn sitemap_exclude_and_include() {
+    let mut app = App::new();
+    app.install(Meta::new().public_url("https://ex.com"));
+    app.install(
+        Sitemap::new()
+            .exclude("/admin/*")
+            .include("/app")
+            .include("/pricing"),
+    );
+    app.get("/about", |_r: Request| async { Response::text("ok") })
+        .with(Meta::page().title("A").description("d"));
+    app.get("/admin/users", |_r: Request| async { Response::text("ok") })
+        .with(Meta::page().title("Admin").description("d"));
+
+    let server = app.build().unwrap();
+    let body = String::from_utf8(
+        server
+            .handle_request(Method::GET, "/sitemap.xml", "")
+            .await
+            .body_bytes()
+            .unwrap()
+            .to_vec(),
+    )
+    .unwrap();
+    assert!(body.contains("/about"));
+    assert!(body.contains("/app"));
+    assert!(body.contains("/pricing"));
+    assert!(!body.contains("/admin"));
+}
+
+#[tokio::test]
 async fn robots_block_all_from_config() {
     let mut app = App::new();
     app.configure_from_str(
@@ -121,6 +222,7 @@ public_url = "https://ex.com"
     )
     .unwrap();
     app.install(Meta::new());
+    app.install(Robots::new());
     let server = app.build().unwrap();
     let res = server
         .handle_request(Method::GET, "/robots.txt", "")
@@ -130,9 +232,51 @@ public_url = "https://ex.com"
 }
 
 #[tokio::test]
+async fn robots_builder_disallow_and_block_all() {
+    let mut app = App::new();
+    app.install(Meta::new().public_url("https://ex.com"));
+    app.install(Sitemap::new());
+    app.install(Robots::new().disallow("/admin").disallow("/api"));
+    app.get("/secret", |_r: Request| async { Response::text("ok") })
+        .with(Meta::noindex().title("S").description("d"));
+
+    let server = app.build().unwrap();
+    let body = String::from_utf8(
+        server
+            .handle_request(Method::GET, "/robots.txt", "")
+            .await
+            .body_bytes()
+            .unwrap()
+            .to_vec(),
+    )
+    .unwrap();
+    assert!(body.contains("Allow: /"));
+    assert!(body.contains("Disallow: /admin"));
+    assert!(body.contains("Disallow: /api"));
+    assert!(body.contains("Disallow: /secret"));
+    assert!(body.contains("Sitemap: https://ex.com/sitemap.xml"));
+
+    let mut app2 = App::new();
+    app2.install(Robots::new().block_all());
+    let body2 = String::from_utf8(
+        app2.build()
+            .unwrap()
+            .handle_request(Method::GET, "/robots.txt", "")
+            .await
+            .body_bytes()
+            .unwrap()
+            .to_vec(),
+    )
+    .unwrap();
+    assert_eq!(body2.trim(), "User-agent: *\nDisallow: /");
+}
+
+#[tokio::test]
 async fn robots_allow_before_sitemap() {
     let mut app = App::new();
     app.install(Meta::new().public_url("https://ex.com"));
+    app.install(Sitemap::new());
+    app.install(Robots::new());
     app.get("/about", |_r: Request| async { Response::text("ok") })
         .with(Meta::page().title("A").description("d"));
     let server = app.build().unwrap();
@@ -183,15 +327,14 @@ async fn sitemap_provider() {
     use ruvo_meta::{ChangeFreq, Entry};
 
     let mut app = App::new();
+    app.install(Meta::new().public_url("https://ex.com"));
     app.install(
-        Meta::new()
-            .public_url("https://ex.com")
-            .provider("/blog/:slug", |_ctx| async move {
-                Ok(vec![
-                    Entry::new("/blog/one").changefreq(ChangeFreq::Weekly),
-                    Entry::new("/blog/two"),
-                ])
-            }),
+        Sitemap::new().provider("/blog/:slug", |_ctx| async move {
+            Ok(vec![
+                Entry::new("/blog/one").changefreq(ChangeFreq::Weekly),
+                Entry::new("/blog/two"),
+            ])
+        }),
     );
     app.get("/home", |_r: Request| async { Response::text("ok") })
         .with(Meta::page().title("H").description("d"));
@@ -214,10 +357,9 @@ async fn sitemap_provider() {
 #[tokio::test]
 async fn sitemap_provider_error_is_500() {
     let mut app = App::new();
+    app.install(Meta::new().public_url("https://ex.com"));
     app.install(
-        Meta::new()
-            .public_url("https://ex.com")
-            .provider("/broken", |_ctx| async move { Err("db down".into()) }),
+        Sitemap::new().provider("/broken", |_ctx| async move { Err("db down".into()) }),
     );
     let server = app.build().unwrap();
     let res = server
@@ -239,10 +381,10 @@ async fn sitemap_kv_cache_avoids_second_provider_call() {
     let store = Arc::new(namespace(Arc::new(MemoryStore::new()), "meta"));
 
     let mut app = App::new();
+    app.install(Meta::new().public_url("https://ex.com"));
     app.install(
-        Meta::new()
-            .public_url("https://ex.com")
-            .sitemap_ttl(Duration::from_secs(60))
+        Sitemap::new()
+            .ttl(Duration::from_secs(60))
             .cache_store(store)
             .provider("/blog/:slug", move |_ctx| {
                 let hits = Arc::clone(&hits2);
@@ -336,6 +478,7 @@ async fn sitemap_includes_xhtml_alternates() {
         .path_prefix(true),
     );
     app.install(Meta::new().public_url("https://ex.com"));
+    app.install(Sitemap::new());
     app.get("/about", |_r: Request| async { Response::text("ok") })
         .with(Meta::page().title("A").description("d"));
 

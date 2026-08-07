@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="vue-profile">
+  <h1 class="font-display text-3xl font-semibold text-mist-100">{{ t("cabinet.profile") }}</h1>
+  <p v-if="error" class="mt-3 text-sm text-red-300" v-text="error"></p>
+  <p v-if="ok" class="mt-3 text-sm text-tide-400" v-text="ok"></p>
+  {% if user.avatar_path %}
+    <img class="mt-5 h-20 w-20 rounded-full object-cover ring-2 ring-tide-400/60" src="{{ user.avatar_path }}" alt="avatar">
+  {% endif %}
+
+  <p class="mt-4 flex flex-wrap gap-2 text-xs">
+    {% if user.email_verified %}
+      <span class="rounded border border-tide-400/40 px-2 py-0.5 text-tide-400">{{ t("badge.verified") }}</span>
+    {% else %}
+      <a class="rounded border border-amber-400/40 px-2 py-0.5 text-amber-200" href="/email/verify">{{ t("badge.verify") }}</a>
+    {% endif %}
+    {% if user.two_factor_enabled %}
+      <span class="rounded border border-tide-400/40 px-2 py-0.5 text-tide-400">{{ t("badge.2fa") }}</span>
+    {% endif %}
+    {% for r in user.roles %}
+      <span class="rounded border border-white/15 px-2 py-0.5 text-mist-300">{{ r }}</span>
+    {% endfor %}
+  </p>
+
+  <form class="mt-6 grid max-w-md gap-4 rounded-xl border border-white/10 bg-ink-800/50 p-5" @submit="saveProfile">
+    <label class="grid gap-1.5 text-sm text-mist-300">
+      {{ t("auth.name") }}
+      <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100 outline-none ring-tide-400/40 focus:ring-2" name="name" value="{{ user.name }}" required>
+    </label>
+    <label class="grid gap-1.5 text-sm text-mist-300">
+      {{ t("auth.email") }}
+      <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100 outline-none ring-tide-400/40 focus:ring-2" name="email" type="email" value="{{ user.email }}" required>
+    </label>
+    <button
+      type="submit"
+      class="rounded-md bg-tide-500 px-4 py-2.5 font-semibold text-ink-950 transition hover:bg-tide-400 disabled:opacity-50"
+      :disabled="busy"
+    >{{ t("cabinet.save") }}</button>
+  </form>
+
+  <form class="mt-4 grid max-w-md gap-4 rounded-xl border border-white/10 bg-ink-800/50 p-5" @submit="savePassword">
+    <h2 class="font-semibold text-mist-100">{{ t("auth.change_password") }}</h2>
+    <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100" name="current_password" type="password" placeholder="{{ t('auth.current_password') }}" required>
+    <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100" name="password" type="password" placeholder="{{ t('auth.new_password') }}" minlength="8" required>
+    <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100" name="password_confirmation" type="password" placeholder="{{ t('auth.password_confirm') }}" minlength="8" required>
+    <button
+      type="submit"
+      class="rounded-md border border-white/15 px-4 py-2.5 font-semibold text-mist-100 disabled:opacity-50"
+      :disabled="busy"
+    >{{ t("auth.update_password") }}</button>
+  </form>
+
+  <form method="post" action="/cabinet/avatar" enctype="multipart/form-data" class="mt-4 grid max-w-md gap-4 rounded-xl border border-white/10 bg-ink-800/50 p-5">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label class="grid gap-1.5 text-sm text-mist-300">
+      {{ t("cabinet.avatar") }}
+      <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-sm text-mist-200 file:mr-3 file:rounded file:border-0 file:bg-tide-500/20 file:px-3 file:py-1 file:text-tide-400" type="file" name="avatar" accept="image/*" required>
+    </label>
+    <button type="submit" class="rounded-md border border-white/15 px-4 py-2.5 font-semibold text-mist-100 transition hover:border-tide-400/40 hover:text-tide-400">{{ t("cabinet.upload") }}</button>
+  </form>
+
+  <p class="mt-6 flex flex-wrap gap-4 text-sm">
+    <a class="text-tide-400" href="/user/two-factor-authentication">{{ t("auth.two_factor") }}</a>
+    {% if can_manage_users %}
+    <a class="text-tide-400" href="/admin/roles">{{ t("admin.roles") }}</a>
+    {% endif %}
+  </p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+RuvoAuth.mount("#vue-profile", {
+  data() {
+    return {
+      error: "",
+      ok: {% if password_ok %}"Password updated"{% else %}""{% endif %},
+      busy: false,
+    };
+  },
+  methods: {
+    async saveProfile(e) {
+      e.preventDefault();
+      this.busy = true;
+      this.error = "";
+      try {
+        const body = RuvoAuth.formFields(e.target);
+        await RuvoAuth.api.post("/profile", { name: body.name, email: body.email });
+        this.ok = "Saved";
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+      } finally {
+        this.busy = false;
+      }
+    },
+    async savePassword(e) {
+      e.preventDefault();
+      this.busy = true;
+      this.error = "";
+      try {
+        const body = RuvoAuth.formFields(e.target);
+        await RuvoAuth.api.post("/password", {
+          current_password: body.current_password,
+          password: body.password,
+          password_confirmation: body.password_confirmation,
+        });
+        this.ok = "Password updated";
+        e.target.reset();
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+      } finally {
+        this.busy = false;
+      }
+    },
+  },
+});
+</script>
+{% endblock %}

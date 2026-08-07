@@ -73,6 +73,10 @@ struct OpenApiState {
 }
 
 impl Plugin for OpenApi {
+    fn id(&self) -> &'static str {
+        "openapi"
+    }
+
     fn install(self, app: &mut App) {
         let mount = if self.mount.ends_with('/') && self.mount.len() > 1 {
             self.mount.trim_end_matches('/').to_string()

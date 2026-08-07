@@ -25,7 +25,7 @@ Target: `hello` example on `http://127.0.0.1:3000/`
 
 ```bash
 # Re-run
-cargo run -p ruvo --example hello --features "static-files,cors,cookies" &
+cargo run -p hello &
 DURATION=10s CONCURRENCY=50 ./bench/load.sh http://127.0.0.1:3000/
 cargo bench -p ruvo-core --bench dispatch -- --quick
 ```

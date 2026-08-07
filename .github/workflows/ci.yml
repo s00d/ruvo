@@ -19,11 +19,21 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-features --all-targets -- -D warnings
       - name: Examples
-        run: cargo build --examples --all-features
+        run: |
+          cargo check -p hello -p rest_api -p blog -p auth -p cli -p raw_echo \
+            -p upload -p static_files -p templates -p templates_i18n -p i18n -p meta_blog \
+            -p api_validated -p api_preset -p api_auth -p api_jwt -p api_oauth -p sse -p sse_feed -p ws_chat \
+            -p udp_echo -p tls_hello -p quic_udp_echo -p tasks -p bench_loaded -p cabinet
       - name: Core alone
         run: cargo test -p ruvo-core
       - name: Plugin crates
-        run: cargo check -p ruvo-static -p ruvo-cors -p ruvo-shield -p ruvo-cookies -p ruvo-session -p ruvo-compress -p ruvo-rate-limit -p ruvo-templates -p ruvo-multipart -p ruvo-cli -p ruvo-vld -p ruvo-openapi -p ruvo-db -p ruvo-store-postgres -p ruvo-tasks-postgres
+        run: cargo check -p ruvo-static -p ruvo-cors -p ruvo-csrf -p ruvo-shield -p ruvo-cookies -p ruvo-session -p ruvo-compress -p ruvo-rate-limit -p ruvo-templates -p ruvo-cli -p ruvo-vld -p ruvo-openapi -p ruvo-db -p ruvo-store-postgres -p ruvo-tasks-postgres -p ruvo-mail -p ruvo-passport -p ruvo-auth
+      - name: Fortify vld
+        run: cargo check -p ruvo-auth --features vld
+      - name: Passport JWT
+        run: cargo check -p ruvo-passport --features jwt
+      - name: Passport OAuth
+        run: cargo check -p ruvo-passport --features oauth
       - name: cargo-ruvo template smoke
         run: |
           cargo check -p cargo-ruvo
@@ -63,10 +73,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - name: Build crud example
-        run: cargo build -p ruvo --example crud --features "db,vld,env"
+        run: cargo build -p crud
       - name: Migrate + smoke
         run: |
-          cargo run -p ruvo --example crud --features "db,vld,env" -- migrate
+          cargo run -p crud -- migrate
           cargo check -p ruvo-store-postgres -p ruvo-tasks-postgres
 
   public-api:

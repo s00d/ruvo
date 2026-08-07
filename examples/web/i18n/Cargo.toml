@@ -1,0 +1,14 @@
+[package]
+name = "i18n"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "i18n"
+path = "src/main.rs"
+
+[dependencies]
+ruvo = { path = "../../../crates/ruvo", features = ["i18n"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+serde_json = "1"

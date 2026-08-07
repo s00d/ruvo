@@ -1,7 +1,7 @@
-//! Session requires CookieLayer; TestClient tracks sid cookies.
+//! Session auto-installs CookieLayer when missing; TestClient tracks sid cookies.
 
 use ruvo_cookies::CookieLayer;
-use ruvo_core::{App, Error, Html, Request, TestClient};
+use ruvo_core::{App, Html, Request, TestClient};
 use ruvo_session::{memory_sessions, SessionExt};
 
 #[tokio::test]
@@ -33,17 +33,104 @@ async fn session_sets_cookie_with_cookie_layer() {
     assert_eq!(read.body_bytes(), Some(b"v".as_slice()));
 }
 
-#[test]
-fn session_without_cookie_layer_fails_build() {
+#[tokio::test]
+async fn session_auto_installs_cookie_layer() {
     let mut app = App::new();
     app.install(memory_sessions());
-    let err = match app.build() {
-        Ok(_) => panic!("build must fail without cookies"),
-        Err(err) => err,
-    };
-    assert!(matches!(err, Error::Internal(_)));
-    assert!(
-        err.to_string().contains("requires `cookies`"),
-        "unexpected error: {err}"
+    app.get("/", |req: Request| async move {
+        req.session().set("k", "v");
+        Html("ok".to_string())
+    });
+    app.get("/read", |req: Request| async move {
+        let v = req.session().get("k").unwrap_or_default();
+        Html(v)
+    });
+
+    let c = TestClient::tracked(app).unwrap();
+    let res = c.get("/").await;
+    assert_eq!(res.status_code().as_u16(), 200);
+    let read = c.get("/read").await;
+    assert_eq!(read.body_bytes(), Some(b"v".as_slice()));
+}
+
+#[tokio::test]
+async fn save_uninitialized_false_skips_cookie() {
+    let mut app = App::new();
+    app.install(memory_sessions());
+    app.get("/", |_req: Request| async move { Html("ok".to_string()) });
+
+    let c = TestClient::tracked(app).unwrap();
+    let res = c.get("/").await;
+    let set_cookie = res
+        .headers()
+        .get_all("set-cookie")
+        .iter()
+        .filter_map(|v| v.to_str().ok())
+        .any(|v| v.contains("ruvo_sid="));
+    assert!(!set_cookie, "empty session must not Set-Cookie");
+}
+
+#[tokio::test]
+async fn destroy_clears_session() {
+    use ruvo_session::SessionLayer;
+    use ruvo_store::{namespace, MemoryStore};
+    use std::sync::Arc;
+
+    let store = Arc::new(namespace(Arc::new(MemoryStore::new()), "sess"));
+    let mut app = App::new();
+    app.install(SessionLayer::new(store).cookie_name("sid"));
+    app.get("/in", |req: Request| async move {
+        req.session().set("k", "v");
+        Html("ok".to_string())
+    });
+    app.get("/out", |req: Request| async move {
+        req.session().destroy();
+        Html("bye".to_string())
+    });
+    app.get("/read", |req: Request| async move {
+        Html(req.session().get("k").unwrap_or_else(|| "none".into()))
+    });
+
+    let c = TestClient::tracked(app).unwrap();
+    c.get("/in").await;
+    assert_eq!(c.get("/read").await.body_bytes(), Some(b"v".as_slice()));
+    c.get("/out").await;
+    assert_eq!(c.get("/read").await.body_bytes(), Some(b"none".as_slice()));
+}
+
+#[tokio::test]
+async fn hook_hydrates_request() {
+    use ruvo_session::SessionLayer;
+    use ruvo_store::{namespace, MemoryStore};
+    use std::sync::Arc;
+
+    #[derive(Clone, Debug, PartialEq, Eq)]
+    struct CurrentUser(String);
+
+    let store = Arc::new(namespace(Arc::new(MemoryStore::new()), "sess"));
+    let mut app = App::new();
+    app.install(
+        SessionLayer::new(store).hook(|sess, mut req| async move {
+            if let Some(name) = sess.get("user") {
+                req.set(CurrentUser(name));
+            }
+            Ok(req)
+        }),
     );
+    app.get("/login", |req: Request| async move {
+        req.session().set("user", "ada");
+        Html("ok".to_string())
+    });
+    app.get("/me", |req: Request| async move {
+        let name = req
+            .get::<CurrentUser>()
+            .map(|u| u.0.clone())
+            .unwrap_or_else(|| "anon".into());
+        Html(name)
+    });
+
+    let c = TestClient::tracked(app).unwrap();
+    assert_eq!(c.get("/me").await.body_bytes(), Some(b"anon".as_slice()));
+    c.get("/login").await;
+    assert_eq!(c.get("/me").await.body_bytes(), Some(b"ada".as_slice()));
 }

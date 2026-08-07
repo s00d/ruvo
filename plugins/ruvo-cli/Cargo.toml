@@ -9,7 +9,6 @@ publish = false
 [dependencies]
 ruvo-core = { path = "../../crates/ruvo-core" }
 clap = { version = "4", features = ["derive", "env"] }
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

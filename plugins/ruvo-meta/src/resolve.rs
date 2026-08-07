@@ -4,6 +4,7 @@ use crate::canonical::{absolute_url, apply_slash, strip_tracking};
 use crate::defaults::{MetaDefaults, TrailingSlash};
 use crate::overlay::{MetaOverlay, OverlaySnapshot};
 use crate::page::MetaPage;
+use chrono::{DateTime, Utc};
 use ruvo_core::Request;
 use serde_json::Value;
 
@@ -17,6 +18,7 @@ pub struct ResolvedMeta {
     pub og_type: String,
     pub site_name: Option<String>,
     pub twitter_site: Option<String>,
+    pub published: Option<DateTime<Utc>>,
     pub og_locale: Option<String>,
     pub og_locale_alternate: Vec<String>,
     pub hreflang: Vec<(String, String)>,
@@ -33,6 +35,7 @@ pub fn resolve_meta(req: &Request) -> ResolvedMeta {
         .get::<MetaOverlay>()
         .map(|o| o.snapshot())
         .unwrap_or_default();
+    #[allow(unused_mut)]
     let mut resolved = resolve_parts(
         &defaults,
         page.as_ref(),
@@ -85,23 +88,53 @@ pub(crate) fn resolve_parts(
         .as_ref()
         .map(|base| absolute_url(base, &strip_tracking(&path, raw_query)));
 
+    let published = overlay.published;
+    let mut og_type = overlay
+        .og_type
+        .clone()
+        .or(page.og_type)
+        .unwrap_or_else(|| "website".into());
+    if published.is_some() && og_type == "website" {
+        og_type = "article".into();
+    }
+
+    let mut jsonld = overlay.jsonld.clone();
+    if let Some(pub_at) = published {
+        if !jsonld.iter().any(|v| {
+            v.get("@type")
+                .and_then(|t| t.as_str())
+                .is_some_and(|t| t == "Article")
+        }) {
+            if let Some(ref headline) = title {
+                use crate::schema::{Article, ToJsonLd};
+                jsonld.push(
+                    Article {
+                        headline: headline.clone(),
+                        date_published: Some(pub_at),
+                        description: description.clone(),
+                        image: image.clone(),
+                        ..Default::default()
+                    }
+                    .json_ld(),
+                );
+            }
+        }
+    }
+
     ResolvedMeta {
         title,
         description,
         image,
         noindex,
         canonical,
-        og_type: overlay
-            .og_type
-            .clone()
-            .or(page.og_type)
-            .unwrap_or_else(|| "website".into()),
+        og_type,
         site_name: defaults.site_name.clone(),
         twitter_site: defaults.twitter_site.clone(),
+        published,
         og_locale: None,
         og_locale_alternate: Vec::new(),
         hreflang: Vec::new(),
-        jsonld: overlay.jsonld.clone(),
+        jsonld,
     }
 }
 

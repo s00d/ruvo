@@ -1,0 +1,15 @@
+[package]
+name = "share_demo"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "share_demo"
+path = "src/main.rs"
+
+[dependencies]
+ruvo = { path = "../../../crates/ruvo" }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "io-util"] }
+serde_json = "1"
+tracing = "0.1"

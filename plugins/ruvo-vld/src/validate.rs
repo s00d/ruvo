@@ -247,31 +247,32 @@ pub(crate) fn read_query_value(req: &Request) -> Value {
 
 #[cfg(feature = "form")]
 async fn read_form_value(req: &mut Request) -> Result<Value, ValidationError> {
-    use ruvo_multipart::MultipartExt;
-    let fields = req.multipart().await?;
+    let data = req.input().await?;
     let mut map = Map::new();
-    for f in fields {
-        if f.filename.is_some() {
+    for (name, values) in data.text_map() {
+        match values.as_slice() {
+            [] => {}
+            [one] => {
+                map.insert(name.clone(), Value::String(one.clone()));
+            }
+            many => {
+                map.insert(
+                    name.clone(),
+                    Value::Array(many.iter().cloned().map(Value::String).collect()),
+                );
+            }
+        }
+    }
+    for (name, uploads) in data.file_map() {
+        if let Some(f) = uploads.first() {
             map.insert(
-                f.name,
+                name.clone(),
                 serde_json::json!({
                     "filename": f.filename,
                     "content_type": f.content_type,
                     "size": f.data.len(),
                 }),
             );
-        } else {
-            let s = String::from_utf8_lossy(&f.data).into_owned();
-            match map.get_mut(&f.name) {
-                Some(Value::Array(arr)) => arr.push(Value::String(s)),
-                Some(prev) => {
-                    let old = prev.take();
-                    *prev = Value::Array(vec![old, Value::String(s)]);
-                }
-                None => {
-                    map.insert(f.name, Value::String(s));
-                }
-            }
         }
     }
     Ok(Value::Object(map))
@@ -540,6 +541,12 @@ pub struct Vld;
 impl ruvo_core::Plugin for Vld {
     fn id(&self) -> &'static str {
         "vld"
+    }
+
+    fn meta(&self) -> ruvo_core::PluginMeta {
+        ruvo_core::PluginMeta::new("Validation")
+            .description("Request validation hooks and coverage check")
+            .version(env!("CARGO_PKG_VERSION"))
     }
 
     fn install(self, app: &mut App) {

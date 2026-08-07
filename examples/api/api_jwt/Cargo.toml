@@ -1,0 +1,15 @@
+[package]
+name = "api_jwt"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "api_jwt"
+path = "src/main.rs"
+
+[dependencies]
+ruvo = { path = "../../../crates/ruvo", features = ["passport-jwt", "env", "cli"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+serde = { version = "1", features = ["derive"] }
+tracing = "0.1"

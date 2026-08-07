@@ -1,7 +1,5 @@
 //! App-level meta defaults.
 
-use std::time::Duration;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TrailingSlash {
     #[default]
@@ -18,8 +16,10 @@ pub struct MetaDefaults {
     pub twitter_site: Option<String>,
     pub public_url: Option<String>,
     pub trailing_slash: TrailingSlash,
+    /// Staging / `[meta] robots = "block-all"` — force noindex on all pages.
     pub robots_block_all: bool,
-    pub sitemap_ttl: Duration,
+    /// When false, missing title/description on indexable routes only warn.
+    pub check_strict: bool,
 }
 
 impl Default for MetaDefaults {
@@ -32,7 +32,7 @@ impl Default for MetaDefaults {
             public_url: None,
             trailing_slash: TrailingSlash::Keep,
             robots_block_all: false,
-            sitemap_ttl: Duration::from_secs(3600),
+            check_strict: true,
         }
     }
 }

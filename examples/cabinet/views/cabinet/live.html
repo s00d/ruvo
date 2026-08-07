@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="vue-live">
+  <div class="mb-2 flex items-center gap-3">
+    <h1 class="font-display text-3xl font-semibold text-mist-100">{{ t("live.title") }}</h1>
+    <span
+      class="rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
+      :class="status === 'live'
+        ? 'bg-tide-500/20 text-tide-400'
+        : status === 'connecting'
+          ? 'bg-mist-500/20 text-mist-400'
+          : 'bg-red-500/20 text-red-300'"
+      v-text="status"
+    ></span>
+  </div>
+  <p class="text-mist-400">{{ t("live.help") }}</p>
+
+  <div
+    ref="logBox"
+    class="mt-5 min-h-[10rem] max-h-64 overflow-auto rounded-xl border border-white/10 bg-ink-800/50 p-4"
+  >
+    <p
+      v-for="item in log"
+      :key="item.id"
+      class="animate-fade-in border-b border-white/5 py-1.5 font-mono text-sm text-mist-200 last:border-0"
+      v-text="item.text"
+    ></p>
+    <p v-if="log.length === 0" class="text-sm text-mist-500">…</p>
+  </div>
+
+  <form class="mt-4 flex flex-wrap gap-2" @submit="send">
+    <input
+      class="min-w-[12rem] flex-1 rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100 outline-none ring-tide-400/40 focus:ring-2"
+      v-model="msg"
+      autocomplete="off"
+      placeholder="…"
+    >
+    <button
+      type="submit"
+      class="rounded-md bg-tide-500 px-4 py-2 font-semibold text-ink-950 transition hover:bg-tide-400"
+    >{{ t("live.send") }}</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/assets/js/live.js"></script>
+{% endblock %}

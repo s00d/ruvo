@@ -5,23 +5,38 @@
 
 mod app;
 mod error;
+#[cfg(any(feature = "web", feature = "api"))]
+mod preset;
 
 pub use app::{App, BoundApp};
 pub use error::{AppError, Result};
+#[cfg(feature = "web")]
+pub use preset::WebApp;
+#[cfg(feature = "api")]
+pub use preset::ApiApp;
 pub use ruvo_core::{
-    logger, with_state, BackgroundService, ClientAddr, ConfigDoc, Error, Html, Http, IntoResponse,
-    Json, NoContent, Next, OnUpgrade, Plugin, Redirect, Request, Response, Router, Server, Shutdown,
-    TestClient, Text,
+    logger, with_state, BackgroundService, Cell, ClientAddr, ConfigDoc, Error, FormData, Html, Http,
+    IntoResponse, Json, LogConfig, LogRotate, NoContent, Next, OnUpgrade, Plugin, PluginMeta,
+    PluginSdkVersion, Redirect, Request, Response, Router, Server, Shutdown, Slot, TestClient,
+    Text, Upload, PLUGIN_SDK_VERSION,
 };
+
 #[cfg(feature = "tls")]
 pub use ruvo_core::Tls;
 
 /// Everyday imports for application code.
+///
+/// Status codes: `Response::json(&x).status(201)` or `(201, Json(x))`.
+/// Forms/files: `Request::input` / `form` (feature `multipart` for multipart bodies).
 pub mod prelude {
     pub use crate::{
         logger, App, Error, Html, IntoResponse, Json, Next, NoContent, Plugin, Redirect, Request,
         Response, Result, Router, Text,
     };
+    #[cfg(feature = "web")]
+    pub use crate::WebApp;
+    #[cfg(feature = "api")]
+    pub use crate::ApiApp;
 }
 
 /// Extension API (handlers, bodies, [`Bind`](extend::Bind), …) — see `ruvo_core::extend`.
@@ -34,6 +49,8 @@ pub use ruvo_env::{self, require as env_require, EnvError};
 
 #[cfg(feature = "cors")]
 pub use ruvo_cors::Cors;
+#[cfg(feature = "csrf")]
+pub use ruvo_csrf::{Csrf, CsrfExt, CsrfToken};
 #[cfg(feature = "shield")]
 pub use ruvo_shield::Shield;
 
@@ -50,12 +67,16 @@ pub use ruvo_compress::Compress;
 pub use ruvo_rate_limit::RateLimit;
 
 #[cfg(feature = "session")]
-pub use ruvo_session::{memory_sessions, Session, SessionExt, SessionLayer};
+pub use ruvo_session::{memory_sessions, SameSite, Session, SessionExt, SessionLayer};
+
+#[cfg(feature = "store")]
+mod shared_store;
 
 /// Key-value store backends (`Memory`, `File`, `Postgres`, `Sqlite`).
 #[cfg(feature = "store")]
 pub mod store {
-    pub use ruvo_store::{namespace, KvStore, MemoryStore as Memory, Namespace};
+    pub use ruvo_store::{namespace, AppStore, KvStore, MemoryStore as Memory, Namespace};
+    pub use crate::shared_store::SharedStore;
 
     #[cfg(feature = "store-file")]
     pub use ruvo_store_file::{Durability, FileStore as File};
@@ -71,7 +92,7 @@ pub mod store {
 }
 
 #[cfg(feature = "store")]
-pub use store::{namespace, KvStore, Namespace};
+pub use store::{namespace, AppStore, KvStore, Namespace, SharedStore};
 
 /// Task queue backends (`Memory`, `File`, `Postgres`, `Sqlite`).
 #[cfg(feature = "tasks-store")]
@@ -101,8 +122,8 @@ pub use tasks::{bearer_guard, HttpTaskError, TaskBackend, Tasks};
 
 #[cfg(feature = "db")]
 pub use ruvo_db::{
-    test_db, transaction, ActiveModelTrait, Db, DbError, DbExt, DbHandle, EntityTrait, Set,
-    TestDb,
+    test_db, transaction, ActiveModelTrait, ColumnTrait, Db, DbError, DbExt, DbHandle, DbPool,
+    EntityTrait, MigrationTrait, MigratorTrait, Set, TestDb,
 };
 
 #[cfg(feature = "udp")]
@@ -115,10 +136,12 @@ pub use ruvo_quic::{Http3Service, QuicDatagramClient, QuicDatagramService};
 pub use ruvo_sse::{sse_response, SseChannel, SseEvent};
 
 #[cfg(feature = "templates")]
-pub use ruvo_templates::{MiniJinjaEngine, MiniJinjaTemplates, RenderExt, Templates, TemplateEngine};
+pub use ruvo_templates::{
+    register_per_request, MiniJinjaEngine, MiniJinjaTemplates, RenderExt, TemplateEngine,
+    TemplateHelpers, Templates,
+};
 
-#[cfg(feature = "multipart")]
-pub use ruvo_multipart::{MultipartExt, MultipartField};
+
 
 #[cfg(feature = "cli")]
 pub use ruvo_cli::{Parser, ServerArgs};
@@ -158,11 +181,50 @@ pub use ruvo_http::{
     OutRequest, OutResponse, PendingRequest, RequestId, StubBody,
 };
 
+#[cfg(feature = "mail")]
+pub use ruvo_mail::{Email, EmailSnapshot, FakeMail, Mail, MailClient, MailExt, SmtpBuilder};
+
+#[cfg(feature = "passport")]
+pub use ruvo_passport::{
+    local_strategy, passport_serialize, Auth, AuthMw, Authenticated, Credentials, Extract,
+    Passport, PassportExt, Source,
+};
+
+#[cfg(all(feature = "passport", not(feature = "auth")))]
+pub use ruvo_passport::AuthExt;
+
+#[cfg(feature = "passport-jwt")]
+pub use ruvo_passport::{
+    hash_password, hash_refresh_token, issue_token_pair, verify_password, AuthUser, Claims, Jwt,
+    JwtAuth, JwtAuthExt, JwtAuthState, JwtError, TokenPair,
+};
+
+#[cfg(all(feature = "passport-jwt", not(feature = "auth")))]
+pub use ruvo_passport::AuthMigrator;
+
+#[cfg(feature = "passport-oauth")]
+pub use ruvo_passport::{Oauth, OauthProfile, OauthProvider, OauthTokens, ProfileKind};
+
+#[cfg(feature = "auth")]
+pub use ruvo_auth::{
+    assign_role, create_permission, create_role, delete_permission, delete_role, find_user_by_email,
+    find_user_by_id, list_permissions, list_roles, load_current_user, make_verify_token,
+    mark_email_verified, parse_verify_token, register_user, revoke_role, set_avatar, set_user_roles,
+    sync_role_permissions, update_permission, update_role, AuthExt, AuthMigrator, CurrentUser,
+    Feature as AuthFeature, Fortify, FortifyPaths,
+};
+
+#[cfg(all(feature = "auth", feature = "auth-vld"))]
+pub use ruvo_auth::{
+    ConfirmPasswordForm, DisableTwoFactorForm, ForgotForm, LoginForm, PasswordForm, ProfileForm,
+    RegisterForm, ResetForm, TwoFactorCodeForm,
+};
+
 #[cfg(feature = "meta")]
 pub use ruvo_meta::{
     absolute_url, render_html, resolve_meta, strip_tracking, Article, BreadcrumbList, ChangeFreq,
     Entry, FAQPage, Meta, MetaDefaults, MetaExt, MetaOverlay, MetaPage, Organization, Product,
-    ResolvedMeta, ToJsonLd, TrailingSlash, WebSite,
+    ResolvedMeta, Robots, Sitemap, ToJsonLd, TrailingSlash, WebSite,
 };
 
 #[cfg(feature = "meta")]
@@ -173,11 +235,11 @@ pub mod schema {
 #[cfg(feature = "meta-templates")]
 pub use ruvo_meta::with_meta;
 
-/// Install a default `tracing` subscriber (`RUST_LOG`, default `ruvo=info`).
+/// Install a default `tracing` subscriber (`LogConfig::from_env`).
 ///
 /// Usually unnecessary: [`App::listen`] / [`BoundApp::serve`] call this via `try_init`.
-/// Set `RUVO_LOG=off` to skip. With the `cli` feature, `ServerArgs::init_tracing` still
-/// applies `--log-level`.
+/// Set `RUVO_LOG=off` to skip. With the `cli` feature, `ServerArgs::init_tracing` applies
+/// `--log-level` / `--log-file` / rotation flags.
 pub fn init_tracing() {
     ruvo_core::extend::ensure_tracing();
 }

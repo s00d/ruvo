@@ -28,6 +28,7 @@ mod route_value;
 mod router;
 mod server;
 mod service;
+mod share;
 mod state;
 mod tracing_init;
 mod upgrade;
@@ -40,12 +41,17 @@ pub use app::{App, BoundApp, Http, Server};
 pub use config::ConfigDoc;
 pub use error::{Error, IntoResponse, Result};
 pub use middleware::{logger, with_state, Next};
-pub use plugin::Plugin;
-pub use request::Request;
+pub use plugin::{
+    check_plugin_sdk, InstalledPlugin, Plugin, PluginMeta, PluginSdkVersion, SdkCompat,
+    PLUGIN_SDK_VERSION,
+};
+pub use request::{FormData, Request, Upload};
 pub use response::{Html, Json, NoContent, Redirect, Response, Text};
 pub use router::Router;
 pub use server::ClientAddr;
 pub use service::{BackgroundService, Shutdown};
+pub use share::{Cell, Slot};
+pub use tracing_init::{parse_log_rotate, LogConfig, LogRotate};
 #[cfg(any(test, feature = "testing"))]
 pub use service::{shutdown_channel, ShutdownSender};
 pub use upgrade::{OnUpgrade, UpgradePermit};
@@ -54,8 +60,17 @@ pub use test_client::{ClientRequest, TestClient};
 pub use tls::Tls;
 
 /// Extension / plugin-author API (handlers, bodies, route introspection, …).
+///
+/// Prefer this module when writing plugins: middleware helpers (`with_leaked`,
+/// `named`), [`PluginMeta`](crate::PluginMeta) / [`PLUGIN_SDK_VERSION`](crate::PLUGIN_SDK_VERSION),
+/// and route introspection types. Application `main` usually imports from the crate root
+/// (or the `ruvo` facade) instead.
 pub mod extend {
     pub use crate::app::Bind;
+    pub use crate::plugin::{
+        check_plugin_sdk, InstalledPlugin, PluginMeta, PluginSdkVersion, SdkCompat,
+        PLUGIN_SDK_VERSION,
+    };
     pub use crate::handler::{
         BoxFuture, ErrorResponse, FallibleHandler, Handler, IntoHandler,
     };
@@ -63,7 +78,7 @@ pub mod extend {
         named, with_leaked, IntoMiddleware, IntoMwEntry, Middleware, MwEntry,
     };
     pub use crate::raw::{IntoRawHandler, RawHandler};
-    pub use crate::request::RequestBuilder;
+    pub use crate::request::{FormData, RequestBuilder, Upload};
     pub use crate::response::{Body, BoxError, HttpBody, ResponseBody};
     pub use crate::human::{parse_bytes, parse_duration};
     pub use crate::limits::{tighten_deadline, Deadline, MaxBody, RequestTimeout};
@@ -72,6 +87,7 @@ pub mod extend {
         join_paths, normalize_path, to_brace_path, RouteEntry, RouteTable,
     };
     pub use crate::service::wait_shutdown;
-    pub use crate::state::{Extensions, MatchedMeta, StateMap, TypeMap};
-    pub use crate::tracing_init::ensure_tracing;
+    pub use crate::share::{Cell, Slot};
+    pub use crate::state::{Extensions, MatchedMeta, MatchedMetaCapture, StateMap, TypeMap};
+    pub use crate::tracing_init::{ensure_tracing, parse_log_rotate, LogConfig, LogRotate};
 }

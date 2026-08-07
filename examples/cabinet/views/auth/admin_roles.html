@@ -1,0 +1,237 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="admin-rbac" class="space-y-8">
+  <div>
+    <h1 class="font-display text-3xl font-semibold text-mist-100">{{ t("admin.roles") }}</h1>
+    <p class="mt-2 text-sm text-mist-400">{{ t("admin.roles_help") }}</p>
+    <p v-if="error" class="mt-3 text-sm text-red-300" v-text="error"></p>
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-2">
+    <section class="rounded-xl border border-white/10 bg-ink-800/50 p-5">
+      <h2 class="font-semibold text-mist-100">{{ t("admin.role_list") }}</h2>
+      <ul class="mt-3 space-y-2 text-sm text-mist-300">
+        <li v-for="role in roles" :key="role.id" class="flex items-center justify-between gap-2">
+          <span>
+            <span class="text-tide-400" v-text="role.slug"></span>
+            —
+            <span v-text="role.name"></span>
+            <span class="text-mist-500">#</span><span class="text-mist-500" v-text="role.id"></span>
+          </span>
+          <button type="button" class="text-xs text-red-300" @click="deleteRole(role.id)">Delete</button>
+        </li>
+      </ul>
+      <form class="mt-4 grid gap-2 border-t border-white/10 pt-4" @submit.prevent="createRole">
+        <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100" v-model="newRole.name" placeholder="Name" required>
+        <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100" v-model="newRole.slug" placeholder="slug" required>
+        <button type="submit" class="rounded-md bg-tide-500 px-3 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50" :disabled="busy">Create role</button>
+      </form>
+    </section>
+
+    <section class="rounded-xl border border-white/10 bg-ink-800/50 p-5">
+      <h2 class="font-semibold text-mist-100">{{ t("admin.perm_list") }}</h2>
+      <ul class="mt-3 space-y-2 text-sm text-mist-300">
+        <li v-for="perm in permissions" :key="perm.id" class="flex items-center justify-between gap-2">
+          <span>
+            <span class="text-tide-400" v-text="perm.slug"></span>
+            —
+            <span v-text="perm.name"></span>
+          </span>
+          <button type="button" class="text-xs text-red-300" @click="deletePerm(perm.id)">Delete</button>
+        </li>
+      </ul>
+      <form class="mt-4 grid gap-2 border-t border-white/10 pt-4" @submit.prevent="createPerm">
+        <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100" v-model="newPerm.name" placeholder="Name" required>
+        <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100" v-model="newPerm.slug" placeholder="slug" required>
+        <button type="submit" class="rounded-md bg-tide-500 px-3 py-2 text-sm font-semibold text-ink-950 disabled:opacity-50" :disabled="busy">Create permission</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="rounded-xl border border-white/10 bg-ink-800/50 p-5">
+    <h2 class="font-semibold text-mist-100">Sync role permissions</h2>
+    <form class="mt-3 grid gap-3 md:grid-cols-2" @submit.prevent="syncRolePerms">
+      <label class="grid gap-1 text-sm text-mist-300">
+        Role
+        <select
+          class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100"
+          v-model.number="selectedRoleId"
+          @change="onRoleChange"
+        >
+          <option v-for="role in roles" :key="role.id" :value="role.id" v-text="role.slug"></option>
+        </select>
+      </label>
+      <div>
+        <p class="text-sm text-mist-300">Permissions</p>
+        <div class="mt-1 max-h-48 space-y-1 overflow-y-auto text-sm">
+          <label v-for="perm in permissions" :key="perm.id" class="flex gap-2">
+            <input
+              type="checkbox"
+              :checked="rolePermIds.includes(perm.id)"
+              @change="togglePerm(perm.id)"
+            >
+            <span v-text="perm.slug"></span>
+          </label>
+        </div>
+      </div>
+      <button type="submit" class="rounded-md border border-white/15 px-4 py-2 font-semibold text-mist-100 disabled:opacity-50 md:col-span-2" :disabled="busy">Save permissions</button>
+    </form>
+  </section>
+
+  <section class="rounded-xl border border-white/10 bg-ink-800/50 p-5">
+    <h2 class="font-semibold text-mist-100">Assign user roles</h2>
+    <form class="mt-3 grid gap-3" @submit.prevent="syncUserRoles">
+      <label class="grid gap-1 text-sm text-mist-300">
+        User id
+        <input class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100" v-model="userId" type="number" min="1" required>
+      </label>
+      <div class="space-y-1 text-sm">
+        <label v-for="role in roles" :key="'u'+role.id" class="flex gap-2">
+          <input
+            type="checkbox"
+            :checked="userRoleIds.includes(role.id)"
+            @change="toggleUserRole(role.id)"
+          >
+          <span v-text="role.slug"></span>
+        </label>
+      </div>
+      <button type="submit" class="rounded-md border border-white/15 px-4 py-2 font-semibold text-mist-100 disabled:opacity-50" :disabled="busy">Save user roles</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+RuvoAuth.mount("#admin-rbac", {
+  data() {
+    return {
+      error: "",
+      busy: false,
+      roles: [],
+      permissions: [],
+      selectedRoleId: null,
+      rolePermIds: [],
+      newRole: { name: "", slug: "" },
+      newPerm: { name: "", slug: "" },
+      userId: "",
+      userRoleIds: [],
+    };
+  },
+  async mounted() {
+    await this.load();
+  },
+  methods: {
+    async load() {
+      this.error = "";
+      try {
+        const [r, p] = await Promise.all([
+          RuvoAuth.api.get("/roles"),
+          RuvoAuth.api.get("/permissions"),
+        ]);
+        this.roles = r.data.roles || [];
+        this.permissions = p.data.permissions || [];
+        if (!this.selectedRoleId && this.roles.length) {
+          this.selectedRoleId = this.roles[0].id;
+          await this.loadRolePerms();
+        }
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+      }
+    },
+    async loadRolePerms() {
+      if (!this.selectedRoleId) return;
+      try {
+        const { data } = await RuvoAuth.api.get("/roles/" + this.selectedRoleId);
+        this.rolePermIds = data.permission_ids || [];
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+      }
+    },
+    async onRoleChange() {
+      await this.loadRolePerms();
+    },
+    async createRole() {
+      this.busy = true;
+      this.error = "";
+      try {
+        await RuvoAuth.api.post("/roles", this.newRole);
+        this.newRole = { name: "", slug: "" };
+        await this.load();
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+      } finally {
+        this.busy = false;
+      }
+    },
+    async createPerm() {
+      this.busy = true;
+      this.error = "";
+      try {
+        await RuvoAuth.api.post("/permissions", this.newPerm);
+        this.newPerm = { name: "", slug: "" };
+        await this.load();
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+      } finally {
+        this.busy = false;
+      }
+    },
+    async deleteRole(id) {
+      this.error = "";
+      try {
+        await RuvoAuth.api.delete("/roles/" + id);
+        if (this.selectedRoleId === id) this.selectedRoleId = null;
+        await this.load();
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+      }
+    },
+    async deletePerm(id) {
+      this.error = "";
+      try {
+        await RuvoAuth.api.delete("/permissions/" + id);
+        await this.load();
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+      }
+    },
+    async syncRolePerms() {
+      this.busy = true;
+      this.error = "";
+      try {
+        await RuvoAuth.api.put("/roles/" + this.selectedRoleId + "/permissions", {
+          permission_ids: this.rolePermIds,
+        });
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+      } finally {
+        this.busy = false;
+      }
+    },
+    async syncUserRoles() {
+      this.busy = true;
+      this.error = "";
+      try {
+        await RuvoAuth.api.put("/users/" + this.userId + "/roles", {
+          role_ids: this.userRoleIds,
+        });
+      } catch (err) {
+        this.error = RuvoAuth.errorMessage(err);
+      } finally {
+        this.busy = false;
+      }
+    },
+    togglePerm(id) {
+      const i = this.rolePermIds.indexOf(id);
+      if (i >= 0) this.rolePermIds.splice(i, 1);
+      else this.rolePermIds.push(id);
+    },
+    toggleUserRole(id) {
+      const i = this.userRoleIds.indexOf(id);
+      if (i >= 0) this.userRoleIds.splice(i, 1);
+      else this.userRoleIds.push(id);
+    },
+  },
+});
+</script>
+{% endblock %}

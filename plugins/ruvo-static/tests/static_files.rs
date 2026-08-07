@@ -72,3 +72,38 @@ async fn static_if_none_match_returns_304() {
     let res = app.handle(req).await;
     assert_eq!(res.status_code().as_u16(), 304);
 }
+
+#[tokio::test]
+async fn static_denies_dotfiles_by_default() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join(".env"), b"secret").unwrap();
+
+    let mut app = App::new();
+    app.install(Static::new("/f", dir.path()));
+    let res = app.handle_request(Method::GET, "/f/.env", "").await;
+    assert_eq!(res.status_code().as_u16(), 403);
+
+    let mut app2 = App::new();
+    app2.install(Static::new("/f", dir.path()).dotfiles_allow());
+    let ok = app2.handle_request(Method::GET, "/f/.env", "").await;
+    assert_eq!(ok.status_code().as_u16(), 200);
+}
+
+#[tokio::test]
+async fn static_max_age_immutable() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join("a.txt"), b"hi").unwrap();
+    let mut app = App::new();
+    app.install(
+        Static::new("/f", dir.path())
+            .max_age(std::time::Duration::from_secs(9))
+            .immutable(true),
+    );
+    let res = app.handle_request(Method::GET, "/f/a.txt", "").await;
+    assert_eq!(
+        res.headers()
+            .get("cache-control")
+            .and_then(|v| v.to_str().ok()),
+        Some("public, max-age=9, immutable")
+    );
+}

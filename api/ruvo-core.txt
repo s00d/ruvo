@@ -45,9 +45,33 @@ impl core::marker::Unpin for ruvo_core::extend::Body
 impl core::marker::UnsafeUnpin for ruvo_core::extend::Body
 impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::Body
 impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::Body
+pub enum ruvo_core::extend::LogRotate
+pub ruvo_core::extend::LogRotate::Daily
+pub ruvo_core::extend::LogRotate::Daily::keep: usize
+pub ruvo_core::extend::LogRotate::Never
+pub ruvo_core::extend::LogRotate::Size
+pub ruvo_core::extend::LogRotate::Size::keep: usize
+pub ruvo_core::extend::LogRotate::Size::max_bytes: usize
+impl core::clone::Clone for ruvo_core::LogRotate
+pub fn ruvo_core::LogRotate::clone(&self) -> ruvo_core::LogRotate
+impl core::cmp::Eq for ruvo_core::LogRotate
+impl core::cmp::PartialEq for ruvo_core::LogRotate
+pub fn ruvo_core::LogRotate::eq(&self, &ruvo_core::LogRotate) -> bool
+impl core::default::Default for ruvo_core::LogRotate
+pub fn ruvo_core::LogRotate::default() -> Self
+impl core::fmt::Debug for ruvo_core::LogRotate
+pub fn ruvo_core::LogRotate::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for ruvo_core::LogRotate
+impl core::marker::Freeze for ruvo_core::LogRotate
+impl core::marker::Send for ruvo_core::LogRotate
+impl core::marker::Sync for ruvo_core::LogRotate
+impl core::marker::Unpin for ruvo_core::LogRotate
+impl core::marker::UnsafeUnpin for ruvo_core::LogRotate
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::LogRotate
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::LogRotate
 pub enum ruvo_core::extend::RouteEntry
 pub ruvo_core::extend::RouteEntry::Http
-pub ruvo_core::extend::RouteEntry::Http::meta: ruvo_core::extend::TypeMap
+pub ruvo_core::extend::RouteEntry::Http::meta: ruvo_core::extend::MetaMap
 pub ruvo_core::extend::RouteEntry::Http::method: http::method::Method
 pub ruvo_core::extend::RouteEntry::Http::path: alloc::string::String
 pub ruvo_core::extend::RouteEntry::Raw
@@ -61,6 +85,72 @@ impl core::marker::Unpin for ruvo_core::extend::RouteEntry
 impl core::marker::UnsafeUnpin for ruvo_core::extend::RouteEntry
 impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::RouteEntry
 impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::RouteEntry
+pub enum ruvo_core::extend::SdkCompat
+pub ruvo_core::extend::SdkCompat::Error(alloc::string::String)
+pub ruvo_core::extend::SdkCompat::Ok
+pub ruvo_core::extend::SdkCompat::Warn
+pub ruvo_core::extend::SdkCompat::Warn::core: ruvo_core::PluginSdkVersion
+pub ruvo_core::extend::SdkCompat::Warn::plugin: ruvo_core::PluginSdkVersion
+impl core::clone::Clone for ruvo_core::SdkCompat
+pub fn ruvo_core::SdkCompat::clone(&self) -> ruvo_core::SdkCompat
+impl core::cmp::Eq for ruvo_core::SdkCompat
+impl core::cmp::PartialEq for ruvo_core::SdkCompat
+pub fn ruvo_core::SdkCompat::eq(&self, &ruvo_core::SdkCompat) -> bool
+impl core::fmt::Debug for ruvo_core::SdkCompat
+pub fn ruvo_core::SdkCompat::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for ruvo_core::SdkCompat
+impl core::marker::Freeze for ruvo_core::SdkCompat
+impl core::marker::Send for ruvo_core::SdkCompat
+impl core::marker::Sync for ruvo_core::SdkCompat
+impl core::marker::Unpin for ruvo_core::SdkCompat
+impl core::marker::UnsafeUnpin for ruvo_core::SdkCompat
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::SdkCompat
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::SdkCompat
+pub struct ruvo_core::extend::BuildCtx<'a>
+pub ruvo_core::extend::BuildCtx::installed_plugins: &'a std::collections::hash::set::HashSet<&'static str>
+pub ruvo_core::extend::BuildCtx::route_method: core::option::Option<&'a http::method::Method>
+pub ruvo_core::extend::BuildCtx::route_path: &'a str
+pub ruvo_core::extend::BuildCtx::state: &'a ruvo_core::extend::StateMap
+impl<'a> core::marker::Freeze for ruvo_core::extend::BuildCtx<'a>
+impl<'a> core::marker::Send for ruvo_core::extend::BuildCtx<'a>
+impl<'a> core::marker::Sync for ruvo_core::extend::BuildCtx<'a>
+impl<'a> core::marker::Unpin for ruvo_core::extend::BuildCtx<'a>
+impl<'a> core::marker::UnsafeUnpin for ruvo_core::extend::BuildCtx<'a>
+impl<'a> !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::BuildCtx<'a>
+impl<'a> !core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::BuildCtx<'a>
+pub struct ruvo_core::extend::Cell<T: core::clone::Clone>
+impl<T: core::clone::Clone> ruvo_core::Cell<T>
+pub async fn ruvo_core::Cell<T>::changed(&self) -> T
+pub fn ruvo_core::Cell<T>::get(&self) -> T
+pub fn ruvo_core::Cell<T>::new(T) -> Self
+pub fn ruvo_core::Cell<T>::set(&self, T)
+pub fn ruvo_core::Cell<T>::update(&self, impl core::ops::function::FnOnce(&T) -> T)
+impl<T: core::clone::Clone> core::clone::Clone for ruvo_core::Cell<T>
+pub fn ruvo_core::Cell<T>::clone(&self) -> Self
+impl<T> core::marker::Freeze for ruvo_core::Cell<T>
+impl<T> core::marker::Send for ruvo_core::Cell<T> where T: core::marker::Send + core::marker::Sync
+impl<T> core::marker::Sync for ruvo_core::Cell<T> where T: core::marker::Send + core::marker::Sync
+impl<T> core::marker::Unpin for ruvo_core::Cell<T>
+impl<T> core::marker::UnsafeUnpin for ruvo_core::Cell<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Cell<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for ruvo_core::Cell<T>
+pub struct ruvo_core::extend::Deadline(pub std::time::Instant)
+impl ruvo_core::extend::Deadline
+pub fn ruvo_core::extend::Deadline::after(core::time::Duration) -> Self
+pub fn ruvo_core::extend::Deadline::at(std::time::Instant) -> Self
+pub fn ruvo_core::extend::Deadline::remaining(&self) -> core::time::Duration
+impl core::clone::Clone for ruvo_core::extend::Deadline
+pub fn ruvo_core::extend::Deadline::clone(&self) -> ruvo_core::extend::Deadline
+impl core::fmt::Debug for ruvo_core::extend::Deadline
+pub fn ruvo_core::extend::Deadline::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for ruvo_core::extend::Deadline
+impl core::marker::Freeze for ruvo_core::extend::Deadline
+impl core::marker::Send for ruvo_core::extend::Deadline
+impl core::marker::Sync for ruvo_core::extend::Deadline
+impl core::marker::Unpin for ruvo_core::extend::Deadline
+impl core::marker::UnsafeUnpin for ruvo_core::extend::Deadline
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::Deadline
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::Deadline
 pub struct ruvo_core::extend::Extensions
 impl ruvo_core::extend::Extensions
 pub fn ruvo_core::extend::Extensions::get<T: core::marker::Send + core::marker::Sync + 'static>(&self) -> core::option::Option<&T>
@@ -77,7 +167,64 @@ impl core::marker::Unpin for ruvo_core::extend::Extensions
 impl core::marker::UnsafeUnpin for ruvo_core::extend::Extensions
 impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::Extensions
 impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::Extensions
-pub struct ruvo_core::extend::MatchedMeta(pub ruvo_core::extend::TypeMap)
+pub struct ruvo_core::extend::FormData
+impl ruvo_core::FormData
+pub fn ruvo_core::FormData::file(&self, &str) -> core::option::Option<&ruvo_core::Upload>
+pub fn ruvo_core::FormData::file_map(&self) -> &std::collections::hash::map::HashMap<alloc::string::String, alloc::vec::Vec<ruvo_core::Upload>>
+pub fn ruvo_core::FormData::files(&self, &str) -> &[ruvo_core::Upload]
+pub fn ruvo_core::FormData::get(&self, &str) -> core::option::Option<&str>
+pub fn ruvo_core::FormData::get_all(&self, &str) -> &[alloc::string::String]
+pub fn ruvo_core::FormData::text_map(&self) -> &std::collections::hash::map::HashMap<alloc::string::String, alloc::vec::Vec<alloc::string::String>>
+impl core::clone::Clone for ruvo_core::FormData
+pub fn ruvo_core::FormData::clone(&self) -> ruvo_core::FormData
+impl core::default::Default for ruvo_core::FormData
+pub fn ruvo_core::FormData::default() -> ruvo_core::FormData
+impl core::fmt::Debug for ruvo_core::FormData
+pub fn ruvo_core::FormData::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for ruvo_core::FormData
+impl core::marker::Send for ruvo_core::FormData
+impl core::marker::Sync for ruvo_core::FormData
+impl core::marker::Unpin for ruvo_core::FormData
+impl core::marker::UnsafeUnpin for ruvo_core::FormData
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::FormData
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::FormData
+pub struct ruvo_core::extend::InstalledPlugin
+pub ruvo_core::extend::InstalledPlugin::id: &'static str
+pub ruvo_core::extend::InstalledPlugin::meta: ruvo_core::PluginMeta
+impl core::clone::Clone for ruvo_core::InstalledPlugin
+pub fn ruvo_core::InstalledPlugin::clone(&self) -> ruvo_core::InstalledPlugin
+impl core::fmt::Debug for ruvo_core::InstalledPlugin
+pub fn ruvo_core::InstalledPlugin::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for ruvo_core::InstalledPlugin
+impl core::marker::Send for ruvo_core::InstalledPlugin
+impl core::marker::Sync for ruvo_core::InstalledPlugin
+impl core::marker::Unpin for ruvo_core::InstalledPlugin
+impl core::marker::UnsafeUnpin for ruvo_core::InstalledPlugin
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::InstalledPlugin
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::InstalledPlugin
+pub struct ruvo_core::extend::LogConfig
+pub ruvo_core::extend::LogConfig::file: core::option::Option<std::path::PathBuf>
+pub ruvo_core::extend::LogConfig::filter: alloc::string::String
+pub ruvo_core::extend::LogConfig::rotate: ruvo_core::LogRotate
+pub ruvo_core::extend::LogConfig::stdout: bool
+impl ruvo_core::LogConfig
+pub fn ruvo_core::LogConfig::from_env() -> Self
+pub fn ruvo_core::LogConfig::install(&self)
+pub fn ruvo_core::LogConfig::try_install(&self) -> core::result::Result<(), alloc::string::String>
+impl core::clone::Clone for ruvo_core::LogConfig
+pub fn ruvo_core::LogConfig::clone(&self) -> ruvo_core::LogConfig
+impl core::default::Default for ruvo_core::LogConfig
+pub fn ruvo_core::LogConfig::default() -> Self
+impl core::fmt::Debug for ruvo_core::LogConfig
+pub fn ruvo_core::LogConfig::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for ruvo_core::LogConfig
+impl core::marker::Send for ruvo_core::LogConfig
+impl core::marker::Sync for ruvo_core::LogConfig
+impl core::marker::Unpin for ruvo_core::LogConfig
+impl core::marker::UnsafeUnpin for ruvo_core::LogConfig
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::LogConfig
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::LogConfig
+pub struct ruvo_core::extend::MatchedMeta(pub ruvo_core::extend::MetaMap)
 impl core::clone::Clone for ruvo_core::extend::MatchedMeta
 pub fn ruvo_core::extend::MatchedMeta::clone(&self) -> ruvo_core::extend::MatchedMeta
 impl core::marker::Freeze for ruvo_core::extend::MatchedMeta
@@ -87,6 +234,63 @@ impl core::marker::Unpin for ruvo_core::extend::MatchedMeta
 impl core::marker::UnsafeUnpin for ruvo_core::extend::MatchedMeta
 impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::MatchedMeta
 impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::MatchedMeta
+pub struct ruvo_core::extend::MatchedMetaCapture
+impl ruvo_core::extend::MatchedMetaCapture
+pub fn ruvo_core::extend::MatchedMetaCapture::get(&self) -> core::option::Option<ruvo_core::extend::MetaMap>
+pub fn ruvo_core::extend::MatchedMetaCapture::new() -> Self
+pub fn ruvo_core::extend::MatchedMetaCapture::set(&self, ruvo_core::extend::MetaMap)
+impl core::clone::Clone for ruvo_core::extend::MatchedMetaCapture
+pub fn ruvo_core::extend::MatchedMetaCapture::clone(&self) -> ruvo_core::extend::MatchedMetaCapture
+impl core::default::Default for ruvo_core::extend::MatchedMetaCapture
+pub fn ruvo_core::extend::MatchedMetaCapture::default() -> ruvo_core::extend::MatchedMetaCapture
+impl core::marker::Freeze for ruvo_core::extend::MatchedMetaCapture
+impl core::marker::Send for ruvo_core::extend::MatchedMetaCapture
+impl core::marker::Sync for ruvo_core::extend::MatchedMetaCapture
+impl core::marker::Unpin for ruvo_core::extend::MatchedMetaCapture
+impl core::marker::UnsafeUnpin for ruvo_core::extend::MatchedMetaCapture
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::MatchedMetaCapture
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::MatchedMetaCapture
+pub struct ruvo_core::extend::MaxBody(pub usize)
+impl ruvo_core::extend::MaxBody
+pub fn ruvo_core::extend::MaxBody::bytes(usize) -> Self
+pub fn ruvo_core::extend::MaxBody::kib(usize) -> Self
+pub fn ruvo_core::extend::MaxBody::mib(usize) -> Self
+pub fn ruvo_core::extend::MaxBody::parse(&str) -> core::result::Result<Self, alloc::string::String>
+impl core::clone::Clone for ruvo_core::extend::MaxBody
+pub fn ruvo_core::extend::MaxBody::clone(&self) -> ruvo_core::extend::MaxBody
+impl core::fmt::Debug for ruvo_core::extend::MaxBody
+pub fn ruvo_core::extend::MaxBody::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for ruvo_core::extend::MaxBody
+impl ruvo_core::extend::RouteValue for ruvo_core::extend::MaxBody
+pub fn ruvo_core::extend::MaxBody::check(&self, &ruvo_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn ruvo_core::extend::MaxBody::label(&self) -> alloc::borrow::Cow<'static, str>
+impl core::marker::Freeze for ruvo_core::extend::MaxBody
+impl core::marker::Send for ruvo_core::extend::MaxBody
+impl core::marker::Sync for ruvo_core::extend::MaxBody
+impl core::marker::Unpin for ruvo_core::extend::MaxBody
+impl core::marker::UnsafeUnpin for ruvo_core::extend::MaxBody
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::MaxBody
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::MaxBody
+pub struct ruvo_core::extend::MetaMap
+impl ruvo_core::extend::MetaMap
+pub fn ruvo_core::extend::MetaMap::check_all(&self, &ruvo_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn ruvo_core::extend::MetaMap::extend(&mut self, ruvo_core::extend::MetaMap)
+pub fn ruvo_core::extend::MetaMap::get<T: ruvo_core::extend::RouteValue>(&self) -> core::option::Option<alloc::sync::Arc<T>>
+pub fn ruvo_core::extend::MetaMap::insert<T: ruvo_core::extend::RouteValue>(&mut self, T)
+pub fn ruvo_core::extend::MetaMap::is_empty(&self) -> bool
+pub fn ruvo_core::extend::MetaMap::labels(&self) -> alloc::vec::Vec<&str>
+pub fn ruvo_core::extend::MetaMap::new() -> Self
+impl core::clone::Clone for ruvo_core::extend::MetaMap
+pub fn ruvo_core::extend::MetaMap::clone(&self) -> ruvo_core::extend::MetaMap
+impl core::default::Default for ruvo_core::extend::MetaMap
+pub fn ruvo_core::extend::MetaMap::default() -> ruvo_core::extend::MetaMap
+impl core::marker::Freeze for ruvo_core::extend::MetaMap
+impl core::marker::Send for ruvo_core::extend::MetaMap
+impl core::marker::Sync for ruvo_core::extend::MetaMap
+impl core::marker::Unpin for ruvo_core::extend::MetaMap
+impl core::marker::UnsafeUnpin for ruvo_core::extend::MetaMap
+impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::MetaMap
+impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::MetaMap
 pub struct ruvo_core::extend::MwEntry
 pub ruvo_core::extend::MwEntry::mw: ruvo_core::extend::Middleware
 pub ruvo_core::extend::MwEntry::name: alloc::string::String
@@ -101,6 +305,76 @@ impl core::marker::Unpin for ruvo_core::extend::MwEntry
 impl core::marker::UnsafeUnpin for ruvo_core::extend::MwEntry
 impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::MwEntry
 impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::MwEntry
+pub struct ruvo_core::extend::Needs<T>(_)
+impl<T: core::marker::Send + core::marker::Sync + 'static> ruvo_core::extend::Needs<T>
+pub fn ruvo_core::extend::Needs<T>::new() -> Self
+impl<T: core::marker::Send + core::marker::Sync + 'static> core::default::Default for ruvo_core::extend::Needs<T>
+pub fn ruvo_core::extend::Needs<T>::default() -> Self
+impl<T: core::marker::Send + core::marker::Sync + 'static> ruvo_core::extend::RouteValue for ruvo_core::extend::Needs<T>
+pub fn ruvo_core::extend::Needs<T>::check(&self, &ruvo_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn ruvo_core::extend::Needs<T>::label(&self) -> alloc::borrow::Cow<'static, str>
+impl<T> core::marker::Freeze for ruvo_core::extend::Needs<T>
+impl<T> core::marker::Send for ruvo_core::extend::Needs<T>
+impl<T> core::marker::Sync for ruvo_core::extend::Needs<T>
+impl<T> core::marker::Unpin for ruvo_core::extend::Needs<T>
+impl<T> core::marker::UnsafeUnpin for ruvo_core::extend::Needs<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::Needs<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::Needs<T>
+pub struct ruvo_core::extend::PluginMeta
+pub ruvo_core::extend::PluginMeta::author: &'static str
+pub ruvo_core::extend::PluginMeta::description: &'static str
+pub ruvo_core::extend::PluginMeta::name: &'static str
+pub ruvo_core::extend::PluginMeta::sdk: ruvo_core::PluginSdkVersion
+pub ruvo_core::extend::PluginMeta::version: &'static str
+impl ruvo_core::PluginMeta
+pub fn ruvo_core::PluginMeta::author(self, &'static str) -> Self
+pub fn ruvo_core::PluginMeta::description(self, &'static str) -> Self
+pub fn ruvo_core::PluginMeta::for_id(&'static str) -> Self
+pub fn ruvo_core::PluginMeta::new(&'static str) -> Self
+pub fn ruvo_core::PluginMeta::sdk(self, ruvo_core::PluginSdkVersion) -> Self
+pub fn ruvo_core::PluginMeta::version(self, &'static str) -> Self
+impl core::clone::Clone for ruvo_core::PluginMeta
+pub fn ruvo_core::PluginMeta::clone(&self) -> ruvo_core::PluginMeta
+impl core::fmt::Debug for ruvo_core::PluginMeta
+pub fn ruvo_core::PluginMeta::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for ruvo_core::PluginMeta
+impl core::marker::Send for ruvo_core::PluginMeta
+impl core::marker::Sync for ruvo_core::PluginMeta
+impl core::marker::Unpin for ruvo_core::PluginMeta
+impl core::marker::UnsafeUnpin for ruvo_core::PluginMeta
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::PluginMeta
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::PluginMeta
+pub struct ruvo_core::extend::PluginSdkVersion
+pub ruvo_core::extend::PluginSdkVersion::major: u32
+pub ruvo_core::extend::PluginSdkVersion::minor: u32
+pub ruvo_core::extend::PluginSdkVersion::patch: u32
+impl ruvo_core::PluginSdkVersion
+pub const fn ruvo_core::PluginSdkVersion::new(u32, u32, u32) -> Self
+pub fn ruvo_core::PluginSdkVersion::parse(&str) -> core::option::Option<Self>
+impl core::clone::Clone for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::clone(&self) -> ruvo_core::PluginSdkVersion
+impl core::cmp::Eq for ruvo_core::PluginSdkVersion
+impl core::cmp::Ord for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::cmp(&self, &ruvo_core::PluginSdkVersion) -> core::cmp::Ordering
+impl core::cmp::PartialEq for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::eq(&self, &ruvo_core::PluginSdkVersion) -> bool
+impl core::cmp::PartialOrd for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::partial_cmp(&self, &ruvo_core::PluginSdkVersion) -> core::option::Option<core::cmp::Ordering>
+impl core::fmt::Debug for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for ruvo_core::PluginSdkVersion
+impl core::marker::StructuralPartialEq for ruvo_core::PluginSdkVersion
+impl core::marker::Freeze for ruvo_core::PluginSdkVersion
+impl core::marker::Send for ruvo_core::PluginSdkVersion
+impl core::marker::Sync for ruvo_core::PluginSdkVersion
+impl core::marker::Unpin for ruvo_core::PluginSdkVersion
+impl core::marker::UnsafeUnpin for ruvo_core::PluginSdkVersion
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::PluginSdkVersion
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::PluginSdkVersion
 pub struct ruvo_core::extend::RequestBuilder
 impl ruvo_core::extend::RequestBuilder
 pub fn ruvo_core::extend::RequestBuilder::body(self, impl core::convert::Into<bytes::bytes::Bytes>) -> Self
@@ -119,6 +393,25 @@ impl core::marker::Unpin for ruvo_core::extend::RequestBuilder
 impl core::marker::UnsafeUnpin for ruvo_core::extend::RequestBuilder
 impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::RequestBuilder
 impl core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::RequestBuilder
+pub struct ruvo_core::extend::RequestTimeout(pub core::time::Duration)
+impl ruvo_core::extend::RequestTimeout
+pub fn ruvo_core::extend::RequestTimeout::from_secs(u64) -> Self
+pub fn ruvo_core::extend::RequestTimeout::parse(&str) -> core::result::Result<Self, alloc::string::String>
+impl core::clone::Clone for ruvo_core::extend::RequestTimeout
+pub fn ruvo_core::extend::RequestTimeout::clone(&self) -> ruvo_core::extend::RequestTimeout
+impl core::fmt::Debug for ruvo_core::extend::RequestTimeout
+pub fn ruvo_core::extend::RequestTimeout::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for ruvo_core::extend::RequestTimeout
+impl ruvo_core::extend::RouteValue for ruvo_core::extend::RequestTimeout
+pub fn ruvo_core::extend::RequestTimeout::check(&self, &ruvo_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn ruvo_core::extend::RequestTimeout::label(&self) -> alloc::borrow::Cow<'static, str>
+impl core::marker::Freeze for ruvo_core::extend::RequestTimeout
+impl core::marker::Send for ruvo_core::extend::RequestTimeout
+impl core::marker::Sync for ruvo_core::extend::RequestTimeout
+impl core::marker::Unpin for ruvo_core::extend::RequestTimeout
+impl core::marker::UnsafeUnpin for ruvo_core::extend::RequestTimeout
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::RequestTimeout
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::RequestTimeout
 pub struct ruvo_core::extend::RouteTable(pub alloc::vec::Vec<ruvo_core::extend::RouteEntry>)
 impl core::clone::Clone for ruvo_core::extend::RouteTable
 pub fn ruvo_core::extend::RouteTable::clone(&self) -> ruvo_core::extend::RouteTable
@@ -129,6 +422,23 @@ impl core::marker::Unpin for ruvo_core::extend::RouteTable
 impl core::marker::UnsafeUnpin for ruvo_core::extend::RouteTable
 impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::RouteTable
 impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::RouteTable
+pub struct ruvo_core::extend::Slot<T>
+impl<T> ruvo_core::Slot<T>
+pub fn ruvo_core::Slot<T>::new() -> Self
+pub fn ruvo_core::Slot<T>::put(&self, T)
+pub async fn ruvo_core::Slot<T>::take(&self) -> T
+pub fn ruvo_core::Slot<T>::try_take(&self) -> core::option::Option<T>
+impl<T> core::clone::Clone for ruvo_core::Slot<T>
+pub fn ruvo_core::Slot<T>::clone(&self) -> Self
+impl<T> core::default::Default for ruvo_core::Slot<T>
+pub fn ruvo_core::Slot<T>::default() -> Self
+impl<T> core::marker::Freeze for ruvo_core::Slot<T>
+impl<T> core::marker::Send for ruvo_core::Slot<T> where T: core::marker::Send
+impl<T> core::marker::Sync for ruvo_core::Slot<T> where T: core::marker::Send
+impl<T> core::marker::Unpin for ruvo_core::Slot<T>
+impl<T> core::marker::UnsafeUnpin for ruvo_core::Slot<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Slot<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for ruvo_core::Slot<T>
 pub struct ruvo_core::extend::TypeMap
 impl ruvo_core::extend::TypeMap
 pub fn ruvo_core::extend::TypeMap::extend(&mut self, ruvo_core::extend::TypeMap)
@@ -147,6 +457,27 @@ impl core::marker::Unpin for ruvo_core::extend::TypeMap
 impl core::marker::UnsafeUnpin for ruvo_core::extend::TypeMap
 impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::extend::TypeMap
 impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::extend::TypeMap
+pub struct ruvo_core::extend::Upload
+pub ruvo_core::extend::Upload::content_type: core::option::Option<alloc::string::String>
+pub ruvo_core::extend::Upload::data: bytes::bytes::Bytes
+pub ruvo_core::extend::Upload::field: alloc::string::String
+pub ruvo_core::extend::Upload::filename: core::option::Option<alloc::string::String>
+impl ruvo_core::Upload
+pub async fn ruvo_core::Upload::save(&self, impl core::convert::AsRef<std::path::Path>) -> ruvo_core::Result<()>
+pub async fn ruvo_core::Upload::save_in(&self, impl core::convert::AsRef<std::path::Path>, &str) -> ruvo_core::Result<std::path::PathBuf>
+pub fn ruvo_core::Upload::suggested_name(&self) -> &str
+impl core::clone::Clone for ruvo_core::Upload
+pub fn ruvo_core::Upload::clone(&self) -> ruvo_core::Upload
+impl core::fmt::Debug for ruvo_core::Upload
+pub fn ruvo_core::Upload::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl !core::marker::Freeze for ruvo_core::Upload
+impl core::marker::Send for ruvo_core::Upload
+impl core::marker::Sync for ruvo_core::Upload
+impl core::marker::Unpin for ruvo_core::Upload
+impl core::marker::UnsafeUnpin for ruvo_core::Upload
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Upload
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::Upload
+pub const ruvo_core::extend::PLUGIN_SDK_VERSION: ruvo_core::PluginSdkVersion
 pub trait ruvo_core::extend::ErrorResponse: ruvo_core::IntoResponse
 pub trait ruvo_core::extend::IntoHandler<T>
 pub fn ruvo_core::extend::IntoHandler::into_handler(self) -> ruvo_core::extend::FallibleHandler
@@ -180,10 +511,27 @@ impl ruvo_core::extend::IntoRawHandler for ruvo_core::extend::RawHandler
 pub fn ruvo_core::extend::RawHandler::into_raw_handler(self) -> ruvo_core::extend::RawHandler
 impl<F, Fut> ruvo_core::extend::IntoRawHandler for F where F: core::ops::function::Fn(http::request::Request<hyper::body::incoming::Incoming>) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = http::response::Response<ruvo_core::extend::ResponseBody>> + core::marker::Send + 'static
 pub fn F::into_raw_handler(self) -> ruvo_core::extend::RawHandler
+pub trait ruvo_core::extend::RouteValue: core::any::Any + core::marker::Send + core::marker::Sync + 'static
+pub fn ruvo_core::extend::RouteValue::check(&self, &ruvo_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn ruvo_core::extend::RouteValue::label(&self) -> alloc::borrow::Cow<'static, str>
+impl ruvo_core::extend::RouteValue for ruvo_core::extend::MaxBody
+pub fn ruvo_core::extend::MaxBody::check(&self, &ruvo_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn ruvo_core::extend::MaxBody::label(&self) -> alloc::borrow::Cow<'static, str>
+impl ruvo_core::extend::RouteValue for ruvo_core::extend::RequestTimeout
+pub fn ruvo_core::extend::RequestTimeout::check(&self, &ruvo_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn ruvo_core::extend::RequestTimeout::label(&self) -> alloc::borrow::Cow<'static, str>
+impl<T: core::marker::Send + core::marker::Sync + 'static> ruvo_core::extend::RouteValue for ruvo_core::extend::Needs<T>
+pub fn ruvo_core::extend::Needs<T>::check(&self, &ruvo_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn ruvo_core::extend::Needs<T>::label(&self) -> alloc::borrow::Cow<'static, str>
+pub fn ruvo_core::extend::check_plugin_sdk(ruvo_core::PluginSdkVersion, ruvo_core::PluginSdkVersion) -> ruvo_core::SdkCompat
 pub fn ruvo_core::extend::ensure_tracing()
 pub fn ruvo_core::extend::join_paths(&str, &str) -> alloc::string::String
 pub fn ruvo_core::extend::named(impl core::convert::Into<alloc::string::String>, impl ruvo_core::extend::IntoMiddleware) -> ruvo_core::extend::MwEntry
 pub fn ruvo_core::extend::normalize_path(&str) -> alloc::string::String
+pub fn ruvo_core::extend::parse_bytes(&str) -> core::result::Result<usize, alloc::string::String>
+pub fn ruvo_core::extend::parse_duration(&str) -> core::result::Result<core::time::Duration, alloc::string::String>
+pub fn ruvo_core::extend::parse_log_rotate(&str, core::option::Option<&str>, core::option::Option<usize>) -> core::result::Result<ruvo_core::LogRotate, alloc::string::String>
+pub fn ruvo_core::extend::tighten_deadline(&mut ruvo_core::Request, std::time::Instant)
 pub fn ruvo_core::extend::to_brace_path(&str) -> core::option::Option<alloc::string::String>
 pub async fn ruvo_core::extend::wait_shutdown(ruvo_core::Shutdown)
 pub fn ruvo_core::extend::with_leaked<S, F, Fut>(S, F) -> ruvo_core::extend::Middleware where S: core::marker::Send + core::marker::Sync + 'static, F: core::ops::function::Fn(&'static S, ruvo_core::Request, ruvo_core::Next) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = ruvo_core::Response> + core::marker::Send + 'static
@@ -252,6 +600,51 @@ impl core::marker::Unpin for ruvo_core::Http
 impl core::marker::UnsafeUnpin for ruvo_core::Http
 impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Http
 impl core::panic::unwind_safe::UnwindSafe for ruvo_core::Http
+pub enum ruvo_core::LogRotate
+pub ruvo_core::LogRotate::Daily
+pub ruvo_core::LogRotate::Daily::keep: usize
+pub ruvo_core::LogRotate::Never
+pub ruvo_core::LogRotate::Size
+pub ruvo_core::LogRotate::Size::keep: usize
+pub ruvo_core::LogRotate::Size::max_bytes: usize
+impl core::clone::Clone for ruvo_core::LogRotate
+pub fn ruvo_core::LogRotate::clone(&self) -> ruvo_core::LogRotate
+impl core::cmp::Eq for ruvo_core::LogRotate
+impl core::cmp::PartialEq for ruvo_core::LogRotate
+pub fn ruvo_core::LogRotate::eq(&self, &ruvo_core::LogRotate) -> bool
+impl core::default::Default for ruvo_core::LogRotate
+pub fn ruvo_core::LogRotate::default() -> Self
+impl core::fmt::Debug for ruvo_core::LogRotate
+pub fn ruvo_core::LogRotate::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for ruvo_core::LogRotate
+impl core::marker::Freeze for ruvo_core::LogRotate
+impl core::marker::Send for ruvo_core::LogRotate
+impl core::marker::Sync for ruvo_core::LogRotate
+impl core::marker::Unpin for ruvo_core::LogRotate
+impl core::marker::UnsafeUnpin for ruvo_core::LogRotate
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::LogRotate
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::LogRotate
+pub enum ruvo_core::SdkCompat
+pub ruvo_core::SdkCompat::Error(alloc::string::String)
+pub ruvo_core::SdkCompat::Ok
+pub ruvo_core::SdkCompat::Warn
+pub ruvo_core::SdkCompat::Warn::core: ruvo_core::PluginSdkVersion
+pub ruvo_core::SdkCompat::Warn::plugin: ruvo_core::PluginSdkVersion
+impl core::clone::Clone for ruvo_core::SdkCompat
+pub fn ruvo_core::SdkCompat::clone(&self) -> ruvo_core::SdkCompat
+impl core::cmp::Eq for ruvo_core::SdkCompat
+impl core::cmp::PartialEq for ruvo_core::SdkCompat
+pub fn ruvo_core::SdkCompat::eq(&self, &ruvo_core::SdkCompat) -> bool
+impl core::fmt::Debug for ruvo_core::SdkCompat
+pub fn ruvo_core::SdkCompat::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for ruvo_core::SdkCompat
+impl core::marker::Freeze for ruvo_core::SdkCompat
+impl core::marker::Send for ruvo_core::SdkCompat
+impl core::marker::Sync for ruvo_core::SdkCompat
+impl core::marker::Unpin for ruvo_core::SdkCompat
+impl core::marker::UnsafeUnpin for ruvo_core::SdkCompat
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::SdkCompat
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::SdkCompat
 pub struct ruvo_core::App
 impl ruvo_core::App
 pub fn ruvo_core::App::bind(self, impl core::convert::Into<ruvo_core::extend::Bind>) -> ruvo_core::BoundApp
@@ -264,9 +657,11 @@ pub fn ruvo_core::App::drain_timeout(&mut self, core::time::Duration) -> &mut Se
 pub fn ruvo_core::App::explain(&self) -> alloc::string::String
 pub async fn ruvo_core::App::handle(&self, ruvo_core::Request) -> ruvo_core::Response
 pub async fn ruvo_core::App::handle_request(&self, http::method::Method, &str, &str) -> ruvo_core::Response
+pub fn ruvo_core::App::has_plugin(&self, &str) -> bool
 pub fn ruvo_core::App::header_read_timeout(&mut self, core::time::Duration) -> &mut Self
 pub fn ruvo_core::App::idle_timeout(&mut self, core::time::Duration) -> &mut Self
 pub fn ruvo_core::App::install<P: ruvo_core::Plugin>(&mut self, P) -> &mut Self
+pub fn ruvo_core::App::installed_plugin_meta(&self) -> &[ruvo_core::InstalledPlugin]
 pub fn ruvo_core::App::keep_alive(&mut self, bool) -> &mut Self
 pub fn ruvo_core::App::max_body_size(&mut self, usize) -> &mut Self
 pub fn ruvo_core::App::max_buf_size(&mut self, usize) -> &mut Self
@@ -284,6 +679,12 @@ pub async fn ruvo_core::App::run(self) -> ruvo_core::Result<()>
 pub fn ruvo_core::App::service<S: ruvo_core::BackgroundService + 'static>(&mut self, S) -> &mut Self
 pub fn ruvo_core::App::service_in_cli(&mut self, bool) -> &mut Self
 pub fn ruvo_core::App::trust_proxy(&mut self, bool) -> &mut Self
+impl ruvo_core::App
+pub fn ruvo_core::App::config_doc(&self) -> core::option::Option<alloc::sync::Arc<ruvo_core::ConfigDoc>>
+pub fn ruvo_core::App::configure(&mut self) -> ruvo_core::Result<&mut Self>
+pub fn ruvo_core::App::configure_from_path(&mut self, impl core::convert::AsRef<std::path::Path>) -> ruvo_core::Result<&mut Self>
+pub fn ruvo_core::App::configure_from_str(&mut self, &str) -> ruvo_core::Result<&mut Self>
+pub fn ruvo_core::App::from_toml(impl core::convert::AsRef<std::path::Path>) -> ruvo_core::Result<Self>
 impl core::default::Default for ruvo_core::App
 pub fn ruvo_core::App::default() -> Self
 impl core::ops::deref::Deref for ruvo_core::App
@@ -313,6 +714,22 @@ impl core::marker::Unpin for ruvo_core::BoundApp
 impl core::marker::UnsafeUnpin for ruvo_core::BoundApp
 impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::BoundApp
 impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::BoundApp
+pub struct ruvo_core::Cell<T: core::clone::Clone>
+impl<T: core::clone::Clone> ruvo_core::Cell<T>
+pub async fn ruvo_core::Cell<T>::changed(&self) -> T
+pub fn ruvo_core::Cell<T>::get(&self) -> T
+pub fn ruvo_core::Cell<T>::new(T) -> Self
+pub fn ruvo_core::Cell<T>::set(&self, T)
+pub fn ruvo_core::Cell<T>::update(&self, impl core::ops::function::FnOnce(&T) -> T)
+impl<T: core::clone::Clone> core::clone::Clone for ruvo_core::Cell<T>
+pub fn ruvo_core::Cell<T>::clone(&self) -> Self
+impl<T> core::marker::Freeze for ruvo_core::Cell<T>
+impl<T> core::marker::Send for ruvo_core::Cell<T> where T: core::marker::Send + core::marker::Sync
+impl<T> core::marker::Sync for ruvo_core::Cell<T> where T: core::marker::Send + core::marker::Sync
+impl<T> core::marker::Unpin for ruvo_core::Cell<T>
+impl<T> core::marker::UnsafeUnpin for ruvo_core::Cell<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Cell<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for ruvo_core::Cell<T>
 pub struct ruvo_core::ClientAddr(pub core::net::socket_addr::SocketAddr)
 impl core::clone::Clone for ruvo_core::ClientAddr
 pub fn ruvo_core::ClientAddr::clone(&self) -> ruvo_core::ClientAddr
@@ -326,6 +743,61 @@ impl core::marker::Unpin for ruvo_core::ClientAddr
 impl core::marker::UnsafeUnpin for ruvo_core::ClientAddr
 impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::ClientAddr
 impl core::panic::unwind_safe::UnwindSafe for ruvo_core::ClientAddr
+pub struct ruvo_core::ClientRequest<'a>
+impl<'a> ruvo_core::ClientRequest<'a>
+pub fn ruvo_core::ClientRequest<'a>::body(self, impl core::convert::Into<bytes::bytes::Bytes>) -> Self
+pub fn ruvo_core::ClientRequest<'a>::form(self, &[(&str, &str)]) -> Self
+pub fn ruvo_core::ClientRequest<'a>::header(self, impl core::convert::AsRef<str>, impl core::convert::AsRef<str>) -> Self
+pub fn ruvo_core::ClientRequest<'a>::json<T: serde_core::ser::Serialize>(self, &T) -> Self
+impl<'a> core::future::into_future::IntoFuture for ruvo_core::ClientRequest<'a>
+pub type ruvo_core::ClientRequest<'a>::IntoFuture = core::pin::Pin<alloc::boxed::Box<(dyn core::future::future::Future<Output = ruvo_core::Response> + core::marker::Send + 'a)>>
+pub type ruvo_core::ClientRequest<'a>::Output = ruvo_core::Response
+pub fn ruvo_core::ClientRequest<'a>::into_future(self) -> Self::IntoFuture
+impl<'a> !core::marker::Freeze for ruvo_core::ClientRequest<'a>
+impl<'a> core::marker::Send for ruvo_core::ClientRequest<'a>
+impl<'a> core::marker::Sync for ruvo_core::ClientRequest<'a>
+impl<'a> core::marker::Unpin for ruvo_core::ClientRequest<'a>
+impl<'a> core::marker::UnsafeUnpin for ruvo_core::ClientRequest<'a>
+impl<'a> !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::ClientRequest<'a>
+impl<'a> !core::panic::unwind_safe::UnwindSafe for ruvo_core::ClientRequest<'a>
+pub struct ruvo_core::ConfigDoc
+pub ruvo_core::ConfigDoc::profile: alloc::string::String
+pub ruvo_core::ConfigDoc::root: toml::value::Value
+impl ruvo_core::ConfigDoc
+pub fn ruvo_core::ConfigDoc::http_clients(&self) -> std::collections::hash::map::HashMap<alloc::string::String, toml::map::Map<alloc::string::String, toml::value::Value>>
+pub fn ruvo_core::ConfigDoc::section(&self, &str) -> core::option::Option<toml::map::Map<alloc::string::String, toml::value::Value>>
+impl core::clone::Clone for ruvo_core::ConfigDoc
+pub fn ruvo_core::ConfigDoc::clone(&self) -> ruvo_core::ConfigDoc
+impl core::fmt::Debug for ruvo_core::ConfigDoc
+pub fn ruvo_core::ConfigDoc::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for ruvo_core::ConfigDoc
+impl core::marker::Send for ruvo_core::ConfigDoc
+impl core::marker::Sync for ruvo_core::ConfigDoc
+impl core::marker::Unpin for ruvo_core::ConfigDoc
+impl core::marker::UnsafeUnpin for ruvo_core::ConfigDoc
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::ConfigDoc
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::ConfigDoc
+pub struct ruvo_core::FormData
+impl ruvo_core::FormData
+pub fn ruvo_core::FormData::file(&self, &str) -> core::option::Option<&ruvo_core::Upload>
+pub fn ruvo_core::FormData::file_map(&self) -> &std::collections::hash::map::HashMap<alloc::string::String, alloc::vec::Vec<ruvo_core::Upload>>
+pub fn ruvo_core::FormData::files(&self, &str) -> &[ruvo_core::Upload]
+pub fn ruvo_core::FormData::get(&self, &str) -> core::option::Option<&str>
+pub fn ruvo_core::FormData::get_all(&self, &str) -> &[alloc::string::String]
+pub fn ruvo_core::FormData::text_map(&self) -> &std::collections::hash::map::HashMap<alloc::string::String, alloc::vec::Vec<alloc::string::String>>
+impl core::clone::Clone for ruvo_core::FormData
+pub fn ruvo_core::FormData::clone(&self) -> ruvo_core::FormData
+impl core::default::Default for ruvo_core::FormData
+pub fn ruvo_core::FormData::default() -> ruvo_core::FormData
+impl core::fmt::Debug for ruvo_core::FormData
+pub fn ruvo_core::FormData::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for ruvo_core::FormData
+impl core::marker::Send for ruvo_core::FormData
+impl core::marker::Sync for ruvo_core::FormData
+impl core::marker::Unpin for ruvo_core::FormData
+impl core::marker::UnsafeUnpin for ruvo_core::FormData
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::FormData
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::FormData
 pub struct ruvo_core::Html<T>(pub T)
 impl<T: core::convert::Into<alloc::string::String>> ruvo_core::IntoResponse for ruvo_core::Html<T>
 pub fn ruvo_core::Html<T>::into_response(self) -> ruvo_core::Response
@@ -336,6 +808,20 @@ impl<T> core::marker::Unpin for ruvo_core::Html<T> where T: core::marker::Unpin
 impl<T> core::marker::UnsafeUnpin for ruvo_core::Html<T> where T: core::marker::UnsafeUnpin
 impl<T> core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Html<T> where T: core::panic::unwind_safe::RefUnwindSafe
 impl<T> core::panic::unwind_safe::UnwindSafe for ruvo_core::Html<T> where T: core::panic::unwind_safe::UnwindSafe
+pub struct ruvo_core::InstalledPlugin
+pub ruvo_core::InstalledPlugin::id: &'static str
+pub ruvo_core::InstalledPlugin::meta: ruvo_core::PluginMeta
+impl core::clone::Clone for ruvo_core::InstalledPlugin
+pub fn ruvo_core::InstalledPlugin::clone(&self) -> ruvo_core::InstalledPlugin
+impl core::fmt::Debug for ruvo_core::InstalledPlugin
+pub fn ruvo_core::InstalledPlugin::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for ruvo_core::InstalledPlugin
+impl core::marker::Send for ruvo_core::InstalledPlugin
+impl core::marker::Sync for ruvo_core::InstalledPlugin
+impl core::marker::Unpin for ruvo_core::InstalledPlugin
+impl core::marker::UnsafeUnpin for ruvo_core::InstalledPlugin
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::InstalledPlugin
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::InstalledPlugin
 pub struct ruvo_core::Json<T>(pub T)
 impl<T: serde_core::ser::Serialize> ruvo_core::IntoResponse for ruvo_core::Json<T>
 pub fn ruvo_core::Json<T>::into_response(self) -> ruvo_core::Response
@@ -346,6 +832,28 @@ impl<T> core::marker::Unpin for ruvo_core::Json<T> where T: core::marker::Unpin
 impl<T> core::marker::UnsafeUnpin for ruvo_core::Json<T> where T: core::marker::UnsafeUnpin
 impl<T> core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Json<T> where T: core::panic::unwind_safe::RefUnwindSafe
 impl<T> core::panic::unwind_safe::UnwindSafe for ruvo_core::Json<T> where T: core::panic::unwind_safe::UnwindSafe
+pub struct ruvo_core::LogConfig
+pub ruvo_core::LogConfig::file: core::option::Option<std::path::PathBuf>
+pub ruvo_core::LogConfig::filter: alloc::string::String
+pub ruvo_core::LogConfig::rotate: ruvo_core::LogRotate
+pub ruvo_core::LogConfig::stdout: bool
+impl ruvo_core::LogConfig
+pub fn ruvo_core::LogConfig::from_env() -> Self
+pub fn ruvo_core::LogConfig::install(&self)
+pub fn ruvo_core::LogConfig::try_install(&self) -> core::result::Result<(), alloc::string::String>
+impl core::clone::Clone for ruvo_core::LogConfig
+pub fn ruvo_core::LogConfig::clone(&self) -> ruvo_core::LogConfig
+impl core::default::Default for ruvo_core::LogConfig
+pub fn ruvo_core::LogConfig::default() -> Self
+impl core::fmt::Debug for ruvo_core::LogConfig
+pub fn ruvo_core::LogConfig::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for ruvo_core::LogConfig
+impl core::marker::Send for ruvo_core::LogConfig
+impl core::marker::Sync for ruvo_core::LogConfig
+impl core::marker::Unpin for ruvo_core::LogConfig
+impl core::marker::UnsafeUnpin for ruvo_core::LogConfig
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::LogConfig
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::LogConfig
 pub struct ruvo_core::NoContent
 impl ruvo_core::IntoResponse for ruvo_core::NoContent
 pub fn ruvo_core::NoContent::into_response(self) -> ruvo_core::Response
@@ -366,6 +874,61 @@ impl core::marker::Unpin for ruvo_core::OnUpgrade
 impl core::marker::UnsafeUnpin for ruvo_core::OnUpgrade
 impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::OnUpgrade
 impl core::panic::unwind_safe::UnwindSafe for ruvo_core::OnUpgrade
+pub struct ruvo_core::PluginMeta
+pub ruvo_core::PluginMeta::author: &'static str
+pub ruvo_core::PluginMeta::description: &'static str
+pub ruvo_core::PluginMeta::name: &'static str
+pub ruvo_core::PluginMeta::sdk: ruvo_core::PluginSdkVersion
+pub ruvo_core::PluginMeta::version: &'static str
+impl ruvo_core::PluginMeta
+pub fn ruvo_core::PluginMeta::author(self, &'static str) -> Self
+pub fn ruvo_core::PluginMeta::description(self, &'static str) -> Self
+pub fn ruvo_core::PluginMeta::for_id(&'static str) -> Self
+pub fn ruvo_core::PluginMeta::new(&'static str) -> Self
+pub fn ruvo_core::PluginMeta::sdk(self, ruvo_core::PluginSdkVersion) -> Self
+pub fn ruvo_core::PluginMeta::version(self, &'static str) -> Self
+impl core::clone::Clone for ruvo_core::PluginMeta
+pub fn ruvo_core::PluginMeta::clone(&self) -> ruvo_core::PluginMeta
+impl core::fmt::Debug for ruvo_core::PluginMeta
+pub fn ruvo_core::PluginMeta::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for ruvo_core::PluginMeta
+impl core::marker::Send for ruvo_core::PluginMeta
+impl core::marker::Sync for ruvo_core::PluginMeta
+impl core::marker::Unpin for ruvo_core::PluginMeta
+impl core::marker::UnsafeUnpin for ruvo_core::PluginMeta
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::PluginMeta
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::PluginMeta
+pub struct ruvo_core::PluginSdkVersion
+pub ruvo_core::PluginSdkVersion::major: u32
+pub ruvo_core::PluginSdkVersion::minor: u32
+pub ruvo_core::PluginSdkVersion::patch: u32
+impl ruvo_core::PluginSdkVersion
+pub const fn ruvo_core::PluginSdkVersion::new(u32, u32, u32) -> Self
+pub fn ruvo_core::PluginSdkVersion::parse(&str) -> core::option::Option<Self>
+impl core::clone::Clone for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::clone(&self) -> ruvo_core::PluginSdkVersion
+impl core::cmp::Eq for ruvo_core::PluginSdkVersion
+impl core::cmp::Ord for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::cmp(&self, &ruvo_core::PluginSdkVersion) -> core::cmp::Ordering
+impl core::cmp::PartialEq for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::eq(&self, &ruvo_core::PluginSdkVersion) -> bool
+impl core::cmp::PartialOrd for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::partial_cmp(&self, &ruvo_core::PluginSdkVersion) -> core::option::Option<core::cmp::Ordering>
+impl core::fmt::Debug for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for ruvo_core::PluginSdkVersion
+pub fn ruvo_core::PluginSdkVersion::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for ruvo_core::PluginSdkVersion
+impl core::marker::StructuralPartialEq for ruvo_core::PluginSdkVersion
+impl core::marker::Freeze for ruvo_core::PluginSdkVersion
+impl core::marker::Send for ruvo_core::PluginSdkVersion
+impl core::marker::Sync for ruvo_core::PluginSdkVersion
+impl core::marker::Unpin for ruvo_core::PluginSdkVersion
+impl core::marker::UnsafeUnpin for ruvo_core::PluginSdkVersion
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::PluginSdkVersion
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::PluginSdkVersion
 pub struct ruvo_core::Redirect
 impl ruvo_core::Redirect
 pub fn ruvo_core::Redirect::permanent(impl core::convert::Into<alloc::string::String>) -> Self
@@ -392,7 +955,7 @@ pub async fn ruvo_core::Request::body(&mut self) -> ruvo_core::Result<bytes::byt
 pub fn ruvo_core::Request::body_limit(&self) -> usize
 pub fn ruvo_core::Request::builder() -> ruvo_core::extend::RequestBuilder
 pub fn ruvo_core::Request::content_type(&self) -> core::option::Option<&str>
-pub async fn ruvo_core::Request::form<T: serde_core::de::DeserializeOwned>(&mut self) -> ruvo_core::Result<T>
+pub fn ruvo_core::Request::deadline_remaining(&self) -> core::option::Option<core::time::Duration>
 pub fn ruvo_core::Request::get<T: core::marker::Send + core::marker::Sync + 'static>(&self) -> core::option::Option<&T>
 pub fn ruvo_core::Request::get_mut<T: core::marker::Send + core::marker::Sync + 'static>(&mut self) -> core::option::Option<&mut T>
 pub fn ruvo_core::Request::header(&self, &str) -> core::option::Option<&str>
@@ -407,7 +970,8 @@ pub fn ruvo_core::Request::param(&self, &str) -> core::option::Option<&str>
 pub fn ruvo_core::Request::param_as<T: core::str::traits::FromStr>(&self, &str) -> ruvo_core::Result<T> where <T as core::str::traits::FromStr>::Err: core::fmt::Display
 pub fn ruvo_core::Request::query(&self, &str) -> core::option::Option<&str>
 pub fn ruvo_core::Request::query_as<T: serde_core::de::DeserializeOwned>(&self) -> ruvo_core::Result<T>
-pub fn ruvo_core::Request::route_meta<T>(&self) -> core::option::Option<alloc::sync::Arc<T>> where T: core::marker::Send + core::marker::Sync + 'static
+pub fn ruvo_core::Request::raw_query(&self) -> &str
+pub fn ruvo_core::Request::route_meta<T>(&self) -> core::option::Option<alloc::sync::Arc<T>> where T: ruvo_core::extend::RouteValue
 pub fn ruvo_core::Request::scheme(&self) -> &str
 pub fn ruvo_core::Request::set<T: core::marker::Send + core::marker::Sync + 'static>(&mut self, T)
 pub fn ruvo_core::Request::state<T>(&self) -> alloc::sync::Arc<T> where T: core::marker::Send + core::marker::Sync + 'static
@@ -416,6 +980,9 @@ pub fn ruvo_core::Request::take<T: core::marker::Send + core::marker::Sync + 'st
 pub async fn ruvo_core::Request::text(&mut self) -> ruvo_core::Result<alloc::string::String>
 pub fn ruvo_core::Request::try_state<T>(&self) -> core::option::Option<alloc::sync::Arc<T>> where T: core::marker::Send + core::marker::Sync + 'static
 pub fn ruvo_core::Request::url(&self) -> alloc::string::String
+impl ruvo_core::Request
+pub async fn ruvo_core::Request::form<T: serde_core::de::DeserializeOwned>(&mut self) -> ruvo_core::Result<T>
+pub async fn ruvo_core::Request::input(&mut self) -> ruvo_core::Result<&ruvo_core::FormData>
 impl !core::marker::Freeze for ruvo_core::Request
 impl core::marker::Send for ruvo_core::Request
 impl core::marker::Sync for ruvo_core::Request
@@ -428,6 +995,8 @@ impl ruvo_core::Response
 pub fn ruvo_core::Response::attachment(self, &str) -> Self
 pub fn ruvo_core::Response::body_bytes(&self) -> core::option::Option<&[u8]>
 pub fn ruvo_core::Response::bytes(impl core::convert::Into<bytes::bytes::Bytes>, &str) -> Self
+pub async fn ruvo_core::Response::download(impl core::convert::AsRef<std::path::Path>) -> Self
+pub async fn ruvo_core::Response::download_in(impl core::convert::AsRef<std::path::Path>, impl core::convert::AsRef<std::path::Path>) -> Self
 pub fn ruvo_core::Response::empty() -> Self
 pub async fn ruvo_core::Response::file(impl core::convert::AsRef<std::path::Path>) -> Self
 pub async fn ruvo_core::Response::file_in(impl core::convert::AsRef<std::path::Path>, impl core::convert::AsRef<std::path::Path>) -> Self
@@ -460,6 +1029,7 @@ impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Response
 impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::Response
 pub struct ruvo_core::Router
 impl ruvo_core::Router
+pub fn ruvo_core::Router::catch<H, T>(&mut self, u16, H) -> &mut Self where H: ruvo_core::extend::IntoHandler<T>
 pub fn ruvo_core::Router::delete<H, T>(&mut self, &str, H) -> &mut Self where H: ruvo_core::extend::IntoHandler<T>
 pub fn ruvo_core::Router::error_handler<F, Fut>(&mut self, F) -> &mut Self where F: core::ops::function::Fn(ruvo_core::Error) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = ruvo_core::Response> + core::marker::Send + 'static
 pub fn ruvo_core::Router::explain(&self) -> alloc::string::String
@@ -473,9 +1043,13 @@ pub fn ruvo_core::Router::post<H, T>(&mut self, &str, H) -> &mut Self where H: r
 pub fn ruvo_core::Router::put<H, T>(&mut self, &str, H) -> &mut Self where H: ruvo_core::extend::IntoHandler<T>
 pub fn ruvo_core::Router::raw<H>(&mut self, &str, H) -> &mut Self where H: ruvo_core::extend::IntoRawHandler
 pub fn ruvo_core::Router::route_entries(&self) -> alloc::vec::Vec<ruvo_core::extend::RouteEntry>
-pub fn ruvo_core::Router::route_meta<T>(&mut self, T) -> &mut Self where T: core::marker::Send + core::marker::Sync + 'static
+pub fn ruvo_core::Router::route_meta<T: ruvo_core::extend::RouteValue>(&mut self, T) -> &mut Self
+pub fn ruvo_core::Router::route_middleware<M>(&mut self, M) -> &mut Self where M: ruvo_core::extend::IntoMwEntry
 pub fn ruvo_core::Router::state<T>(&mut self, T) -> &mut Self where T: core::marker::Send + core::marker::Sync + 'static
+pub fn ruvo_core::Router::try_state<T>(&self) -> core::option::Option<alloc::sync::Arc<T>> where T: core::marker::Send + core::marker::Sync + 'static
 pub fn ruvo_core::Router::use_middleware<M>(&mut self, M) -> &mut Self where M: ruvo_core::extend::IntoMwEntry
+pub fn ruvo_core::Router::with<T: ruvo_core::extend::RouteValue>(&mut self, T) -> &mut Self
+pub fn ruvo_core::Router::with_update<T, F>(&mut self, F) -> &mut Self where T: ruvo_core::extend::RouteValue + core::clone::Clone + core::default::Default, F: core::ops::function::FnOnce(&mut T)
 impl core::default::Default for ruvo_core::Router
 pub fn ruvo_core::Router::default() -> Self
 impl core::marker::Freeze for ruvo_core::Router
@@ -514,6 +1088,40 @@ impl core::marker::Unpin for ruvo_core::Shutdown
 impl core::marker::UnsafeUnpin for ruvo_core::Shutdown
 impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Shutdown
 impl core::panic::unwind_safe::UnwindSafe for ruvo_core::Shutdown
+pub struct ruvo_core::Slot<T>
+impl<T> ruvo_core::Slot<T>
+pub fn ruvo_core::Slot<T>::new() -> Self
+pub fn ruvo_core::Slot<T>::put(&self, T)
+pub async fn ruvo_core::Slot<T>::take(&self) -> T
+pub fn ruvo_core::Slot<T>::try_take(&self) -> core::option::Option<T>
+impl<T> core::clone::Clone for ruvo_core::Slot<T>
+pub fn ruvo_core::Slot<T>::clone(&self) -> Self
+impl<T> core::default::Default for ruvo_core::Slot<T>
+pub fn ruvo_core::Slot<T>::default() -> Self
+impl<T> core::marker::Freeze for ruvo_core::Slot<T>
+impl<T> core::marker::Send for ruvo_core::Slot<T> where T: core::marker::Send
+impl<T> core::marker::Sync for ruvo_core::Slot<T> where T: core::marker::Send
+impl<T> core::marker::Unpin for ruvo_core::Slot<T>
+impl<T> core::marker::UnsafeUnpin for ruvo_core::Slot<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Slot<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for ruvo_core::Slot<T>
+pub struct ruvo_core::TestClient
+impl ruvo_core::TestClient
+pub fn ruvo_core::TestClient::delete(&self, impl core::convert::Into<alloc::string::String>) -> ruvo_core::ClientRequest<'_>
+pub fn ruvo_core::TestClient::get(&self, impl core::convert::Into<alloc::string::String>) -> ruvo_core::ClientRequest<'_>
+pub fn ruvo_core::TestClient::new(ruvo_core::App) -> ruvo_core::Result<Self>
+pub fn ruvo_core::TestClient::patch(&self, impl core::convert::Into<alloc::string::String>) -> ruvo_core::ClientRequest<'_>
+pub fn ruvo_core::TestClient::post(&self, impl core::convert::Into<alloc::string::String>) -> ruvo_core::ClientRequest<'_>
+pub fn ruvo_core::TestClient::put(&self, impl core::convert::Into<alloc::string::String>) -> ruvo_core::ClientRequest<'_>
+pub fn ruvo_core::TestClient::server(&self) -> &ruvo_core::Server
+pub fn ruvo_core::TestClient::tracked(ruvo_core::App) -> ruvo_core::Result<Self>
+impl !core::marker::Freeze for ruvo_core::TestClient
+impl core::marker::Send for ruvo_core::TestClient
+impl core::marker::Sync for ruvo_core::TestClient
+impl core::marker::Unpin for ruvo_core::TestClient
+impl core::marker::UnsafeUnpin for ruvo_core::TestClient
+impl !core::panic::unwind_safe::RefUnwindSafe for ruvo_core::TestClient
+impl !core::panic::unwind_safe::UnwindSafe for ruvo_core::TestClient
 pub struct ruvo_core::Text<T>(pub T)
 impl<T: core::convert::Into<alloc::string::String>> ruvo_core::IntoResponse for ruvo_core::Text<T>
 pub fn ruvo_core::Text<T>::into_response(self) -> ruvo_core::Response
@@ -552,6 +1160,27 @@ impl core::marker::Unpin for ruvo_core::UpgradePermit
 impl core::marker::UnsafeUnpin for ruvo_core::UpgradePermit
 impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::UpgradePermit
 impl core::panic::unwind_safe::UnwindSafe for ruvo_core::UpgradePermit
+pub struct ruvo_core::Upload
+pub ruvo_core::Upload::content_type: core::option::Option<alloc::string::String>
+pub ruvo_core::Upload::data: bytes::bytes::Bytes
+pub ruvo_core::Upload::field: alloc::string::String
+pub ruvo_core::Upload::filename: core::option::Option<alloc::string::String>
+impl ruvo_core::Upload
+pub async fn ruvo_core::Upload::save(&self, impl core::convert::AsRef<std::path::Path>) -> ruvo_core::Result<()>
+pub async fn ruvo_core::Upload::save_in(&self, impl core::convert::AsRef<std::path::Path>, &str) -> ruvo_core::Result<std::path::PathBuf>
+pub fn ruvo_core::Upload::suggested_name(&self) -> &str
+impl core::clone::Clone for ruvo_core::Upload
+pub fn ruvo_core::Upload::clone(&self) -> ruvo_core::Upload
+impl core::fmt::Debug for ruvo_core::Upload
+pub fn ruvo_core::Upload::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl !core::marker::Freeze for ruvo_core::Upload
+impl core::marker::Send for ruvo_core::Upload
+impl core::marker::Sync for ruvo_core::Upload
+impl core::marker::Unpin for ruvo_core::Upload
+impl core::marker::UnsafeUnpin for ruvo_core::Upload
+impl core::panic::unwind_safe::RefUnwindSafe for ruvo_core::Upload
+impl core::panic::unwind_safe::UnwindSafe for ruvo_core::Upload
+pub const ruvo_core::PLUGIN_SDK_VERSION: ruvo_core::PluginSdkVersion
 pub trait ruvo_core::BackgroundService: core::marker::Send
 pub fn ruvo_core::BackgroundService::name(&self) -> &str
 pub fn ruvo_core::BackgroundService::run(alloc::boxed::Box<Self>, alloc::sync::Arc<ruvo_core::extend::StateMap>, ruvo_core::Shutdown) -> ruvo_core::extend::BoxFuture<()>
@@ -584,12 +1213,16 @@ pub fn ruvo_core::Json<T>::into_response(self) -> ruvo_core::Response
 pub trait ruvo_core::Plugin
 pub fn ruvo_core::Plugin::id(&self) -> &'static str
 pub fn ruvo_core::Plugin::install(self, &mut ruvo_core::App)
+pub fn ruvo_core::Plugin::meta(&self) -> ruvo_core::PluginMeta
 pub fn ruvo_core::Plugin::requires(&self) -> &'static [&'static str]
 impl<F> ruvo_core::Plugin for F where F: core::ops::function::FnOnce(&mut ruvo_core::App)
 pub fn F::id(&self) -> &'static str
 pub fn F::install(self, &mut ruvo_core::App)
+pub fn F::meta(&self) -> ruvo_core::PluginMeta
 pub fn F::requires(&self) -> &'static [&'static str]
+pub fn ruvo_core::check_plugin_sdk(ruvo_core::PluginSdkVersion, ruvo_core::PluginSdkVersion) -> ruvo_core::SdkCompat
 pub fn ruvo_core::logger() -> ruvo_core::extend::Middleware
+pub fn ruvo_core::parse_log_rotate(&str, core::option::Option<&str>, core::option::Option<usize>) -> core::result::Result<ruvo_core::LogRotate, alloc::string::String>
 pub fn ruvo_core::with_state<S, F, Fut>(S, F) -> ruvo_core::extend::Middleware where S: core::marker::Send + core::marker::Sync + 'static, F: core::ops::function::Fn(alloc::sync::Arc<S>, ruvo_core::Request, ruvo_core::Next) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = ruvo_core::Response> + core::marker::Send + 'static
 pub type ruvo_core::Next = alloc::boxed::Box<(dyn core::ops::function::FnOnce(ruvo_core::Request) -> ruvo_core::extend::BoxFuture<ruvo_core::Response> + core::marker::Send)>
 pub type ruvo_core::Result<T> = core::result::Result<T, ruvo_core::Error>

@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1 class="font-display text-3xl font-semibold text-mist-100">{{ t("fetch.title") }}</h1>
+<p class="mt-2 text-mist-400">{{ t("fetch.help") }}</p>
+
+<form
+  method="post"
+  action="/cabinet/fetch"
+  enctype="multipart/form-data"
+  class="mt-6 grid max-w-lg gap-4 rounded-xl border border-white/10 bg-ink-800/50 p-5"
+>
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <label class="grid gap-1.5 text-sm text-mist-300">
+    URL
+    <input
+      class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100 outline-none ring-tide-400/40 focus:ring-2"
+      name="url"
+      type="url"
+      value="{{ url if url else 'https://example.com' }}"
+      required
+    >
+  </label>
+  <button
+    type="submit"
+    class="rounded-md bg-tide-500 px-4 py-2.5 font-semibold text-ink-950 transition hover:bg-tide-400"
+  >{{ t("fetch.go") }}</button>
+</form>
+
+{% if result %}
+  <pre class="mt-6 overflow-x-auto rounded-xl border border-white/10 bg-ink-800/50 p-4 text-sm text-mist-300 whitespace-pre-wrap break-words">{{ result | tojson(true) }}</pre>
+{% endif %}
+{% endblock %}

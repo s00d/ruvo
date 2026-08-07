@@ -4,6 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ruvo = { path = "../crates/ruvo", features = ["cli"] }
-ruvo-env = { path = "../plugins/ruvo-env" }
+ruvo = { path = "../crates/ruvo", features = ["web"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

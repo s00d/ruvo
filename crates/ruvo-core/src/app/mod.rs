@@ -7,7 +7,9 @@ pub use hooks::Server;
 
 use crate::error::{Error, Result};
 use crate::handler::BoxFuture;
-use crate::plugin::Plugin;
+use crate::plugin::{
+    check_plugin_sdk, InstalledPlugin, Plugin, SdkCompat, PLUGIN_SDK_VERSION,
+};
 use crate::request::Request;
 use crate::response::Response;
 use crate::router::Router;
@@ -61,7 +63,9 @@ pub struct App {
     pub(crate) hsts: bool,
     pub(crate) alt_svc: Option<String>,
     pub(crate) installed_plugins: HashSet<&'static str>,
+    pub(crate) installed_plugin_meta: Vec<InstalledPlugin>,
     pub(crate) missing_plugin_requires: Vec<(&'static str, &'static str)>,
+    pub(crate) plugin_sdk_errors: Vec<String>,
     pub(crate) on_startup: Vec<StartupHook>,
     pub(crate) on_shutdown: Vec<ShutdownHook>,
     pub(crate) services: Vec<BoxedService>,
@@ -91,7 +95,9 @@ impl App {
             hsts: false,
             alt_svc: None,
             installed_plugins: HashSet::new(),
+            installed_plugin_meta: Vec::new(),
             missing_plugin_requires: Vec::new(),
+            plugin_sdk_errors: Vec::new(),
             on_startup: Vec::new(),
             on_shutdown: Vec::new(),
             services: Vec::new(),
@@ -222,14 +228,44 @@ impl App {
 
     pub fn install<P: Plugin>(&mut self, plugin: P) -> &mut Self {
         let plugin_id = plugin.id();
+        let meta = plugin.meta();
         for dep in plugin.requires() {
             if !self.installed_plugins.contains(dep) {
                 self.missing_plugin_requires.push((plugin_id, dep));
             }
         }
+        match check_plugin_sdk(meta.sdk, PLUGIN_SDK_VERSION) {
+            SdkCompat::Ok => {}
+            SdkCompat::Warn { core, plugin: declared } => {
+                tracing::warn!(
+                    plugin = plugin_id,
+                    plugin_sdk = %declared,
+                    core_sdk = %core,
+                    "plugin SDK is older than core; consider rebuilding against the current Plugin SDK"
+                );
+            }
+            SdkCompat::Error(msg) => {
+                self.plugin_sdk_errors
+                    .push(format!("plugin `{plugin_id}`: {msg}"));
+            }
+        }
+        self.installed_plugin_meta.push(InstalledPlugin {
+            id: plugin_id,
+            meta,
+        });
         plugin.install(self);
         self.installed_plugins.insert(plugin_id);
         self
+    }
+
+    /// Whether a plugin with this [`Plugin::id`] was already installed.
+    pub fn has_plugin(&self, id: &str) -> bool {
+        self.installed_plugins.contains(id)
+    }
+
+    /// Metadata for every plugin passed to [`Self::install`] (order preserved).
+    pub fn installed_plugin_meta(&self) -> &[InstalledPlugin] {
+        &self.installed_plugin_meta
     }
 
     /// Primary app entrypoint: run as a server process.
@@ -237,6 +273,7 @@ impl App {
     /// CLI mode:
     /// - `check`
     /// - `routes`
+    /// - `plugins`
     /// - `openapi --out <path>`
     /// - `tasks`
     /// - `i18n missing`
@@ -278,6 +315,23 @@ impl App {
                 }
                 "routes" => {
                     println!("{}", self.explain());
+                    true
+                }
+                "plugins" => {
+                    for p in &self.installed_plugin_meta {
+                        let desc = if p.meta.description.is_empty() {
+                            "-"
+                        } else {
+                            p.meta.description
+                        };
+                        println!(
+                            "{:<24} {:<20} sdk={}  {}",
+                            p.id, p.meta.name, p.meta.sdk, desc
+                        );
+                    }
+                    if self.installed_plugin_meta.is_empty() {
+                        println!("(no plugins installed)");
+                    }
                     true
                 }
                 "openapi" => {

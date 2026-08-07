@@ -1,7 +1,7 @@
 //! Integration tests for ruvo-i18n.
 
 use http::Method;
-use ruvo_core::{App, Plugin, Request, Response};
+use ruvo_core::{App, Request, Response};
 use ruvo_i18n::{default_plural, I18n, I18nExt, I18nRouteExt, Locale};
 use ruvo_openapi::{Doc, OpenApiDocExt};
 
@@ -38,10 +38,11 @@ async fn translations_and_fallback_and_plural() {
     let dir = tempfile::tempdir().unwrap();
     write_locales(dir.path());
     let mut app = App::new();
-    I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")])
-        .fallback("en")
-        .path_prefix(false)
-        .install(&mut app);
+    app.install(
+        I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")])
+            .fallback("en")
+            .path_prefix(false),
+    );
 
     app.get("/t", |req: Request| async move {
         Response::text(format!(
@@ -114,9 +115,10 @@ async fn page_scope_contains_root_and_override() {
     let dir = tempfile::tempdir().unwrap();
     write_locales(dir.path());
     let mut app = App::new();
-    I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")])
-        .path_prefix(false)
-        .install(&mut app);
+    app.install(
+        I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")])
+            .path_prefix(false),
+    );
 
     app.get("/blog", |req: Request| async move {
         Response::text(format!("{}|{}", req.t("title"), req.t("nav.about")))
@@ -132,9 +134,10 @@ async fn missing_key_returns_key() {
     let dir = tempfile::tempdir().unwrap();
     write_locales(dir.path());
     let mut app = App::new();
-    I18n::new(dir.path(), vec![Locale::new("en")])
-        .path_prefix(false)
-        .install(&mut app);
+    app.install(
+        I18n::new(dir.path(), vec![Locale::new("en")])
+            .path_prefix(false),
+    );
     app.get("/m", |req: Request| async move { Response::text(req.t("nope")) });
     let res = app.handle_request(Method::GET, "/m", "").await;
     assert_eq!(res.body_bytes(), Some(b"nope".as_slice()));
@@ -151,9 +154,10 @@ async fn etag_304_and_version_cache() {
     let dir = tempfile::tempdir().unwrap();
     write_locales(dir.path());
     let mut app = App::new();
-    I18n::new(dir.path(), vec![Locale::new("en")])
-        .path_prefix(false)
-        .install(&mut app);
+    app.install(
+        I18n::new(dir.path(), vec![Locale::new("en")])
+            .path_prefix(false),
+    );
 
     let first = app
         .handle_request(Method::GET, "/_i18n/en.json", "")
@@ -200,9 +204,10 @@ async fn resolve_url_beats_query() {
     let dir = tempfile::tempdir().unwrap();
     write_locales(dir.path());
     let mut app = App::new();
-    I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")])
-        .path_prefix(true)
-        .install(&mut app);
+    app.install(
+        I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")])
+            .path_prefix(true),
+    );
     app.get("/de/x", |req: Request| async move {
         Response::text(req.locale().to_string())
     });
@@ -217,9 +222,10 @@ async fn doc_and_i18n_scope_coexist() {
     let dir = tempfile::tempdir().unwrap();
     write_locales(dir.path());
     let mut app = App::new();
-    I18n::new(dir.path(), vec![Locale::new("en")])
-        .path_prefix(false)
-        .install(&mut app);
+    app.install(
+        I18n::new(dir.path(), vec![Locale::new("en")])
+            .path_prefix(false),
+    );
 
     app.get("/blog/:slug", |req: Request| async move {
         Response::text(req.t("title"))
@@ -250,14 +256,15 @@ async fn doc_and_i18n_scope_coexist() {
 
 #[tokio::test]
 #[cfg(feature = "cookie")]
-async fn cookie_without_layer_fails_startup() {
+async fn cookie_without_layer_fails_requires() {
     let dir = tempfile::tempdir().unwrap();
     write_locales(dir.path());
     let mut app = App::new();
-    I18n::new(dir.path(), vec![Locale::new("en")])
-        .path_prefix(false)
-        .cookie("locale")
-        .install(&mut app);
+    app.install(
+        I18n::new(dir.path(), vec![Locale::new("en")])
+            .path_prefix(false)
+            .cookie("locale"),
+    );
     assert!(app.run_startup().await.is_err());
 }
 
@@ -268,11 +275,12 @@ async fn cookie_with_layer_ok() {
     let dir = tempfile::tempdir().unwrap();
     write_locales(dir.path());
     let mut app = App::new();
-    CookieLayer.install(&mut app);
-    I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")])
-        .path_prefix(false)
-        .cookie("locale")
-        .install(&mut app);
+    app.install(CookieLayer);
+    app.install(
+        I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")])
+            .path_prefix(false)
+            .cookie("locale"),
+    );
     app.run_startup().await.unwrap();
     app.get("/x", |req: Request| async move { Response::text(req.locale().to_string()) });
     let res = app

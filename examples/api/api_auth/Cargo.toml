@@ -1,0 +1,15 @@
+[package]
+name = "api_auth"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "api_auth"
+path = "src/main.rs"
+
+[dependencies]
+ruvo = { path = "../../../crates/ruvo", features = ["passport"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+serde = { version = "1", features = ["derive"] }
+tracing = "0.1"

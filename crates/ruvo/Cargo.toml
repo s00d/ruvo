@@ -9,13 +9,14 @@ license = "MIT"
 default = ["static-files"]
 static-files = ["dep:ruvo-static"]
 cors = ["dep:ruvo-cors"]
+csrf = ["session", "dep:ruvo-csrf"]
 shield = ["dep:ruvo-shield"]
 cookies = ["dep:ruvo-cookies"]
 compress = ["dep:ruvo-compress"]
 rate-limit = ["dep:ruvo-rate-limit"]
 session = ["cookies", "dep:ruvo-session"]
-templates = ["dep:ruvo-templates"]
-multipart = ["dep:ruvo-multipart"]
+templates = ["dep:ruvo-templates", "ruvo-i18n?/templates"]
+multipart = ["ruvo-core/multipart"]
 cli = ["dep:ruvo-cli"]
 vld = ["dep:ruvo-vld", "dep:vld"]
 openapi = ["dep:ruvo-openapi"]
@@ -45,10 +46,31 @@ vld-flash-templates = ["vld-flash", "templates", "ruvo-vld/flash-templates"]
 vld-form = ["vld", "multipart", "ruvo-vld/form"]
 vld-i18n = ["vld", "i18n", "ruvo-vld/i18n"]
 http-client = ["dep:ruvo-http"]
+mail = ["dep:ruvo-mail"]
+passport = ["dep:ruvo-passport"]
+passport-session = ["passport", "session", "ruvo-passport/session"]
+passport-jwt = ["passport", "db", "ruvo-passport/jwt"]
+passport-oauth = ["passport-jwt", "ruvo-passport/oauth"]
+auth = ["passport-session", "passport-jwt", "mail", "db", "dep:ruvo-auth"]
+auth-vld = ["auth", "vld", "vld-flash", "vld-form", "ruvo-auth/vld"]
 meta = ["dep:ruvo-meta"]
 meta-templates = ["meta", "templates", "ruvo-meta/templates"]
 meta-i18n = ["meta", "i18n", "ruvo-meta/i18n"]
 meta-store = ["meta", "store", "ruvo-meta/store"]
+web = [
+    "cli",
+    "env",
+    "cors",
+    "cookies",
+    "session",
+    "csrf",
+    "static-files",
+    "templates",
+    "meta",
+    "meta-templates",
+    "shield",
+]
+api = ["cli", "env", "cors", "cookies", "session", "openapi", "vld", "vld-openapi"]
 db = ["dep:ruvo-db", "dep:sea-orm"]
 testing = ["ruvo-core/testing"]
 
@@ -57,13 +79,13 @@ ruvo-core = { path = "../ruvo-core" }
 sea-orm = { version = "2.0", optional = true, default-features = false, features = ["sqlx-postgres", "runtime-tokio-rustls"] }
 ruvo-static = { path = "../../plugins/ruvo-static", optional = true }
 ruvo-cors = { path = "../../plugins/ruvo-cors", optional = true }
+ruvo-csrf = { path = "../../plugins/ruvo-csrf", optional = true }
 ruvo-shield = { path = "../../plugins/ruvo-shield", optional = true }
 ruvo-cookies = { path = "../../plugins/ruvo-cookies", optional = true }
 ruvo-session = { path = "../../plugins/ruvo-session", optional = true }
 ruvo-compress = { path = "../../plugins/ruvo-compress", optional = true }
 ruvo-rate-limit = { path = "../../plugins/ruvo-rate-limit", optional = true }
 ruvo-templates = { path = "../../plugins/ruvo-templates", optional = true }
-ruvo-multipart = { path = "../../plugins/ruvo-multipart", optional = true }
 ruvo-cli = { path = "../../plugins/ruvo-cli", optional = true }
 ruvo-vld = { path = "../../plugins/ruvo-vld", optional = true }
 ruvo-openapi = { path = "../../plugins/ruvo-openapi", optional = true }
@@ -84,6 +106,9 @@ ruvo-sse = { path = "../../plugins/ruvo-sse", optional = true }
 ruvo-env = { path = "../../plugins/ruvo-env", optional = true }
 ruvo-db = { path = "../../plugins/ruvo-db", optional = true }
 ruvo-http = { path = "../../plugins/ruvo-http", optional = true }
+ruvo-mail = { path = "../../plugins/ruvo-mail", optional = true }
+ruvo-passport = { path = "../../plugins/ruvo-passport", optional = true }
+ruvo-auth = { path = "../../plugins/ruvo-auth", optional = true }
 ruvo-meta = { path = "../../plugins/ruvo-meta", optional = true }
 vld = { version = "0.4", optional = true, default-features = true, features = ["serialize"] }
 serde = { version = "1", features = ["derive"] }
@@ -102,113 +127,4 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 futures-util = { version = "0.3", default-features = false, features = ["std"] }
 tracing = "0.1"
-sea-orm = { version = "2.0", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
-sea-orm-migration = { version = "2.0", features = ["sqlx-postgres", "runtime-tokio-rustls"] }
-async-trait = "0.1"
-ruvo-env = { path = "../../plugins/ruvo-env" }
 
-[[example]]
-name = "hello"
-path = "examples/hello/main.rs"
-required-features = ["static-files", "cors", "cookies"]
-
-[[example]]
-name = "rest-api"
-path = "examples/rest_api.rs"
-
-[[example]]
-name = "blog"
-path = "examples/blog.rs"
-
-[[example]]
-name = "auth"
-path = "examples/auth.rs"
-required-features = ["session", "cookies"]
-
-[[example]]
-name = "upload"
-path = "examples/upload.rs"
-required-features = ["multipart"]
-
-[[example]]
-name = "static"
-path = "examples/static_ex.rs"
-required-features = ["static-files"]
-
-[[example]]
-name = "templates"
-path = "examples/templates.rs"
-required-features = ["templates"]
-
-[[example]]
-name = "cli"
-path = "examples/cli.rs"
-required-features = ["cli"]
-
-[[example]]
-name = "api-validated"
-path = "examples/api_validated.rs"
-required-features = ["vld-openapi"]
-
-[[example]]
-name = "crud"
-path = "examples/crud/main.rs"
-required-features = ["db", "vld", "env"]
-
-[[example]]
-name = "sse"
-path = "examples/sse.rs"
-
-[[example]]
-name = "sse_feed"
-path = "examples/sse_feed.rs"
-required-features = ["sse-feed"]
-
-[[example]]
-name = "i18n"
-path = "examples/i18n.rs"
-required-features = ["i18n"]
-
-[[example]]
-name = "templates-i18n"
-path = "examples/templates_i18n.rs"
-required-features = ["i18n", "templates"]
-
-[[example]]
-name = "raw-echo"
-path = "examples/raw_echo.rs"
-
-[[example]]
-name = "ws_chat"
-path = "examples/ws_chat.rs"
-required-features = ["ws"]
-
-[[example]]
-name = "bench_loaded"
-path = "examples/bench_loaded.rs"
-required-features = ["cors", "cookies", "session", "rate-limit"]
-
-[[example]]
-name = "tasks"
-path = "examples/tasks.rs"
-required-features = ["tasks"]
-
-[[example]]
-name = "meta_blog"
-path = "examples/meta_blog.rs"
-required-features = ["meta"]
-
-[[example]]
-name = "udp_echo"
-path = "examples/udp_echo.rs"
-required-features = ["udp"]
-
-[[example]]
-name = "tls_hello"
-path = "examples/tls_hello.rs"
-required-features = ["dev-tls", "cors"]
-
-[[example]]
-name = "quic_udp_echo"
-path = "examples/quic_udp_echo.rs"
-required-features = ["quic-udp", "tls"]

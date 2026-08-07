@@ -54,6 +54,10 @@ impl Ws {
 }
 
 impl Plugin for Ws {
+    fn id(&self) -> &'static str {
+        "ws"
+    }
+
     fn install(self, app: &mut App) {
         app.state(WsShared {
             hub: Hub::new(),

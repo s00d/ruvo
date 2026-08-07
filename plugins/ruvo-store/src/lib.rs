@@ -36,6 +36,27 @@ pub fn namespace(store: Arc<dyn KvStore>, name: &str) -> Namespace {
     }
 }
 
+/// App-wide store handle — `app.state(AppStore::memory())` or via facade `SharedStore` plugin.
+/// Session / meta / rate-limit can reuse namespaced views of the same backend.
+#[derive(Clone)]
+pub struct AppStore {
+    pub inner: Arc<dyn KvStore>,
+}
+
+impl AppStore {
+    pub fn new(store: Arc<dyn KvStore>) -> Self {
+        Self { inner: store }
+    }
+
+    pub fn memory() -> Self {
+        Self::new(Arc::new(MemoryStore::new()))
+    }
+
+    pub fn namespaced(&self, name: &str) -> Arc<dyn KvStore> {
+        Arc::new(namespace(Arc::clone(&self.inner), name))
+    }
+}
+
 #[cfg(feature = "store-crypto")]
 pub use encrypted::{encrypted, encrypted_ns, AppKey, Encrypted};
 

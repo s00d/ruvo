@@ -90,3 +90,24 @@ impl Extensions {
 /// Route metadata bag attached to the request after a successful match.
 #[derive(Clone)]
 pub struct MatchedMeta(pub crate::route_value::MetaMap);
+
+/// Optional slot filled when a route matches — for root middleware that runs
+/// before match but needs meta after `next` (e.g. SEO head inject).
+#[derive(Clone, Default)]
+pub struct MatchedMetaCapture {
+    inner: std::sync::Arc<std::sync::Mutex<Option<crate::route_value::MetaMap>>>,
+}
+
+impl MatchedMetaCapture {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn set(&self, meta: crate::route_value::MetaMap) {
+        *self.inner.lock().unwrap() = Some(meta);
+    }
+
+    pub fn get(&self) -> Option<crate::route_value::MetaMap> {
+        self.inner.lock().unwrap().clone()
+    }
+}

@@ -127,6 +127,10 @@ impl Tasks {
 }
 
 impl Plugin for Tasks {
+    fn id(&self) -> &'static str {
+        "tasks"
+    }
+
     fn install(self, app: &mut App) {
         let store = self.store.clone();
         app.state(TaskBackend(store.clone()));

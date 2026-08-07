@@ -5,7 +5,7 @@ use crate::raw::RawHandler;
 use crate::request::{percent_decode, Request};
 use crate::response::Response;
 use crate::route_value::MetaMap;
-use crate::state::{Extensions, MatchedMeta, TypeMap};
+use crate::state::{Extensions, MatchedMeta, MatchedMetaCapture, TypeMap};
 use http::{HeaderMap, HeaderValue, Method};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -247,7 +247,10 @@ fn inject_matched_meta(handler: Handler, meta: MetaMap) -> Handler {
                 req.body_limit = max.0;
             }
             let timeout = meta.get::<crate::limits::RequestTimeout>().map(|t| t.0);
-            req.set(MatchedMeta(meta));
+            req.set(MatchedMeta(meta.clone()));
+            if let Some(cap) = req.get::<MatchedMetaCapture>() {
+                cap.set(meta);
+            }
             match timeout {
                 Some(dur) => {
                     crate::limits::tighten_deadline(

@@ -1,0 +1,52 @@
+[package]
+name = "cabinet"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Ruvo kitchen-sink demo: Fortify auth, cabinet, Postgres notes + identity"
+
+[[bin]]
+name = "cabinet"
+path = "src/main.rs"
+
+[dependencies]
+ruvo = { path = "../../crates/ruvo", features = [
+    "web",
+    "store-sqlite",
+    "tasks",
+    "tasks-sqlite",
+    "vld-flash-templates",
+    "vld-form",
+    "multipart",
+    "rate-limit",
+    "compress",
+    "i18n",
+    "i18n-cookie",
+    "ws",
+    "http-client",
+    "mail",
+    "auth-vld",
+    "openapi",
+    "vld-openapi",
+    "cli",
+    "env",
+    "meta-store",
+] }
+sea-orm = { version = "2.0", default-features = false, features = [
+    "sqlx-postgres",
+    "runtime-tokio-rustls",
+    "macros",
+    "with-chrono",
+] }
+sea-orm-migration = { version = "2.0", default-features = false, features = [
+    "sqlx-postgres",
+    "runtime-tokio-rustls",
+] }
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs"] }
+tracing = "0.1"
+http = "1"
+urlencoding = "2"
