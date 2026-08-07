@@ -137,8 +137,8 @@ pub use ruvo_openapi::{undocumented, Doc, OpenApi, OpenApiDocExt, OpenApiValidat
 
 #[cfg(feature = "i18n")]
 pub use ruvo_i18n::{
-    mount_localized, template_fn, I18n, I18nExt, I18nRouteExt, I18nScope, Locale, PrefixMode,
-    ROOT_SCOPE,
+    localize_path, localized_url, mount_localized, strip_locale_prefix, template_fn, I18n, I18nExt,
+    I18nRouteExt, I18nScope, Locale, PrefixMode, ROOT_SCOPE,
 };
 
 #[cfg(feature = "ws")]
@@ -157,6 +157,21 @@ pub use ruvo_http::{
     FakeTransport, Http as OutboundHttp, HttpBound, HttpClient, HttpError, HttpExt, NamedClient,
     OutRequest, OutResponse, PendingRequest, RequestId, StubBody,
 };
+
+#[cfg(feature = "meta")]
+pub use ruvo_meta::{
+    absolute_url, render_html, resolve_meta, strip_tracking, Article, BreadcrumbList, ChangeFreq,
+    Entry, FAQPage, Meta, MetaDefaults, MetaExt, MetaOverlay, MetaPage, Organization, Product,
+    ResolvedMeta, ToJsonLd, TrailingSlash, WebSite,
+};
+
+#[cfg(feature = "meta")]
+pub mod schema {
+    pub use ruvo_meta::schema::*;
+}
+
+#[cfg(feature = "meta-templates")]
+pub use ruvo_meta::with_meta;
 
 /// Install a default `tracing` subscriber (`RUST_LOG`, default `ruvo=info`).
 ///

@@ -17,6 +17,11 @@ pub struct Locale {
     pub iso: String,
     pub name: String,
     pub dir: String,
+    /// When `false`, omit from hreflang / sitemap alternates.
+    pub seo: bool,
+    /// Explicit `og:locale` (e.g. `en_US`). When absent, derived from `iso`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub og: Option<String>,
 }
 
 impl Locale {
@@ -26,6 +31,8 @@ impl Locale {
             iso: code.clone(),
             name: code.clone(),
             dir: "ltr".into(),
+            seo: true,
+            og: None,
             code,
         }
     }
@@ -43,6 +50,23 @@ impl Locale {
     pub fn with_dir(mut self, dir: impl Into<String>) -> Self {
         self.dir = dir.into();
         self
+    }
+
+    pub fn with_seo(mut self, seo: bool) -> Self {
+        self.seo = seo;
+        self
+    }
+
+    pub fn with_og(mut self, og: impl Into<String>) -> Self {
+        self.og = Some(og.into());
+        self
+    }
+
+    /// `og:locale` value: explicit `og` or `iso` with `-` → `_`.
+    pub fn og_locale(&self) -> String {
+        self.og
+            .clone()
+            .unwrap_or_else(|| self.iso.replace('-', "_"))
     }
 }
 

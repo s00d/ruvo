@@ -10,7 +10,9 @@ mod template;
 
 pub use ext::{interpolate, I18nExt, I18nRouteExt, I18nScope, I18nState, LocaleCode};
 pub use template::template_fn;
-pub use mount::{mount_localized, PrefixMode};
+pub use mount::{
+    localize_path, localized_url, mount_localized, strip_locale_prefix, PrefixMode,
+};
 pub use plural::{default_plural, PluralFn};
 pub use resolve::{
     negotiate_accept_language, resolve_server_locale, LocaleSource, ResolveOptions,
@@ -141,6 +143,8 @@ impl Plugin for I18n {
         let state = I18nState {
             store: Arc::clone(&swap),
             fallback: self.fallback.clone().into_boxed_str(),
+            default: self.default.clone().into_boxed_str(),
+            path_prefix: self.path_prefix,
             plural_fn: self.plural_fn.clone(),
             missing_handler: self.missing_handler.clone(),
             missing_keys: Arc::new(Mutex::new(HashSet::new())),

@@ -29,6 +29,10 @@ pub struct LocaleCode(pub Box<str>);
 pub struct I18nState {
     pub store: Arc<ArcSwap<Store>>,
     pub fallback: Box<str>,
+    /// Default locale (unprefixed when `path_prefix` is on).
+    pub default: Box<str>,
+    /// When true, locale may appear as the first path segment.
+    pub path_prefix: bool,
     pub plural_fn: Option<PluralFn>,
     pub missing_handler: Option<MissingHandler>,
     pub missing_keys: Arc<Mutex<HashSet<String>>>,

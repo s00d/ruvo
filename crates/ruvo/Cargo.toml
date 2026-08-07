@@ -45,6 +45,10 @@ vld-flash-templates = ["vld-flash", "templates", "ruvo-vld/flash-templates"]
 vld-form = ["vld", "multipart", "ruvo-vld/form"]
 vld-i18n = ["vld", "i18n", "ruvo-vld/i18n"]
 http-client = ["dep:ruvo-http"]
+meta = ["dep:ruvo-meta"]
+meta-templates = ["meta", "templates", "ruvo-meta/templates"]
+meta-i18n = ["meta", "i18n", "ruvo-meta/i18n"]
+meta-store = ["meta", "store", "ruvo-meta/store"]
 db = ["dep:ruvo-db", "dep:sea-orm"]
 testing = ["ruvo-core/testing"]
 
@@ -80,6 +84,7 @@ ruvo-sse = { path = "../../plugins/ruvo-sse", optional = true }
 ruvo-env = { path = "../../plugins/ruvo-env", optional = true }
 ruvo-db = { path = "../../plugins/ruvo-db", optional = true }
 ruvo-http = { path = "../../plugins/ruvo-http", optional = true }
+ruvo-meta = { path = "../../plugins/ruvo-meta", optional = true }
 vld = { version = "0.4", optional = true, default-features = true, features = ["serialize"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -187,6 +192,11 @@ required-features = ["cors", "cookies", "session", "rate-limit"]
 name = "tasks"
 path = "examples/tasks.rs"
 required-features = ["tasks"]
+
+[[example]]
+name = "meta_blog"
+path = "examples/meta_blog.rs"
+required-features = ["meta"]
 
 [[example]]
 name = "udp_echo"
