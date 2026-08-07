@@ -110,6 +110,16 @@ Scaffold:
 cargo ruvo generate plugin hello
 ```
 
+Project run/build:
+
+| Command | What |
+|---------|------|
+| `cargo ruvo dev -p <pkg>` | watch `.rs` + restart; Vite if `frontend/` detected |
+| `cargo ruvo build -p <pkg>` | frontend build (if any) + `cargo build --release` |
+| `cargo ruvo serve -p <pkg>` | run release binary (`RUVO_ENV=production`) |
+
+Optional `[frontend]` in `ruvo.toml` (`enabled = false` to force off). No config needed when there is no Vite.
+
 List installed plugins at runtime: `cargo run -- plugins`.
 
 ## Features (plugins)
@@ -140,9 +150,9 @@ Enable crates from the workspace:
 | `passport` / `passport-session` / `passport-jwt` / `passport-oauth` | `ruvo-passport` (Passport strategies, JWT, OAuth2) |
 | `meta` / `meta-templates` / `meta-i18n` / `meta-store` | SEO (`ruvo-meta`) |
 | `ws` | `ruvo-ws` |
-| `store` / `store-file` / `store-postgres` / `store-sqlite` | KV (`ruvo::store::{Memory,File,…}`) |
-| `tasks` / `tasks-file` / `tasks-postgres` / `tasks-sqlite` | queue (`ruvo::tasks::{Memory,File,…}`) |
-| `db` | SeaORM Postgres (`ruvo-db`) |
+| `store` / `store-file` / `store-sql` | KV (`ruvo::store::{Memory,File,Sql}`) |
+| `tasks` / `tasks-file` / `tasks-sql` | queue (`ruvo::tasks::{Memory,File,Sql}`) |
+| `db` / `db-sqlite` / `db-mysql` | SeaORM (`ruvo-db`; default postgres) |
 | `udp` / `quic-udp` / `sse-feed` / `env` / `tls` | networking / TLS |
 
 ```bash
@@ -173,7 +183,7 @@ With `cli`, same options as flags: `--log-level`, `--log-file`, `--log-stdout fa
 
 - `crates/ruvo` — facade (`prelude`, `store`, `tasks`, `AppError`)
 - `crates/ruvo-core` — `App`, router, request/response, server, `Cell`/`Slot`
-- `crates/cargo-ruvo` — `cargo ruvo new` / `generate`
+- `crates/cargo-ruvo` — `cargo ruvo new` / `generate` / `dev` / `build` / `serve`
 - `plugins/*` — optional crates behind features
 - `examples/*` — runnable demos (`cargo run -p hello`); see [examples/README.md](examples/README.md)
 

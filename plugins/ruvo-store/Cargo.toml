@@ -2,7 +2,7 @@
 name = "ruvo-store"
 version = "0.4.0"
 edition = "2021"
-description = "KvStore trait + memory backend for Ruvo (sessions, cache, rate-limit incr)"
+description = "KvStore trait + memory / file / sql backends for Ruvo"
 license = "MIT"
 publish = false
 
@@ -10,6 +10,8 @@ publish = false
 default = ["unstable-store"]
 unstable-store = []
 store-crypto = ["dep:chacha20poly1305", "dep:hkdf", "dep:hmac", "dep:sha2", "dep:rand", "dep:base64"]
+file = ["tokio/fs", "tokio/io-util"]
+sql = ["dep:ruvo-db", "dep:chrono", "dep:sea-orm"]
 
 [dependencies]
 bytes = "1"
@@ -20,6 +22,11 @@ hmac = { version = "0.12", optional = true }
 sha2 = { version = "0.10", optional = true }
 rand = { version = "0.8", optional = true }
 base64 = { version = "0.22", optional = true }
+ruvo-db = { path = "../ruvo-db", optional = true, default-features = false }
+chrono = { version = "0.4", optional = true, default-features = false, features = ["clock", "std"] }
+sea-orm = { version = "2.0", optional = true, default-features = false, features = ["runtime-tokio-rustls"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+tempfile = "3"
+ruvo-db = { path = "../ruvo-db", default-features = false, features = ["sqlite"] }

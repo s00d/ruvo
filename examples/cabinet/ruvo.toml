@@ -1,0 +1,14 @@
+# Optional Ruvo config for the cabinet demo.
+# Frontend is auto-detected: absent package.json / frontend/ → Rust only (CDN assets in public/).
+#
+# To enable Vite later:
+# [frontend]
+# dir = "frontend"
+# out = "public/build"
+# # package_manager = "npm"   # auto: npm | pnpm | yarn | bun
+# # dev = "npm run dev"
+# # build = "npm run build"
+#
+# Force off even if package.json exists:
+# [frontend]
+# enabled = false

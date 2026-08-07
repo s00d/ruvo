@@ -1,9 +1,9 @@
-//! File-backed [`KvStore`](ruvo_store::KvStore): HashMap in RAM + append-only log + snapshot.
+//! File-backed [`KvStore`](crate::KvStore): HashMap in RAM + append-only log + snapshot.
 //!
 //! Reads never hit disk. Survives process restart without an external DB.
 
 use bytes::Bytes;
-use ruvo_store::{BoxFuture, KvStore};
+use crate::{BoxFuture, KvStore};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -370,7 +370,7 @@ mod tests {
     async fn file_conformance_and_persist() {
         let dir = tempfile::tempdir().unwrap();
         let store = Arc::new(FileStore::open(dir.path()).await.unwrap());
-        ruvo_store::conformance::run(store.clone()).await;
+        crate::conformance::run(store.clone()).await;
 
         store
             .set("persist", Bytes::from_static(b"yes"), None)

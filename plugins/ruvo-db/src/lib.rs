@@ -1,4 +1,4 @@
-//! SeaORM Postgres plugin for Ruvo.
+//! SeaORM database plugin for Ruvo (postgres / sqlite / mysql via Cargo features).
 //!
 //! ```ignore
 //! app.install(Db::from_env().migrations::<Migrator>());

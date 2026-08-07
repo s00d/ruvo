@@ -17,7 +17,7 @@ mod state;
 use migrate::CabinetMigrator;
 use ruvo::{
     bearer_guard, logger, namespace, store, tasks, with_validation_flash, App, AuthFeature, Compress,
-    Cors, Csrf, Db, Email, Fortify, I18n, Locale, Mail, Meta, OpenApi, OutboundHttp, Parser,
+    Cors, Csrf, Db, DbPool, Email, Fortify, I18n, Locale, Mail, Meta, OpenApi, OutboundHttp, Parser,
     RateLimit, Result, Robots, ServerArgs, SessionLayer, SharedStore, Shield, Sitemap, Static,
     Tasks, Templates, Vld, Ws,
 };
@@ -32,22 +32,6 @@ async fn main() -> Result<()> {
     args.init_tracing();
 
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let data = root.join("data");
-    tokio::fs::create_dir_all(&data)
-        .await
-        .map_err(|e| ruvo::Error::Internal(e.to_string()))?;
-
-    let kv = Arc::new(
-        store::Sqlite::open(data.join("kv.db"))
-            .await
-            .map_err(|e| ruvo::Error::Internal(format!("kv sqlite: {e}")))?,
-    );
-    let task_store = Arc::new(
-        tasks::Sqlite::open(data.join("tasks.db"))
-            .await
-            .map_err(|e| ruvo::Error::Internal(format!("tasks sqlite: {e}")))?,
-    );
-
     let public_url = std::env::var("PUBLIC_URL")
         .unwrap_or_else(|_| "http://127.0.0.1:3000".into());
     let tasks_bearer =
@@ -57,6 +41,14 @@ async fn main() -> Result<()> {
     app.use_middleware(logger());
 
     app.install(Db::from_env().migrations::<CabinetMigrator>());
+    let db_pool = app
+        .try_state::<DbPool>()
+        .expect("Db plugin inserts DbPool")
+        .as_ref()
+        .clone();
+    let kv = Arc::new(store::Sql::from_db_pool(&db_pool));
+    let task_store = Arc::new(tasks::Sql::from_db_pool(&db_pool));
+
     app.install(Cors::new().origin("*"));
     app.install(Shield::new());
     app.install(Compress::new());

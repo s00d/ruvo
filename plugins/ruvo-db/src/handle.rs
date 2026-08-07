@@ -35,12 +35,6 @@ impl DbPool {
             drop(conn);
         }
     }
-
-    /// Clone the sqlx Postgres pool (for raw backends).
-    pub async fn postgres_pool(&self) -> Result<sqlx::PgPool, DbError> {
-        let conn = self.get().await?;
-        Ok(conn.get_postgres_connection_pool().clone())
-    }
 }
 
 /// Request-scoped DB handle: pool connection or open transaction.

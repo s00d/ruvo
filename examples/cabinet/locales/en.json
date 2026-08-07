@@ -9,7 +9,7 @@
   "nav.login": "Log in",
   "nav.register": "Register",
   "nav.logout": "Log out",
-  "footer.plugins": "Demo of Ruvo web plugins — Fortify auth, session, SQLite notes, Postgres identity…",
+  "footer.plugins": "Demo of Ruvo web plugins — Fortify auth, session, Postgres identity + shared SQL store…",
   "home.title": "Your stack, one cabinet",
   "home.lead": "Fortify auth, notes, uploads, background jobs, and API docs.",
   "home.hello": "Signed in as",

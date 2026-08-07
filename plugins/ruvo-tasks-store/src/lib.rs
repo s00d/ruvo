@@ -1,7 +1,12 @@
 //! Task queue store for Ruvo.
 //!
-//! Trait is stable (memory + file + postgres + sqlite backends).
+//! Trait is stable (memory + file + sql backends).
 //! Queue claim/lease is **not** plain KvStore.
+
+#[cfg(feature = "file")]
+mod file;
+#[cfg(feature = "sql")]
+mod sql;
 
 use bytes::Bytes;
 use std::collections::HashMap;
@@ -12,6 +17,12 @@ use std::time::{Duration, SystemTime};
 use tokio::sync::Mutex;
 
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
+
+#[cfg(feature = "file")]
+pub use file::FileTaskStore;
+
+#[cfg(feature = "sql")]
+pub use sql::SqlTaskStore;
 
 #[derive(Debug, thiserror::Error)]
 pub enum TaskError {

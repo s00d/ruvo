@@ -46,7 +46,8 @@ stay on `ruvo_core::Result` with `?`.
 
 ## Database (plugin `ruvo-db`, feature `db`)
 
-One SeaORM/sqlx Postgres pool per process:
+SeaORM pool per process; backend via Cargo features (`postgres` default, `sqlite`, `mysql`)
+and `DATABASE_URL`:
 
 ```text
 Db::from_env() → on_startup connect+ping → req.db() → ConnectionTrait
@@ -54,9 +55,9 @@ transaction() middleware → commit on 2xx / rollback otherwise
 myapp migrate|status|down via App::register_cli
 ```
 
-Raw backends (`ruvo-store-postgres`, `ruvo-tasks-postgres`) reuse
-`DatabaseConnection::get_postgres_connection_pool()` — ORM and queues share the
-same pool; they do not open a second connection string.
+SQL KV / queue backends (`store-sql`, `tasks-sql` → `SqlStore` / `SqlTaskStore`)
+reuse the same [`DbPool`] — no second connection string. Custom drivers: `impl KvStore`
+/ `impl TaskStore` + `SharedStore::new` / `Tasks::new`.
 
 ## TLS (feature `tls`)
 
@@ -114,7 +115,7 @@ The `ruvo` facade re-exports the same root list and `ruvo::extend`.
 |-------|------|
 | **ruvo-core** | App/Router/Server, dispatch, Request/Response, middleware traits, listen/drain, `ClientAddr`, route `TypeMap`, `BackgroundService`, `OnUpgrade`, `Cell`/`Slot` (cross-task share) |
 | **ruvo-core** (+ feature `multipart`) | Unified request input: urlencoded / multipart → `Request::input` / `form` / `Upload::save`; responses `file` / `download` |
-| **plugins** | Optional features: cookies, session, csrf, rate-limit, cors, compress, static, templates, vld, openapi, i18n, ws, tasks, store, udp, sse, mail (lettre), passport / passport-jwt / passport-oauth, http-client, **db** (SeaORM), store-postgres, tasks-postgres |
+| **plugins** | Optional features: cookies, session, csrf, rate-limit, cors, compress, static, templates, vld, openapi, i18n, ws, tasks, store, udp, sse, mail (lettre), passport / passport-jwt / passport-oauth, http-client, **db** (SeaORM postgres/sqlite/mysql), store-sql, tasks-sql |
 
 Plugins depend on `ruvo_core` (and sometimes other plugins). Core does not depend on plugins. **KvStore is not in core** — wire via `app.state(...)`.
 

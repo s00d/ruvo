@@ -14,7 +14,7 @@ type MigrateFn = Arc<
         + Sync,
 >;
 
-/// SeaORM Postgres pool plugin.
+/// SeaORM pool plugin (backend selected by URL + Cargo features).
 pub struct Db {
     url: String,
     migrate: Option<MigrateFn>,
@@ -47,7 +47,7 @@ impl Plugin for Db {
 
     fn meta(&self) -> ruvo_core::PluginMeta {
         ruvo_core::PluginMeta::new("Database")
-            .description("SeaORM Postgres pool and migrate CLI hooks")
+            .description("SeaORM pool and migrate CLI hooks")
             .version(env!("CARGO_PKG_VERSION"))
     }
 

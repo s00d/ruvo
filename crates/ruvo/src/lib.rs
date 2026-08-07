@@ -72,20 +72,17 @@ pub use ruvo_session::{memory_sessions, SameSite, Session, SessionExt, SessionLa
 #[cfg(feature = "store")]
 mod shared_store;
 
-/// Key-value store backends (`Memory`, `File`, `Postgres`, `Sqlite`).
+/// Key-value store backends (`Memory`, `File`, `Sql`).
 #[cfg(feature = "store")]
 pub mod store {
     pub use ruvo_store::{namespace, AppStore, KvStore, MemoryStore as Memory, Namespace};
     pub use crate::shared_store::SharedStore;
 
     #[cfg(feature = "store-file")]
-    pub use ruvo_store_file::{Durability, FileStore as File};
+    pub use ruvo_store::{Durability, FileStore as File};
 
-    #[cfg(feature = "store-postgres")]
-    pub use ruvo_store_postgres::PostgresStore as Postgres;
-
-    #[cfg(feature = "store-sqlite")]
-    pub use ruvo_store_sqlite::SqliteStore as Sqlite;
+    #[cfg(feature = "store-sql")]
+    pub use ruvo_store::SqlStore as Sql;
 
     #[cfg(feature = "store-crypto")]
     pub use ruvo_store::{encrypted, encrypted_ns, AppKey, Encrypted};
@@ -94,7 +91,7 @@ pub mod store {
 #[cfg(feature = "store")]
 pub use store::{namespace, AppStore, KvStore, Namespace, SharedStore};
 
-/// Task queue backends (`Memory`, `File`, `Postgres`, `Sqlite`).
+/// Task queue backends (`Memory`, `File`, `Sql`).
 #[cfg(feature = "tasks-store")]
 pub mod tasks {
     pub use ruvo_tasks_store::{
@@ -102,13 +99,10 @@ pub mod tasks {
     };
 
     #[cfg(feature = "tasks-file")]
-    pub use ruvo_tasks_file::FileTaskStore as File;
+    pub use ruvo_tasks_store::FileTaskStore as File;
 
-    #[cfg(feature = "tasks-postgres")]
-    pub use ruvo_tasks_postgres::PostgresTaskStore as Postgres;
-
-    #[cfg(feature = "tasks-sqlite")]
-    pub use ruvo_tasks_sqlite::SqliteTaskStore as Sqlite;
+    #[cfg(feature = "tasks-sql")]
+    pub use ruvo_tasks_store::SqlTaskStore as Sql;
 
     #[cfg(feature = "tasks")]
     pub use ruvo_tasks::{bearer_guard, HttpTaskError, TaskBackend, Tasks};

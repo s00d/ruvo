@@ -2,18 +2,27 @@
 name = "ruvo-tasks-store"
 version = "0.4.0"
 edition = "2021"
-description = "TaskStore trait + memory backend"
+description = "TaskStore trait + memory / file / sql backends"
 license = "MIT"
 publish = false
 
 [features]
 default = ["unstable-store"]
 unstable-store = []
+file = ["tokio/fs", "tokio/io-util", "dep:serde", "dep:serde_json"]
+sql = ["dep:ruvo-db", "dep:chrono", "dep:sea-orm"]
 
 [dependencies]
 bytes = "1"
 tokio = { version = "1", features = ["sync", "time", "rt", "macros"] }
 thiserror = "2"
+serde = { version = "1", optional = true, features = ["derive"] }
+serde_json = { version = "1", optional = true }
+ruvo-db = { path = "../ruvo-db", optional = true, default-features = false }
+chrono = { version = "0.4", optional = true, default-features = false, features = ["clock", "std"] }
+sea-orm = { version = "2.0", optional = true, default-features = false, features = ["runtime-tokio-rustls"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+tempfile = "3"
+ruvo-db = { path = "../ruvo-db", default-features = false, features = ["sqlite"] }

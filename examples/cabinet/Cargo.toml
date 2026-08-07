@@ -12,9 +12,9 @@ path = "src/main.rs"
 [dependencies]
 ruvo = { path = "../../crates/ruvo", features = [
     "web",
-    "store-sqlite",
+    "store-sql",
     "tasks",
-    "tasks-sqlite",
+    "tasks-sql",
     "vld-flash-templates",
     "vld-form",
     "multipart",
@@ -33,13 +33,11 @@ ruvo = { path = "../../crates/ruvo", features = [
     "meta-store",
 ] }
 sea-orm = { version = "2.0", default-features = false, features = [
-    "sqlx-postgres",
     "runtime-tokio-rustls",
     "macros",
     "with-chrono",
 ] }
 sea-orm-migration = { version = "2.0", default-features = false, features = [
-    "sqlx-postgres",
     "runtime-tokio-rustls",
 ] }
 async-trait = "0.1"

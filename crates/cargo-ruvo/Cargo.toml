@@ -10,3 +10,7 @@ path = "src/main.rs"
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 include_dir = "0.7"
+notify = "6"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+ctrlc = "3"

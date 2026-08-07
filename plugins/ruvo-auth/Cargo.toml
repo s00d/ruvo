@@ -18,8 +18,8 @@ ruvo-mail = { path = "../ruvo-mail" }
 ruvo-session = { path = "../ruvo-session" }
 ruvo-vld = { path = "../ruvo-vld", optional = true, features = ["form", "flash"] }
 vld = { version = "0.4", optional = true, features = ["serialize"] }
-sea-orm = { version = "2.0", default-features = false, features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono"] }
-sea-orm-migration = { version = "2.0", default-features = false, features = ["sqlx-postgres", "runtime-tokio-rustls"] }
+sea-orm = { version = "2.0", default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
+sea-orm-migration = { version = "2.0", default-features = false, features = ["runtime-tokio-rustls"] }
 async-trait = "0.1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
 serde = { version = "1", features = ["derive"] }

@@ -1,11 +1,15 @@
 //! Byte-oriented key-value store for Ruvo plugins (sessions, cache, CSRF, rate-limit).
 //!
-//! Trait is stable (memory + file + postgres + sqlite backends).
+//! Trait is stable (memory + file + sql backends).
 //! Enable feature `unstable-store` for backwards-compatible feature flags.
 //! **Not in ruvo-core** — wire with `app.state(store.namespace("sess"))`.
 
 #[cfg(feature = "store-crypto")]
 mod encrypted;
+#[cfg(feature = "file")]
+mod file;
+#[cfg(feature = "sql")]
+mod sql;
 
 use bytes::Bytes;
 use std::collections::HashMap;
@@ -59,6 +63,12 @@ impl AppStore {
 
 #[cfg(feature = "store-crypto")]
 pub use encrypted::{encrypted, encrypted_ns, AppKey, Encrypted};
+
+#[cfg(feature = "file")]
+pub use file::{Durability, FileStore};
+
+#[cfg(feature = "sql")]
+pub use sql::SqlStore;
 
 /// Scoped handle — prefixes all keys; [`clear_prefix`](KvStore::clear_prefix) stays inside.
 #[derive(Clone)]

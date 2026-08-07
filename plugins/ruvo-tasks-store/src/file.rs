@@ -1,7 +1,7 @@
-//! Maildir-style [`TaskStore`](ruvo_tasks_store::TaskStore) using `tokio::fs` + rename.
+//! Maildir-style [`TaskStore`](crate::TaskStore) using `tokio::fs` + rename.
 
 use bytes::Bytes;
-use ruvo_tasks_store::{
+use crate::{
     BoxFuture, EnqueueOpts, Task, TaskError, TaskStatus, TaskStore,
 };
 use serde::{Deserialize, Serialize};
@@ -375,6 +375,6 @@ mod tests {
     async fn file_conformance() {
         let dir = tempfile::tempdir().unwrap();
         let store = Arc::new(FileTaskStore::open(dir.path()).await.unwrap());
-        ruvo_tasks_store::conformance::run(store).await;
+        crate::conformance::run(store).await;
     }
 }

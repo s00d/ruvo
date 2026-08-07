@@ -41,8 +41,8 @@ serde = { version = "1", features = ["derive"] }
 ruvo-session = { path = "../ruvo-session", optional = true }
 jsonwebtoken = { version = "9", optional = true }
 ruvo-db = { path = "../ruvo-db", optional = true }
-sea-orm = { version = "2.0", optional = true, default-features = false, features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono"] }
-sea-orm-migration = { version = "2.0", optional = true, default-features = false, features = ["sqlx-postgres", "runtime-tokio-rustls"] }
+sea-orm = { version = "2.0", optional = true, default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
+sea-orm-migration = { version = "2.0", optional = true, default-features = false, features = ["runtime-tokio-rustls"] }
 async-trait = { version = "0.1", optional = true }
 argon2 = { version = "0.5", optional = true }
 password-hash = { version = "0.5", optional = true }

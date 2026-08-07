@@ -45,6 +45,10 @@ pub struct ServerArgs {
     /// How many rotated archives to keep (env: `RUVO_LOG_ROTATE_KEEP`).
     #[arg(long = "log-rotate-keep", env = "RUVO_LOG_ROTATE_KEEP", default_value_t = 5)]
     pub log_rotate_keep: usize,
+
+    /// Forwarded to `App::run` CLI (`migrate`, `check`, `routes`, …).
+    #[arg(trailing_var_arg = true, allow_hyphen_values = true, hide = true)]
+    pub trailing: Vec<String>,
 }
 
 impl ServerArgs {
@@ -98,6 +102,13 @@ mod tests {
         assert!(args.log_stdout);
         assert_eq!(args.log_rotate, "size");
         assert_eq!(args.log_rotate_keep, 5);
+        assert!(args.trailing.is_empty());
+    }
+
+    #[test]
+    fn parses_trailing_cli_command() {
+        let args = ServerArgs::try_parse_from(["ruvo", "migrate", "status"]).unwrap();
+        assert_eq!(args.trailing, vec!["migrate", "status"]);
     }
 
     #[test]

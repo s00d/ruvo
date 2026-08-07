@@ -9,7 +9,7 @@
   "nav.login": "Вход",
   "nav.register": "Регистрация",
   "nav.logout": "Выход",
-  "footer.plugins": "Демо плагинов Ruvo — Fortify, session, SQLite notes, Postgres identity…",
+  "footer.plugins": "Демо плагинов Ruvo — Fortify, session, Postgres identity + общий SQL store…",
   "home.title": "Стек в одном кабинете",
   "home.lead": "Fortify-авторизация, заметки, загрузки, фоновые задачи и API.",
   "home.hello": "Вы вошли как",
