@@ -12,9 +12,9 @@ export default defineConfig({
   ignoreDeadLinks: [/^sova_/],
   lastUpdated: true,
   head: [
-    ['link', { rel: 'icon', href: `${docsBase}favicon.svg?v=5`, type: 'image/svg+xml' }],
-    ['link', { rel: 'icon', href: `${docsBase}favicon-32.png?v=5`, type: 'image/png', sizes: '32x32' }],
-    ['link', { rel: 'apple-touch-icon', href: `${docsBase}apple-touch-icon.png?v=5` }],
+    ['link', { rel: 'icon', href: `${docsBase}favicon.svg?v=6`, type: 'image/svg+xml' }],
+    ['link', { rel: 'icon', href: `${docsBase}favicon-32.png?v=6`, type: 'image/png', sizes: '32x32' }],
+    ['link', { rel: 'apple-touch-icon', href: `${docsBase}apple-touch-icon.png?v=6` }],
     ['meta', { name: 'theme-color', content: '#0f766e' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'Sova' }],
@@ -30,7 +30,7 @@ export default defineConfig({
     ['meta', { name: 'twitter:image', content: ogImage }],
   ],
   themeConfig: {
-    logo: { src: '/logo.png?v=5', alt: 'Sova' },
+    logo: { src: '/logo.png?v=6', alt: 'Sova' },
     siteTitle: 'Sova',
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },

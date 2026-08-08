@@ -1,6 +1,6 @@
 # Configuration
 
-![Configuration](/banners/configuration.svg)
+![Configuration](/banners/configuration.svg?v=6)
 
 One `sova.toml` for app limits, plugin defaults, and cargo-sovax frontend. Secrets stay in process env (often via `sova-env` + `.env*`).
 
