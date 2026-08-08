@@ -35,7 +35,7 @@
   <path fill="none" stroke="#5eead4" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" d="M400 348l18 16-18 16"/>
   <path fill="none" stroke="#5eead4" stroke-width="7" stroke-linecap="round" d="M426 364h20"/>
   </g>
-  <text x="168" y="98" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="700" letter-spacing="0.08em">SOVA</text>
+  <text x="168" y="112" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="40" font-weight="750" letter-spacing="0.04em">SOVA</text>
   <text x="56" y="190" fill="#134e4a" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="52" font-weight="750">Concepts</text>
   <text x="56" y="242" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="500" opacity="0.85">Request path, middleware onion, plugins</text>
   <g transform="translate(720,70)" opacity="0.95">

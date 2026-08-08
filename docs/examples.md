@@ -1,6 +1,6 @@
 # Examples
 
-![Examples](/banners/examples.svg?v=11)
+![Examples](/banners/examples.svg)
 
 Canonical shape: **`App::web()` / `App::api()` → modules → `app.run()`**.  
 In-repo packages under `examples/` are runnable; some older demos still use `App::new()` — prefer the patterns here for new apps.
