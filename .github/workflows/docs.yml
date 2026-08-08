@@ -3,19 +3,23 @@ name: docs
 permissions:
   contents: write
 
+concurrency:
+  group: docs-gh-pages
+  cancel-in-progress: true
+
 on:
-  # Disabled until docs site is ready for auto-publish.
-  # Uncomment push/release to deploy on every docs change / release.
   workflow_dispatch:
-  # push:
-  #   branches: [master]
-  #   paths:
-  #     - 'docs/**'
-  #     - 'crates/**'
-  #     - 'plugins/**'
-  #     - 'Cargo.toml'
-  # release:
-  #   types: [published]
+  push:
+    branches: [master]
+    paths:
+      - 'docs/**'
+      - 'crates/sova-docs-gen/**'
+      - 'crates/sova-core/src/plugin.rs'
+      - 'crates/sova/Cargo.toml'
+      - 'crates/sova/src/doc_features.rs'
+      - 'plugins/**'
+      - 'package.json'
+      - '.github/workflows/docs.yml'
 
 jobs:
   docs:
