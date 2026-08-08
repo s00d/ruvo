@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
 
 ## Publish (crates.io)
 
-Workspace libs are publishable (`version` + `path` in `[workspace.dependencies]`). Order: **`sova-core` → leaf plugins → dependent plugins → `sova`**. `cargo-sova` / `sova-docs-gen` stay `publish = false`.
+Workspace libs are publishable (`version` + `path` in `[workspace.dependencies]`). Order: **`sova-core` → leaf plugins → dependent plugins → `sova`**. `cargo-sovax` / `sova-docs-gen` stay `publish = false`.
 
 ```bash
 cargo publish -p sova-core
@@ -46,7 +46,8 @@ pnpm docs:dev                # VitePress (reads committed static files)
 
 - `crates/sova` — facade (`prelude`, plugins behind features)
 - `crates/sova-core` — `App`, router, request/response, server
-- `crates/cargo-sova` — `cargo sova new` / `generate` / `dev` / `db`
+- `crates/cargo-sovax` — install as `cargo-sovax`, run **`cargo sovax …`**
+- `plugins/sovax` — in-app `ServerArgs` (feature `cli`)
 - `plugins/*` — optional crates
 - `docs/` — VitePress site
 - `examples/*` — demos (`cargo run -p hello`)

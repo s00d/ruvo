@@ -1,4 +1,4 @@
-//! `cargo sova serve` — run the release binary (production).
+//! `cargo sovax serve` — run the release binary (production).
 
 use crate::cmd::build::{self, BuildArgs};
 use crate::project::{Project, ProjectOpts};
@@ -33,7 +33,7 @@ pub fn run(args: ServeArgs) -> Result<(), String> {
     if !bin.is_file() {
         if args.no_build {
             return Err(format!(
-                "release binary not found at {} (run `cargo sova build` or omit --no-build)",
+                "release binary not found at {} (run `cargo sovax build` or omit --no-build)",
                 bin.display()
             ));
         }

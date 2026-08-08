@@ -1,4 +1,4 @@
-//! `cargo sova dev` — watch Rust (+ optional Vite) and restart on change.
+//! `cargo sovax dev` — watch Rust (+ optional Vite) and restart on change.
 
 use crate::frontend::{self, kill_graceful};
 use crate::project::{Project, ProjectOpts};

@@ -1,4 +1,4 @@
-//! Seed demo user + admin role (`cargo run -p cabinet -- seed` / `cargo sova db seed`).
+//! Seed demo user + admin role (`cargo run -p cabinet -- seed` / `cargo sovax db seed`).
 
 use sova::{
     assign_role, create_permission, find_user_by_email, list_permissions, mark_email_verified,

@@ -1,4 +1,4 @@
-//! Library surface for `cargo-sova` (unit tests + shared helpers).
+//! Library surface for `cargo-sovax` (unit tests + shared helpers).
 
 pub mod cmd;
 pub mod frontend;

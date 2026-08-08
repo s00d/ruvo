@@ -4,7 +4,7 @@
 //! export DATABASE_URL=postgres://postgres@localhost/sova
 //! export JWT_SECRET=dev-secret-change-me
 //! cargo run -p api_jwt -- migrate
-//! # or: cargo sova db migrate -p api_jwt
+//! # or: cargo sovax db migrate -p api_jwt
 //! cargo run -p api_jwt
 //!
 //! # register / login → JWT

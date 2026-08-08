@@ -26,7 +26,7 @@ SeaORM database plugin for Sova (postgres / sqlite / mysql via Cargo features).
 
 ## Usage
 
-Install Db **on top of** a preset (or cabinet-style app). Migrations run through `app.run()` / `cargo sova db`.
+Install Db **on top of** a preset (or cabinet-style app). Migrations run through `app.run()` / `cargo sovax db`.
 
 ```rust
 use sova::prelude::*;

@@ -1,4 +1,6 @@
-`ServerArgs` is the local-dev CLI surface used by presets:
+> **Not** the project scaffolder. For `cargo sovax new` / `dev` / `db`, see [cargo-sovax](/guide/cargo-sovax).
+
+`ServerArgs` is the local-dev CLI surface used by presets (crate **`sovax`**, feature `cli`):
 
 ```rust
 use sova::prelude::*;

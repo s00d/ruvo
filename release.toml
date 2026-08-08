@@ -8,15 +8,14 @@
 # === First-time publish order (foundations → leaves → dependents → facade) ===
 #
 #   cargo publish -p sova-core
-#   # wait for index
-#   cargo publish -p sova_cookies
-#   cargo publish -p sova_cors
-#   cargo publish -p sova_shield
-#   cargo publish -p sova-compress
-#   # …then session/csrf/db/… then facade
+#   cargo publish -p sovax
+#   cargo publish -p sova-cookies
+#   cargo publish -p sova-cors
+#   cargo publish -p sova-shield
+#   # …then session/csrf/db/… then facade `sova`
 #
-# NOTE: facade crate name `sova` and old `sova-cli` are taken on crates.io.
-# Console helpers ship as `sovax`. Rename the facade before publishing it.
+# `cargo-sovax` / `sova-docs-gen` stay publish = false.
+# In-app CLI helpers: crate `sovax`. Scaffolding binary: `cargo-sovax` → `cargo sovax`.
 #
 # After all crates exist:
 #   cargo release patch --workspace --execute

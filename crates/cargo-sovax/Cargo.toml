@@ -1,11 +1,11 @@
 [package]
-name = "cargo-sova"
+name = "cargo-sovax"
 version = "0.1.0"
 edition = "2021"
 publish = false
 
 [[bin]]
-name = "cargo-sova"
+name = "cargo-sovax"
 path = "src/main.rs"
 
 [dependencies]

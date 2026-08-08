@@ -96,4 +96,4 @@ Toml overrides code `.cron()` / `.every()`. See `examples/misc/tasks` and [tasks
 
 ### Database
 
-URL: `DATABASE_URL` or `[db] url`. CLI: `migrate` / `seed` (`cargo sova db …`). SQL KV/queue backends reuse the same `DbPool`. See [db](/plugins/db).
+URL: `DATABASE_URL` or `[db] url`. CLI: `migrate` / `seed` (`cargo sovax db …`). SQL KV/queue backends reuse the same `DbPool`. See [db](/plugins/db).

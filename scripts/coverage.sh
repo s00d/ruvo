@@ -19,9 +19,9 @@ FAIL_UNDER="${FAIL_UNDER:-80}"
 OUT_DIR="${OUT_DIR:-target/llvm-cov}"
 mkdir -p "$OUT_DIR"
 
-# Example binaries and cargo-sova are out of the coverage gate.
+# Example binaries and cargo-sovax are out of the coverage gate.
 EXCLUDES=(
-  --exclude cargo-sova
+  --exclude cargo-sovax
   --exclude cabinet
   --exclude api_auth
   --exclude api_jwt

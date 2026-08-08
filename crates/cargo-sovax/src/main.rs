@@ -1,12 +1,12 @@
 use clap::{Parser, Subcommand};
 
-use cargo_sova::cmd::{
+use cargo_sovax::cmd::{
     build::BuildArgs, db::DbArgs, dev::DevArgs, generate::GenerateArgs, new::NewArgs,
     serve::ServeArgs,
 };
 
 #[derive(Parser, Debug)]
-#[command(name = "cargo-sova", about = "Sova project tooling")]
+#[command(name = "cargo-sovax", about = "Sova project tooling")]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -32,7 +32,7 @@ enum Command {
 
 fn main() {
     let raw: Vec<String> = std::env::args().collect();
-    let args = if raw.get(1).map(String::as_str) == Some("sova") {
+    let args = if raw.get(1).map(String::as_str) == Some("sovax") {
         let mut normalized = vec![raw[0].clone()];
         normalized.extend(raw.into_iter().skip(2));
         normalized
@@ -41,12 +41,12 @@ fn main() {
     };
     let cli = Cli::parse_from(args);
     let result = match cli.command {
-        Command::New(new) => cargo_sova::cmd::new::run(new),
-        Command::Generate(generate) => cargo_sova::cmd::generate::run(generate),
-        Command::Dev(dev) => cargo_sova::cmd::dev::run(dev),
-        Command::Build(build) => cargo_sova::cmd::build::run(build),
-        Command::Serve(serve) => cargo_sova::cmd::serve::run(serve),
-        Command::Db(db) => cargo_sova::cmd::db::run(db),
+        Command::New(new) => cargo_sovax::cmd::new::run(new),
+        Command::Generate(generate) => cargo_sovax::cmd::generate::run(generate),
+        Command::Dev(dev) => cargo_sovax::cmd::dev::run(dev),
+        Command::Build(build) => cargo_sovax::cmd::build::run(build),
+        Command::Serve(serve) => cargo_sovax::cmd::serve::run(serve),
+        Command::Db(db) => cargo_sovax::cmd::db::run(db),
     };
     if let Err(e) = result {
         eprintln!("error: {e}");

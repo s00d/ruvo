@@ -118,7 +118,7 @@ async fn show() -> Html<&'static str> {
 }
 ```
 
-Same layout as `cargo sova new myapp --web`.
+Same layout as `cargo sovax new myapp --web`.
 
 ## Custom middleware
 
@@ -331,8 +331,8 @@ Fortify, DB, mail, storage, tasks, notifications, OpenAPI, WS — modules + guar
 
 ```bash
 cp examples/cabinet/.env.example examples/cabinet/.env
-cargo sova db migrate -p cabinet
-cargo sova db seed -p cabinet
+cargo sovax db migrate -p cabinet
+cargo sovax db seed -p cabinet
 cargo run -p cabinet
 ```
 

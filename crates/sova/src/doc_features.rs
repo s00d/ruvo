@@ -81,5 +81,5 @@
 /// Feature `observability-elasticsearch`: Ship tracing logs to Elasticsearch.
 /// Feature `redis`: Shared Redis/Valkey pool (`sova_redis`).
 /// Feature `testing`: Expose `App::run_startup` / `run_shutdown` for tests.
-/// Feature `listen-reuseport`: `SO_REUSEPORT` for graceful `cargo sova dev`.
+/// Feature `listen-reuseport`: `SO_REUSEPORT` for graceful `cargo sovax dev`.
 pub(crate) fn _doc_features_anchor() {}

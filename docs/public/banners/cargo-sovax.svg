@@ -25,14 +25,14 @@
     <path d="M32 34.5l3.2 5.2h-6.4L32 34.5z" fill="#0f766e"/>
   </g>
   <text x="140" y="98" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="700" letter-spacing="0.08em">SOVA</text>
-  <text x="56" y="190" fill="#134e4a" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="52" font-weight="750">cargo-sova</text>
+  <text x="56" y="190" fill="#134e4a" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="52" font-weight="750">cargo-sovax</text>
   <text x="56" y="242" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="500" opacity="0.85">Scaffold, generate, dev, db CLI</text>
   <g transform="translate(720,70)" opacity="0.95">
   <rect x="60" y="50" width="340" height="260" rx="18" fill="#0f172a"/>
   <circle cx="90" cy="82" r="7" fill="#f87171"/>
   <circle cx="112" cy="82" r="7" fill="#fbbf24"/>
   <circle cx="134" cy="82" r="7" fill="#34d399"/>
-  <text x="90" y="140" fill="#ecfdf5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22">$ cargo sova new</text>
+  <text x="90" y="140" fill="#ecfdf5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22">$ cargo sovax new</text>
   <text x="90" y="180" fill="#0d9488" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20">  app --web</text>
   <text x="90" y="220" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18">created app/</text>
 </g>

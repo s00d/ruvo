@@ -82,4 +82,4 @@ Plugin extension trait and SDK metadata.
  });
  ```
 
- Scaffold a new crate with `cargo sova generate plugin <name>`.
+ Scaffold a new crate with `cargo sovax generate plugin <name>`.

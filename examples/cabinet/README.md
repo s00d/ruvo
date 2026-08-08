@@ -4,7 +4,7 @@ Kitchen-sink sample. Full walkthrough: [docs → Examples](https://s00d.github.i
 
 ```bash
 cp .env.example .env
-cargo sova db migrate -p cabinet && cargo sova db seed -p cabinet
+cargo sovax db migrate -p cabinet && cargo sovax db seed -p cabinet
 cargo run -p cabinet
 ```
 

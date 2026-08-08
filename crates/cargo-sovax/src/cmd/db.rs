@@ -1,4 +1,4 @@
-//! `cargo sova db` — thin launcher for app migrate / seed CLI.
+//! `cargo sovax db` — thin launcher for app migrate / seed CLI.
 
 use crate::project::{Project, ProjectOpts};
 use clap::{Parser, Subcommand};

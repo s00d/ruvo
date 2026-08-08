@@ -648,7 +648,7 @@ fn ready_response(results: &[CheckResult]) -> Response {
         }))
         .status(503)
     };
-    // Set by `cargo sova dev --graceful` so the orchestrator can detect the new process
+    // Set by `cargo sovax dev --graceful` so the orchestrator can detect the new process
     // while the old one still answers on the same REUSEPORT socket.
     if let Ok(id) = std::env::var("SOVA_INSTANCE_ID") {
         if !id.is_empty() {

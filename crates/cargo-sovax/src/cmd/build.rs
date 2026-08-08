@@ -1,4 +1,4 @@
-//! `cargo sova build` — optional frontend build + `cargo build --release`.
+//! `cargo sovax build` — optional frontend build + `cargo build --release`.
 
 use crate::frontend;
 use crate::project::{Project, ProjectOpts};

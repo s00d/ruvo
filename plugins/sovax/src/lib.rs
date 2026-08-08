@@ -1,5 +1,8 @@
 //! Optional CLI helpers for local development (`--log-level`, file logging).
 //! This crate pulls in `clap` — enable only when you want argv parsing.
+//!
+//! Project scaffolding (`cargo sovax new` / `dev` / `db`) is the separate
+//! binary crate `cargo-sovax`, not this library.
 
 use sova_core::{parse_log_rotate, LogConfig, LogRotate};
 use std::path::PathBuf;

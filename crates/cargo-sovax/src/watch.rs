@@ -1,4 +1,4 @@
-//! File watch with debounce for `cargo sova dev`.
+//! File watch with debounce for `cargo sovax dev`.
 
 use notify::{Event, RecommendedWatcher, RecursiveMode, Watcher};
 use std::path::{Path, PathBuf};

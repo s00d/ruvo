@@ -8,7 +8,7 @@
 //! # http://127.0.0.1:3000  demo@sova.local / demo1234
 //! ```
 //!
-//! Or via tooling: `cargo sova db migrate -p cabinet` / `cargo sova db seed -p cabinet`.
+//! Or via tooling: `cargo sovax db migrate -p cabinet` / `cargo sovax db seed -p cabinet`.
 
 mod db;
 mod entity;

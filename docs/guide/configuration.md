@@ -2,7 +2,7 @@
 
 ![Configuration](/banners/configuration.svg)
 
-One `sova.toml` for app limits, plugin defaults, and cargo-sova frontend. Secrets stay in process env (often via `sova-env` + `.env*`).
+One `sova.toml` for app limits, plugin defaults, and cargo-sovax frontend. Secrets stay in process env (often via `sova-env` + `.env*`).
 
 ## Example
 
@@ -49,7 +49,7 @@ trust_proxy = true
 
 `SOVA_PROFILE` → else `SOVA_ENV` → else `development` (debug) / `production` (release).
 Aliases: `debug`→`development`, `release`→`production`.
-`cargo sova dev` sets `SOVA_ENV=development`; `serve` sets `production`.
+`cargo sovax dev` sets `SOVA_ENV=development`; `serve` sets `production`.
 
 ## Merge order
 

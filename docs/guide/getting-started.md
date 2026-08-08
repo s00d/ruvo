@@ -14,9 +14,9 @@ cargo add sova --features api
 Scaffold (same shape as the docs below):
 
 ```bash
-cargo install --path crates/cargo-sova   # from this repo
-cargo sova new blog --web
-cargo sova new ping-api --api
+cargo install --path crates/cargo-sovax   # from this repo
+cargo sovax new blog --web
+cargo sovax new ping-api --api
 ```
 
 ## Web app
