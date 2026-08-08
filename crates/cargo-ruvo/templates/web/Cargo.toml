@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ruvo = { path = "../crates/ruvo", features = ["web"] }
+ruvo = { version = "0.1", features = ["web"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

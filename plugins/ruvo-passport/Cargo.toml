@@ -1,10 +1,14 @@
 [package]
 name = "ruvo-passport"
-version = "0.4.0"
+version = "0.1.0"
 edition = "2021"
 description = "Passport-style authentication for Ruvo (strategies, JWT, OAuth2, sessions)"
 license = "MIT"
-publish = false
+repository = "https://github.com/s00d/ruvo"
+homepage = "https://s00d.github.io/ruvo/"
+documentation = "https://docs.rs/ruvo-passport"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
 
 [features]
 default = []
@@ -39,7 +43,7 @@ oauth = [
 ruvo-core = { workspace = true }
 http = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-ruvo-session = { path = "../ruvo-session", optional = true }
+ruvo-session = { workspace = true, optional = true }
 jsonwebtoken = { workspace = true, optional = true }
 ruvo-db = { workspace = true, optional = true }
 sea-orm = { workspace = true, optional = true, default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
@@ -65,8 +69,8 @@ jsonwebtoken = { workspace = true }
 chrono = { workspace = true, default-features = false, features = ["clock", "std"] }
 ruvo-core = { workspace = true, features = ["testing"] }
 ruvo-testing = { workspace = true, features = ["sqlite"] }
-ruvo-session = { path = "../ruvo-session" }
-ruvo-cookies = { path = "../ruvo-cookies" }
+ruvo-session = { workspace = true }
+ruvo-cookies = { workspace = true }
 ruvo-db = { workspace = true, features = ["sqlite"] }
 sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite", "macros", "with-chrono"] }
 sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite"] }

@@ -90,7 +90,7 @@ impl ValidationError {
                     many => {
                         old.insert(
                             k.clone(),
-                            json!(many.iter().cloned().collect::<Vec<_>>()),
+                            json!(many.to_vec()),
                         );
                     }
                 }

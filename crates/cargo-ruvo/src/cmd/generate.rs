@@ -118,10 +118,12 @@ version = "0.1.0"
 edition = "2021"
 description = "{display} plugin for Ruvo"
 license = "MIT"
+repository = "https://github.com/s00d/ruvo"
+homepage = "https://s00d.github.io/ruvo/"
 keywords = ["ruvo", "plugin", "{name}"]
 
 [dependencies]
-ruvo-core = {{ path = "../../crates/ruvo-core" }}
+ruvo-core = {{ version = "0.1.0", path = "../../crates/ruvo-core" }}
 "#
         ),
     )

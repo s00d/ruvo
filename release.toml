@@ -1,0 +1,42 @@
+# cargo-release configuration (mirrors s00d/vld)
+# Install:
+#   cargo install cargo-release
+#
+# crates.io rate-limits ~5 NEW crates per ~10 minutes on first publish.
+# Publish one crate at a time (or batches of ≤5), wait when rate-limited.
+#
+# === First-time publish order (foundations → leaves → dependents → facade) ===
+#
+#   cargo publish -p ruvo-core
+#   # wait for index
+#   cargo publish -p ruvo-cookies
+#   cargo publish -p ruvo-cors
+#   cargo publish -p ruvo-shield
+#   cargo publish -p ruvo-compress
+#   # …then session/csrf/db/… then facade
+#
+# NOTE: the facade crate name `ruvo` is already taken on crates.io
+# (0.0.0-reserved by another owner). Publish plugins/`ruvo-core` as-is;
+# rename the facade before publishing it (e.g. `ruvo-http`).
+#
+# After all crates exist:
+#   cargo release patch --workspace --execute
+
+sign-commit = false
+sign-tag = false
+
+push = true
+push-remote = "origin"
+
+tag = true
+tag-prefix = "v"
+tag-name = "{{prefix}}{{version}}"
+consolidate-commits = true
+tag-message = "Release {{crate_name}} v{{version}}"
+
+pre-release-commit-message = "chore: release v{{version}}"
+
+verify = true
+publish = true
+allow-branch = ["master", "main"]
+dependent-version = "upgrade"

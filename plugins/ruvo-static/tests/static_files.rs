@@ -200,7 +200,7 @@ async fn static_range_and_if_modified_since() {
             .and_then(|v| v.to_str().ok()),
         Some("bytes 0-3/10")
     );
-    assert_eq!(&partial.body_bytes().unwrap()[..], b"0123");
+    assert_eq!(partial.body_bytes().unwrap(), b"0123");
 
     let unsat = app
         .handle(

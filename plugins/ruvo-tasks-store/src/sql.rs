@@ -202,7 +202,7 @@ fn row_to_task(row: &QueryResult) -> Result<Task, TaskError> {
         .try_get_by::<i64, _>("attempts")
         .or_else(|_| {
             row.try_get_by::<i32, _>("attempts")
-                .map(|v| i64::from(v))
+                .map(i64::from)
         })
         .unwrap_or(0);
     Ok(Task {

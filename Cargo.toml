@@ -14,17 +14,43 @@ members = [
 exclude = ["ci-smoke-min", "ci-smoke-api", "ci-smoke-web", ".ci-gen"]
 
 [workspace.dependencies]
-# Workspace crates
-ruvo-core = { path = "crates/ruvo-core" }
-ruvo = { path = "crates/ruvo" }
-ruvo-testing = { path = "crates/ruvo-testing", default-features = false }
-ruvo-db = { path = "plugins/ruvo-db", default-features = false }
-ruvo-redis = { path = "plugins/ruvo-redis" }
-ruvo-store = { path = "plugins/ruvo-store" }
-ruvo-tasks-store = { path = "plugins/ruvo-tasks-store" }
-ruvo-tasks = { path = "plugins/ruvo-tasks" }
-ruvo-storage = { path = "plugins/ruvo-storage" }
-ruvo-observability = { path = "plugins/ruvo-observability", default-features = false }
+# Workspace crates (version+path so `cargo publish` can resolve)
+ruvo-core = { version = "0.1.0", path = "crates/ruvo-core" }
+ruvo = { version = "0.1.0", path = "crates/ruvo" }
+ruvo-testing = { version = "0.1.0", path = "crates/ruvo-testing", default-features = false }
+ruvo-activity = { version = "0.1.0", path = "plugins/ruvo-activity" }
+ruvo-auth = { version = "0.1.0", path = "plugins/ruvo-auth" }
+ruvo-cli = { version = "0.1.0", path = "plugins/ruvo-cli" }
+ruvo-compress = { version = "0.1.0", path = "plugins/ruvo-compress" }
+ruvo-cookies = { version = "0.1.0", path = "plugins/ruvo-cookies" }
+ruvo-cors = { version = "0.1.0", path = "plugins/ruvo-cors" }
+ruvo-csrf = { version = "0.1.0", path = "plugins/ruvo-csrf" }
+ruvo-db = { version = "0.1.0", path = "plugins/ruvo-db", default-features = false }
+ruvo-env = { version = "0.1.0", path = "plugins/ruvo-env" }
+ruvo-http = { version = "0.1.0", path = "plugins/ruvo-http" }
+ruvo-i18n = { version = "0.1.0", path = "plugins/ruvo-i18n" }
+ruvo-mail = { version = "0.1.0", path = "plugins/ruvo-mail" }
+ruvo-meta = { version = "0.1.0", path = "plugins/ruvo-meta" }
+ruvo-notifications = { version = "0.1.0", path = "plugins/ruvo-notifications" }
+ruvo-observability = { version = "0.1.0", path = "plugins/ruvo-observability", default-features = false }
+ruvo-openapi = { version = "0.1.0", path = "plugins/ruvo-openapi" }
+ruvo-passport = { version = "0.1.0", path = "plugins/ruvo-passport" }
+ruvo-quic = { version = "0.1.0", path = "plugins/ruvo-quic" }
+ruvo-rate-limit = { version = "0.1.0", path = "plugins/ruvo-rate-limit" }
+ruvo-redis = { version = "0.1.0", path = "plugins/ruvo-redis" }
+ruvo-session = { version = "0.1.0", path = "plugins/ruvo-session" }
+ruvo-shield = { version = "0.1.0", path = "plugins/ruvo-shield" }
+ruvo-sse = { version = "0.1.0", path = "plugins/ruvo-sse" }
+ruvo-static = { version = "0.1.0", path = "plugins/ruvo-static" }
+ruvo-storage = { version = "0.1.0", path = "plugins/ruvo-storage" }
+ruvo-store = { version = "0.1.0", path = "plugins/ruvo-store" }
+ruvo-tasks = { version = "0.1.0", path = "plugins/ruvo-tasks" }
+ruvo-tasks-store = { version = "0.1.0", path = "plugins/ruvo-tasks-store" }
+ruvo-templates = { version = "0.1.0", path = "plugins/ruvo-templates" }
+ruvo-udp = { version = "0.1.0", path = "plugins/ruvo-udp" }
+ruvo-vld = { version = "0.1.0", path = "plugins/ruvo-vld" }
+ruvo-ws = { version = "0.1.0", path = "plugins/ruvo-ws" }
+
 
 # Shared third-party
 arc-swap = "1"

@@ -1,5 +1,7 @@
 //! Coerce query/params JSON strings using a JSON Schema `properties` map.
 
+#![cfg_attr(not(feature = "openapi"), allow(dead_code))]
+
 use serde_json::{Map, Value};
 
 /// Coerce string values in `obj` according to `schema` property types.

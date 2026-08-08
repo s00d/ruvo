@@ -1,7 +1,7 @@
 //! Templates + i18n integration (`template_fn`).
 
 use http::Method;
-use ruvo_core::{App, Plugin, Request};
+use ruvo_core::{App, Request};
 use ruvo_i18n::{template_fn, I18n, Locale};
 use ruvo_templates::{RenderExt, Templates};
 

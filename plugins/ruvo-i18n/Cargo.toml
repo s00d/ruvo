@@ -1,10 +1,14 @@
 [package]
 name = "ruvo-i18n"
-version = "0.4.0"
+version = "0.1.0"
 edition = "2021"
 description = "Two-level i18n store and locale resolution for Ruvo"
 license = "MIT"
-publish = false
+repository = "https://github.com/s00d/ruvo"
+homepage = "https://s00d.github.io/ruvo/"
+documentation = "https://docs.rs/ruvo-i18n"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
 
 [features]
 default = []
@@ -14,8 +18,8 @@ templates = ["dep:ruvo-templates"]
 
 [dependencies]
 ruvo-core = { workspace = true }
-ruvo-cookies = { path = "../ruvo-cookies", optional = true }
-ruvo-templates = { path = "../ruvo-templates", optional = true }
+ruvo-cookies = { workspace = true, optional = true }
+ruvo-templates = { workspace = true, optional = true }
 minijinja = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
@@ -30,6 +34,6 @@ tokio = { workspace = true, features = ["rt-multi-thread", "macros", "test-util"
 tempfile = { workspace = true }
 http = { workspace = true }
 ruvo-core = { workspace = true, features = ["testing"] }
-ruvo-cookies = { path = "../ruvo-cookies" }
-ruvo-openapi = { path = "../ruvo-openapi" }
-ruvo-templates = { path = "../ruvo-templates" }
+ruvo-cookies = { workspace = true }
+ruvo-openapi = { workspace = true }
+ruvo-templates = { workspace = true }

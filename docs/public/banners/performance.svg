@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0fdfa"/><stop offset="0.55" stop-color="#ffffff"/><stop offset="1" stop-color="#ecfdf5"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="420" rx="28" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1198" height="418" rx="27" stroke="#0f766e" stroke-opacity="0.12"/>
+  <g transform="translate(56,56)"><rect width="64" height="64" rx="14" fill="#0f766e"/>
+    <path transform="translate(18,16) scale(1)" d="M0 0h16.5c7.2 0 12.5 4.6 12.5 11.2 0 5.2-3.1 9.2-8.1 10.6L30 32H20.2L12 22.4H8V32H0V0zm8 14.8h7.6c3.1 0 5-1.6 5-4.2s-1.9-4.2-5-4.2H8v8.4z" fill="#ecfdf5"/>
+  </g>
+  <text x="140" y="98" fill="#0f766e" font-family="ui-sans-serif,system-ui,sans-serif" font-size="22" font-weight="700" letter-spacing="0.08em">RUVO</text>
+  <text x="56" y="190" fill="#134e4a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="52" font-weight="750">Performance</text>
+  <text x="56" y="242" fill="#0f766e" font-family="ui-sans-serif,system-ui,sans-serif" font-size="22" font-weight="500" opacity="0.85">Identical fixtures · Ruvo / Axum / Actix</text>
+  <g transform="translate(720,90)">
+    <rect x="40" y="180" width="40" height="120" rx="8" fill="#0f766e" opacity="0.35"/>
+    <rect x="100" y="120" width="40" height="180" rx="8" fill="#0d9488"/>
+    <rect x="160" y="80" width="40" height="220" rx="8" fill="#0f766e"/>
+    <rect x="220" y="140" width="40" height="160" rx="8" fill="#ecfdf5" stroke="#0f766e" stroke-width="3"/>
+    <rect x="280" y="60" width="40" height="240" rx="8" fill="#0d9488" opacity="0.7"/>
+  </g>
+</svg>

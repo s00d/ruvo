@@ -186,9 +186,7 @@ impl SessionStore for SqlSessionStore {
                 Ok(r) => r,
                 Err(_) => return None,
             };
-            let Some(row) = row else {
-                return None;
-            };
+            let row = row?;
             let exp: Option<String> = row.try_get_by("expires_at").ok().flatten();
             if expired(&exp) {
                 let _ = conn

@@ -68,6 +68,7 @@ pub trait Driver: Sized {
     }
 
     /// Load `{NAME}_CLIENT_ID` / `_CLIENT_SECRET` / `_REDIRECT_URI` (and driver-specific env).
+    #[allow(clippy::wrong_self_convention)]
     fn from_env(self) -> Self {
         Self::from_provider(self.into_provider().from_env())
     }

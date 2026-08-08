@@ -260,10 +260,8 @@ pub async fn update_profile(
         return Err(Error::NotFound);
     };
     let email = email.trim().to_lowercase();
-    if email != u.email {
-        if find_user_by_email(db, &email).await?.is_some() {
-            return Err(Error::custom(409, "email already registered"));
-        }
+    if email != u.email && find_user_by_email(db, &email).await?.is_some() {
+        return Err(Error::custom(409, "email already registered"));
     }
     let email_changed = email != u.email;
     let mut am: user::ActiveModel = u.into();
@@ -440,10 +438,11 @@ pub async fn update_role(
     let Some(r) = find_role(db, id).await? else {
         return Err(Error::NotFound);
     };
-    if is_system_role_slug(&r.slug) && !allow_system {
-        if slug.is_some_and(|s| s.trim().to_lowercase() != r.slug) {
-            return Err(Error::BadRequest("cannot rename system role slug".into()));
-        }
+    if is_system_role_slug(&r.slug)
+        && !allow_system
+        && slug.is_some_and(|s| s.trim().to_lowercase() != r.slug)
+    {
+        return Err(Error::BadRequest("cannot rename system role slug".into()));
     }
     let mut am: role::ActiveModel = r.into();
     if let Some(n) = name {

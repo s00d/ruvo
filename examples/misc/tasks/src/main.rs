@@ -53,8 +53,8 @@ async fn main() -> Result<()> {
                         vec!["interactive".into(), is_interactive().to_string()],
                     ],
                 );
-                if confirm(&format!("Greet {name}?"), true) {
-                    info(&format!("hello, {name}"));
+                if confirm(format!("Greet {name}?"), true) {
+                    info(format!("hello, {name}"));
                 }
                 Ok(())
             }))

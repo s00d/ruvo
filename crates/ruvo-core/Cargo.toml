@@ -1,10 +1,14 @@
 [package]
 name = "ruvo-core"
-version = "0.4.0"
+version = "0.1.0"
 edition = "2021"
 description = "Core HTTP primitives for Ruvo (App, Router, Request, Response)"
 license = "MIT"
-publish = false
+repository = "https://github.com/s00d/ruvo"
+homepage = "https://s00d.github.io/ruvo/"
+documentation = "https://docs.rs/ruvo-core"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
 
 [features]
 testing = []

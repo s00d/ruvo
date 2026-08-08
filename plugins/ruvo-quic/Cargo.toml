@@ -1,10 +1,14 @@
 [package]
 name = "ruvo-quic"
-version = "0.4.0"
+version = "0.1.0"
 edition = "2021"
 description = "QUIC datagrams BackgroundService helpers for Ruvo"
 license = "MIT"
-publish = false
+repository = "https://github.com/s00d/ruvo"
+homepage = "https://s00d.github.io/ruvo/"
+documentation = "https://docs.rs/ruvo-quic"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
 
 [features]
 dev-tls = ["ruvo-core/dev-tls"]

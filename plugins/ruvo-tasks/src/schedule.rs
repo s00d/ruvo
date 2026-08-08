@@ -100,7 +100,7 @@ fn due_slots(
 ) -> Vec<String> {
     match schedule {
         Schedule::Every(period) => {
-            let period_ms = period.as_millis().max(1) as u128;
+            let period_ms = period.as_millis().max(1);
             let now_ms = now
                 .duration_since(UNIX_EPOCH)
                 .map(|d| d.as_millis())
@@ -127,7 +127,7 @@ fn due_slots(
 
 /// Slot id for an every-schedule at `now` (exported for tests).
 pub fn every_slot(period: Duration, now: SystemTime) -> String {
-    let period_ms = period.as_millis().max(1) as u128;
+    let period_ms = period.as_millis().max(1);
     let now_ms = now
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_millis())

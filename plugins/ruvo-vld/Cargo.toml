@@ -1,10 +1,14 @@
 [package]
 name = "ruvo-vld"
-version = "0.4.0"
+version = "0.1.0"
 edition = "2021"
 description = "vld validation integration for Ruvo"
 license = "MIT"
-publish = false
+repository = "https://github.com/s00d/ruvo"
+homepage = "https://s00d.github.io/ruvo/"
+documentation = "https://docs.rs/ruvo-vld"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
 
 [features]
 default = []
@@ -16,10 +20,10 @@ i18n = ["dep:ruvo-i18n"]
 
 [dependencies]
 ruvo-core = { workspace = true }
-ruvo-openapi = { path = "../ruvo-openapi", optional = true }
-ruvo-session = { path = "../ruvo-session", optional = true }
-ruvo-i18n = { path = "../ruvo-i18n", optional = true }
-ruvo-templates = { path = "../ruvo-templates", optional = true }
+ruvo-openapi = { workspace = true, optional = true }
+ruvo-session = { workspace = true, optional = true }
+ruvo-i18n = { workspace = true, optional = true }
+ruvo-templates = { workspace = true, optional = true }
 minijinja = { workspace = true, optional = true }
 vld = { workspace = true, features = ["serialize"] }
 serde = { workspace = true, features = ["derive"] }
@@ -32,10 +36,10 @@ http = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 http = { workspace = true }
 bytes = { workspace = true }
-ruvo-openapi = { path = "../ruvo-openapi" }
+ruvo-openapi = { workspace = true }
 ruvo-core = { workspace = true, features = ["testing", "multipart"] }
-ruvo-session = { path = "../ruvo-session" }
-ruvo-templates = { path = "../ruvo-templates" }
+ruvo-session = { workspace = true }
+ruvo-templates = { workspace = true }
 tempfile = { workspace = true }
 vld = { workspace = true, features = ["serialize", "openapi"] }
 minijinja = { workspace = true }

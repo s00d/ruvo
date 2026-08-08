@@ -1,0 +1,184 @@
+{
+  "captured_at": "2026-08-08T09:42:22Z",
+  "host": "Admins-MacBook-Pro.local",
+  "duration": "10s",
+  "concurrency": 50,
+  "tokio_worker_threads": 4,
+  "paths": [
+    "/",
+    "/about",
+    "/api/health",
+    "/blog",
+    "/blog/hello",
+    "/contact"
+  ],
+  "frameworks": {
+    "ruvo": {
+      "home_rps": 101684.6462,
+      "home_p50_ms": 0.4148,
+      "home_p99_ms": 1.7252,
+      "mean_rps": 103093.7365,
+      "mean_p99_ms": 1.7046333333333334
+    },
+    "axum": {
+      "home_rps": 120475.5359,
+      "home_p50_ms": 0.4028,
+      "home_p99_ms": 0.8201,
+      "mean_rps": 117216.41833333333,
+      "mean_p99_ms": 1.00575
+    },
+    "actix": {
+      "home_rps": 85351.0433,
+      "home_p50_ms": 0.5095,
+      "home_p99_ms": 2.347,
+      "mean_rps": 92173.07738333334,
+      "mean_p99_ms": 1.8985666666666667
+    }
+  },
+  "rows": [
+    {
+      "framework": "ruvo",
+      "path": "/",
+      "rps": 101684.6462,
+      "p50_ms": 0.4148,
+      "p99_ms": 1.7252,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/",
+      "rps": 120475.5359,
+      "p50_ms": 0.4028,
+      "p99_ms": 0.8201,
+      "success": "100.00%"
+    },
+    {
+      "framework": "actix",
+      "path": "/",
+      "rps": 85351.0433,
+      "p50_ms": 0.5095,
+      "p99_ms": 2.347,
+      "success": "100.00%"
+    },
+    {
+      "framework": "ruvo",
+      "path": "/about",
+      "rps": 112790.1589,
+      "p50_ms": 0.4115,
+      "p99_ms": 1.1812,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/about",
+      "rps": 118332.4644,
+      "p50_ms": 0.4051,
+      "p99_ms": 0.88,
+      "success": "100.00%"
+    },
+    {
+      "framework": "actix",
+      "path": "/about",
+      "rps": 94306.9217,
+      "p50_ms": 0.5096,
+      "p99_ms": 1.6588,
+      "success": "100.00%"
+    },
+    {
+      "framework": "ruvo",
+      "path": "/blog",
+      "rps": 100645.0854,
+      "p50_ms": 0.4142,
+      "p99_ms": 1.6712,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/blog",
+      "rps": 116967.8137,
+      "p50_ms": 0.404,
+      "p99_ms": 1.0464,
+      "success": "100.00%"
+    },
+    {
+      "framework": "actix",
+      "path": "/blog",
+      "rps": 91559.5175,
+      "p50_ms": 0.504,
+      "p99_ms": 2.2604,
+      "success": "100.00%"
+    },
+    {
+      "framework": "ruvo",
+      "path": "/blog/hello",
+      "rps": 103288.2538,
+      "p50_ms": 0.4123,
+      "p99_ms": 1.6238,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/blog/hello",
+      "rps": 117280.7284,
+      "p50_ms": 0.4079,
+      "p99_ms": 0.9436,
+      "success": "100.00%"
+    },
+    {
+      "framework": "actix",
+      "path": "/blog/hello",
+      "rps": 94715.9527,
+      "p50_ms": 0.5125,
+      "p99_ms": 1.6305,
+      "success": "100.00%"
+    },
+    {
+      "framework": "ruvo",
+      "path": "/contact",
+      "rps": 96405.8716,
+      "p50_ms": 0.4183,
+      "p99_ms": 2.2428,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/contact",
+      "rps": 113757.6142,
+      "p50_ms": 0.4066,
+      "p99_ms": 1.1459,
+      "success": "100.00%"
+    },
+    {
+      "framework": "actix",
+      "path": "/contact",
+      "rps": 93757.9,
+      "p50_ms": 0.5178,
+      "p99_ms": 1.5929,
+      "success": "100.00%"
+    },
+    {
+      "framework": "ruvo",
+      "path": "/api/health",
+      "rps": 103748.4031,
+      "p50_ms": 0.4077,
+      "p99_ms": 1.7836,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/api/health",
+      "rps": 116484.3534,
+      "p50_ms": 0.3983,
+      "p99_ms": 1.1985,
+      "success": "100.00%"
+    },
+    {
+      "framework": "actix",
+      "path": "/api/health",
+      "rps": 93347.1291,
+      "p50_ms": 0.5066,
+      "p99_ms": 1.9018,
+      "success": "100.00%"
+    }
+  ]
+}

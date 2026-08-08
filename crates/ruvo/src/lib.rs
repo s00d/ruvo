@@ -4,6 +4,7 @@
 //! Prefer [`prelude`] in application `main`; plugin authors use [`extend`].
 
 mod app;
+mod doc_features;
 mod error;
 #[cfg(any(feature = "web", feature = "api"))]
 mod preset;

@@ -1,10 +1,14 @@
 [package]
 name = "ruvo-notifications"
-version = "0.4.0"
+version = "0.1.0"
 edition = "2021"
 description = "Database notifications with channels, ACL, optional WS/mail"
 license = "MIT"
-publish = false
+repository = "https://github.com/s00d/ruvo"
+homepage = "https://s00d.github.io/ruvo/"
+documentation = "https://docs.rs/ruvo-notifications"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
 
 [features]
 default = []
@@ -16,10 +20,10 @@ templates = ["dep:ruvo-templates", "dep:minijinja"]
 [dependencies]
 ruvo-core = { workspace = true }
 ruvo-db = { workspace = true }
-ruvo-ws = { path = "../ruvo-ws", optional = true }
-ruvo-mail = { path = "../ruvo-mail", optional = true }
-ruvo-auth = { path = "../ruvo-auth", optional = true }
-ruvo-templates = { path = "../ruvo-templates", optional = true }
+ruvo-ws = { workspace = true, optional = true }
+ruvo-mail = { workspace = true, optional = true }
+ruvo-auth = { workspace = true, optional = true }
+ruvo-templates = { workspace = true, optional = true }
 minijinja = { workspace = true, optional = true }
 sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
 sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls"] }
@@ -35,9 +39,9 @@ tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 ruvo-core = { workspace = true, features = ["testing"] }
 ruvo-db = { workspace = true, features = ["sqlite"] }
 ruvo-testing = { workspace = true, features = ["sqlite", "notifications", "auth"] }
-ruvo-auth = { path = "../ruvo-auth" }
-ruvo-session = { path = "../ruvo-session" }
-ruvo-mail = { path = "../ruvo-mail" }
+ruvo-auth = { workspace = true }
+ruvo-session = { workspace = true }
+ruvo-mail = { workspace = true }
 sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite", "macros", "with-chrono"] }
 sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite"] }
 serde_json = { workspace = true }

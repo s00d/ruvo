@@ -2,6 +2,7 @@
 
 use ruvo_core::{Request, Result};
 use ruvo_mail::{Content, Envelope, MailExt, Mailable};
+#[cfg(feature = "templates")]
 use serde_json::json;
 
 /// Email-verification message.

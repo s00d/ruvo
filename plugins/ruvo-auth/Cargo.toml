@@ -1,10 +1,14 @@
 [package]
 name = "ruvo-auth"
-version = "0.4.0"
+version = "0.1.0"
 edition = "2021"
 description = "Fortify-style authentication for Ruvo (register, 2FA, reset, roles)"
 license = "MIT"
-publish = false
+repository = "https://github.com/s00d/ruvo"
+homepage = "https://s00d.github.io/ruvo/"
+documentation = "https://docs.rs/ruvo-auth"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
 
 [features]
 default = []
@@ -15,13 +19,13 @@ templates = ["ruvo-mail/templates", "dep:ruvo-templates"]
 [dependencies]
 ruvo-core = { workspace = true, features = ["multipart"] }
 ruvo-db = { workspace = true }
-ruvo-passport = { path = "../ruvo-passport", features = ["jwt", "session"] }
-ruvo-mail = { path = "../ruvo-mail" }
-ruvo-templates = { path = "../ruvo-templates", optional = true }
-ruvo-session = { path = "../ruvo-session" }
-ruvo-rate-limit = { path = "../ruvo-rate-limit" }
-ruvo-activity = { path = "../ruvo-activity", optional = true }
-ruvo-vld = { path = "../ruvo-vld", optional = true, features = ["form", "flash"] }
+ruvo-passport = { workspace = true, features = ["jwt", "session"] }
+ruvo-mail = { workspace = true }
+ruvo-templates = { workspace = true, optional = true }
+ruvo-session = { workspace = true }
+ruvo-rate-limit = { workspace = true }
+ruvo-activity = { workspace = true, optional = true }
+ruvo-vld = { workspace = true, optional = true, features = ["form", "flash"] }
 vld = { workspace = true, optional = true, features = ["serialize"] }
 sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
 sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls"] }
@@ -42,11 +46,11 @@ tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 ruvo-core = { workspace = true, features = ["testing", "multipart"] }
 ruvo-db = { workspace = true, features = ["sqlite"] }
 ruvo-testing = { workspace = true, features = ["sqlite", "auth"] }
-ruvo-session = { path = "../ruvo-session" }
-ruvo-csrf = { path = "../ruvo-csrf" }
-ruvo-mail = { path = "../ruvo-mail" }
-ruvo-activity = { path = "../ruvo-activity" }
-ruvo-vld = { path = "../ruvo-vld", features = ["form", "flash"] }
+ruvo-session = { workspace = true }
+ruvo-csrf = { workspace = true }
+ruvo-mail = { workspace = true }
+ruvo-activity = { workspace = true }
+ruvo-vld = { workspace = true, features = ["form", "flash"] }
 vld = { workspace = true, features = ["serialize"] }
 sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite", "macros", "with-chrono"] }
 sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite"] }

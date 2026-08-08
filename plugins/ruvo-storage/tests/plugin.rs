@@ -103,6 +103,7 @@ async fn store_and_store_as_with_upload() {
 }
 
 #[tokio::test]
+#[allow(clippy::await_holding_lock)] // env mutex serializes RUVO_STORAGE_* across tests
 async fn from_env_memory_and_local() {
     let _guard = env_lock();
     clear_storage_env();
@@ -155,6 +156,7 @@ public_url = "https://from-toml"
 }
 
 #[tokio::test]
+#[allow(clippy::await_holding_lock)] // env mutex serializes RUVO_STORAGE_* across tests
 async fn from_config_local_path_and_unknown_driver() {
     let _guard = env_lock();
     clear_storage_env();

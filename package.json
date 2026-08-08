@@ -1,0 +1,11 @@
+{
+  "name": "ruvo",
+  "private": true,
+  "scripts": {
+    "docs:dev": "pnpm -C docs dev",
+    "docs:build": "pnpm -C docs build",
+    "docs:preview": "pnpm -C docs preview",
+    "docs:generate": "cargo run -q -p ruvo-docs-gen",
+    "docs:generate:check": "cargo run -q -p ruvo-docs-gen -- --check"
+  }
+}

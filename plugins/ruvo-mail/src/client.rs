@@ -42,7 +42,7 @@ impl Mail {
         }
     }
 
-    pub(crate) fn from_explicit(&self) -> bool {
+    pub(crate) fn is_from_explicit(&self) -> bool {
         self.from_explicit
     }
 

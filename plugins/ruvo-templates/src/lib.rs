@@ -354,6 +354,12 @@ impl Plugin for MiniJinjaTemplatesBuilder {
         "templates"
     }
 
+    fn meta(&self) -> ruvo_core::PluginMeta {
+        ruvo_core::PluginMeta::new("Templates")
+            .description("MiniJinja HTML templates with optional autoreload")
+            .version(env!("CARGO_PKG_VERSION"))
+    }
+
     fn install(mut self, app: &mut ruvo_core::App) {
         if !self.autoreload_explicit {
             if let Some(doc) = app.config_doc() {

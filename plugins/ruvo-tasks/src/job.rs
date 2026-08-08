@@ -17,6 +17,7 @@ pub mod priority {
 
 /// When a [`Job`] should be enqueued by the scheduler.
 #[derive(Clone, Debug)]
+#[allow(clippy::large_enum_variant)] // CronSchedule is large; Every is tiny
 pub enum Schedule {
     Every(Duration),
     Cron(CronSchedule),

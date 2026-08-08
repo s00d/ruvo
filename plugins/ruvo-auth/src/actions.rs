@@ -70,7 +70,7 @@ fn field_fail(req: &Request, path: &str, field: &str, msg: &str, status: u16) ->
         if !old.is_empty() {
             req.flash_old(&serde_json::Value::Object(old));
         }
-        return ok_redirect(path);
+        ok_redirect(path)
     }
     #[cfg(not(feature = "vld"))]
     {

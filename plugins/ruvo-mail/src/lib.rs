@@ -66,7 +66,7 @@ impl Plugin for Mail {
     fn install(self, app: &mut App) {
         let mut mail = self;
         // Unset-fill from `[mail]` — explicit `.from()` / env wins.
-        if !mail.from_explicit() {
+        if !mail.is_from_explicit() {
             if let Some(doc) = app.config_doc() {
                 if let Some(section) = doc.section("mail") {
                     if let Some(from) = section.get("from").and_then(|v| v.as_str()) {

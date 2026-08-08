@@ -84,6 +84,12 @@ impl Plugin for OpenApi {
         "openapi"
     }
 
+    fn meta(&self) -> ruvo_core::PluginMeta {
+        ruvo_core::PluginMeta::new("OpenAPI")
+            .description("OpenAPI 3.1 document + Scalar UI at mount path")
+            .version(env!("CARGO_PKG_VERSION"))
+    }
+
     fn install(mut self, app: &mut App) {
         if let Some(doc) = app.config_doc() {
             if let Some(section) = doc.section("openapi") {

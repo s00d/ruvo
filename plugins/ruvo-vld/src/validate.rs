@@ -278,6 +278,7 @@ async fn read_form_value(req: &mut Request) -> Result<Value, ValidationError> {
     Ok(Value::Object(map))
 }
 
+#[cfg_attr(not(feature = "openapi"), allow(dead_code))]
 pub(crate) fn coerce_with_schema(value: &mut Value, schema: &Value) {
     if let Value::Object(map) = value {
         coerce_object(map, schema);

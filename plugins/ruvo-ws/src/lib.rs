@@ -58,6 +58,12 @@ impl Plugin for Ws {
         "ws"
     }
 
+    fn meta(&self) -> ruvo_core::PluginMeta {
+        ruvo_core::PluginMeta::new("WebSocket")
+            .description("WebSocket hub, origin allowlist, max message size")
+            .version(env!("CARGO_PKG_VERSION"))
+    }
+
     fn install(self, app: &mut App) {
         app.state(WsShared {
             hub: Hub::new(),

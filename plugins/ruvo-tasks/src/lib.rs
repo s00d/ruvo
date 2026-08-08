@@ -474,8 +474,8 @@ fn register_tasks_cli(app: &mut App, registry: TaskRegistry) {
                         .collect();
                     // Always print for list (CLI already interactive at process level).
                     println!(
-                        "{:<24} {:<12} {:<8} {}",
-                        "NAME", "QUEUE", "PRIO", "SCHEDULE"
+                        "{:<24} {:<12} {:<8} SCHEDULE",
+                        "NAME", "QUEUE", "PRIO"
                     );
                     for r in &rows {
                         println!(

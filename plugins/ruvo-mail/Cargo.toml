@@ -1,14 +1,18 @@
 [package]
 name = "ruvo-mail"
-version = "0.4.0"
+version = "0.1.0"
 edition = "2021"
 description = "Outbound email for Ruvo (lettre SMTP / fake / file)"
 license = "MIT"
-publish = false
+repository = "https://github.com/s00d/ruvo"
+homepage = "https://s00d.github.io/ruvo/"
+documentation = "https://docs.rs/ruvo-mail"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
 
 [dependencies]
 ruvo-core = { workspace = true }
-ruvo-templates = { path = "../ruvo-templates", optional = true }
+ruvo-templates = { workspace = true, optional = true }
 lettre = { workspace = true }
 tokio = { workspace = true, features = ["fs", "io-util"] }
 tracing = { workspace = true }
@@ -26,5 +30,5 @@ tokio = { workspace = true, features = ["rt-multi-thread", "macros", "fs"] }
 tempfile = { workspace = true }
 http = { workspace = true }
 serde_json = { workspace = true }
-ruvo-templates = { path = "../ruvo-templates" }
+ruvo-templates = { workspace = true }
 ruvo-core = { workspace = true, features = ["testing"] }

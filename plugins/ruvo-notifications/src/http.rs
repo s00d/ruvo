@@ -41,7 +41,7 @@ fn can_subscribe(req: &Request, ch: &Channel) -> Result<()> {
     {
         use ruvo_auth::AuthExt;
         req.require_permission(perm)?;
-        return Ok(());
+        Ok(())
     }
     #[cfg(not(feature = "auth"))]
     {

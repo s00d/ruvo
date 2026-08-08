@@ -3,3 +3,4 @@ Cargo.lock
 .DS_Store
 /ci-smoke-*/
 /.ci-gen/
+node_modules/

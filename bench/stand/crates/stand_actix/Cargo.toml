@@ -1,0 +1,13 @@
+[package]
+name = "stand_actix"
+version = "0.1.0"
+edition.workspace = true
+publish = false
+
+[[bin]]
+name = "stand_actix"
+path = "src/main.rs"
+
+[dependencies]
+stand_fixtures = { workspace = true }
+actix-web = { workspace = true }

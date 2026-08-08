@@ -108,10 +108,12 @@ impl BlobStore for OpendalStore {
                 }
             }
             // Exact key match when prefix is a file path
-            if !prefix.is_empty() && !prefix.ends_with('/') && self.exists(&prefix).await? {
-                if !keys.iter().any(|k| k == &prefix) {
-                    keys.push(prefix);
-                }
+            if !prefix.is_empty()
+                && !prefix.ends_with('/')
+                && self.exists(&prefix).await?
+                && !keys.iter().any(|k| k == &prefix)
+            {
+                keys.push(prefix);
             }
             keys.sort();
             keys.dedup();

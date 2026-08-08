@@ -11,7 +11,7 @@
 //! This crate root exports names used by applications. Plugin authors and
 //! advanced integrations use [`extend`].
 //!
-//! See also the repo-root `ARCHITECTURE.md`.
+//! Product docs: <https://s00d.github.io/ruvo/> (VitePress guide `/guide/concepts`).
 
 mod request_id;
 mod app;

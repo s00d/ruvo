@@ -66,7 +66,7 @@ pub(crate) fn parse_schedule_toml(
         });
         let payload = t
             .get("payload")
-            .map(|v| toml_to_json(v))
+            .map(toml_to_json)
             .unwrap_or_else(|| Value::Object(Default::default()));
         out.push(TomlSchedule {
             name,
@@ -107,9 +107,9 @@ pub(crate) fn schedule_label(s: &Schedule) -> String {
 
 fn format_duration(d: Duration) -> String {
     let secs = d.as_secs();
-    if secs >= 3600 && secs % 3600 == 0 {
+    if secs >= 3600 && secs.is_multiple_of(3600) {
         format!("{}h", secs / 3600)
-    } else if secs >= 60 && secs % 60 == 0 {
+    } else if secs >= 60 && secs.is_multiple_of(60) {
         format!("{}m", secs / 60)
     } else if d.subsec_millis() == 0 {
         format!("{secs}s")

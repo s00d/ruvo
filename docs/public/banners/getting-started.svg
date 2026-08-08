@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0fdfa"/>
+      <stop offset="0.55" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ecfdf5"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="780" y1="40" x2="1120" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0d9488" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#0f766e" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="420" rx="28" fill="url(#bg)"/>
+  <rect width="1200" height="420" rx="28" fill="url(#glow)"/>
+  <rect x="1" y="1" width="1198" height="418" rx="27" stroke="#0f766e" stroke-opacity="0.12"/>
+  
+  <g transform="translate(56,56)">
+    <rect width="64" height="64" rx="14.08" fill="#0f766e"/>
+    <path transform="translate(17.92,16.0) scale(1.0)"
+      d="M0 0h16.5c7.2 0 12.5 4.6 12.5 11.2 0 5.2-3.1 9.2-8.1 10.6L30 32H20.2L12 22.4H8V32H0V0zm8 14.8h7.6c3.1 0 5-1.6 5-4.2s-1.9-4.2-5-4.2H8v8.4z"
+      fill="#ecfdf5"/>
+  </g>
+  <text x="140" y="98" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="700" letter-spacing="0.08em">RUVO</text>
+  <text x="56" y="190" fill="#134e4a" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="52" font-weight="750">Getting started</text>
+  <text x="56" y="242" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="500" opacity="0.85">App · Router · middleware · plugins</text>
+  <g transform="translate(720,70)" opacity="0.95">
+  <rect x="40" y="40" width="360" height="240" rx="24" fill="white" stroke="#0f766e" stroke-opacity="0.2" stroke-width="2"/>
+  <path d="M90 100h120M90 150h200M90 200h160" stroke="#0f766e" stroke-width="10" stroke-linecap="round" opacity="0.25"/>
+  <circle cx="90" cy="100" r="10" fill="#0f766e"/>
+  <circle cx="210" cy="100" r="10" fill="#0d9488"/>
+  <circle cx="90" cy="150" r="10" fill="#0f766e"/>
+  <circle cx="290" cy="150" r="10" fill="#0d9488"/>
+  <circle cx="90" cy="200" r="10" fill="#0f766e"/>
+  <circle cx="250" cy="200" r="10" fill="#0d9488"/>
+  <path d="M100 100h100M100 150h180M100 200h140" stroke="#0f766e" stroke-width="3" stroke-linecap="round"/>
+</g>
+</svg>

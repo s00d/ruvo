@@ -19,7 +19,7 @@ pub fn sign_payload(secret: &str, payload: &str) -> String {
     let mut mac =
         HmacSha256::new_from_slice(secret.as_bytes()).expect("HMAC key length");
     mac.update(payload.as_bytes());
-    hex_encode(&mac.finalize().into_bytes())
+    hex_encode(mac.finalize().into_bytes())
 }
 
 pub fn verify_payload(secret: &str, payload: &str, sig: &str) -> bool {

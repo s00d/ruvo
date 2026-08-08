@@ -13,16 +13,20 @@ async fn audit_meta(app: App) -> (bool, Option<String>) {
 }
 
 async fn audit_meta_profile(app: App, profile: Option<&str>) -> (bool, Option<String>) {
+    let (_server, state) = {
+        let _guard = ENV_LOCK.lock().unwrap();
+        match profile {
+            Some(p) => std::env::set_var("RUVO_PROFILE", p),
+            None => std::env::remove_var("RUVO_PROFILE"),
+        }
+        let server = app.build().unwrap();
+        let state = server.state();
+        (server, state)
+    };
+    let results = app.run_checks(state, &[CheckKind::Audit]).await;
     let _guard = ENV_LOCK.lock().unwrap();
-    match profile {
-        Some(p) => std::env::set_var("RUVO_PROFILE", p),
-        None => std::env::remove_var("RUVO_PROFILE"),
-    }
-    let server = app.build().unwrap();
-    let results = app
-        .run_checks(server.state(), &[CheckKind::Audit])
-        .await;
     std::env::remove_var("RUVO_PROFILE");
+    drop(_guard);
     let meta = results
         .into_iter()
         .find(|r| r.name == "meta")
@@ -183,9 +187,11 @@ async fn robots_txt_route_ignored_by_title_check() {
     let mut app = App::new();
     app.install(Meta::new().public_url("https://ex.com").site_name("S"));
     app.install(Robots::new());
-    let _guard = ENV_LOCK.lock().unwrap();
-    std::env::remove_var("RUVO_PROFILE");
-    let server = app.build().unwrap();
+    let server = {
+        let _guard = ENV_LOCK.lock().unwrap();
+        std::env::remove_var("RUVO_PROFILE");
+        app.build().unwrap()
+    };
     let res = server
         .handle_request(Method::GET, "/robots.txt", "")
         .await;

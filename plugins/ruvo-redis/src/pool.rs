@@ -5,6 +5,7 @@ use ruvo_core::Request;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
+#[derive(Default)]
 struct PoolInner {
     conn: Option<ConnectionManager>,
     url: Option<String>,
@@ -14,15 +15,6 @@ struct PoolInner {
 #[derive(Clone, Default)]
 pub struct RedisPool {
     inner: Arc<RwLock<PoolInner>>,
-}
-
-impl Default for PoolInner {
-    fn default() -> Self {
-        Self {
-            conn: None,
-            url: None,
-        }
-    }
 }
 
 impl RedisPool {

@@ -1,0 +1,18 @@
+[package]
+name = "ruvo-docs-gen"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Generate VitePress API markdown from Ruvo Rust sources"
+
+[[bin]]
+name = "ruvo-docs-gen"
+path = "src/main.rs"
+
+[dependencies]
+clap = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+syn = { version = "2", features = ["full", "parsing", "extra-traits", "visit"] }
+toml = { workspace = true }
+walkdir = "2"
