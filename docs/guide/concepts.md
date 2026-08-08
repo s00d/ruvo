@@ -1,6 +1,6 @@
 # Concepts
 
-![Concepts](/banners/concepts.svg?v=7)
+![Concepts](/banners/concepts.svg?v=8)
 
 Sova is a small Express-like HTTP framework: `sova-core` owns the request path; plugins add optional middleware and helpers.
 

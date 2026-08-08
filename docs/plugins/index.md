@@ -1,6 +1,6 @@
 # Plugins
 
-![Plugins](/banners/plugins.svg?v=7)
+![Plugins](/banners/plugins.svg?v=8)
 
 Enable with Cargo features on `sova`. Presets:
 
