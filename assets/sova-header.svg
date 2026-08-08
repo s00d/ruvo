@@ -9,18 +9,17 @@
   <rect width="960" height="220" rx="24" fill="url(#bg)"/>
   <rect x="1" y="1" width="958" height="218" rx="23" stroke="#0f766e" stroke-opacity="0.12"/>
 
-  <!-- owl mark -->
   <g transform="translate(56,51)">
     <rect width="118" height="118" rx="26" fill="#0f766e"/>
-    <g transform="translate(11,11) scale(1.5)">
-      <path d="M18 22c0-6 6.5-11 14-11s14 5 14 11v18c0 5.5-6.5 10-14 10s-14-4.5-14-10V22z" fill="#ecfdf5"/>
-      <path d="M20 18c-3-4-1.5-9 2-9 2 0 3.5 2 4.5 5M44 18c3-4 1.5-9-2-9-2 0-3.5 2-4.5 5" stroke="#ecfdf5" stroke-width="3" stroke-linecap="round" fill="none"/>
-      <circle cx="26.5" cy="30" r="5.2" fill="#0f766e"/>
-      <circle cx="37.5" cy="30" r="5.2" fill="#0f766e"/>
-      <circle cx="27.5" cy="29" r="1.8" fill="#ecfdf5"/>
-      <circle cx="38.5" cy="29" r="1.8" fill="#ecfdf5"/>
-      <path d="M32 34.5l3.2 5.2h-6.4L32 34.5z" fill="#0f766e"/>
-      <path d="M24 44c2.5 2.5 5.5 3.8 8 3.8s5.5-1.3 8-3.8" stroke="#0f766e" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.45"/>
+    <g transform="translate(13.5,13.5) scale(1.42)">
+      <path d="M17 24L22 6.5L29 22Z" fill="#ecfdf5"/>
+      <path d="M47 24L42 6.5L35 22Z" fill="#ecfdf5"/>
+      <ellipse cx="32" cy="36" rx="19" ry="17.5" fill="#ecfdf5"/>
+      <circle cx="23.5" cy="34" r="7.2" fill="#0f766e"/>
+      <circle cx="40.5" cy="34" r="7.2" fill="#0f766e"/>
+      <circle cx="25.2" cy="32.2" r="2.3" fill="#ecfdf5"/>
+      <circle cx="42.2" cy="32.2" r="2.3" fill="#ecfdf5"/>
+      <path d="M32 38.5L37 46H27L32 38.5Z" fill="#0f766e"/>
     </g>
   </g>
 
