@@ -15,10 +15,12 @@ pub use preset::WebApp;
 #[cfg(feature = "api")]
 pub use preset::ApiApp;
 pub use ruvo_core::{
-    logger, with_state, BackgroundService, Cell, ClientAddr, ConfigDoc, Error, FormData, Html, Http,
-    IntoResponse, Json, LogConfig, LogRotate, NoContent, Next, OnUpgrade, Plugin, PluginMeta,
-    PluginSdkVersion, Redirect, Request, Response, Router, Server, Shutdown, Slot, TestClient,
-    Text, Upload, PLUGIN_SDK_VERSION,
+    ensure_request_id, logger, request_id, with_state, BackgroundService, Cell, CheckKind,
+    CheckResult, ClientAddr, ConfigDoc, Error, FormData, Html, Http, IntoResponse, Json, LogConfig,
+    LogRotate, MatchedRoute, MatchedRouteCapture, NoContent, Next, OnUpgrade, Plugin, PluginMeta,
+    PluginSdkVersion, RateLimitIdentity, Redirect, Request, RequestId, Response, ResponseAssert,
+    Router, Server, Shutdown, Slot, TestClient, Text, Upload, UploadRules, PLUGIN_SDK_VERSION,
+    referer_or,
 };
 
 #[cfg(feature = "tls")]
@@ -30,8 +32,8 @@ pub use ruvo_core::Tls;
 /// Forms/files: `Request::input` / `form` (feature `multipart` for multipart bodies).
 pub mod prelude {
     pub use crate::{
-        logger, App, Error, Html, IntoResponse, Json, Next, NoContent, Plugin, Redirect, Request,
-        Response, Result, Router, Text,
+        logger, request_id, App, Error, Html, IntoResponse, Json, Next, NoContent, Plugin, Redirect,
+        Request, RequestId, Response, Result, Router, Text,
     };
     #[cfg(feature = "web")]
     pub use crate::WebApp;
@@ -64,18 +66,27 @@ pub use ruvo_static::Static;
 pub use ruvo_compress::Compress;
 
 #[cfg(feature = "rate-limit")]
-pub use ruvo_rate_limit::RateLimit;
+pub use ruvo_rate_limit::{RateLimit, RateLimitKey};
 
 #[cfg(feature = "session")]
-pub use ruvo_session::{memory_sessions, SameSite, Session, SessionExt, SessionLayer};
+pub use ruvo_session::{
+    memory_sessions, KvSessionStore, SameSite, Session, SessionExt, SessionLayer,
+    SessionStore, SessionStoreHandle, FLASH_ERRORS, FLASH_OLD, FLASH_STATUS, SESSION_USER_KEY,
+};
+
+#[cfg(feature = "session-sql")]
+pub use ruvo_session::SqlSessionStore;
+
+#[cfg(feature = "session-redis")]
+pub use ruvo_session::RedisSessionStore;
 
 #[cfg(feature = "store")]
 mod shared_store;
 
-/// Key-value store backends (`Memory`, `File`, `Sql`).
+/// Key-value store backends (`Memory`, `File`, `Sql`, `Redis`).
 #[cfg(feature = "store")]
 pub mod store {
-    pub use ruvo_store::{namespace, AppStore, KvStore, MemoryStore as Memory, Namespace};
+    pub use ruvo_store::{namespace, AppStore, Cache, CacheError, KvStore, MemoryStore as Memory, Namespace};
     pub use crate::shared_store::SharedStore;
 
     #[cfg(feature = "store-file")]
@@ -84,14 +95,17 @@ pub mod store {
     #[cfg(feature = "store-sql")]
     pub use ruvo_store::SqlStore as Sql;
 
+    #[cfg(feature = "store-redis")]
+    pub use ruvo_store::RedisStore as Redis;
+
     #[cfg(feature = "store-crypto")]
     pub use ruvo_store::{encrypted, encrypted_ns, AppKey, Encrypted};
 }
 
 #[cfg(feature = "store")]
-pub use store::{namespace, AppStore, KvStore, Namespace, SharedStore};
+pub use store::{namespace, AppStore, Cache, CacheError, KvStore, Namespace, SharedStore};
 
-/// Task queue backends (`Memory`, `File`, `Sql`).
+/// Task queue backends (`Memory`, `File`, `Sql`, `Redis`) + `Job` / `Dispatch` / scheduler.
 #[cfg(feature = "tasks-store")]
 pub mod tasks {
     pub use ruvo_tasks_store::{
@@ -104,21 +118,44 @@ pub mod tasks {
     #[cfg(feature = "tasks-sql")]
     pub use ruvo_tasks_store::SqlTaskStore as Sql;
 
+    #[cfg(feature = "tasks-redis")]
+    pub use ruvo_tasks_store::RedisTaskStore as Redis;
+
     #[cfg(feature = "tasks")]
-    pub use ruvo_tasks::{bearer_guard, HttpTaskError, TaskBackend, Tasks};
+    pub use ruvo_tasks::{
+        ask, bearer_guard, confirm, enter_cli, error as console_error, info, is_interactive, line,
+        priority, table, warn as console_warn, ConsoleGuard, Dispatch, HttpTaskError, Job, JobInfo,
+        Schedule, TaskBackend, TaskRegistry, Tasks,
+    };
 }
 
 #[cfg(feature = "tasks-store")]
 pub use tasks::{EnqueueOpts, Task, TaskError, TaskStatus, TaskStore};
 
 #[cfg(feature = "tasks")]
-pub use tasks::{bearer_guard, HttpTaskError, TaskBackend, Tasks};
+pub use tasks::{
+    ask, bearer_guard, confirm, console_error, console_warn, enter_cli, info, is_interactive, line,
+    priority, table, ConsoleGuard, Dispatch, HttpTaskError, Job, JobInfo, Schedule, TaskBackend,
+    TaskRegistry, Tasks,
+};
 
 #[cfg(feature = "db")]
 pub use ruvo_db::{
-    test_db, transaction, ActiveModelTrait, ColumnTrait, Db, DbError, DbExt, DbHandle, DbPool,
-    EntityTrait, MigrationTrait, MigratorTrait, Set, TestDb,
+    parse_migrate_args, test_db, transaction, ActiveModelTrait, ColumnTrait, Db, DbError, DbExt,
+    DbHandle, DbPool, EntityTrait, MigrateCmd, MigrationTrait, MigratorTrait, Page, PageExt,
+    PageParams, PaginateExt, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Set, TestDb,
 };
+
+#[cfg(feature = "redis")]
+pub use ruvo_redis::{
+    Redis, RedisError, RedisExt, RedisMessage, RedisPool, RedisSubscriber,
+};
+
+#[cfg(feature = "observability")]
+pub use ruvo_observability::Observability;
+
+#[cfg(feature = "observability-elasticsearch")]
+pub use ruvo_observability::ElasticsearchLog;
 
 #[cfg(feature = "udp")]
 pub use ruvo_udp::UdpService;
@@ -131,7 +168,8 @@ pub use ruvo_sse::{sse_response, SseChannel, SseEvent};
 
 #[cfg(feature = "templates")]
 pub use ruvo_templates::{
-    register_per_request, MiniJinjaEngine, MiniJinjaTemplates, RenderExt, TemplateEngine,
+    register_per_request, FrozenAmbient, MiniJinjaEngine, MiniJinjaTemplates, RenderExt,
+    TemplateEngine,
     TemplateHelpers, Templates,
 };
 
@@ -167,16 +205,25 @@ pub use ruvo_ws::{
 pub use ruvo_vld::{doc_schema, DocVldExt, VldDocSchema};
 
 #[cfg(feature = "vld-flash-templates")]
-pub use ruvo_vld::with_validation_flash;
+pub use ruvo_vld::{with_flash, with_validation_flash};
 
 #[cfg(feature = "http-client")]
 pub use ruvo_http::{
     FakeTransport, Http as OutboundHttp, HttpBound, HttpClient, HttpError, HttpExt, NamedClient,
-    OutRequest, OutResponse, PendingRequest, RequestId, StubBody,
+    OutRequest, OutResponse, PendingRequest, StubBody,
 };
 
 #[cfg(feature = "mail")]
-pub use ruvo_mail::{Email, EmailSnapshot, FakeMail, Mail, MailClient, MailExt, SmtpBuilder};
+pub use ruvo_mail::{
+    Content, Email, EmailSnapshot, Envelope, FakeMail, Mail, MailClient, MailExt, Mailable,
+    SmtpBuilder,
+};
+
+#[cfg(feature = "storage")]
+pub use ruvo_storage::{
+    AppStorage, BlobStore, LocalStore, MemoryStore, PutOpts, Storage, StorageError, StorageExt,
+    StoredFile,
+};
 
 #[cfg(feature = "passport")]
 pub use ruvo_passport::{
@@ -189,24 +236,45 @@ pub use ruvo_passport::AuthExt;
 
 #[cfg(feature = "passport-jwt")]
 pub use ruvo_passport::{
-    hash_password, hash_refresh_token, issue_token_pair, verify_password, AuthUser, Claims, Jwt,
-    JwtAuth, JwtAuthExt, JwtAuthState, JwtError, TokenPair,
+    hash_password, hash_refresh_token, hash_token, issue_token_pair, token_can, verify_password,
+    ApiTokenInfo, ApiTokenRow, AuthUser, Claims, CreateApiToken, CreatedApiToken, Jwt, JwtAuth,
+    JwtAuthExt, JwtAuthState, JwtError, TokenPair, PAT_PREFIX,
 };
 
 #[cfg(all(feature = "passport-jwt", not(feature = "auth")))]
 pub use ruvo_passport::AuthMigrator;
 
 #[cfg(feature = "passport-oauth")]
-pub use ruvo_passport::{Oauth, OauthProfile, OauthProvider, OauthTokens, ProfileKind};
+pub use ruvo_passport::{
+    oauth_drivers, Apple, Custom, Driver, Github, Google, Oauth, OauthProfile, OauthProvider,
+    OauthTokens, ProfileKind,
+};
 
 #[cfg(feature = "auth")]
 pub use ruvo_auth::{
     assign_role, create_permission, create_role, delete_permission, delete_role, find_user_by_email,
     find_user_by_id, list_permissions, list_roles, load_current_user, make_verify_token,
     mark_email_verified, parse_verify_token, register_user, revoke_role, set_avatar, set_user_roles,
-    sync_role_permissions, update_permission, update_role, AuthExt, AuthMigrator, CurrentUser,
-    Feature as AuthFeature, Fortify, FortifyPaths,
+    sync_role_permissions, update_permission, update_role, user_ids_with_permission,
+    user_ids_with_role, AuthExt, AuthMigrator, CurrentUser, Feature as AuthFeature, Fortify,
+    FortifyPaths, ResetPasswordMail, VerifyEmailMail,
 };
+
+#[cfg(feature = "activity")]
+pub use ruvo_activity::{
+    list_activity, Activity, ActivityActor, ActivityEntry, ActivityExt, ActivityFilter,
+    ActivityLog, ActivityMigrator, ActivityRow,
+};
+
+#[cfg(feature = "notifications")]
+pub use ruvo_notifications::{
+    list_notifications, mark_all_read, mark_read, unread_count, Channel, NotificationFilter,
+    NotificationRow, NotificationService, NotificationUser, Notifications, NotificationsMigrator,
+    Notify, NotifyExt, Via,
+};
+
+#[cfg(feature = "notifications-templates")]
+pub use ruvo_notifications::{preload_unread, UnreadCount};
 
 #[cfg(all(feature = "auth", feature = "auth-vld"))]
 pub use ruvo_auth::{

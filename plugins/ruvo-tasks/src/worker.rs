@@ -7,7 +7,7 @@ use std::time::Duration;
 
 pub(crate) struct TaskWorker {
     pub store: Arc<dyn TaskStore>,
-    pub queue: String,
+    pub queues: Vec<String>,
     pub worker_id: String,
     pub lease: Duration,
     pub poll: Duration,
@@ -32,29 +32,35 @@ impl BackgroundService for TaskWorker {
                     break;
                 }
                 let _ = self.store.reap(std::time::SystemTime::now()).await;
-                match self
-                    .store
-                    .claim(&self.queue, &self.worker_id, self.lease, 1)
-                    .await
-                {
-                    Ok(batch) if !batch.is_empty() => {
-                        for task in batch {
-                            Self::dispatch_one(
-                                &self.store,
-                                &self.handlers,
-                                task,
-                                self.lease,
-                                self.max_attempts,
-                                self.retry_base,
-                            )
-                            .await;
+                let mut got = false;
+                for q in &self.queues {
+                    match self
+                        .store
+                        .claim(q, &self.worker_id, self.lease, 1)
+                        .await
+                    {
+                        Ok(batch) if !batch.is_empty() => {
+                            got = true;
+                            for task in batch {
+                                Self::dispatch_one(
+                                    &self.store,
+                                    &self.handlers,
+                                    task,
+                                    self.lease,
+                                    self.max_attempts,
+                                    self.retry_base,
+                                )
+                                .await;
+                            }
+                            break;
                         }
+                        _ => {}
                     }
-                    _ => {
-                        tokio::select! {
-                            _ = wait_shutdown(shutdown.clone()) => break,
-                            _ = tokio::time::sleep(self.poll) => {}
-                        }
+                }
+                if !got {
+                    tokio::select! {
+                        _ = wait_shutdown(shutdown.clone()) => break,
+                        _ = tokio::time::sleep(self.poll) => {}
                     }
                 }
             }
@@ -157,6 +163,7 @@ mod tests {
                 payload: payload(name),
                 run_at: None,
                 dedup_key: None,
+                priority: 0,
             })
             .await
             .unwrap()
@@ -173,7 +180,7 @@ mod tests {
         let (tx, shutdown) = ruvo_core::shutdown_channel();
         let worker = Box::new(TaskWorker {
             store,
-            queue: "default".into(),
+            queues: vec!["default".into()],
             worker_id: worker_id.into(),
             lease,
             poll,
@@ -407,6 +414,7 @@ mod tests {
                 payload: payload("x"),
                 run_at: None,
                 dedup_key: Some("slot".into()),
+                priority: 0,
             })
             .await
             .unwrap();
@@ -416,6 +424,7 @@ mod tests {
                 payload: payload("x"),
                 run_at: None,
                 dedup_key: Some("slot".into()),
+                priority: 0,
             })
             .await
             .unwrap();

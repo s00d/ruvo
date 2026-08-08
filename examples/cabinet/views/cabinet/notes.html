@@ -14,6 +14,7 @@
     <input
       class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100 outline-none ring-tide-400/40 focus:ring-2"
       name="title"
+      value="{{ old.title if old else '' }}"
       required
     >
   </label>
@@ -23,7 +24,7 @@
       class="rounded-md border border-white/10 bg-ink-950 px-3 py-2 text-mist-100 outline-none ring-tide-400/40 focus:ring-2"
       name="body"
       rows="4"
-    ></textarea>
+    >{{ old.body if old else '' }}</textarea>
   </label>
   <button
     type="submit"
@@ -49,4 +50,16 @@
     <li class="text-mist-500">{{ t("cabinet.no_notes") }}</li>
   {% endfor %}
 </ul>
+
+{% if last_page and last_page > 1 %}
+<nav class="mt-8 flex gap-3 text-sm text-mist-400">
+  {% if page > 1 %}
+  <a class="text-tide-400 hover:underline" href="/cabinet/notes?page={{ page - 1 }}">Prev</a>
+  {% endif %}
+  <span>Page {{ page }} / {{ last_page }} ({{ total }})</span>
+  {% if page < last_page %}
+  <a class="text-tide-400 hover:underline" href="/cabinet/notes?page={{ page + 1 }}">Next</a>
+  {% endif %}
+</nav>
+{% endif %}
 {% endblock %}

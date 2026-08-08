@@ -30,6 +30,26 @@ pub(crate) type CliCommandFn =
 pub(crate) type CheckFn =
     Arc<dyn Fn(Arc<StateMap>) -> BoxFuture<Result<()>> + Send + Sync>;
 
+/// Kind of app check — readiness probes vs deploy-time audits.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CheckKind {
+    /// Runtime dependencies (db, redis, storage, …) — used by `GET /ready`.
+    Ready,
+    /// Deploy-time / config audits (openapi, vld, templates, …) — CLI `check` only.
+    Audit,
+}
+
+/// Outcome of one named check from [`App::run_checks`].
+#[derive(Debug, Clone)]
+pub struct CheckResult {
+    pub name: &'static str,
+    pub ok: bool,
+    pub error: Option<String>,
+}
+
+type CheckEntry = (&'static str, CheckKind, CheckFn);
+type CheckList = Arc<std::sync::Mutex<Vec<CheckEntry>>>;
+
 const DEFAULT_MAX_BODY: usize = 2 * 1024 * 1024;
 const DEFAULT_MAX_CONNECTIONS: usize = 1024;
 const DEFAULT_MAX_UPGRADED: usize = 1024;
@@ -70,7 +90,8 @@ pub struct App {
     pub(crate) on_shutdown: Vec<ShutdownHook>,
     pub(crate) services: Vec<BoxedService>,
     pub(crate) cli_commands: HashMap<&'static str, CliCommandFn>,
-    pub(crate) checks: Vec<(&'static str, CheckFn)>,
+    pub(crate) checks: CheckList,
+    pub(crate) probes: bool,
 }
 
 impl App {
@@ -102,7 +123,8 @@ impl App {
             on_shutdown: Vec::new(),
             services: Vec::new(),
             cli_commands: HashMap::new(),
-            checks: Vec::new(),
+            checks: Arc::new(std::sync::Mutex::new(Vec::new())),
+            probes: false,
         }
     }
 
@@ -117,14 +139,68 @@ impl App {
         self
     }
 
-    /// Register a named health check run by `myapp check` (after startup hooks).
+    /// Register a readiness check (`CheckKind::Ready`) for `GET /ready` and CLI `check`.
     pub fn register_check<F, Fut>(&mut self, name: &'static str, f: F) -> &mut Self
     where
         F: Fn(Arc<StateMap>) -> Fut + Send + Sync + 'static,
         Fut: std::future::Future<Output = Result<()>> + Send + 'static,
     {
+        self.push_check(name, CheckKind::Ready, f)
+    }
+
+    /// Register a deploy-time audit (`CheckKind::Audit`) — CLI `check` only, not `/ready`.
+    pub fn register_audit<F, Fut>(&mut self, name: &'static str, f: F) -> &mut Self
+    where
+        F: Fn(Arc<StateMap>) -> Fut + Send + Sync + 'static,
+        Fut: std::future::Future<Output = Result<()>> + Send + 'static,
+    {
+        self.push_check(name, CheckKind::Audit, f)
+    }
+
+    fn push_check<F, Fut>(&mut self, name: &'static str, kind: CheckKind, f: F) -> &mut Self
+    where
+        F: Fn(Arc<StateMap>) -> Fut + Send + Sync + 'static,
+        Fut: std::future::Future<Output = Result<()>> + Send + 'static,
+    {
         self.checks
-            .push((name, Arc::new(move |state| Box::pin(f(state)))));
+            .lock()
+            .expect("checks lock")
+            .push((name, kind, Arc::new(move |state| Box::pin(f(state)))));
+        self
+    }
+
+    /// Run registered checks filtered by [`CheckKind`].
+    pub async fn run_checks(
+        &self,
+        state: Arc<StateMap>,
+        kinds: &[CheckKind],
+    ) -> Vec<CheckResult> {
+        run_check_list(&self.checks, state, kinds).await
+    }
+
+    /// Install k8s-style probes: `GET /healthz` (liveness) and `GET /ready` (Ready checks).
+    ///
+    /// Idempotent. Presets (`App::web` / `App::api`) call this automatically.
+    pub fn with_probes(&mut self) -> &mut Self {
+        if self.probes {
+            return self;
+        }
+        self.probes = true;
+        let checks = Arc::clone(&self.checks);
+
+        self.get("/healthz", || async {
+            Response::json(&serde_json::json!({ "status": "ok" }))
+        });
+
+        self.get("/ready", move |req: Request| {
+            let checks = Arc::clone(&checks);
+            async move {
+                let results =
+                    run_check_list(&checks, req.states(), &[CheckKind::Ready]).await;
+                ready_response(&results)
+            }
+        });
+
         self
     }
 
@@ -304,11 +380,29 @@ impl App {
                 "check" => {
                     // `build()` already ran — plugin `requires()` are satisfied.
                     println!("ok plugins");
-                    for (name, check) in &self.checks {
-                        check(Arc::clone(&state)).await.map_err(|e| {
-                            Error::Internal(format!("check `{name}` failed: {e}"))
-                        })?;
-                        println!("ok {name}");
+                    let results = self
+                        .run_checks(
+                            Arc::clone(&state),
+                            &[CheckKind::Ready, CheckKind::Audit],
+                        )
+                        .await;
+                    let mut failed = false;
+                    for r in &results {
+                        if r.ok {
+                            println!("ok {}", r.name);
+                        } else {
+                            println!(
+                                "fail {} — {}",
+                                r.name,
+                                r.error.as_deref().unwrap_or("")
+                            );
+                            failed = true;
+                        }
+                    }
+                    if failed {
+                        return Err(Error::Internal(
+                            "one or more checks failed".into(),
+                        ));
                     }
                     println!("ok");
                     true
@@ -358,7 +452,10 @@ impl App {
                     true
                 }
                 "tasks" => {
-                    println!("tasks command is plugin-specific; use task HTTP endpoints or plugin-provided commands");
+                    println!(
+                        "tasks CLI requires the Tasks plugin (`app.install(Tasks::…)`).\n\
+                         Then: tasks list | tasks schedule | tasks run NAME"
+                    );
                     true
                 }
                 "i18n" if args.get(1).map(String::as_str) == Some("missing") => {
@@ -497,6 +594,68 @@ impl DerefMut for App {
     fn deref_mut(&mut self) -> &mut Router {
         &mut self.router
     }
+}
+
+async fn run_check_list(
+    checks: &CheckList,
+    state: Arc<StateMap>,
+    kinds: &[CheckKind],
+) -> Vec<CheckResult> {
+    let entries: Vec<CheckEntry> = checks.lock().expect("checks lock").clone();
+    let mut out = Vec::with_capacity(entries.len());
+    for (name, kind, check) in entries {
+        if !kinds.contains(&kind) {
+            continue;
+        }
+        match check(Arc::clone(&state)).await {
+            Ok(()) => out.push(CheckResult {
+                name,
+                ok: true,
+                error: None,
+            }),
+            Err(e) => out.push(CheckResult {
+                name,
+                ok: false,
+                error: Some(e.to_string()),
+            }),
+        }
+    }
+    out
+}
+
+fn ready_response(results: &[CheckResult]) -> Response {
+    let mut checks = serde_json::Map::new();
+    let mut failed = Vec::new();
+    for r in results {
+        if r.ok {
+            checks.insert(r.name.to_string(), serde_json::json!("ok"));
+        } else {
+            let msg = r.error.clone().unwrap_or_else(|| "failed".into());
+            checks.insert(r.name.to_string(), serde_json::json!(msg));
+            failed.push(r.name);
+        }
+    }
+    let mut res = if failed.is_empty() {
+        Response::json(&serde_json::json!({
+            "status": "ok",
+            "checks": checks,
+        }))
+    } else {
+        Response::json(&serde_json::json!({
+            "status": "not_ready",
+            "failed": failed,
+            "checks": checks,
+        }))
+        .status(503)
+    };
+    // Set by `cargo ruvo dev --graceful` so the orchestrator can detect the new process
+    // while the old one still answers on the same REUSEPORT socket.
+    if let Ok(id) = std::env::var("RUVO_INSTANCE_ID") {
+        if !id.is_empty() {
+            res = res.header("x-ruvo-instance", id);
+        }
+    }
+    res
 }
 
 #[cfg(test)]

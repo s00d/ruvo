@@ -1,6 +1,8 @@
-//! Cabinet migrator: Fortify auth + notes table.
+//! Cabinet migrator: Fortify auth + activity + notifications + notes.
 
-use ruvo::{AuthMigrator, MigrationTrait, MigratorTrait};
+use ruvo::{
+    ActivityMigrator, AuthMigrator, MigrationTrait, MigratorTrait, NotificationsMigrator,
+};
 
 pub struct CabinetMigrator;
 
@@ -8,6 +10,8 @@ pub struct CabinetMigrator;
 impl MigratorTrait for CabinetMigrator {
     fn migrations() -> Vec<Box<dyn MigrationTrait>> {
         let mut v = AuthMigrator::migrations();
+        v.extend(ActivityMigrator::migrations());
+        v.extend(NotificationsMigrator::migrations());
         v.push(Box::new(m20260807_000001_notes::Migration));
         v
     }

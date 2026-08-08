@@ -9,12 +9,16 @@ use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use std::collections::HashMap;
 use std::future::{Future, IntoFuture};
 use std::pin::Pin;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
+
+/// Mutates a request before [`Server::handle`] (e.g. inject auth extensions).
+pub type RequestHook = Arc<dyn Fn(&mut Request) + Send + Sync>;
 
 /// Test client over a compiled [`Server`], always tracking cookies.
 pub struct TestClient {
     server: Server,
     jar: Mutex<HashMap<String, String>>,
+    request_hooks: Mutex<Vec<RequestHook>>,
 }
 
 impl TestClient {
@@ -22,6 +26,7 @@ impl TestClient {
         Ok(Self {
             server: app.build()?,
             jar: Mutex::new(HashMap::new()),
+            request_hooks: Mutex::new(Vec::new()),
         })
     }
 
@@ -32,6 +37,19 @@ impl TestClient {
 
     pub fn server(&self) -> &Server {
         &self.server
+    }
+
+    /// Run `hook` on every request before dispatch (stacked; call order preserved).
+    pub fn on_request<F>(&self, hook: F)
+    where
+        F: Fn(&mut Request) + Send + Sync + 'static,
+    {
+        self.request_hooks.lock().unwrap().push(Arc::new(hook));
+    }
+
+    /// Drop all [`Self::on_request`] hooks.
+    pub fn clear_request_hooks(&self) {
+        self.request_hooks.lock().unwrap().clear();
     }
 
     pub fn get(&self, path: impl Into<String>) -> ClientRequest<'_> {
@@ -75,6 +93,13 @@ impl TestClient {
             if let Some((name, value)) = pair.split_once('=') {
                 jar.insert(name.trim().to_string(), value.trim().to_string());
             }
+        }
+    }
+
+    fn apply_hooks(&self, req: &mut Request) {
+        let hooks = self.request_hooks.lock().unwrap().clone();
+        for hook in hooks {
+            hook(req);
         }
     }
 }
@@ -147,7 +172,9 @@ impl<'a> ClientRequest<'a> {
         if let Some(cookie) = self.client.cookie_header() {
             builder = builder.header("cookie", cookie);
         }
-        let res = self.client.server.handle(builder.build()).await;
+        let mut req = builder.build();
+        self.client.apply_hooks(&mut req);
+        let res = self.client.server.handle(req).await;
         self.client.store_set_cookie(&res);
         res
     }
@@ -159,5 +186,46 @@ impl<'a> IntoFuture for ClientRequest<'a> {
 
     fn into_future(self) -> Self::IntoFuture {
         Box::pin(self.dispatch())
+    }
+}
+
+/// Fluent assertions for HTTP responses in tests.
+pub trait ResponseAssert {
+    /// Panic unless status matches `code`.
+    fn assert_status(&self, code: u16) -> &Self;
+
+    /// Deserialize buffered JSON body; panics on failure.
+    fn json<T: serde::de::DeserializeOwned>(&self) -> T;
+
+    /// Parse buffered body as [`serde_json::Value`].
+    fn json_value(&self) -> serde_json::Value;
+}
+
+impl ResponseAssert for Response {
+    fn assert_status(&self, code: u16) -> &Self {
+        let got = self.status_code().as_u16();
+        assert_eq!(
+            got,
+            code,
+            "unexpected status {got}, body: {:?}",
+            self.body_bytes().map(|b| String::from_utf8_lossy(b).into_owned())
+        );
+        self
+    }
+
+    fn json<T: serde::de::DeserializeOwned>(&self) -> T {
+        let bytes = self
+            .body_bytes()
+            .unwrap_or_else(|| panic!("response body is not buffered"));
+        serde_json::from_slice(bytes).unwrap_or_else(|e| {
+            panic!(
+                "json decode failed: {e}; body: {}",
+                String::from_utf8_lossy(bytes)
+            )
+        })
+    }
+
+    fn json_value(&self) -> serde_json::Value {
+        self.json()
     }
 }

@@ -7,10 +7,10 @@ license = "MIT"
 publish = false
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
-tokio = { version = "1", features = ["net", "sync", "rt", "macros"] }
-tracing = "0.1"
+ruvo-core = { workspace = true }
+tokio = { workspace = true, features = ["net", "sync", "rt", "macros"] }
+tracing = { workspace = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "time"] }
-ruvo-core = { path = "../../crates/ruvo-core", features = ["testing"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "net", "time"] }
+ruvo-core = { workspace = true, features = ["testing"] }

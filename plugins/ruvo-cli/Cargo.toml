@@ -7,9 +7,9 @@ license = "MIT"
 publish = false
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
-clap = { version = "4", features = ["derive", "env"] }
+ruvo-core = { workspace = true }
+clap = { workspace = true, features = ["derive", "env"] }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
-clap = { version = "4", features = ["derive", "env"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+clap = { workspace = true, features = ["derive", "env"] }

@@ -1,0 +1,8 @@
+# tasks example — schedule overrides code `.every` / `.cron` for named jobs.
+
+[schedule.ping]
+every = "15s"
+
+[schedule.mail_digest]
+cron = "0 */5 * * * *"
+queue = "mailer"

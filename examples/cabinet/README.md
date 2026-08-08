@@ -6,22 +6,35 @@ Kitchen-sink sample app: Fortify auth, personal cabinet, Postgres via `ruvo-db`
 ## Run
 
 ```bash
-export DATABASE_URL=postgres://postgres@localhost/ruvo
-cp .env.example .env   # optional
+# Optional: DATABASE_URL overrides [db] url in ruvo.toml
+# export DATABASE_URL=postgres://postgres@localhost/ruvo
+cp .env.example .env   # optional (.env wins over .env.dev in cascade)
+# or: cp .env.example .env.dev
 
-# one-shot
-cargo run -p cabinet -- migrate
+# schema + demo user
+cargo ruvo db migrate -p cabinet
+cargo ruvo db seed -p cabinet
+# or: cargo run -p cabinet -- migrate && cargo run -p cabinet -- seed
+
 cargo run -p cabinet
 
 # or via cargo-ruvo (watch / prod)
-cargo ruvo dev -p cabinet
+cargo ruvo dev -p cabinet          # graceful overlap on Unix; watches .rs/.env/ruvo.toml
+cargo ruvo dev -p cabinet --no-graceful
 cargo ruvo build -p cabinet
 cargo ruvo serve -p cabinet
 ```
 
 Open http://127.0.0.1:3000
 
-Seed user: `demo@ruvo.local` / `demo1234`
+Seed user (after `db seed`): `demo@ruvo.local` / `demo1234`
+
+Useful DB commands:
+
+```bash
+cargo ruvo db status -p cabinet
+cargo ruvo db down -p cabinet 1
+```
 
 ## Frontend
 
@@ -53,6 +66,16 @@ export default defineConfig({
 ```
 
 Then `cargo ruvo dev -p cabinet` starts Vite + Rust; `cargo ruvo build` runs `npm run build` then release.
+
+## Config (`ruvo.toml`)
+
+Declarative settings: `[server]`, `[mail]`, `[storage]`, `[meta]`, `[observability]`,
+`[cors]`, `[session]`, … with `[development.*]` / `[production.*]` overlays.
+`main` calls `configure_from_path` on this file. Code still owns Fortify features,
+RateLimit keys, Notification channels, and absolute storage paths.
+
+See [ARCHITECTURE.md](../../ARCHITECTURE.md) for merge order and what stays in env.
+
 ## What maps to which plugin
 
 | Area | Plugin / feature |
@@ -60,22 +83,25 @@ Then `cargo ruvo dev -p cabinet` starts Vite + Rust; `cargo ruvo build` runs `np
 | CORS / security headers | `Cors` (`origins`/`exposed`), `Shield` (helmet-style) |
 | CSRF (session double-submit) | `Csrf` + `req.csrf_token()` |
 | Compression | `Compress::new()` (gzip/deflate/br, Express-style) |
-| Rate limit (SQL KV) | `RateLimit::fixed_window` + `store::Sql` |
-| Sessions | `SessionLayer` on shared `SqlStore` |
+| Rate limit (SQL KV) | `RateLimit::fixed_window(...).key(Identity)` + Fortify `RateLimit::login()` |
+| Sessions | `SessionLayer::from_store(SqlSessionStore)` (`ruvo_sessions`) |
+| Observability | `request_id` + `Observability` → `/metrics` |
 | Static assets | `Static` → `/assets` |
-| Templates + flash | `Templates`, `with_validation_flash` |
+| Templates + flash | `Templates`, `with_flash` (`errors` / `old` / `status`) |
 | i18n en/ru | `I18n` + cookie `locale` |
 | SEO | `Meta`, `Sitemap`, `Robots` |
 | Forms / JSON validation | `Vld`, `validate_form` / `validate_body` |
-| Avatar upload | `Request::input` + `Upload::save_in` |
+| Avatar upload | `UploadRules` + `storage().store_as` → `public/uploads` (cloud: `examples/misc/storage`) |
 | OpenAPI | `OpenApi` → `/docs` |
 | Background job | `Tasks` + `tasks::Sql` (`welcome_email` via `Mail`) |
 | WebSocket | `Ws` → `/cabinet/ws` |
 | Outbound HTTP | `Http` / `req.http()` → `/cabinet/fetch` |
-| Mail | `Mail::from_env()` / `Mail::fake` (lettre SMTP) |
+| Mail | `Mail` + MiniJinja (`mail-templates`): `.view` / Mailable; auth uses `mail/verify.html` + `mail/reset.html` |
+| Activity / audit log | `Activity` + `auth-activity` → `GET /activity` (admin) |
+| Notifications inbox | `Notifications` + channels/ACL → `/notifications`, optional WS |
 | CLI / env | `ServerArgs`, `ruvo_env` |
 
-Identity, notes, sessions KV, and the task queue share one **`DbPool`** (`DATABASE_URL`).
+Identity, notes, KV (rate-limit/cache), task queue, and **`ruvo_sessions`** share one **`DbPool`** (`DATABASE_URL`).
 
 ## Intentionally skipped
 

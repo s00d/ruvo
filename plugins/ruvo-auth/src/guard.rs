@@ -1,7 +1,7 @@
 //! Auth guards and request helpers.
 
 use crate::state::{
-    wants_json, FortifyState, PASSWORD_CONFIRMED_AT, PASSWORD_CONFIRM_TTL_SECS,
+    wants_json, FortifyState, PASSWORD_CONFIRMED_AT, PASSWORD_CONFIRM_TTL_SECS, PENDING_2FA_KEY,
 };
 use crate::store::CurrentUser;
 use crate::token::now_secs;
@@ -185,6 +185,27 @@ pub trait AuthExt {
     fn require_permission(&self, slug: &str) -> Result<&CurrentUser>;
     fn require_role(&self, slug: &str) -> Result<&CurrentUser>;
     fn password_confirmed(&self) -> bool;
+
+    /// Programmatic login: rotate session, persist passport user id, set [`CurrentUser`].
+    ///
+    /// ```ignore
+    /// let cu = load_current_user(db, id).await?.unwrap();
+    /// req.login_user(cu);
+    /// ```
+    fn login_user(&mut self, user: CurrentUser);
+
+    /// Clear Fortify/Passport session auth (pending 2FA, password confirm, CurrentUser).
+    fn logout_user(&mut self);
+
+    /// Kill every other device/session for the current user; keep this cookie.
+    fn logout_other_sessions(
+        &self,
+    ) -> impl std::future::Future<Output = Result<u64>> + Send;
+
+    /// Kill all sessions for the current user, including this one.
+    fn logout_all_sessions(
+        &mut self,
+    ) -> impl std::future::Future<Output = Result<u64>> + Send;
 }
 
 impl AuthExt for Request {
@@ -220,5 +241,32 @@ impl AuthExt for Request {
 
     fn password_confirmed(&self) -> bool {
         is_password_confirmed(self)
+    }
+
+    fn login_user(&mut self, user: CurrentUser) {
+        self.session().remove(PENDING_2FA_KEY);
+        self.session().remove(PASSWORD_CONFIRMED_AT);
+        let id = user.id.to_string();
+        self.login(id, user);
+    }
+
+    fn logout_user(&mut self) {
+        self.session().remove(PENDING_2FA_KEY);
+        self.session().remove(PASSWORD_CONFIRMED_AT);
+        let _ = self.take::<CurrentUser>();
+        self.logout();
+    }
+
+    async fn logout_other_sessions(&self) -> Result<u64> {
+        SessionExt::logout_other_sessions(self).await
+    }
+
+    async fn logout_all_sessions(&mut self) -> Result<u64> {
+        self.session().remove(PENDING_2FA_KEY);
+        self.session().remove(PASSWORD_CONFIRMED_AT);
+        let n = SessionExt::logout_all_sessions(self).await?;
+        let _ = self.take::<CurrentUser>();
+        let _ = self.take::<ruvo_passport::Authenticated>();
+        Ok(n)
     }
 }

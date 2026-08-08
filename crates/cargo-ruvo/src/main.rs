@@ -1,7 +1,8 @@
 use clap::{Parser, Subcommand};
 
 use cargo_ruvo::cmd::{
-    build::BuildArgs, dev::DevArgs, generate::GenerateArgs, new::NewArgs, serve::ServeArgs,
+    build::BuildArgs, db::DbArgs, dev::DevArgs, generate::GenerateArgs, new::NewArgs,
+    serve::ServeArgs,
 };
 
 #[derive(Parser, Debug)]
@@ -16,11 +17,17 @@ enum Command {
     New(NewArgs),
     Generate(GenerateArgs),
     /// Run the app with file watch (and Vite when detected).
+    ///
+    /// Watches `.rs`, `Cargo.toml`, `.env*`, and `ruvo.toml`. On Unix, restart is
+    /// graceful by default (`--graceful`): new process binds with `SO_REUSEPORT`
+    /// while the old one drains. Use `--no-graceful` for kill-then-spawn.
     Dev(DevArgs),
     /// Build frontend (if any) + release binary.
     Build(BuildArgs),
     /// Run the release binary (production).
     Serve(ServeArgs),
+    /// Database tooling: migrate / down / status / seed (runs the app CLI).
+    Db(DbArgs),
 }
 
 fn main() {
@@ -39,6 +46,7 @@ fn main() {
         Command::Dev(dev) => cargo_ruvo::cmd::dev::run(dev),
         Command::Build(build) => cargo_ruvo::cmd::build::run(build),
         Command::Serve(serve) => cargo_ruvo::cmd::serve::run(serve),
+        Command::Db(db) => cargo_ruvo::cmd::db::run(db),
     };
     if let Err(e) = result {
         eprintln!("error: {e}");

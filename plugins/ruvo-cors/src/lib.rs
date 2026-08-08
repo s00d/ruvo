@@ -20,11 +20,13 @@ enum OriginMode {
 #[derive(Clone)]
 pub struct Cors {
     origin: OriginMode,
+    origin_explicit: bool,
     methods: String,
     /// Empty string → reflect `Access-Control-Request-Headers` on preflight.
     headers: String,
     exposed: Option<String>,
     credentials: bool,
+    credentials_explicit: bool,
     max_age: Option<u64>,
 }
 
@@ -32,11 +34,13 @@ impl Cors {
     pub fn new() -> Self {
         Self {
             origin: OriginMode::Exact("*".into()),
+            origin_explicit: false,
             methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS".into(),
             // CSRF headers for cookie-session SPAs (Laravel / axios XSRF).
             headers: "Content-Type, Authorization, X-CSRF-Token, X-XSRF-TOKEN".into(),
             exposed: None,
             credentials: false,
+            credentials_explicit: false,
             max_age: Some(86400),
         }
     }
@@ -44,12 +48,14 @@ impl Cors {
     /// Single allowed origin, or `"*"` (Express `origin` string).
     pub fn origin(mut self, origin: impl Into<String>) -> Self {
         self.origin = OriginMode::Exact(origin.into());
+        self.origin_explicit = true;
         self
     }
 
     /// Allow any of these origins (mirror matching request `Origin`).
     pub fn origins(mut self, origins: impl IntoIterator<Item = impl Into<String>>) -> Self {
         self.origin = OriginMode::List(origins.into_iter().map(Into::into).collect());
+        self.origin_explicit = true;
         self
     }
 
@@ -76,6 +82,7 @@ impl Cors {
     /// This plugin mirrors the request `Origin` instead of emitting `*`.
     pub fn credentials(mut self, on: bool) -> Self {
         self.credentials = on;
+        self.credentials_explicit = true;
         self
     }
 
@@ -83,6 +90,36 @@ impl Cors {
     pub fn max_age(mut self, secs: impl Into<Option<u64>>) -> Self {
         self.max_age = secs.into();
         self
+    }
+
+    fn apply_config(&mut self, app: &App) {
+        let Some(doc) = app.config_doc() else {
+            return;
+        };
+        let Some(section) = doc.section("cors") else {
+            return;
+        };
+        if !self.origin_explicit {
+            if let Some(toml::Value::Array(arr)) = section.get("origins") {
+                let list: Vec<String> = arr
+                    .iter()
+                    .filter_map(|v| v.as_str().map(str::to_string))
+                    .collect();
+                if !list.is_empty() {
+                    self.origin = OriginMode::List(list);
+                }
+            } else if let Some(o) = section.get("origin").and_then(|v| v.as_str()) {
+                self.origin = OriginMode::Exact(o.to_string());
+            }
+        }
+        if !self.credentials_explicit {
+            if let Some(v) = section.get("credentials").and_then(|v| v.as_bool()) {
+                self.credentials = v;
+            }
+        }
+        if let Some(v) = section.get("max_age").and_then(|v| v.as_integer()) {
+            self.max_age = Some(v as u64);
+        }
     }
 }
 
@@ -103,7 +140,8 @@ impl Plugin for Cors {
             .version(env!("CARGO_PKG_VERSION"))
     }
 
-    fn install(self, app: &mut App) {
+    fn install(mut self, app: &mut App) {
+        self.apply_config(app);
         app.use_middleware(named(
             "cors",
             with_leaked(self, |cors, req, next| async move {

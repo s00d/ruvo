@@ -2,6 +2,7 @@
 
 use super::Response;
 use crate::error::IntoResponse;
+use crate::request::Request;
 use serde::Serialize;
 
 /// HTML body (`text/html; charset=utf-8`).
@@ -50,6 +51,24 @@ impl Redirect {
             location: location.into(),
         }
     }
+
+    /// 303 to `Referer`, or `/` when missing.
+    pub fn back(req: &Request) -> Self {
+        Self::back_or(req, "/")
+    }
+
+    /// 303 to `Referer`, or `fallback` when missing/empty.
+    pub fn back_or(req: &Request, fallback: impl Into<String>) -> Self {
+        Self::see_other(referer_or(req, fallback))
+    }
+}
+
+/// `Referer` header value, or `fallback` when absent/empty.
+pub fn referer_or(req: &Request, fallback: impl Into<String>) -> String {
+    req.header("referer")
+        .filter(|s| !s.is_empty())
+        .map(str::to_owned)
+        .unwrap_or_else(|| fallback.into())
 }
 
 impl IntoResponse for Redirect {
@@ -109,6 +128,8 @@ impl<T: IntoResponse> IntoResponse for (u16, T) {
 mod tests {
     use super::*;
     use crate::error::IntoResponse;
+    use crate::Request;
+    use http::Method;
 
     #[test]
     fn html_sets_content_type() {
@@ -143,6 +164,25 @@ mod tests {
     fn redirect_see_other() {
         let res = Redirect::see_other("/home").into_response();
         assert_eq!(res.status_code().as_u16(), 303);
+        assert_eq!(res.headers().get("location").unwrap(), "/home");
+    }
+
+    #[test]
+    fn redirect_back_uses_referer() {
+        let req = Request::builder()
+            .method(Method::POST)
+            .path("/x")
+            .header("referer", "/cabinet/notes")
+            .build();
+        let res = Redirect::back(&req).into_response();
+        assert_eq!(res.status_code().as_u16(), 303);
+        assert_eq!(res.headers().get("location").unwrap(), "/cabinet/notes");
+    }
+
+    #[test]
+    fn redirect_back_fallback() {
+        let req = Request::builder().method(Method::GET).path("/x").build();
+        let res = Redirect::back_or(&req, "/home").into_response();
         assert_eq!(res.headers().get("location").unwrap(), "/home");
     }
 }

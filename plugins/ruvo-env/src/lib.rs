@@ -2,6 +2,12 @@
 //!
 //! Call [`load`] at the top of `main` before reading configuration.
 //! Real process environment variables always win over file values.
+//!
+//! File order (later overrides earlier):
+//! 1. `.env.{dev|prod|test}` (short alias of the active mode)
+//! 2. `.env.{mode}` when mode is the long name (`development` / `production`)
+//! 3. `.env.local` (skipped in `test`)
+//! 4. `.env` (final overlay)
 
 use std::path::Path;
 use thiserror::Error;
@@ -51,13 +57,13 @@ pub fn load_from(root: impl AsRef<Path>) -> Result<()> {
 }
 
 fn resolve_mode() -> String {
-    if cfg!(test) {
-        return "test".into();
-    }
     std::env::var("RUVO_ENV")
         .or_else(|_| std::env::var("APP_ENV"))
         .unwrap_or_else(|_| {
-            if cfg!(debug_assertions) {
+            // Unit-test builds of this crate default to `test`; otherwise debug → development.
+            if cfg!(test) {
+                "test".into()
+            } else if cfg!(debug_assertions) {
                 "development".into()
             } else {
                 "production".into()
@@ -65,15 +71,31 @@ fn resolve_mode() -> String {
         })
 }
 
+/// Short file suffix for mode (`development` → `dev`).
+fn mode_short(mode: &str) -> &str {
+    match mode {
+        "development" | "debug" => "dev",
+        "production" | "release" => "prod",
+        "test" => "test",
+        other => other,
+    }
+}
+
 fn cascade_files(mode: &str) -> Vec<String> {
-    let mut out = vec![".env".into()];
-    if !cfg!(test) {
+    let short = mode_short(mode);
+    let skip_local = mode == "test";
+    let mut out = Vec::new();
+    // Mode-specific first…
+    out.push(format!(".env.{short}"));
+    if short != mode {
+        out.push(format!(".env.{mode}"));
+    }
+    // …optional local overlay…
+    if !skip_local {
         out.push(".env.local".into());
     }
-    out.push(format!(".env.{mode}"));
-    if !cfg!(test) {
-        out.push(format!(".env.{mode}.local"));
-    }
+    // …then base `.env` wins over mode files.
+    out.push(".env".into());
     out
 }
 
@@ -122,26 +144,38 @@ mod tests {
     }
 
     #[test]
-    fn cascade_later_file_overrides_earlier() {
+    fn cascade_env_overrides_mode_file() {
         let _g = lock_env();
+        let prev = std::env::var_os("RUVO_ENV");
+        std::env::set_var("RUVO_ENV", "test");
         let dir = TempDir::new().unwrap();
-        std::fs::write(dir.path().join(".env"), "FOO=base\n").unwrap();
         std::fs::write(dir.path().join(".env.test"), "FOO=mode\n").unwrap();
+        std::fs::write(dir.path().join(".env"), "FOO=base\n").unwrap();
         std::env::remove_var("FOO");
         load_from(dir.path()).unwrap();
-        assert_eq!(std::env::var("FOO").unwrap(), "mode");
+        assert_eq!(std::env::var("FOO").unwrap(), "base");
         std::env::remove_var("FOO");
+        match prev {
+            Some(v) => std::env::set_var("RUVO_ENV", v),
+            None => std::env::remove_var("RUVO_ENV"),
+        }
     }
 
     #[test]
     fn real_env_beats_file() {
         let _g = lock_env();
+        let prev = std::env::var_os("RUVO_ENV");
+        std::env::set_var("RUVO_ENV", "test");
         let dir = TempDir::new().unwrap();
         std::fs::write(dir.path().join(".env"), "BAR=file\n").unwrap();
         std::env::set_var("BAR", "process");
         load_from(dir.path()).unwrap();
         assert_eq!(std::env::var("BAR").unwrap(), "process");
         std::env::remove_var("BAR");
+        match prev {
+            Some(v) => std::env::set_var("RUVO_ENV", v),
+            None => std::env::remove_var("RUVO_ENV"),
+        }
     }
 
     #[test]
@@ -150,5 +184,73 @@ mod tests {
         std::env::remove_var("MISSING_TEST_VAR_X");
         let err = require("MISSING_TEST_VAR_X").unwrap_err();
         assert!(matches!(err, EnvError::Missing(_)));
+    }
+
+    #[test]
+    fn require_returns_value() {
+        let _g = lock_env();
+        std::env::set_var("RUVO_ENV_REQUIRE_OK", "present");
+        assert_eq!(require("RUVO_ENV_REQUIRE_OK").unwrap(), "present");
+        std::env::remove_var("RUVO_ENV_REQUIRE_OK");
+    }
+
+    #[test]
+    fn require_rejects_empty() {
+        let _g = lock_env();
+        std::env::set_var("RUVO_ENV_REQUIRE_EMPTY", "");
+        let err = require("RUVO_ENV_REQUIRE_EMPTY").unwrap_err();
+        assert!(matches!(err, EnvError::Missing(_)));
+        std::env::remove_var("RUVO_ENV_REQUIRE_EMPTY");
+    }
+
+    #[test]
+    fn cascade_merges_keys_env_last() {
+        let _g = lock_env();
+        let prev = std::env::var_os("RUVO_ENV");
+        std::env::set_var("RUVO_ENV", "test");
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join(".env.test"), "ONLY_MODE=2\nSHARED=mode\n").unwrap();
+        std::fs::write(dir.path().join(".env"), "ONLY_BASE=1\nSHARED=base\n").unwrap();
+        std::env::remove_var("ONLY_BASE");
+        std::env::remove_var("ONLY_MODE");
+        std::env::remove_var("SHARED");
+        load_from(dir.path()).unwrap();
+        assert_eq!(std::env::var("ONLY_BASE").unwrap(), "1");
+        assert_eq!(std::env::var("ONLY_MODE").unwrap(), "2");
+        assert_eq!(std::env::var("SHARED").unwrap(), "base");
+        std::env::remove_var("ONLY_BASE");
+        std::env::remove_var("ONLY_MODE");
+        std::env::remove_var("SHARED");
+        match prev {
+            Some(v) => std::env::set_var("RUVO_ENV", v),
+            None => std::env::remove_var("RUVO_ENV"),
+        }
+    }
+
+    #[test]
+    fn development_loads_env_dev_alias() {
+        let _g = lock_env();
+        let prev = std::env::var_os("RUVO_ENV");
+        let prev_app = std::env::var_os("APP_ENV");
+        std::env::set_var("RUVO_ENV", "development");
+        std::env::remove_var("APP_ENV");
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join(".env.dev"), "DEV_ONLY=1\nSHARED=dev\n").unwrap();
+        std::fs::write(dir.path().join(".env"), "SHARED=root\n").unwrap();
+        std::env::remove_var("DEV_ONLY");
+        std::env::remove_var("SHARED");
+        load_from(dir.path()).unwrap();
+        assert_eq!(std::env::var("DEV_ONLY").unwrap(), "1");
+        assert_eq!(std::env::var("SHARED").unwrap(), "root");
+        std::env::remove_var("DEV_ONLY");
+        std::env::remove_var("SHARED");
+        match prev {
+            Some(v) => std::env::set_var("RUVO_ENV", v),
+            None => std::env::remove_var("RUVO_ENV"),
+        }
+        match prev_app {
+            Some(v) => std::env::set_var("APP_ENV", v),
+            None => std::env::remove_var("APP_ENV"),
+        }
     }
 }

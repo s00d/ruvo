@@ -7,20 +7,20 @@ license = "MIT"
 publish = false
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"] }
-http = "1"
-bytes = "1"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-futures-util = { version = "0.3", default-features = false, features = ["std"] }
-tracing = "0.1"
-tokio = { version = "1", features = ["time", "sync"] }
-url = "2"
-toml = { version = "0.8", default-features = false, features = ["parse"] }
+ruvo-core = { workspace = true }
+reqwest = { workspace = true, default-features = false, features = ["json", "rustls-tls", "stream"] }
+http = { workspace = true }
+bytes = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+tracing = { workspace = true }
+tokio = { workspace = true, features = ["time", "sync"] }
+url = { workspace = true }
+toml = { workspace = true, default-features = false, features = ["parse"] }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "test-util", "time"] }
-ruvo-core = { path = "../../crates/ruvo-core", features = ["testing"] }
-serde_json = "1"
-http = "1"
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "test-util", "time"] }
+ruvo-core = { workspace = true, features = ["testing"] }
+serde_json = { workspace = true }
+http = { workspace = true }

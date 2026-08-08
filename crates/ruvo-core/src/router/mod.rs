@@ -244,6 +244,20 @@ impl Router {
         self.add(Method::DELETE, path, handler)
     }
 
+    /// `GET from` → redirect to `to` with the given HTTP status (e.g. `302`, `301`, `303`).
+    ///
+    /// ```ignore
+    /// app.redirect("/health", "/healthz", 302);
+    /// app.redirect("/old", "/new", 301);
+    /// ```
+    pub fn redirect(&mut self, from: &str, to: impl Into<String>, status: u16) -> &mut Self {
+        let location = to.into();
+        self.get(from, move || {
+            let location = location.clone();
+            async move { crate::Redirect::with(status, location) }
+        })
+    }
+
     /// Escape hatch: handle a path with a raw Hyper request/response (no Ruvo middleware).
     pub fn raw<H>(&mut self, path: &str, handler: H) -> &mut Self
     where

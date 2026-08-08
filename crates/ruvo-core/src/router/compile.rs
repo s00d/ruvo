@@ -5,7 +5,7 @@ use crate::raw::RawHandler;
 use crate::request::{percent_decode, Request};
 use crate::response::Response;
 use crate::route_value::MetaMap;
-use crate::state::{Extensions, MatchedMeta, MatchedMetaCapture, TypeMap};
+use crate::state::{Extensions, MatchedMeta, MatchedMetaCapture, MatchedRoute, MatchedRouteCapture, TypeMap};
 use http::{HeaderMap, HeaderValue, Method};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -195,7 +195,7 @@ pub(crate) fn compile_router(router: Router) -> crate::error::Result<CompiledRou
             // MatchedMeta / MaxBody before route middleware so meta-driven mw (e.g. vld) works.
             let leaf = wrap_with_catchers(fallible, eh.clone(), Arc::clone(&catcher_table));
             let with_mw = chain_from_entries(&mw, leaf);
-            map.insert(method, inject_matched_meta(with_mw, meta));
+            map.insert(method, inject_matched_meta(with_mw, meta, path.clone()));
         }
         table.insert(matchit_path.clone(), map).map_err(|err| {
             crate::error::Error::Internal(format!(
@@ -236,20 +236,25 @@ pub(crate) fn compile_router(router: Router) -> crate::error::Result<CompiledRou
     })
 }
 
-/// Inject [`MatchedMeta`] (and apply MaxBody / RequestTimeout) **before** the
-/// rest of the handler chain so route middleware can read meta.
-fn inject_matched_meta(handler: Handler, meta: MetaMap) -> Handler {
+/// Inject [`MatchedMeta`] / [`MatchedRoute`] (and apply MaxBody / RequestTimeout)
+/// **before** the rest of the handler chain so route middleware can read meta.
+fn inject_matched_meta(handler: Handler, meta: MetaMap, route_path: String) -> Handler {
     Arc::new(move |mut req| {
         let handler = Arc::clone(&handler);
         let meta = meta.clone();
+        let route_path = route_path.clone();
         Box::pin(async move {
             if let Some(max) = meta.get::<crate::limits::MaxBody>() {
                 req.body_limit = max.0;
             }
             let timeout = meta.get::<crate::limits::RequestTimeout>().map(|t| t.0);
             req.set(MatchedMeta(meta.clone()));
+            req.set(MatchedRoute(route_path.clone()));
             if let Some(cap) = req.get::<MatchedMetaCapture>() {
                 cap.set(meta);
+            }
+            if let Some(cap) = req.get::<MatchedRouteCapture>() {
+                cap.set(route_path);
             }
             match timeout {
                 Some(dur) => {

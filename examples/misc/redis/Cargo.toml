@@ -1,0 +1,24 @@
+[package]
+name = "redis_demo"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "redis_demo"
+path = "src/main.rs"
+
+[dependencies]
+ruvo = { workspace = true, features = [
+    "cli",
+    "env",
+    "redis",
+    "store-redis",
+    "tasks-redis",
+    "tasks",
+    "session-redis",
+] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }

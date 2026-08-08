@@ -15,6 +15,8 @@ cookies = ["dep:ruvo-cookies"]
 compress = ["dep:ruvo-compress"]
 rate-limit = ["dep:ruvo-rate-limit"]
 session = ["cookies", "dep:ruvo-session"]
+session-sql = ["session", "store-sql", "ruvo-session/sql"]
+session-redis = ["session", "redis", "ruvo-session/redis"]
 templates = ["dep:ruvo-templates", "ruvo-i18n?/templates"]
 multipart = ["ruvo-core/multipart"]
 cli = ["dep:ruvo-cli"]
@@ -26,9 +28,11 @@ ws = ["dep:ruvo-ws"]
 store = ["dep:ruvo-store"]
 store-file = ["store", "ruvo-store/file"]
 store-sql = ["store", "db", "ruvo-store/sql"]
+store-redis = ["store", "redis", "ruvo-store/redis"]
 tasks-store = ["dep:ruvo-tasks-store"]
 tasks-file = ["tasks-store", "ruvo-tasks-store/file"]
 tasks-sql = ["tasks-store", "db", "ruvo-tasks-store/sql"]
+tasks-redis = ["tasks-store", "redis", "ruvo-tasks-store/redis"]
 tasks = ["tasks-store", "dep:ruvo-tasks"]
 udp = ["dep:ruvo-udp"]
 quic-udp = ["dep:ruvo-quic"]
@@ -45,12 +49,26 @@ vld-form = ["vld", "multipart", "ruvo-vld/form"]
 vld-i18n = ["vld", "i18n", "ruvo-vld/i18n"]
 http-client = ["dep:ruvo-http"]
 mail = ["dep:ruvo-mail"]
+mail-templates = ["mail", "templates", "ruvo-mail/templates"]
+mail-markdown = ["mail", "ruvo-mail/markdown"]
+storage = ["dep:ruvo-storage"]
+storage-s3 = ["storage", "ruvo-storage/s3"]
+storage-gcs = ["storage", "ruvo-storage/gcs"]
+storage-azure = ["storage", "ruvo-storage/azure"]
+storage-memory = ["storage", "ruvo-storage/memory"]
 passport = ["dep:ruvo-passport"]
 passport-session = ["passport", "session", "ruvo-passport/session"]
 passport-jwt = ["passport", "db", "ruvo-passport/jwt"]
 passport-oauth = ["passport-jwt", "ruvo-passport/oauth"]
-auth = ["passport-session", "passport-jwt", "mail", "db", "dep:ruvo-auth"]
+auth = ["passport-session", "passport-jwt", "mail-templates", "db", "dep:ruvo-auth", "ruvo-auth/templates"]
 auth-vld = ["auth", "vld", "vld-flash", "vld-form", "ruvo-auth/vld"]
+activity = ["db", "dep:ruvo-activity"]
+auth-activity = ["auth", "activity", "ruvo-auth/activity"]
+notifications = ["db", "dep:ruvo-notifications"]
+notifications-ws = ["notifications", "ws", "ruvo-notifications/ws"]
+notifications-mail = ["notifications", "mail", "ruvo-notifications/mail"]
+notifications-auth = ["notifications", "auth", "ruvo-notifications/auth"]
+notifications-templates = ["notifications", "templates", "ruvo-notifications/templates"]
 meta = ["dep:ruvo-meta"]
 meta-templates = ["meta", "templates", "ruvo-meta/templates"]
 meta-i18n = ["meta", "i18n", "ruvo-meta/i18n"]
@@ -67,16 +85,32 @@ web = [
     "meta",
     "meta-templates",
     "shield",
+    "listen-reuseport",
 ]
-api = ["cli", "env", "cors", "cookies", "session", "openapi", "vld", "vld-openapi"]
+api = [
+    "cli",
+    "env",
+    "cors",
+    "cookies",
+    "session",
+    "openapi",
+    "vld",
+    "vld-openapi",
+    "listen-reuseport",
+]
 db = ["dep:ruvo-db", "dep:sea-orm"]
 db-sqlite = ["db", "ruvo-db/sqlite"]
 db-mysql = ["db", "ruvo-db/mysql"]
+observability = ["dep:ruvo-observability", "ruvo-observability/prometheus"]
+observability-otel = ["observability", "ruvo-observability/otel"]
+observability-elasticsearch = ["observability", "ruvo-observability/elasticsearch"]
+redis = ["dep:ruvo-redis"]
 testing = ["ruvo-core/testing"]
+listen-reuseport = ["ruvo-core/listen-reuseport"]
 
 [dependencies]
-ruvo-core = { path = "../ruvo-core" }
-sea-orm = { version = "2.0", optional = true, default-features = false, features = ["runtime-tokio-rustls"] }
+ruvo-core = { workspace = true }
+sea-orm = { workspace = true, optional = true }
 ruvo-static = { path = "../../plugins/ruvo-static", optional = true }
 ruvo-cors = { path = "../../plugins/ruvo-cors", optional = true }
 ruvo-csrf = { path = "../../plugins/ruvo-csrf", optional = true }
@@ -91,34 +125,39 @@ ruvo-vld = { path = "../../plugins/ruvo-vld", optional = true }
 ruvo-openapi = { path = "../../plugins/ruvo-openapi", optional = true }
 ruvo-i18n = { path = "../../plugins/ruvo-i18n", optional = true }
 ruvo-ws = { path = "../../plugins/ruvo-ws", optional = true }
-ruvo-store = { path = "../../plugins/ruvo-store", optional = true }
-ruvo-tasks-store = { path = "../../plugins/ruvo-tasks-store", optional = true }
-ruvo-tasks = { path = "../../plugins/ruvo-tasks", optional = true }
+ruvo-store = { workspace = true, optional = true }
+ruvo-tasks-store = { workspace = true, optional = true }
+ruvo-tasks = { workspace = true, optional = true }
 ruvo-udp = { path = "../../plugins/ruvo-udp", optional = true }
 ruvo-quic = { path = "../../plugins/ruvo-quic", optional = true }
 ruvo-sse = { path = "../../plugins/ruvo-sse", optional = true }
 ruvo-env = { path = "../../plugins/ruvo-env", optional = true }
-ruvo-db = { path = "../../plugins/ruvo-db", optional = true }
+ruvo-db = { workspace = true, optional = true }
+ruvo-redis = { workspace = true, optional = true }
 ruvo-http = { path = "../../plugins/ruvo-http", optional = true }
 ruvo-mail = { path = "../../plugins/ruvo-mail", optional = true }
+ruvo-storage = { workspace = true, optional = true }
 ruvo-passport = { path = "../../plugins/ruvo-passport", optional = true }
 ruvo-auth = { path = "../../plugins/ruvo-auth", optional = true }
+ruvo-activity = { path = "../../plugins/ruvo-activity", optional = true }
+ruvo-notifications = { path = "../../plugins/ruvo-notifications", optional = true }
 ruvo-meta = { path = "../../plugins/ruvo-meta", optional = true }
-vld = { version = "0.4", optional = true, default-features = true, features = ["serialize"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+ruvo-observability = { workspace = true, optional = true }
+vld = { workspace = true, optional = true, default-features = true, features = ["serialize"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "test-util", "time"] }
-tokio-util = { version = "0.7", features = ["io"] }
-tempfile = "3"
-http-body-util = "0.1"
-bytes = "1"
-hyper = { version = "1", features = ["server", "http1"] }
-http = "1"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-futures-util = { version = "0.3", default-features = false, features = ["std"] }
-tracing = "0.1"
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "test-util", "time"] }
+tokio-util = { workspace = true, features = ["io"] }
+tempfile = { workspace = true }
+http-body-util = { workspace = true }
+bytes = { workspace = true }
+hyper = { workspace = true, features = ["server", "http1"] }
+http = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+tracing = { workspace = true }
 

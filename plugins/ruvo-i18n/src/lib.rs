@@ -144,7 +144,24 @@ impl Plugin for I18n {
         &[]
     }
 
-    fn install(self, app: &mut App) {
+    fn install(mut self, app: &mut App) {
+        if let Some(doc) = app.config_doc() {
+            if let Some(section) = doc.section("i18n") {
+                if let Some(c) = section.get("default").and_then(|v| v.as_str()) {
+                    self.default = c.to_string();
+                }
+                #[cfg(feature = "cookie")]
+                if self.cookie_name.is_none() {
+                    if let Some(n) = section.get("cookie").and_then(|v| v.as_str()) {
+                        self.cookie_name = Some(n.to_string());
+                    }
+                }
+                #[cfg(feature = "watch")]
+                if let Some(v) = section.get("watch").and_then(|v| v.as_bool()) {
+                    self.watch = v;
+                }
+            }
+        }
         let store = match load_store(&self.dir, &self.locales) {
             Ok(s) => s,
             Err(err) => {
@@ -178,7 +195,7 @@ impl Plugin for I18n {
 
         let locales_dir = self.dir.clone();
         let locales_meta = self.locales.clone();
-        app.register_check("i18n", move |_state| {
+        app.register_audit("i18n", move |_state| {
             let dir = locales_dir.clone();
             let locales = locales_meta.clone();
             async move {

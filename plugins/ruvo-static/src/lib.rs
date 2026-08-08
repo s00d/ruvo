@@ -13,6 +13,7 @@ pub struct Static {
     mount: String,
     dir: PathBuf,
     max_age: Duration,
+    max_age_explicit: bool,
     immutable: bool,
     allow_dotfiles: bool,
     index: bool,
@@ -28,6 +29,7 @@ impl Static {
             mount,
             dir: dir.into(),
             max_age: Duration::from_secs(3600),
+            max_age_explicit: false,
             immutable: false,
             allow_dotfiles: false,
             index: true,
@@ -37,6 +39,7 @@ impl Static {
     /// `Cache-Control: public, max-age=N` (default 1 hour).
     pub fn max_age(mut self, max_age: Duration) -> Self {
         self.max_age = max_age;
+        self.max_age_explicit = true;
         self
     }
 
@@ -124,7 +127,20 @@ impl Plugin for Static {
             .version(env!("CARGO_PKG_VERSION"))
     }
 
-    fn install(self, app: &mut App) {
+    fn install(mut self, app: &mut App) {
+        if !self.max_age_explicit {
+            if let Some(doc) = app.config_doc() {
+                if let Some(section) = doc.section("static") {
+                    if let Some(s) = section.get("max_age").and_then(|v| v.as_str()) {
+                        if let Ok(d) = ruvo_core::extend::parse_duration(s) {
+                            self.max_age = d;
+                        }
+                    } else if let Some(n) = section.get("max_age").and_then(|v| v.as_integer()) {
+                        self.max_age = Duration::from_secs(n as u64);
+                    }
+                }
+            }
+        }
         self.register(app);
     }
 }

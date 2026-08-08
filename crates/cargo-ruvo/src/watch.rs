@@ -7,8 +7,8 @@ use std::time::{Duration, Instant};
 
 const DEBOUNCE: Duration = Duration::from_millis(300);
 
-/// Watch Rust sources + manifests under `package_dir` (and workspace Cargo.toml).
-/// Calls `on_change` after debounce when a relevant file changes.
+/// Watch Rust sources, manifests, `.env*`, and `ruvo.toml` under the package
+/// (and workspace roots). Calls `on_change` after debounce when a relevant file changes.
 pub fn watch_loop(
     package_dir: &Path,
     workspace_dir: &Path,
@@ -52,6 +52,16 @@ pub fn watch_loop(
             .map_err(|e| e.to_string())?;
     }
 
+    // Non-recursive dir watches pick up `.env*` / `ruvo.toml` creates & writes.
+    watcher
+        .watch(package_dir, RecursiveMode::NonRecursive)
+        .map_err(|e| e.to_string())?;
+    if workspace_dir != package_dir {
+        watcher
+            .watch(workspace_dir, RecursiveMode::NonRecursive)
+            .map_err(|e| e.to_string())?;
+    }
+
     let mut pending: Option<Instant> = None;
 
     while !stop.load(std::sync::atomic::Ordering::SeqCst) {
@@ -92,8 +102,31 @@ fn path_relevant(path: &Path) -> bool {
     if name == "Cargo.toml" || name == "Cargo.lock" {
         return true;
     }
+    if name.eq_ignore_ascii_case("ruvo.toml") {
+        return true;
+    }
+    if name == ".env" || name.starts_with(".env.") {
+        return true;
+    }
     PathBuf::from(name)
         .extension()
         .and_then(|e| e.to_str())
         == Some("rs")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn path_relevant_env_and_toml() {
+        assert!(path_relevant(Path::new("/app/.env")));
+        assert!(path_relevant(Path::new("/app/.env.local")));
+        assert!(path_relevant(Path::new("/app/.env.development")));
+        assert!(path_relevant(Path::new("/app/ruvo.toml")));
+        assert!(path_relevant(Path::new("/app/Ruvo.toml")));
+        assert!(path_relevant(Path::new("/app/src/main.rs")));
+        assert!(!path_relevant(Path::new("/app/views/home.html")));
+        assert!(!path_relevant(Path::new("/app/.envrc")));
+    }
 }

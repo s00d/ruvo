@@ -10,9 +10,10 @@ name = "cabinet"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { path = "../../crates/ruvo", features = [
+ruvo = { workspace = true, features = [
     "web",
     "store-sql",
+    "session-sql",
     "tasks",
     "tasks-sql",
     "vld-flash-templates",
@@ -24,27 +25,33 @@ ruvo = { path = "../../crates/ruvo", features = [
     "i18n-cookie",
     "ws",
     "http-client",
-    "mail",
+    "mail-templates",
+    "storage",
     "auth-vld",
+    "auth-activity",
+    "notifications-auth",
+    "notifications-ws",
+    "notifications-templates",
     "openapi",
     "vld-openapi",
     "cli",
     "env",
     "meta-store",
+    "observability",
 ] }
-sea-orm = { version = "2.0", default-features = false, features = [
+sea-orm = { workspace = true, default-features = false, features = [
     "runtime-tokio-rustls",
     "macros",
     "with-chrono",
 ] }
-sea-orm-migration = { version = "2.0", default-features = false, features = [
+sea-orm-migration = { workspace = true, default-features = false, features = [
     "runtime-tokio-rustls",
 ] }
-async-trait = "0.1"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs"] }
-tracing = "0.1"
-http = "1"
-urlencoding = "2"
+async-trait = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+chrono = { workspace = true, default-features = false, features = ["clock", "serde"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "fs"] }
+tracing = { workspace = true }
+http = { workspace = true }
+urlencoding = { workspace = true }

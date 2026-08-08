@@ -93,9 +93,18 @@ impl ServerArgs {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Mutex, OnceLock};
+
+    fn lock_env() -> std::sync::MutexGuard<'static, ()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(())).lock().unwrap()
+    }
 
     #[test]
     fn parses_defaults() {
+        let _g = lock_env();
+        let prev = std::env::var_os("RUST_LOG");
+        std::env::remove_var("RUST_LOG");
         let args = ServerArgs::try_parse_from(["ruvo"]).unwrap();
         assert!(args.log_level.is_none());
         assert!(args.log_file.is_none());
@@ -103,6 +112,10 @@ mod tests {
         assert_eq!(args.log_rotate, "size");
         assert_eq!(args.log_rotate_keep, 5);
         assert!(args.trailing.is_empty());
+        match prev {
+            Some(v) => std::env::set_var("RUST_LOG", v),
+            None => std::env::remove_var("RUST_LOG"),
+        }
     }
 
     #[test]
@@ -113,6 +126,9 @@ mod tests {
 
     #[test]
     fn parses_log_file_flags() {
+        let _g = lock_env();
+        let prev = std::env::var_os("RUST_LOG");
+        std::env::remove_var("RUST_LOG");
         let args = ServerArgs::try_parse_from([
             "ruvo",
             "--log-level",
@@ -137,8 +153,83 @@ mod tests {
         assert_eq!(args.log_rotate_keep, 3);
 
         let cfg = args.log_config().unwrap();
+        assert_eq!(cfg.filter, "debug");
         assert!(!cfg.stdout);
         assert!(cfg.file.is_some());
         assert_eq!(cfg.rotate, LogRotate::Daily { keep: 3 });
+        match prev {
+            Some(v) => std::env::set_var("RUST_LOG", v),
+            None => std::env::remove_var("RUST_LOG"),
+        }
+    }
+
+    #[test]
+    fn log_config_default_filter_without_log_level() {
+        let _g = lock_env();
+        let prev = std::env::var_os("RUST_LOG");
+        std::env::remove_var("RUST_LOG");
+        let args = ServerArgs::try_parse_from(["ruvo"]).unwrap();
+        let cfg = args.log_config().unwrap();
+        assert_eq!(cfg.filter, "ruvo=info");
+        assert!(cfg.stdout);
+        assert!(cfg.file.is_none());
+        assert_eq!(cfg.rotate, LogRotate::default());
+        match prev {
+            Some(v) => std::env::set_var("RUST_LOG", v),
+            None => std::env::remove_var("RUST_LOG"),
+        }
+    }
+
+    #[test]
+    fn log_config_size_rotate_when_file_set() {
+        let args = ServerArgs::try_parse_from([
+            "ruvo",
+            "--log-file",
+            "out.log",
+            "--log-rotate",
+            "size",
+            "--log-rotate-size",
+            "2MB",
+            "--log-rotate-keep",
+            "4",
+        ])
+        .unwrap();
+        let cfg = args.log_config().unwrap();
+        assert_eq!(
+            cfg.rotate,
+            LogRotate::Size {
+                max_bytes: 2 * 1024 * 1024,
+                keep: 4
+            }
+        );
+    }
+
+    #[test]
+    fn log_config_never_rotate() {
+        let args = ServerArgs::try_parse_from([
+            "ruvo",
+            "--log-file",
+            "out.log",
+            "--log-rotate",
+            "never",
+        ])
+        .unwrap();
+        let cfg = args.log_config().unwrap();
+        assert_eq!(cfg.rotate, LogRotate::Never);
+    }
+
+    #[test]
+    fn log_config_ignores_rotate_without_file() {
+        let args = ServerArgs::try_parse_from([
+            "ruvo",
+            "--log-rotate",
+            "daily",
+            "--log-rotate-keep",
+            "9",
+        ])
+        .unwrap();
+        let cfg = args.log_config().unwrap();
+        assert!(cfg.file.is_none());
+        assert_eq!(cfg.rotate, LogRotate::default());
     }
 }

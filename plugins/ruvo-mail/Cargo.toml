@@ -7,22 +7,24 @@ license = "MIT"
 publish = false
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
-lettre = { version = "0.11", default-features = false, features = [
-    "builder",
-    "hostname",
-    "smtp-transport",
-    "pool",
-    "tokio1",
-    "tokio1-rustls",
-    "ring",
-    "rustls-platform-verifier",
-    "file-transport",
-] }
-tokio = { version = "1", features = ["fs", "io-util"] }
-tracing = "0.1"
+ruvo-core = { workspace = true }
+ruvo-templates = { path = "../ruvo-templates", optional = true }
+lettre = { workspace = true }
+tokio = { workspace = true, features = ["fs", "io-util"] }
+tracing = { workspace = true }
+serde = { workspace = true, optional = true, features = ["derive"] }
+serde_json = { workspace = true, optional = true }
+pulldown-cmark = { workspace = true, optional = true }
+
+[features]
+default = []
+templates = ["dep:ruvo-templates", "dep:serde", "dep:serde_json"]
+markdown = ["dep:pulldown-cmark"]
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs"] }
-tempfile = "3"
-http = "1"
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "fs"] }
+tempfile = { workspace = true }
+http = { workspace = true }
+serde_json = { workspace = true }
+ruvo-templates = { path = "../ruvo-templates" }
+ruvo-core = { workspace = true, features = ["testing"] }

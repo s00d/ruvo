@@ -1,7 +1,8 @@
-//! Spawn frontend (Vite / npm) commands.
+//! Spawn frontend (Vite / npm) commands and child process helpers.
 
 use crate::project::FrontendConfig;
 use std::process::{Child, Command, Stdio};
+use std::time::{Duration, Instant};
 
 /// Run a shell command in `dir` (blocking). Returns stderr hint on failure.
 pub fn run_blocking(cfg: &FrontendConfig, cmdline: &str) -> Result<(), String> {
@@ -59,24 +60,57 @@ fn shell_command(cmdline: &str) -> Command {
     }
 }
 
-/// Kill a child process group (Unix) or the process (Windows).
+/// Kill a child process group (Unix) or the process (Windows), waiting indefinitely.
 pub fn kill_child(child: &mut Child) {
+    kill_graceful(child, Duration::from_secs(5));
+}
+
+/// SIGTERM (process group on Unix), wait up to `timeout`, then SIGKILL.
+pub fn kill_graceful(child: &mut Child, timeout: Duration) {
     #[cfg(unix)]
     {
         let pid = child.id() as i32;
-        unsafe {
-            // libc SIGTERM without depending on the libc crate
-            extern "C" {
-                fn kill(pid: i32, sig: i32) -> i32;
-            }
-            const SIGTERM: i32 = 15;
-            let _ = kill(-pid, SIGTERM);
+        signal_group(pid, 15); // SIGTERM
+        if wait_deadline(child, timeout) {
+            return;
         }
+        eprintln!(
+            "ruvo: process did not exit within {}s — SIGKILL",
+            timeout.as_secs()
+        );
+        signal_group(pid, 9); // SIGKILL
         let _ = child.wait();
     }
     #[cfg(not(unix))]
     {
+        let _ = timeout;
         let _ = child.kill();
         let _ = child.wait();
+    }
+}
+
+#[cfg(unix)]
+fn signal_group(pid: i32, sig: i32) {
+    unsafe {
+        extern "C" {
+            fn kill(pid: i32, sig: i32) -> i32;
+        }
+        let _ = kill(-pid, sig);
+    }
+}
+
+fn wait_deadline(child: &mut Child, timeout: Duration) -> bool {
+    let deadline = Instant::now() + timeout;
+    loop {
+        match child.try_wait() {
+            Ok(Some(_)) => return true,
+            Ok(None) => {
+                if Instant::now() >= deadline {
+                    return false;
+                }
+                std::thread::sleep(Duration::from_millis(50));
+            }
+            Err(_) => return false,
+        }
     }
 }

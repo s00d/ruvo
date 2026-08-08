@@ -16,6 +16,7 @@ pub struct Shield {
     permitted_cross_domain: Option<&'static str>,
     xss_protection: Option<&'static str>,
     csp: Option<&'static str>,
+    csp_explicit: bool,
 }
 
 impl Shield {
@@ -31,6 +32,7 @@ impl Shield {
             permitted_cross_domain: Some("none"),
             xss_protection: Some("0"),
             csp: None,
+            csp_explicit: false,
         }
     }
 
@@ -127,11 +129,13 @@ impl Shield {
     /// Raw `Content-Security-Policy` (no default — set explicitly).
     pub fn csp(mut self, policy: &'static str) -> Self {
         self.csp = Some(policy);
+        self.csp_explicit = true;
         self
     }
 
     pub fn csp_off(mut self) -> Self {
         self.csp = None;
+        self.csp_explicit = true;
         self
     }
 }
@@ -153,7 +157,19 @@ impl Plugin for Shield {
             .version(env!("CARGO_PKG_VERSION"))
     }
 
-    fn install(self, app: &mut App) {
+    fn install(mut self, app: &mut App) {
+        if let Some(doc) = app.config_doc() {
+            if let Some(section) = doc.section("shield") {
+                if !self.csp_explicit {
+                    if let Some(p) = section.get("csp").and_then(|v| v.as_str()) {
+                        self.csp = Some(Box::leak(p.to_string().into_boxed_str()));
+                    }
+                }
+                if let Some(v) = section.get("frame").and_then(|v| v.as_str()) {
+                    self.frame = Some(Box::leak(v.to_string().into_boxed_str()));
+                }
+            }
+        }
         app.use_middleware(named(
             "shield",
             with_leaked(self, |shield, req, next| async move {

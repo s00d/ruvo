@@ -62,6 +62,7 @@ impl ValidationError {
 
     #[cfg(feature = "flash")]
     fn respond_flash(self, req: &Request) -> Response {
+        use ruvo_core::{FormData, Redirect};
         use ruvo_session::SessionExt;
         use serde_json::json;
 
@@ -76,31 +77,35 @@ impl ValidationError {
             };
             errors.insert(key, json!(issue.message));
         }
-        session.set(
-            "flash_errors",
-            serde_json::to_string(&errors).unwrap_or_else(|_| "{}".into()),
-        );
-        // old input: best-effort from query for GET-like; body already consumed for POST
-        let mut old = serde_json::Map::new();
-        for (k, v) in &req.query {
-            old.insert(k.clone(), json!(v));
-        }
-        for (k, v) in &req.params {
-            old.insert(k.clone(), json!(v));
-        }
-        session.set(
-            "flash_old",
-            serde_json::to_string(&old).unwrap_or_else(|_| "{}".into()),
-        );
+        session.flash_errors(&serde_json::Value::Object(errors));
 
-        let location = req
-            .header("referer")
-            .filter(|s| !s.is_empty())
-            .unwrap_or("/")
-            .to_string();
-        Response::empty()
-            .status(302)
-            .header("location", location)
+        let mut old = serde_json::Map::new();
+        if let Some(data) = req.get::<FormData>() {
+            for (k, values) in data.text_map() {
+                match values.as_slice() {
+                    [] => {}
+                    [one] => {
+                        old.insert(k.clone(), json!(one));
+                    }
+                    many => {
+                        old.insert(
+                            k.clone(),
+                            json!(many.iter().cloned().collect::<Vec<_>>()),
+                        );
+                    }
+                }
+            }
+        } else {
+            for (k, v) in &req.query {
+                old.insert(k.clone(), json!(v));
+            }
+            for (k, v) in &req.params {
+                old.insert(k.clone(), json!(v));
+            }
+        }
+        session.flash_old(&serde_json::Value::Object(old));
+
+        Redirect::back(req).into_response()
     }
 }
 

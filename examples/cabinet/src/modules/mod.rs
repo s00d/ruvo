@@ -7,7 +7,7 @@ mod notes;
 mod upload;
 mod ws;
 
-use ruvo::{App, Fortify, Router};
+use ruvo::{preload_unread, App, Fortify, Next, Request, Router};
 
 pub fn register(app: &mut App) {
     home::register(app);
@@ -15,6 +15,10 @@ pub fn register(app: &mut App) {
 
     let mut cabinet = Router::new();
     cabinet.use_middleware(Fortify::guard());
+    cabinet.use_middleware(|mut req: Request, next: Next| async move {
+        preload_unread(&mut req).await;
+        next(req).await
+    });
     cabinet::mount(&mut cabinet);
     notes::mount(&mut cabinet);
     upload::mount(&mut cabinet);

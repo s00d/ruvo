@@ -50,6 +50,30 @@ pub fn to_type_name(raw: &str) -> String {
         .join("")
 }
 
+/// `WelcomeMail` / `ProcessOrder` / `blog_post` → `welcome_mail` / `process_order` / `blog_post`.
+pub fn to_snake_case(raw: &str) -> String {
+    if raw.contains('_') || raw.contains('-') {
+        return raw
+            .split(['-', '_'])
+            .filter(|s| !s.is_empty())
+            .map(|s| s.to_ascii_lowercase())
+            .collect::<Vec<_>>()
+            .join("_");
+    }
+    let mut out = String::new();
+    for (i, ch) in raw.chars().enumerate() {
+        if ch.is_uppercase() {
+            if i > 0 {
+                out.push('_');
+            }
+            out.extend(ch.to_lowercase());
+        } else {
+            out.push(ch);
+        }
+    }
+    out
+}
+
 /// UTC `YYYYMMDD_HHMMSS` without external deps.
 pub fn utc_ymdhms() -> String {
     let secs = SystemTime::now()
@@ -110,6 +134,9 @@ mod tests {
     fn sanitize_and_type_name() {
         assert_eq!(sanitize_crate_name("my-app").unwrap(), "my-app");
         assert_eq!(to_type_name("blog_post"), "BlogPost");
+        assert_eq!(to_snake_case("ProcessOrder"), "process_order");
+        assert_eq!(to_snake_case("welcome"), "welcome");
+        assert_eq!(to_snake_case("blog_post"), "blog_post");
     }
 }
 

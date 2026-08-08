@@ -9,7 +9,7 @@ name = "hello"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { path = "../../../crates/ruvo", features = ["static-files", "cors", "cookies"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-serde_json = "1"
-serde = { version = "1", features = ["derive"] }
+ruvo = { workspace = true, features = ["static-files", "cors", "cookies"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+serde_json = { workspace = true }
+serde = { workspace = true, features = ["derive"] }

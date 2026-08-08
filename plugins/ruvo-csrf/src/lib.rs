@@ -32,9 +32,12 @@ pub struct CsrfToken(pub String);
 pub struct Csrf {
     session_key: String,
     field: String,
+    field_explicit: bool,
     header: String,
+    header_explicit: bool,
     /// Reject checked methods without a valid token (default: true).
     auto: bool,
+    auto_explicit: bool,
     /// Paths excluded from auto-check (`/hook` exact, or `/api/*` prefix).
     except: Vec<String>,
     /// If non-empty, only these paths are checked (still minus `except`).
@@ -51,8 +54,11 @@ impl Csrf {
         Self {
             session_key: DEFAULT_SESSION_KEY.into(),
             field: DEFAULT_FIELD.into(),
+            field_explicit: false,
             header: DEFAULT_HEADER.into(),
+            header_explicit: false,
             auto: true,
+            auto_explicit: false,
             except: Vec::new(),
             only: Vec::new(),
             methods: HashSet::new(),
@@ -70,18 +76,21 @@ impl Csrf {
     /// Form / JSON field name (default `csrf`).
     pub fn field(mut self, name: impl Into<String>) -> Self {
         self.field = name.into();
+        self.field_explicit = true;
         self
     }
 
     /// Primary request header name (default `x-csrf-token`).
     pub fn header(mut self, name: impl Into<String>) -> Self {
         self.header = name.into();
+        self.header_explicit = true;
         self
     }
 
     /// Disable automatic checks; use [`CsrfExt::verify_csrf`] in handlers.
     pub fn auto(mut self, on: bool) -> Self {
         self.auto = on;
+        self.auto_explicit = true;
         self
     }
 
@@ -150,7 +159,26 @@ impl Plugin for Csrf {
             .version(env!("CARGO_PKG_VERSION"))
     }
 
-    fn install(self, app: &mut App) {
+    fn install(mut self, app: &mut App) {
+        if let Some(doc) = app.config_doc() {
+            if let Some(section) = doc.section("csrf") {
+                if !self.field_explicit {
+                    if let Some(v) = section.get("field").and_then(|v| v.as_str()) {
+                        self.field = v.to_string();
+                    }
+                }
+                if !self.header_explicit {
+                    if let Some(v) = section.get("header").and_then(|v| v.as_str()) {
+                        self.header = v.to_string();
+                    }
+                }
+                if !self.auto_explicit {
+                    if let Some(v) = section.get("auto").and_then(|v| v.as_bool()) {
+                        self.auto = v;
+                    }
+                }
+            }
+        }
         let cfg = Arc::new(self);
         app.use_middleware(named(
             "csrf",

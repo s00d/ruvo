@@ -1,7 +1,7 @@
 //! Passport core: strategy registry, session serialize/deserialize, login/logout.
 
 use ruvo_core::extend::{named, BoxFuture, MwEntry};
-use ruvo_core::{with_state, App, Error, Plugin, Request, Result};
+use ruvo_core::{with_state, App, Error, Plugin, RateLimitIdentity, Request, Result};
 use std::collections::HashMap;
 use std::future::Future;
 use std::sync::Arc;
@@ -165,7 +165,8 @@ impl Plugin for Passport {
                     if let (Some(id), Some(de)) = (sid, &state.deserialize) {
                         match de(id.clone(), req).await {
                             Ok(mut r) => {
-                                r.set(Authenticated { id });
+                                r.set(Authenticated { id: id.clone() });
+                                r.set(RateLimitIdentity(id));
                                 return next(r).await;
                             }
                             Err(err) => return err.into_response(),
@@ -179,13 +180,17 @@ impl Plugin for Passport {
 }
 
 /// Passport request helpers (`login` / `logout` / `isAuthenticated` / `user`).
+///
+/// [`Self::login`] regenerates the session id (fixation protection) and stores the user id
+/// under Passport's session key so the next request deserializes the same principal.
 pub trait PassportExt {
-    /// Establish a login: set [`Authenticated`], optional typed user, persist id in session.
+    /// Establish a login: rotate session, set [`Authenticated`], typed user, persist id.
     fn login<U: Send + Sync + 'static>(&mut self, user_id: impl Into<String>, user: U);
 
     /// Persist id only (user already on request or will be set by deserialize next time).
     fn login_id(&mut self, user_id: impl Into<String>);
 
+    /// Clear passport session id, rotate sid, drop [`Authenticated`] from this request.
     fn logout(&mut self);
 
     fn is_authenticated(&self) -> bool;
@@ -200,14 +205,18 @@ pub trait PassportExt {
 impl PassportExt for Request {
     fn login<U: Send + Sync + 'static>(&mut self, user_id: impl Into<String>, user: U) {
         let id = user_id.into();
+        rotate_session(self);
         self.set(Authenticated { id: id.clone() });
+        self.set(RateLimitIdentity(id.clone()));
         self.set(user);
         persist_session_id(self, &id);
     }
 
     fn login_id(&mut self, user_id: impl Into<String>) {
         let id = user_id.into();
+        rotate_session(self);
         self.set(Authenticated { id: id.clone() });
+        self.set(RateLimitIdentity(id.clone()));
         persist_session_id(self, &id);
     }
 
@@ -218,7 +227,11 @@ impl PassportExt for Request {
             if let Some(state) = self.try_state::<PassportState>() {
                 self.session().remove(&state.session_key);
             }
+            // New sid so the old cookie cannot be reused as the same login.
+            self.session().regenerate();
         }
+        let _ = self.take::<Authenticated>();
+        let _ = self.take::<RateLimitIdentity>();
     }
 
     fn is_authenticated(&self) -> bool {
@@ -238,13 +251,28 @@ impl PassportExt for Request {
     }
 }
 
+fn rotate_session(req: &Request) {
+    #[cfg(feature = "session")]
+    {
+        use ruvo_session::SessionExt;
+        // Session fixation: new sid, keep flash/other data.
+        req.session().regenerate();
+    }
+    #[cfg(not(feature = "session"))]
+    {
+        let _ = req;
+    }
+}
+
 fn persist_session_id(req: &Request, id: &str) {
     #[cfg(feature = "session")]
     {
         use ruvo_session::SessionExt;
         if let Some(state) = req.try_state::<PassportState>() {
-            req.session().set(&state.session_key, id);
-            let _ = &state.serialize; // available for apps that call serialize manually
+            let sess = req.session();
+            sess.bind_user(id);
+            sess.set(&state.session_key, id);
+            let _ = &state.serialize;
         }
     }
     #[cfg(not(feature = "session"))]

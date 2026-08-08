@@ -61,6 +61,30 @@ async fn missing_to_is_bad_request() {
 }
 
 #[tokio::test]
+async fn try_from_vars_invalid_url_is_err() {
+    let err = match Mail::try_from_vars(|k| match k {
+        "RUVO_MAIL" => Some("smtp".into()),
+        "RUVO_MAIL_URL" => Some("not-a-valid-smtp-url".into()),
+        _ => None,
+    }) {
+        Ok(_) => panic!("expected Err for invalid smtp url"),
+        Err(e) => e,
+    };
+    let msg = err.to_string();
+    assert!(msg.contains("mail url") || msg.contains("smtp"), "{msg}");
+}
+
+#[tokio::test]
+async fn try_from_vars_missing_defaults_to_fake() {
+    let mail = Mail::try_from_vars(|k| match k {
+        "RUVO_MAIL_FROM" => Some("Dev <dev@localhost>".into()),
+        _ => None,
+    })
+    .unwrap();
+    assert!(mail.recorder().is_some());
+}
+
+#[tokio::test]
 async fn file_transport_writes_eml() {
     let dir = tempfile::tempdir().unwrap();
     let plugin = Mail::file(dir.path()).from("App <noreply@test.local>");

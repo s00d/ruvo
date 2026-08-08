@@ -1,0 +1,32 @@
+[package]
+name = "ruvo-testing"
+version = "0.4.0"
+edition = "2021"
+description = "Framework-style test harness for Ruvo (sqlite, acting_as, factories, snapshots)"
+license = "MIT"
+publish = false
+
+[features]
+default = ["sqlite"]
+sqlite = ["ruvo-db/sqlite"]
+auth = ["dep:ruvo-auth"]
+notifications = ["dep:ruvo-notifications"]
+
+[dependencies]
+ruvo-core = { workspace = true, features = ["testing"] }
+ruvo-db = { workspace = true, default-features = false }
+ruvo-auth = { path = "../../plugins/ruvo-auth", optional = true }
+ruvo-notifications = { path = "../../plugins/ruvo-notifications", optional = true }
+sea-orm = { workspace = true, features = ["macros", "sqlx-sqlite"] }
+sea-orm-migration = { workspace = true, features = ["sqlx-sqlite"] }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tempfile = { workspace = true }
+insta = { workspace = true, features = ["json", "redactions", "filters"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+
+[dev-dependencies]
+http = { workspace = true }
+serde_json = { workspace = true }
+ruvo-auth = { path = "../../plugins/ruvo-auth" }

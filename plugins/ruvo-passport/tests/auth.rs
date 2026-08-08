@@ -290,11 +290,8 @@ fn password_and_refresh_hash() {
 fn auth_migrator_lists_migration() {
     use ruvo_db::MigratorTrait;
     use ruvo_passport::AuthMigrator;
-    let n = AuthMigrator::migrations().len();
-    #[cfg(feature = "oauth")]
-    assert!(n >= 2);
-    #[cfg(not(feature = "oauth"))]
-    assert_eq!(n, 1);
+    // Single init migration (users + refresh + api_tokens [+ oauth when feature on]).
+    assert_eq!(AuthMigrator::migrations().len(), 1);
 }
 
 #[cfg(feature = "oauth")]

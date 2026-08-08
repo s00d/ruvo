@@ -82,6 +82,7 @@ impl Plugin for Meta {
     }
 
     fn install(mut self, app: &mut App) {
+        // Unset-fill from `[meta]` — explicit builder values win.
         if let Some(doc) = app.config_doc() {
             if let Some(section) = doc.section("meta") {
                 if section
@@ -91,17 +92,25 @@ impl Plugin for Meta {
                 {
                     self.defaults.robots_block_all = true;
                 }
-                if let Some(v) = section.get("public_url").and_then(|v| v.as_str()) {
-                    self.defaults.public_url = Some(v.to_string());
+                if self.defaults.public_url.is_none() {
+                    if let Some(v) = section.get("public_url").and_then(|v| v.as_str()) {
+                        self.defaults.public_url = Some(v.to_string());
+                    }
                 }
-                if let Some(v) = section.get("site_name").and_then(|v| v.as_str()) {
-                    self.defaults.site_name = Some(v.to_string());
+                if self.defaults.site_name.is_none() {
+                    if let Some(v) = section.get("site_name").and_then(|v| v.as_str()) {
+                        self.defaults.site_name = Some(v.to_string());
+                    }
                 }
-                if let Some(v) = section.get("title_template").and_then(|v| v.as_str()) {
-                    self.defaults.title_template = Some(v.to_string());
+                if self.defaults.title_template.is_none() {
+                    if let Some(v) = section.get("title_template").and_then(|v| v.as_str()) {
+                        self.defaults.title_template = Some(v.to_string());
+                    }
                 }
-                if let Some(v) = section.get("default_image").and_then(|v| v.as_str()) {
-                    self.defaults.default_image = Some(v.to_string());
+                if self.defaults.default_image.is_none() {
+                    if let Some(v) = section.get("default_image").and_then(|v| v.as_str()) {
+                        self.defaults.default_image = Some(v.to_string());
+                    }
                 }
                 if section
                     .get("check")

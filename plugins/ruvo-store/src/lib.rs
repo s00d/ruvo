@@ -1,13 +1,16 @@
 //! Byte-oriented key-value store for Ruvo plugins (sessions, cache, CSRF, rate-limit).
 //!
-//! Trait is stable (memory + file + sql backends).
+//! Trait is stable (memory + file + sql + redis backends).
 //! Enable feature `unstable-store` for backwards-compatible feature flags.
 //! **Not in ruvo-core** — wire with `app.state(store.namespace("sess"))`.
 
+mod cache;
 #[cfg(feature = "store-crypto")]
 mod encrypted;
 #[cfg(feature = "file")]
 mod file;
+#[cfg(feature = "redis")]
+mod redis;
 #[cfg(feature = "sql")]
 mod sql;
 
@@ -22,6 +25,8 @@ use std::time::{Duration, Instant};
 use tokio::sync::Mutex;
 
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
+
+pub use cache::{Cache, CacheError};
 
 pub trait KvStore: Send + Sync + 'static {
     fn get<'a>(&'a self, key: &'a str) -> BoxFuture<'a, Option<Bytes>>;
@@ -66,6 +71,9 @@ pub use encrypted::{encrypted, encrypted_ns, AppKey, Encrypted};
 
 #[cfg(feature = "file")]
 pub use file::{Durability, FileStore};
+
+#[cfg(feature = "redis")]
+pub use redis::RedisStore;
 
 #[cfg(feature = "sql")]
 pub use sql::SqlStore;
@@ -341,5 +349,18 @@ mod tests {
             store.get("other:1").await.as_deref(),
             Some(b"z".as_slice())
         );
+    }
+
+    #[tokio::test]
+    async fn cache_remember_memory() {
+        let store = AppStore::memory();
+        let cache = store.cache();
+        let v = cache
+            .remember("k", None, || async { Ok::<_, CacheError>(42u32) })
+            .await
+            .unwrap();
+        assert_eq!(v, 42);
+        let hit = cache.get_json::<u32>("k").await;
+        assert_eq!(hit, Some(42));
     }
 }

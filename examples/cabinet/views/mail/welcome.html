@@ -1,0 +1,7 @@
+{% extends "mail/layout.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+<p>Hello {{ name }}!</p>
+<p>Your account is ready. Open the cabinet:</p>
+<p><a href="{{ link }}">{{ link }}</a></p>
+{% endblock %}

@@ -6,14 +6,30 @@ description = "Session plugin for Ruvo"
 license = "MIT"
 publish = false
 
+[features]
+default = []
+sql = ["dep:ruvo-db", "dep:chrono", "dep:sea-orm", "ruvo-store/sql"]
+redis = ["dep:ruvo-redis", "dep:redis"]
+
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
+ruvo-core = { workspace = true }
 ruvo-cookies = { path = "../ruvo-cookies" }
-ruvo-store = { path = "../ruvo-store" }
-cookie = { version = "0.18", features = ["percent-encode"] }
-getrandom = "0.2"
-bytes = "1"
+ruvo-store = { workspace = true }
+ruvo-db = { workspace = true, optional = true, default-features = false }
+ruvo-redis = { workspace = true, optional = true }
+chrono = { workspace = true, optional = true }
+sea-orm = { workspace = true, optional = true }
+redis = { workspace = true, optional = true }
+cookie = { workspace = true, features = ["percent-encode"] }
+getrandom = { workspace = true }
+bytes = { workspace = true }
+serde_json = { workspace = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
-http = "1"
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http = { workspace = true }
+ruvo-db = { workspace = true, default-features = false, features = ["sqlite"] }
+ruvo-redis = { workspace = true }
+sea-orm = { workspace = true }
+chrono = { workspace = true }
+redis = { workspace = true }

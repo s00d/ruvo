@@ -1,10 +1,12 @@
 //! Task queue store for Ruvo.
 //!
-//! Trait is stable (memory + file + sql backends).
+//! Trait is stable (memory + file + sql + redis backends).
 //! Queue claim/lease is **not** plain KvStore.
 
 #[cfg(feature = "file")]
 mod file;
+#[cfg(feature = "redis")]
+mod redis;
 #[cfg(feature = "sql")]
 mod sql;
 
@@ -20,6 +22,9 @@ pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
 #[cfg(feature = "file")]
 pub use file::FileTaskStore;
+
+#[cfg(feature = "redis")]
+pub use redis::RedisTaskStore;
 
 #[cfg(feature = "sql")]
 pub use sql::SqlTaskStore;
@@ -53,6 +58,8 @@ pub struct Task {
     pub dedup_key: Option<String>,
     pub status: TaskStatus,
     pub worker: Option<String>,
+    /// Higher values are claimed first within a queue (default `0`).
+    pub priority: i32,
 }
 
 pub struct EnqueueOpts {
@@ -60,6 +67,8 @@ pub struct EnqueueOpts {
     pub payload: Bytes,
     pub run_at: Option<SystemTime>,
     pub dedup_key: Option<String>,
+    /// Higher values are claimed first (default `0`).
+    pub priority: i32,
 }
 
 pub trait TaskStore: Send + Sync + 'static {
@@ -129,6 +138,7 @@ impl TaskStore for MemoryStore {
                 dedup_key: opts.dedup_key.clone(),
                 status: TaskStatus::Pending,
                 worker: None,
+                priority: opts.priority,
             };
             if let Some(dk) = opts.dedup_key {
                 g.dedup.insert(dk, id.clone());
@@ -156,11 +166,11 @@ impl TaskStore for MemoryStore {
                         && t.status == TaskStatus::Pending
                         && t.run_at <= now
                 })
-                .map(|t| (t.run_at, t.id.clone()))
+                .map(|t| (std::cmp::Reverse(t.priority), t.run_at, t.id.clone()))
                 .collect();
-            ids.sort_by_key(|(run_at, _)| *run_at);
+            ids.sort();
             let mut out = Vec::new();
-            for (_, id) in ids.into_iter().take(limit) {
+            for (_, _, id) in ids.into_iter().take(limit) {
                 if let Some(t) = g.tasks.get_mut(&id) {
                     t.status = TaskStatus::Running;
                     t.attempts += 1;
@@ -278,6 +288,7 @@ pub mod conformance {
                 payload: Bytes::from_static(b"hi"),
                 run_at: None,
                 dedup_key: Some("once".into()),
+                priority: 0,
             })
             .await
             .unwrap();
@@ -287,6 +298,7 @@ pub mod conformance {
                 payload: Bytes::from_static(b"hi2"),
                 run_at: None,
                 dedup_key: Some("once".into()),
+                priority: 0,
             })
             .await
             .unwrap();
@@ -308,6 +320,7 @@ pub mod conformance {
                 payload: Bytes::from_static(b"x"),
                 run_at: None,
                 dedup_key: None,
+                priority: 0,
             })
             .await
             .unwrap();
@@ -330,6 +343,39 @@ pub mod conformance {
             .unwrap();
         let listed = store.list("q", 10).await.unwrap();
         assert!(!listed.is_empty());
+
+        // Higher priority claimed first.
+        let low = store
+            .enqueue(EnqueueOpts {
+                queue: "prio".into(),
+                payload: Bytes::from_static(b"low"),
+                run_at: None,
+                dedup_key: None,
+                priority: -100,
+            })
+            .await
+            .unwrap();
+        let high = store
+            .enqueue(EnqueueOpts {
+                queue: "prio".into(),
+                payload: Bytes::from_static(b"high"),
+                run_at: None,
+                dedup_key: None,
+                priority: 100,
+            })
+            .await
+            .unwrap();
+        let first = store
+            .claim("prio", "w", Duration::from_secs(5), 1)
+            .await
+            .unwrap();
+        assert_eq!(first[0].id, high);
+        assert_eq!(first[0].priority, 100);
+        let second = store
+            .claim("prio", "w", Duration::from_secs(5), 1)
+            .await
+            .unwrap();
+        assert_eq!(second[0].id, low);
     }
 }
 

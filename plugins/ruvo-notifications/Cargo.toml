@@ -1,0 +1,45 @@
+[package]
+name = "ruvo-notifications"
+version = "0.4.0"
+edition = "2021"
+description = "Database notifications with channels, ACL, optional WS/mail"
+license = "MIT"
+publish = false
+
+[features]
+default = []
+ws = ["dep:ruvo-ws"]
+mail = ["dep:ruvo-mail"]
+auth = ["dep:ruvo-auth"]
+templates = ["dep:ruvo-templates", "dep:minijinja"]
+
+[dependencies]
+ruvo-core = { workspace = true }
+ruvo-db = { workspace = true }
+ruvo-ws = { path = "../ruvo-ws", optional = true }
+ruvo-mail = { path = "../ruvo-mail", optional = true }
+ruvo-auth = { path = "../ruvo-auth", optional = true }
+ruvo-templates = { path = "../ruvo-templates", optional = true }
+minijinja = { workspace = true, optional = true }
+sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls"] }
+async-trait = { workspace = true }
+chrono = { workspace = true, default-features = false, features = ["clock", "std", "serde"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+http = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+ruvo-core = { workspace = true, features = ["testing"] }
+ruvo-db = { workspace = true, features = ["sqlite"] }
+ruvo-testing = { workspace = true, features = ["sqlite", "notifications", "auth"] }
+ruvo-auth = { path = "../ruvo-auth" }
+ruvo-session = { path = "../ruvo-session" }
+ruvo-mail = { path = "../ruvo-mail" }
+sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite"] }
+serde_json = { workspace = true }
+http = { workspace = true }
+async-trait = { workspace = true }

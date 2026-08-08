@@ -13,6 +13,7 @@
 //!
 //! See also the repo-root `ARCHITECTURE.md`.
 
+mod request_id;
 mod app;
 mod config;
 mod error;
@@ -37,7 +38,7 @@ mod test_client;
 mod tls;
 
 // Application-facing API (~16–18 names).
-pub use app::{App, BoundApp, Http, Server};
+pub use app::{App, BoundApp, CheckKind, CheckResult, Http, Server};
 pub use config::ConfigDoc;
 pub use error::{Error, IntoResponse, Result};
 pub use middleware::{logger, with_state, Next};
@@ -45,17 +46,21 @@ pub use plugin::{
     check_plugin_sdk, InstalledPlugin, Plugin, PluginMeta, PluginSdkVersion, SdkCompat,
     PLUGIN_SDK_VERSION,
 };
-pub use request::{FormData, Request, Upload};
-pub use response::{Html, Json, NoContent, Redirect, Response, Text};
+pub use request::{FormData, Request, Upload, UploadRules};
+pub use request_id::{ensure_request_id, request_id, RequestId};
+pub use response::{referer_or, Html, Json, NoContent, Redirect, Response, Text};
 pub use router::Router;
-pub use server::ClientAddr;
+pub use server::{ClientAddr, RateLimitIdentity};
 pub use service::{BackgroundService, Shutdown};
 pub use share::{Cell, Slot};
-pub use tracing_init::{parse_log_rotate, LogConfig, LogRotate};
+pub use state::{MatchedRoute, MatchedRouteCapture};
+pub use tracing_init::{
+    parse_log_rotate, set_log_event_hook, LogConfig, LogEventHook, LogRecord, LogRotate,
+};
 #[cfg(any(test, feature = "testing"))]
 pub use service::{shutdown_channel, ShutdownSender};
 pub use upgrade::{OnUpgrade, UpgradePermit};
-pub use test_client::{ClientRequest, TestClient};
+pub use test_client::{ClientRequest, RequestHook, ResponseAssert, TestClient};
 #[cfg(feature = "tls")]
 pub use tls::Tls;
 
@@ -78,7 +83,8 @@ pub mod extend {
         named, with_leaked, IntoMiddleware, IntoMwEntry, Middleware, MwEntry,
     };
     pub use crate::raw::{IntoRawHandler, RawHandler};
-    pub use crate::request::{FormData, RequestBuilder, Upload};
+    pub use crate::request::{FormData, RequestBuilder, Upload, UploadRules};
+    pub use crate::request_id::{ensure_request_id, request_id, RequestId};
     pub use crate::response::{Body, BoxError, HttpBody, ResponseBody};
     pub use crate::human::{parse_bytes, parse_duration};
     pub use crate::limits::{tighten_deadline, Deadline, MaxBody, RequestTimeout};
@@ -88,6 +94,12 @@ pub mod extend {
     };
     pub use crate::service::wait_shutdown;
     pub use crate::share::{Cell, Slot};
-    pub use crate::state::{Extensions, MatchedMeta, MatchedMetaCapture, StateMap, TypeMap};
-    pub use crate::tracing_init::{ensure_tracing, parse_log_rotate, LogConfig, LogRotate};
+    pub use crate::state::{
+        Extensions, MatchedMeta, MatchedMetaCapture, MatchedRoute, MatchedRouteCapture, StateMap,
+        TypeMap,
+    };
+    pub use crate::tracing_init::{
+        ensure_tracing, parse_log_rotate, set_log_event_hook, LogConfig, LogEventHook, LogRecord,
+        LogRotate,
+    };
 }

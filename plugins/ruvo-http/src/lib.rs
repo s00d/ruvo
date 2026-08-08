@@ -12,7 +12,10 @@ mod transport;
 
 pub use bound::{HttpBound, HttpExt, NamedBound};
 pub use breaker::{BreakerConfig, CircuitBreaker};
-pub use client::{Http, HttpClient, NamedClient, NamedClientConfig, PendingRequest, RequestId};
+pub use client::{Http, HttpClient, NamedClient, NamedClientConfig, PendingRequest};
 pub use error::HttpError;
 pub use fake::{FakeTransport, StubBody, StubOutcome};
 pub use transport::{OutRequest, OutResponse, Transport};
+
+/// Re-export core correlation id (set by `ruvo_core::request_id()` middleware).
+pub use ruvo_core::RequestId;

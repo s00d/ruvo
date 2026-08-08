@@ -7,14 +7,16 @@ license = "MIT"
 publish = false
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
+ruvo-core = { workspace = true }
 ruvo-session = { path = "../ruvo-session" }
 ruvo-cookies = { path = "../ruvo-cookies" }
-getrandom = "0.2"
-http = "1"
-serde_urlencoded = "0.7"
+getrandom = { workspace = true }
+http = { workspace = true }
+serde_urlencoded = { workspace = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http = { workspace = true }
 ruvo-cookies = { path = "../ruvo-cookies" }
-ruvo-store = { path = "../ruvo-store" }
+ruvo-store = { workspace = true }
+ruvo-session = { path = "../ruvo-session" }

@@ -8,6 +8,9 @@ use std::collections::HashMap;
 use std::path::{Component, Path, PathBuf};
 
 /// One uploaded file (or any multipart part with a filename).
+///
+/// Prefer [`Upload::validate`] + Storage `store`/`store_as` for app uploads;
+/// [`Self::save`] / [`Self::save_in`] write raw paths (no Storage / public URL).
 #[derive(Debug, Clone)]
 pub struct Upload {
     pub field: String,
@@ -17,6 +20,46 @@ pub struct Upload {
 }
 
 impl Upload {
+    /// Byte length of the upload body.
+    pub fn size(&self) -> usize {
+        self.data.len()
+    }
+
+    /// Lowercase extension from the client filename (no leading dot).
+    pub fn extension(&self) -> Option<String> {
+        self.filename
+            .as_deref()
+            .and_then(|n| Path::new(n).extension())
+            .and_then(|e| e.to_str())
+            .map(|e| e.to_ascii_lowercase())
+    }
+
+    /// Client `Content-Type` (trimmed), if present.
+    pub fn mime(&self) -> Option<&str> {
+        self.content_type
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+    }
+
+    /// Primary MIME type without parameters (`image/png; charset=utf-8` → `image/png`).
+    pub fn mime_type(&self) -> Option<String> {
+        self.mime()
+            .map(|m| {
+                m.split(';')
+                    .next()
+                    .unwrap_or(m)
+                    .trim()
+                    .to_ascii_lowercase()
+            })
+            .filter(|s| !s.is_empty())
+    }
+
+    /// Apply [`UploadRules`] (empty / max size / extensions / mimes).
+    pub fn validate(&self, rules: &UploadRules) -> Result<()> {
+        rules.check(self)
+    }
+
     /// Write bytes to `path` (creates parent dirs).
     pub async fn save(&self, path: impl AsRef<Path>) -> Result<()> {
         let path = path.as_ref();
@@ -49,6 +92,85 @@ impl Upload {
             .as_deref()
             .filter(|s| !s.is_empty())
             .unwrap_or(self.field.as_str())
+    }
+}
+
+/// Per-file constraints for [`Upload::validate`].
+#[derive(Debug, Clone, Default)]
+pub struct UploadRules {
+    max_bytes: Option<usize>,
+    extensions: Vec<String>,
+    mimes: Vec<String>,
+}
+
+impl UploadRules {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn max_bytes(mut self, n: usize) -> Self {
+        self.max_bytes = Some(n);
+        self
+    }
+
+    pub fn extensions<I, S>(mut self, exts: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<str>,
+    {
+        self.extensions = exts
+            .into_iter()
+            .map(|s| s.as_ref().trim_start_matches('.').to_ascii_lowercase())
+            .filter(|s| !s.is_empty())
+            .collect();
+        self
+    }
+
+    pub fn mimes<I, S>(mut self, mimes: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<str>,
+    {
+        self.mimes = mimes
+            .into_iter()
+            .map(|s| s.as_ref().trim().to_ascii_lowercase())
+            .filter(|s| !s.is_empty())
+            .collect();
+        self
+    }
+
+    fn check(&self, upload: &Upload) -> Result<()> {
+        if upload.size() == 0 {
+            return Err(Error::BadRequest("empty file".into()));
+        }
+        if let Some(max) = self.max_bytes {
+            if upload.size() > max {
+                return Err(Error::BadRequest(format!(
+                    "file too large (max {max} bytes)"
+                )));
+            }
+        }
+        if !self.extensions.is_empty() {
+            let ext = upload.extension().ok_or_else(|| {
+                Error::BadRequest("file extension required".into())
+            })?;
+            if !self.extensions.iter().any(|e| e == &ext) {
+                return Err(Error::BadRequest(format!(
+                    "invalid file extension `{ext}`"
+                )));
+            }
+        }
+        if !self.mimes.is_empty() {
+            let mime = upload.mime_type().ok_or_else(|| {
+                Error::BadRequest("file content-type required".into())
+            })?;
+            if !self.mimes.iter().any(|m| m == &mime) {
+                return Err(Error::BadRequest(format!(
+                    "invalid content-type `{mime}`"
+                )));
+            }
+        }
+        Ok(())
     }
 }
 
@@ -227,6 +349,60 @@ fn is_safe_relative(path: &Path) -> bool {
         && path
             .components()
             .all(|c| matches!(c, Component::Normal(_)))
+}
+
+#[cfg(test)]
+mod upload_rules_tests {
+    use super::*;
+    use bytes::Bytes;
+
+    fn upload(name: &str, ct: Option<&str>, data: &'static [u8]) -> Upload {
+        Upload {
+            field: "file".into(),
+            filename: Some(name.into()),
+            content_type: ct.map(str::to_owned),
+            data: Bytes::from_static(data),
+        }
+    }
+
+    #[test]
+    fn helpers_extension_mime_size() {
+        let u = upload("Photo.PNG", Some("image/png; charset=binary"), b"abc");
+        assert_eq!(u.size(), 3);
+        assert_eq!(u.extension().as_deref(), Some("png"));
+        assert_eq!(u.mime_type().as_deref(), Some("image/png"));
+    }
+
+    #[test]
+    fn rejects_empty_and_oversized() {
+        let empty = upload("a.txt", None, b"");
+        assert!(empty.validate(&UploadRules::new()).is_err());
+
+        let big = upload("a.txt", None, b"hello");
+        assert!(big
+            .validate(&UploadRules::new().max_bytes(4))
+            .is_err());
+        assert!(big
+            .validate(&UploadRules::new().max_bytes(5))
+            .is_ok());
+    }
+
+    #[test]
+    fn extensions_and_mimes() {
+        let u = upload("a.JPG", Some("image/jpeg"), b"x");
+        assert!(u
+            .validate(&UploadRules::new().extensions(["png", "jpg"]))
+            .is_ok());
+        assert!(u
+            .validate(&UploadRules::new().extensions(["png"]))
+            .is_err());
+        assert!(u
+            .validate(&UploadRules::new().mimes(["image/jpeg"]))
+            .is_ok());
+        assert!(u
+            .validate(&UploadRules::new().mimes(["image/png"]))
+            .is_err());
+    }
 }
 
 #[cfg(all(test, feature = "multipart"))]

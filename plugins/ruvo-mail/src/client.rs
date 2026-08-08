@@ -9,6 +9,10 @@ use ruvo_core::{Error, Result};
 use std::path::PathBuf;
 use std::sync::Arc;
 
+#[cfg(feature = "templates")]
+type TemplatesSlot =
+    Arc<std::sync::RwLock<Option<Arc<ruvo_templates::MiniJinjaTemplates>>>>;
+
 enum Backend {
     Smtp(AsyncSmtpTransport<Tokio1Executor>),
     File(AsyncFileTransport<Tokio1Executor>),
@@ -19,10 +23,29 @@ enum Backend {
 pub struct Mail {
     backend: Backend,
     default_from: Option<String>,
+    /// True when `.from()` / env set an address (toml must not overwrite).
+    from_explicit: bool,
     fake: Option<FakeMail>,
+    #[cfg(feature = "templates")]
+    templates_slot: TemplatesSlot,
 }
 
 impl Mail {
+    fn bare(backend: Backend, default_from: Option<String>, fake: Option<FakeMail>) -> Self {
+        Self {
+            backend,
+            default_from,
+            from_explicit: false,
+            fake,
+            #[cfg(feature = "templates")]
+            templates_slot: Arc::new(std::sync::RwLock::new(None)),
+        }
+    }
+
+    pub(crate) fn from_explicit(&self) -> bool {
+        self.from_explicit
+    }
+
     /// SMTP relay (STARTTLS via lettre `relay`). Use [`SmtpBuilder::build`] or install via [`From`].
     pub fn smtp(host: impl Into<String>) -> SmtpBuilder {
         SmtpBuilder {
@@ -37,63 +60,119 @@ impl Mail {
     /// Record messages in memory (tests / local demo).
     pub fn fake() -> Self {
         let fake = FakeMail::new();
-        Self {
-            backend: Backend::Fake(fake.clone()),
-            default_from: Some("Ruvo <noreply@localhost>".into()),
-            fake: Some(fake),
-        }
+        Self::bare(
+            Backend::Fake(fake.clone()),
+            Some("Ruvo <noreply@localhost>".into()),
+            Some(fake),
+        )
     }
 
     /// Write `.eml` files under `dir`.
     pub fn file(dir: impl Into<PathBuf>) -> Self {
         let dir = dir.into();
         let transport = AsyncFileTransport::<Tokio1Executor>::new(dir);
-        Self {
-            backend: Backend::File(transport),
-            default_from: Some("Ruvo <noreply@localhost>".into()),
-            fake: None,
-        }
+        Self::bare(
+            Backend::File(transport),
+            Some("Ruvo <noreply@localhost>".into()),
+            None,
+        )
     }
 
-    /// From `RUVO_MAIL_URL` / `SMTP_URL` + `RUVO_MAIL_FROM`. Falls back to [`Self::fake`] if unset.
+    /// Like [`Self::try_from_env`], panics on invalid SMTP URL / unknown mailer.
+    ///
+    /// Missing mailer + missing URL still yields fake (dev DX). Prefer
+    /// [`Self::try_from_env`] in `main` when you want `?`.
     pub fn from_env() -> Self {
-        let from = std::env::var("RUVO_MAIL_FROM").ok();
-        let url = std::env::var("RUVO_MAIL_URL")
-            .or_else(|_| std::env::var("SMTP_URL"))
-            .ok();
+        Self::try_from_env().unwrap_or_else(|e| {
+            panic!("mail: from_env failed: {e}");
+        })
+    }
 
-        match url {
-            Some(url) => match build_smtp_from_url(&url) {
-                Ok(transport) => Self {
-                    backend: Backend::Smtp(transport),
-                    default_from: from.or_else(|| Some("Ruvo <noreply@localhost>".into())),
-                    fake: None,
-                },
-                Err(err) => {
-                    tracing::warn!(%err, "mail: invalid RUVO_MAIL_URL / SMTP_URL — using fake");
-                    let mut m = Self::fake();
-                    if let Some(f) = from {
-                        m.default_from = Some(f);
-                    }
-                    m
+    /// Build from process env — see [`Self::try_from_vars`].
+    pub fn try_from_env() -> Result<Self> {
+        Self::try_from_vars(|k| std::env::var(k).ok().filter(|s| !s.is_empty()))
+    }
+
+    /// Build from a lookup fn (tests / custom env sources).
+    ///
+    /// - `RUVO_MAIL` / `RUVO_MAIL_MAILER`: `fake` | `smtp` | `file` (optional)
+    /// - No mailer + no URL → [`Self::fake`] (dev)
+    /// - `smtp` / URL set + parse failure → **`Err`** (never silently fakes)
+    /// - `file` → `RUVO_MAIL_PATH` (default `./mail`)
+    pub fn try_from_vars<F>(mut get: F) -> Result<Self>
+    where
+        F: FnMut(&str) -> Option<String>,
+    {
+        let from = get("RUVO_MAIL_FROM");
+        let mailer = get("RUVO_MAIL")
+            .or_else(|| get("RUVO_MAIL_MAILER"))
+            .map(|s| s.trim().to_ascii_lowercase())
+            .filter(|s| !s.is_empty());
+        let url = get("RUVO_MAIL_URL").or_else(|| get("SMTP_URL"));
+
+        let kind = match mailer.as_deref() {
+            Some("fake") => "fake",
+            Some("file") => "file",
+            Some("smtp") => "smtp",
+            Some(other) => {
+                return Err(Error::Internal(format!(
+                    "unknown RUVO_MAIL={other} (use fake|smtp|file)"
+                )));
+            }
+            None if url.is_some() => "smtp",
+            None => "fake",
+        };
+
+        match kind {
+            "fake" => {
+                if mailer.is_none() {
+                    tracing::info!("mail: no RUVO_MAIL / RUVO_MAIL_URL — using fake transport");
                 }
-            },
-            None => {
                 let mut m = Self::fake();
                 if let Some(f) = from {
                     m.default_from = Some(f);
+                    m.from_explicit = true;
                 }
-                m
+                Ok(m)
             }
+            "file" => {
+                let path = get("RUVO_MAIL_PATH").unwrap_or_else(|| "./mail".into());
+                let mut m = Self::file(path);
+                if let Some(f) = from {
+                    m.default_from = Some(f);
+                    m.from_explicit = true;
+                }
+                Ok(m)
+            }
+            "smtp" => {
+                let url = url.ok_or_else(|| {
+                    Error::Internal("RUVO_MAIL=smtp requires RUVO_MAIL_URL or SMTP_URL".into())
+                })?;
+                let transport = build_smtp_from_url(&url)?;
+                let mut m = Self::bare(
+                    Backend::Smtp(transport),
+                    from.clone().or_else(|| Some("Ruvo <noreply@localhost>".into())),
+                    None,
+                );
+                if from.is_some() {
+                    m.from_explicit = true;
+                }
+                Ok(m)
+            }
+            _ => unreachable!(),
         }
     }
 
     pub fn from(mut self, addr: impl Into<String>) -> Self {
         self.default_from = Some(addr.into());
+        self.from_explicit = true;
         self
     }
 
     /// Shared client (clone before `install` for background jobs).
+    ///
+    /// With feature `templates`, the templates slot is shared with the installed
+    /// client — wiring at install / startup reaches earlier clones too.
     pub fn client(&self) -> MailClient {
         MailClient {
             backend: match &self.backend {
@@ -103,6 +182,8 @@ impl Mail {
             },
             default_from: self.default_from.clone(),
             fake: self.fake.clone(),
+            #[cfg(feature = "templates")]
+            templates: Arc::clone(&self.templates_slot),
         }
     }
 
@@ -117,10 +198,7 @@ impl Mail {
 
     pub(crate) fn from_smtp(b: SmtpBuilder) -> Self {
         b.build().unwrap_or_else(|e| {
-            tracing::error!(error = %e, "mail smtp build failed — falling back to fake");
-            Mail::fake().from(
-                std::env::var("RUVO_MAIL_FROM").unwrap_or_else(|_| "Ruvo <noreply@localhost>".into()),
-            )
+            panic!("mail smtp build failed (refusing silent fake): {e}");
         })
     }
 }
@@ -161,13 +239,15 @@ impl SmtpBuilder {
             builder = builder.credentials(Credentials::new(user, pass));
         }
         let transport = builder.build();
-        Ok(Mail {
-            backend: Backend::Smtp(transport),
-            default_from: self
-                .from
+        let explicit = self.from.is_some();
+        let mut mail = Mail::bare(
+            Backend::Smtp(transport),
+            self.from
                 .or_else(|| Some("Ruvo <noreply@localhost>".into())),
-            fake: None,
-        })
+            None,
+        );
+        mail.from_explicit = explicit;
+        Ok(mail)
     }
 }
 
@@ -189,6 +269,8 @@ pub struct MailClient {
     backend: Arc<ClientBackend>,
     pub(crate) default_from: Option<String>,
     fake: Option<FakeMail>,
+    #[cfg(feature = "templates")]
+    templates: TemplatesSlot,
 }
 
 impl MailClient {
@@ -196,7 +278,20 @@ impl MailClient {
         Email::with_client(self.clone())
     }
 
-    pub async fn send(&self, email: Email) -> Result<()> {
+    #[cfg(feature = "templates")]
+    pub(crate) fn templates(&self) -> Option<Arc<ruvo_templates::MiniJinjaTemplates>> {
+        self.templates.read().unwrap().clone()
+    }
+
+    #[cfg(feature = "templates")]
+    pub(crate) fn set_templates(&self, templates: ruvo_templates::MiniJinjaTemplates) {
+        *self.templates.write().unwrap() = Some(Arc::new(templates));
+    }
+
+    #[allow(unused_mut)] // mut needed when resolving deferred view/markdown bodies
+    pub async fn send(&self, mut email: Email) -> Result<()> {
+        #[cfg(any(feature = "templates", feature = "markdown"))]
+        email.resolve_body(self)?;
         let (snap, message) = email.into_message(self.default_from.as_deref())?;
         match self.backend.as_ref() {
             ClientBackend::Fake(fake) => {

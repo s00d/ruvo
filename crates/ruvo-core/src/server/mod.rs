@@ -17,6 +17,11 @@ use tokio::net::TcpListener;
 #[derive(Debug, Clone, Copy)]
 pub struct ClientAddr(pub SocketAddr);
 
+/// Authenticated principal for rate-limit identity keys.
+/// Set by auth / passport when a user is hydrated; rate-limit falls back to IP if absent.
+#[derive(Debug, Clone)]
+pub struct RateLimitIdentity(pub String);
+
 pub(crate) type ExternalShutdown = Pin<Box<dyn std::future::Future<Output = ()> + Send>>;
 
 #[cfg(feature = "tls")]
@@ -85,6 +90,7 @@ pub async fn listen(
 }
 
 async fn bind_tcp(bind: SocketAddr, reuseport: bool) -> Result<TcpListener> {
+    let reuseport = reuseport || env_truthy("RUVO_REUSEPORT");
     if reuseport {
         #[cfg(feature = "listen-reuseport")]
         {
@@ -93,13 +99,23 @@ async fn bind_tcp(bind: SocketAddr, reuseport: bool) -> Result<TcpListener> {
         #[cfg(not(feature = "listen-reuseport"))]
         {
             return Err(Error::Internal(
-                "BoundApp::reuseport(true) requires feature `listen-reuseport`".into(),
+                "BoundApp::reuseport(true) / RUVO_REUSEPORT requires feature `listen-reuseport`".into(),
             ));
         }
     }
     TcpListener::bind(bind)
         .await
         .map_err(|e| Error::Internal(format!("bind {bind}: {e}")))
+}
+
+fn env_truthy(name: &str) -> bool {
+    match std::env::var(name) {
+        Ok(v) => matches!(
+            v.trim().to_ascii_lowercase().as_str(),
+            "1" | "true" | "yes" | "on"
+        ),
+        Err(_) => false,
+    }
 }
 
 #[cfg(feature = "listen-reuseport")]

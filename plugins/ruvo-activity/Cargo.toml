@@ -1,0 +1,28 @@
+[package]
+name = "ruvo-activity"
+version = "0.4.0"
+edition = "2021"
+description = "Laravel-style activity / audit log for Ruvo"
+license = "MIT"
+publish = false
+
+[dependencies]
+ruvo-core = { workspace = true }
+ruvo-db = { workspace = true }
+sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls"] }
+async-trait = { workspace = true }
+chrono = { workspace = true, default-features = false, features = ["clock", "std", "serde"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+http = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+ruvo-core = { workspace = true, features = ["testing"] }
+ruvo-db = { workspace = true, features = ["sqlite"] }
+ruvo-testing = { workspace = true, features = ["sqlite"] }
+sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite"] }
+serde_json = { workspace = true }

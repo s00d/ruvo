@@ -8,9 +8,9 @@ name = "cargo-ruvo"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "4", features = ["derive"] }
-include_dir = "0.7"
-notify = "6"
-serde = { version = "1", features = ["derive"] }
-toml = "0.8"
-ctrlc = "3"
+clap = { workspace = true, features = ["derive"] }
+include_dir = { workspace = true }
+notify = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+toml = { workspace = true }
+ctrlc = { workspace = true }

@@ -6,14 +6,14 @@
 use crate::actions;
 use crate::feature::Feature;
 use crate::guard::{self, fortify_guard, fortify_guard_from_state};
-use crate::limiter;
 use crate::paths::FortifyPaths;
 use crate::state::{AfterRegisterFn, FortifyState};
 use crate::store::{self, CurrentUser};
 use ruvo_core::extend::{BoxFuture, MwEntry};
-use ruvo_core::{App, Error, Plugin, Request, Result, Router};
+use ruvo_core::{App, Error, Plugin, RateLimitIdentity, Request, Result, Router};
 use ruvo_db::DbExt;
 use ruvo_passport::Passport;
+use ruvo_rate_limit::RateLimit;
 use std::collections::HashSet;
 use std::future::Future;
 use std::sync::Arc;
@@ -24,7 +24,7 @@ use ruvo_vld::ValidateRouteExt;
 /// Laravel Fortify-style auth layer on top of Passport + Mail + Db.
 pub struct Fortify {
     features: HashSet<Feature>,
-    /// Opt-in HTML form POST routes (Laravel-style paths). Default: off.
+    /// Opt-in HTML form GET/POST routes (Laravel-style paths). Default: off.
     web_forms: bool,
     mount: String,
     api_mount: Option<String>,
@@ -75,7 +75,7 @@ impl Fortify {
         self
     }
 
-    /// Enable legacy HTML form POST routes under [`Self::mount`].
+    /// Enable HTML GET form pages + POST routes under [`Self::mount`] (Laravel-style paths).
     pub fn web_forms(mut self, yes: bool) -> Self {
         self.web_forms = yes;
         self
@@ -270,6 +270,7 @@ impl Plugin for Fortify {
                     };
                     let db = req.db().clone();
                     if let Some(cu) = store::load_current_user(&db, uid).await? {
+                        req.set(RateLimitIdentity(cu.id.to_string()));
                         req.set(cu);
                     }
                     Ok(req)
@@ -301,13 +302,15 @@ impl Plugin for Fortify {
 
 fn mount_web(web: &mut Router, features: &HashSet<Feature>) {
     if features.contains(&Feature::Registration) {
+        web.get("/register", actions::register_form);
         web.post("/register", actions::register);
         #[cfg(feature = "vld")]
         web.validate_form::<crate::forms::RegisterForm>();
     }
 
+    web.get("/login", actions::login_form);
     web.post("/login", actions::login);
-    web.route_middleware(limiter::login_limiter());
+    web.route_middleware(RateLimit::login().middleware());
     #[cfg(feature = "vld")]
     web.validate_form::<crate::forms::LoginForm>();
 
@@ -315,7 +318,7 @@ fn mount_web(web: &mut Router, features: &HashSet<Feature>) {
 
     if features.contains(&Feature::ResetPasswords) {
         web.post("/forgot-password", actions::forgot_password);
-        web.route_middleware(limiter::forgot_limiter());
+        web.route_middleware(RateLimit::forgot().middleware());
         #[cfg(feature = "vld")]
         web.validate_form::<crate::forms::ForgotForm>();
 
@@ -329,7 +332,7 @@ fn mount_web(web: &mut Router, features: &HashSet<Feature>) {
             "/email/verification-notification",
             actions::resend_verification,
         );
-        web.route_middleware(limiter::resend_limiter());
+        web.route_middleware(RateLimit::resend().middleware());
     }
     if features.contains(&Feature::UpdateProfile) {
         web.get("/user/profile", actions::profile_get);
@@ -387,7 +390,7 @@ fn mount_web(web: &mut Router, features: &HashSet<Feature>) {
         );
 
         web.post("/two-factor-challenge", actions::two_factor_challenge);
-        web.route_middleware(limiter::challenge_limiter());
+        web.route_middleware(RateLimit::challenge().middleware());
         #[cfg(feature = "vld")]
         web.validate_form::<crate::forms::TwoFactorCodeForm>();
     }
@@ -400,7 +403,7 @@ fn mount_api(r: &mut Router, features: &HashSet<Feature>, paths: &FortifyPaths) 
         r.validate_body::<crate::forms::RegisterForm>();
     }
     r.post(&paths.login, actions::login);
-    r.route_middleware(limiter::login_limiter());
+    r.route_middleware(RateLimit::login().middleware());
     #[cfg(feature = "vld")]
     r.validate_body::<crate::forms::LoginForm>();
 
@@ -410,7 +413,7 @@ fn mount_api(r: &mut Router, features: &HashSet<Feature>, paths: &FortifyPaths) 
 
     if features.contains(&Feature::ResetPasswords) {
         r.post(&paths.forgot_password, actions::forgot_password);
-        r.route_middleware(limiter::forgot_limiter());
+        r.route_middleware(RateLimit::forgot().middleware());
         #[cfg(feature = "vld")]
         r.validate_body::<crate::forms::ForgotForm>();
         r.post(&paths.reset_password, actions::reset_password);
@@ -420,7 +423,7 @@ fn mount_api(r: &mut Router, features: &HashSet<Feature>, paths: &FortifyPaths) 
     if features.contains(&Feature::EmailVerification) {
         r.post(&paths.verify_email, actions::verify_email);
         r.post(&paths.resend_verification, actions::resend_verification);
-        r.route_middleware(limiter::resend_limiter());
+        r.route_middleware(RateLimit::resend().middleware());
     }
     if features.contains(&Feature::UpdateProfile) {
         r.post(&paths.profile, actions::update_profile);
@@ -459,7 +462,7 @@ fn mount_api(r: &mut Router, features: &HashSet<Feature>, paths: &FortifyPaths) 
             actions::two_factor_recovery_codes_regen,
         );
         r.post(&paths.two_factor_challenge, actions::two_factor_challenge);
-        r.route_middleware(limiter::challenge_limiter());
+        r.route_middleware(RateLimit::challenge().middleware());
         #[cfg(feature = "vld")]
         r.validate_body::<crate::forms::TwoFactorCodeForm>();
     }

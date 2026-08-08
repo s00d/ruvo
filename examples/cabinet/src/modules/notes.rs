@@ -1,8 +1,8 @@
 use ruvo::vld;
 use crate::db;
 use ruvo::{
-    doc_schema, CsrfExt, CurrentUser, DbExt, Meta, Redirect, RenderExt, Request, Response, Result,
-    Router, ValidExt, ValidateRouteExt,
+    doc_schema, CsrfExt, CurrentUser, DbExt, Meta, PageExt, Redirect, RenderExt, Request, Response,
+    Result, Router, SessionExt, ValidExt, ValidateRouteExt,
 };
 use serde_json::json;
 
@@ -34,13 +34,16 @@ pub fn mount(r: &mut Router) {
 async fn list(req: Request) -> Result<Response> {
     let user = req.get::<CurrentUser>().expect("CurrentUser").clone();
     let db = req.db().clone();
-    let notes = db::list_notes(&db, user.id, 50).await?;
+    let page = db::paginate_notes(&db, user.id, req.page_params()).await?;
     let csrf = req.csrf_token();
     Ok(req.render(
         "cabinet/notes.html",
         json!({
             "user": { "name": user.name },
-            "notes": notes,
+            "notes": page.data,
+            "page": page.page,
+            "last_page": page.last_page,
+            "total": page.total,
             "csrf": csrf,
         }),
     )?)
@@ -51,6 +54,7 @@ async fn create(req: Request) -> Result<Response> {
     let user = req.get::<CurrentUser>().expect("CurrentUser");
     let db = req.db().clone();
     db::create_note(&db, user.id, &form.title, &form.body).await?;
+    req.flash_status("Note created");
     Ok(Redirect::see_other("/cabinet/notes").into_response())
 }
 
@@ -63,7 +67,8 @@ async fn delete(req: Request) -> Result<Response> {
     let user = req.get::<CurrentUser>().expect("CurrentUser");
     let db = req.db().clone();
     db::delete_note(&db, user.id, id).await?;
-    Ok(Redirect::see_other("/cabinet/notes").into_response())
+    req.flash_status("Note deleted");
+    Ok(Redirect::back_or(&req, "/cabinet/notes").into_response())
 }
 
 use ruvo::IntoResponse;

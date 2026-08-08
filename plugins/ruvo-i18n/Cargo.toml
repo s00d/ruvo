@@ -13,23 +13,23 @@ watch = ["dep:notify"]
 templates = ["dep:ruvo-templates"]
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
+ruvo-core = { workspace = true }
 ruvo-cookies = { path = "../ruvo-cookies", optional = true }
 ruvo-templates = { path = "../ruvo-templates", optional = true }
-minijinja = "2"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-bytes = "1"
-arc-swap = "1"
-tracing = "0.1"
-http = "1"
-notify = { version = "6", optional = true, default-features = false, features = ["macos_fsevent"] }
+minijinja = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+bytes = { workspace = true }
+arc-swap = { workspace = true }
+tracing = { workspace = true }
+http = { workspace = true }
+notify = { workspace = true, optional = true, default-features = false, features = ["macos_fsevent"] }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "test-util"] }
-tempfile = "3"
-http = "1"
-ruvo-core = { path = "../../crates/ruvo-core", features = ["testing"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "test-util"] }
+tempfile = { workspace = true }
+http = { workspace = true }
+ruvo-core = { workspace = true, features = ["testing"] }
 ruvo-cookies = { path = "../ruvo-cookies" }
 ruvo-openapi = { path = "../ruvo-openapi" }
 ruvo-templates = { path = "../ruvo-templates" }

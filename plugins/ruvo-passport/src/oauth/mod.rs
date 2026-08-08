@@ -4,21 +4,26 @@ mod flow;
 mod provider;
 mod store;
 
+/// Built-in IdP drivers (`github`, `google`, `apple`) — add your own beside these.
+pub mod drivers;
+
 pub use provider::{OauthProvider, ProfileKind};
 
 /// Test helpers (PKCE / state / profile parse) — not part of the stable app API.
 #[doc(hidden)]
 pub mod test_support {
     pub use super::flow::{
-        now_secs, parse_profile, pkce_challenge, random_urlsafe, sign_state, verify_state, FlowState,
+        decode_jwt_payload, now_secs, parse_profile, pkce_challenge, random_urlsafe, sign_state,
+        verify_state, FlowState,
     };
+    pub use super::callback_params;
 }
 
 use crate::entity::user;
 use crate::store::{find_user_by_id, issue_token_pair, AuthUser};
 use flow::{
-    authorize_url, cookie_decode, cookie_value, exchange_code, fetch_profile, now_secs,
-    pkce_challenge, random_urlsafe, sign_state, verify_state, FlowState,
+    authorize_url, cookie_decode, cookie_value, exchange_code, now_secs, pkce_challenge,
+    random_urlsafe, resolve_profile, sign_state, verify_state, FlowState,
 };
 use provider::OauthProvider as Provider;
 use ruvo_core::extend::BoxFuture;
@@ -49,6 +54,8 @@ pub struct OauthTokens {
     pub refresh_token: Option<String>,
     pub token_type: Option<String>,
     pub scope: Option<String>,
+    /// OpenID `id_token` when the IdP returns one (Google / Apple).
+    pub id_token: Option<String>,
 }
 
 type VerifyFn =
@@ -111,7 +118,8 @@ impl Oauth {
         self
     }
 
-    pub fn provider(mut self, p: OauthProvider) -> Self {
+    pub fn provider(mut self, p: impl Into<OauthProvider>) -> Self {
+        let p = p.into();
         self.providers.insert(p.name.clone(), p);
         self
     }
@@ -200,6 +208,7 @@ impl Plugin for Oauth {
         let mut r = Router::new();
         r.get("/:provider", start_handler);
         r.get("/:provider/callback", callback_handler);
+        r.post("/:provider/callback", callback_handler);
         app.mount(&self.mount, r);
     }
 }
@@ -276,19 +285,13 @@ async fn start_handler(req: Request) -> Result<Response> {
     Ok(set_oauth_cookie(res, &signed))
 }
 
-async fn callback_handler(req: Request) -> Result<Response> {
+async fn callback_handler(mut req: Request) -> Result<Response> {
     let name = req
         .param("provider")
         .ok_or_else(|| Error::BadRequest("missing provider".into()))?
         .to_string();
-    let code = req
-        .query("code")
-        .ok_or_else(|| Error::BadRequest("missing code".into()))?
-        .to_string();
-    let q_state = req
-        .query("state")
-        .ok_or_else(|| Error::BadRequest("missing state".into()))?
-        .to_string();
+
+    let (code, q_state, apple_user) = callback_params(&mut req).await?;
 
     let cookie_state = read_oauth_cookie(&req)
         .ok_or_else(|| Error::BadRequest("missing oauth state cookie".into()))?;
@@ -316,7 +319,12 @@ async fn callback_handler(req: Request) -> Result<Response> {
         &flow.code_verifier,
     )
     .await?;
-    let (profile, _raw) = fetch_profile(&state.http, &provider, &tokens.access_token).await?;
+    let (mut profile, _raw) = resolve_profile(&state.http, &provider, &tokens).await?;
+    if profile.name.is_none() {
+        if let Some(n) = apple_user {
+            profile.name = Some(n);
+        }
+    }
 
     let (user, req) = if let Some(verify) = &state.verify {
         verify(profile, tokens, req).await?
@@ -334,6 +342,41 @@ async fn callback_handler(req: Request) -> Result<Response> {
     Ok(clear_oauth_cookie(res))
 }
 
+/// Extract `code` / `state` from query (GET) or form body (Apple `form_post`).
+/// Also returns Apple first-login display name from optional `user` JSON.
+pub async fn callback_params(req: &mut Request) -> Result<(String, String, Option<String>)> {
+    let q_code = req.query("code").map(str::to_string);
+    let q_state = req.query("state").map(str::to_string);
+
+    if let (Some(code), Some(state)) = (q_code.clone(), q_state.clone()) {
+        return Ok((code, state, None));
+    }
+
+    // form_post / urlencoded body
+    let form = req.form::<HashMap<String, String>>().await.unwrap_or_default();
+    let code = q_code
+        .or_else(|| form.get("code").cloned())
+        .ok_or_else(|| Error::BadRequest("missing code".into()))?;
+    let state = q_state
+        .or_else(|| form.get("state").cloned())
+        .ok_or_else(|| Error::BadRequest("missing state".into()))?;
+    let apple_name = form
+        .get("user")
+        .and_then(|raw| serde_json::from_str::<serde_json::Value>(raw).ok())
+        .and_then(|u| {
+            let name = u.get("name")?;
+            let first = name.get("firstName").and_then(|v| v.as_str()).unwrap_or("");
+            let last = name.get("lastName").and_then(|v| v.as_str()).unwrap_or("");
+            let full = format!("{first} {last}").trim().to_string();
+            if full.is_empty() {
+                None
+            } else {
+                Some(full)
+            }
+        });
+    Ok((code, state, apple_name))
+}
+
 async fn default_success(user: AuthUser, req: Request) -> Result<Response> {
     let model = find_user_by_id(req.db(), user.id)
         .await?
@@ -345,3 +388,41 @@ async fn default_success(user: AuthUser, req: Request) -> Result<Response> {
 // silence unused import if any
 #[allow(dead_code)]
 fn _u(_: &user::Model) {}
+
+#[cfg(test)]
+mod callback_tests {
+    use super::callback_params;
+    use http::Method;
+    use ruvo_core::Request;
+
+    #[tokio::test]
+    async fn params_from_query() {
+        let mut req = Request::builder()
+            .method(Method::GET)
+            .path("/cb?code=abc&state=xyz")
+            .build();
+        let (code, state, name) = callback_params(&mut req).await.unwrap();
+        assert_eq!(code, "abc");
+        assert_eq!(state, "xyz");
+        assert!(name.is_none());
+    }
+
+    #[tokio::test]
+    async fn params_from_form_with_apple_user() {
+        let user = r#"{"name":{"firstName":"Ada","lastName":"Lovelace"}}"#;
+        let body = format!(
+            "code=c1&state=s1&user={}",
+            url::form_urlencoded::byte_serialize(user.as_bytes()).collect::<String>()
+        );
+        let mut req = Request::builder()
+            .method(Method::POST)
+            .path("/cb")
+            .header("content-type", "application/x-www-form-urlencoded")
+            .body(body)
+            .build();
+        let (code, state, name) = callback_params(&mut req).await.unwrap();
+        assert_eq!(code, "c1");
+        assert_eq!(state, "s1");
+        assert_eq!(name.as_deref(), Some("Ada Lovelace"));
+    }
+}

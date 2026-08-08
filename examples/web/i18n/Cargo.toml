@@ -9,6 +9,6 @@ name = "i18n"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { path = "../../../crates/ruvo", features = ["i18n"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-serde_json = "1"
+ruvo = { workspace = true, features = ["i18n"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+serde_json = { workspace = true }

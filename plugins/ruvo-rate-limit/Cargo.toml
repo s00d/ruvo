@@ -7,9 +7,12 @@ license = "MIT"
 publish = false
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
-ruvo-store = { path = "../ruvo-store" }
+ruvo-core = { workspace = true }
+ruvo-store = { workspace = true }
+serde_json = { workspace = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
-http = "1"
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+ruvo-core = { workspace = true, features = ["testing", "multipart"] }
+http = { workspace = true }
+serde_json = { workspace = true }

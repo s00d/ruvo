@@ -3,10 +3,15 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::templates::codegen::{
-    append_migration_mod, append_pub_mod, parse_fields, render_crud_dto, render_crud_handlers,
-    render_crud_mod, render_crud_routes, render_entity, render_migration, pluralize,
+    append_migration_mod, append_pub_mod, ensure_jobs_registry, ensure_mail_layout,
+    ensure_root_layout, ensure_seeds_registry, mailer_names, parse_fields, pluralize,
+    render_blank_migration, render_crud_dto, render_crud_handlers, render_crud_mod,
+    render_crud_routes, render_entity, render_job, render_mail_view, render_mailer,
+    render_migration, render_resource_test, render_seed, render_web_dto, render_web_form_view,
+    render_web_handlers, render_web_index_view, render_web_mod, render_web_routes,
+    render_web_show_view, FieldSpec,
 };
-use crate::util::{io_err, to_type_name, utc_ymdhms, validate_ident};
+use crate::util::{io_err, to_snake_case, to_type_name, utc_ymdhms, validate_ident};
 
 #[derive(Args, Debug)]
 pub struct GenerateArgs {
@@ -23,7 +28,28 @@ pub enum GenerateKind {
         #[arg(long)]
         fields: String,
     },
+    /// JSON REST module (alias of `resource --api`).
     Crud { name: String },
+    Mailer { name: String },
+    Job { name: String },
+    /// Alias of [`GenerateKind::Job`].
+    Worker { name: String },
+    Resource {
+        name: String,
+        #[arg(long)]
+        fields: Option<String>,
+        /// JSON REST + smoke test instead of HTML views.
+        #[arg(long)]
+        api: bool,
+    },
+    /// Standalone SeaORM migration (`--fields` → create table; else empty up/down).
+    Migration {
+        name: String,
+        #[arg(long)]
+        fields: Option<String>,
+    },
+    /// Seed function under `src/seeds/` (compose via `seeds::run`).
+    Seed { name: String },
 }
 
 pub fn run(args: GenerateArgs) -> Result<(), String> {
@@ -31,7 +57,16 @@ pub fn run(args: GenerateArgs) -> Result<(), String> {
         GenerateKind::Module { name } => generate_module(&name),
         GenerateKind::Plugin { name } => generate_plugin(&name),
         GenerateKind::Model { name, fields } => generate_model(&name, &fields),
-        GenerateKind::Crud { name } => generate_crud(&name),
+        GenerateKind::Crud { name } => generate_resource(&name, None, true),
+        GenerateKind::Mailer { name } => generate_mailer(&name),
+        GenerateKind::Job { name } | GenerateKind::Worker { name } => generate_job(&name),
+        GenerateKind::Resource { name, fields, api } => {
+            generate_resource(&name, fields.as_deref(), api)
+        }
+        GenerateKind::Migration { name, fields } => {
+            generate_migration(&name, fields.as_deref())
+        }
+        GenerateKind::Seed { name } => generate_seed(&name),
     }
 }
 
@@ -207,27 +242,131 @@ Workspace members `plugins/*` pick this crate up automatically.
 fn generate_model(name: &str, fields: &str) -> Result<(), String> {
     validate_ident(name)?;
     let specs = parse_fields(fields)?;
+    write_model(name, &specs)
+}
+
+fn write_model(name: &str, specs: &[FieldSpec]) -> Result<(), String> {
     let entity_path = PathBuf::from("src/entities").join(format!("{name}.rs"));
     if entity_path.exists() {
         return Err(format!("entity already exists: {}", entity_path.display()));
     }
     fs::create_dir_all("src/entities").map_err(io_err)?;
-    fs::write(&entity_path, render_entity(name, &specs)).map_err(io_err)?;
+    fs::write(&entity_path, render_entity(name, specs)).map_err(io_err)?;
     append_pub_mod("src/entities/mod.rs", name)?;
 
     let stamp = utc_ymdhms();
     let mig_mod = format!("m{stamp}_create_{name}");
     let mig_path = PathBuf::from("src/migrations").join(format!("{mig_mod}.rs"));
     fs::create_dir_all("src/migrations").map_err(io_err)?;
-    fs::write(&mig_path, render_migration(name, &specs)).map_err(io_err)?;
+    fs::write(&mig_path, render_migration(name, specs)).map_err(io_err)?;
     append_migration_mod(&mig_mod)?;
 
     println!("generated model `{name}` + migration `{mig_mod}`");
     Ok(())
 }
 
-fn generate_crud(name: &str) -> Result<(), String> {
+fn generate_mailer(name: &str) -> Result<(), String> {
     validate_ident(name)?;
+    let (ty, snake) = mailer_names(name);
+    let file = PathBuf::from("src/mailers").join(format!("{snake}.rs"));
+    if file.exists() {
+        return Err(format!("mailer already exists: {}", file.display()));
+    }
+    fs::create_dir_all("src/mailers").map_err(io_err)?;
+    fs::write(&file, render_mailer(&ty, &snake)).map_err(io_err)?;
+    append_pub_mod("src/mailers/mod.rs", &snake)?;
+
+    ensure_mail_layout()?;
+    let view = PathBuf::from("views/mail").join(format!("{snake}.html"));
+    if !view.exists() {
+        fs::write(&view, render_mail_view(ty.trim_end_matches("Mail"), &snake)).map_err(io_err)?;
+    }
+
+    println!("generated mailer `{ty}`");
+    println!("  src/mailers/{snake}.rs");
+    println!("  views/mail/{snake}.html");
+    println!("  use:  req.mail().to(user).send_mail({ty} {{ name: \"…\".into() }}).await?;");
+    Ok(())
+}
+
+fn generate_job(name: &str) -> Result<(), String> {
+    validate_ident(name)?;
+    let snake = to_snake_case(name);
+    validate_ident(&snake)?;
+    let file = PathBuf::from("src/jobs").join(format!("{snake}.rs"));
+    if file.exists() {
+        return Err(format!("job already exists: {}", file.display()));
+    }
+    fs::create_dir_all("src/jobs").map_err(io_err)?;
+    fs::write(&file, render_job(&snake)).map_err(io_err)?;
+    ensure_jobs_registry(&snake)?;
+
+    println!("generated job `{snake}`");
+    println!("  src/jobs/{snake}.rs");
+    println!("  use:  let tasks = crate::jobs::install(Tasks::new(/* store */));");
+    Ok(())
+}
+
+fn generate_migration(name: &str, fields: Option<&str>) -> Result<(), String> {
+    let snake = to_snake_case(name);
+    validate_ident(&snake)?;
+    let stamp = utc_ymdhms();
+    let mig_mod = format!("m{stamp}_{snake}");
+    let mig_path = PathBuf::from("src/migrations").join(format!("{mig_mod}.rs"));
+    if mig_path.exists() {
+        return Err(format!("migration already exists: {}", mig_path.display()));
+    }
+    fs::create_dir_all("src/migrations").map_err(io_err)?;
+
+    let body = if let Some(raw) = fields {
+        let specs = parse_fields(raw)?;
+        let table = snake
+            .strip_prefix("create_")
+            .unwrap_or(snake.as_str());
+        validate_ident(table)?;
+        render_migration(table, &specs)
+    } else {
+        render_blank_migration()
+    };
+    fs::write(&mig_path, body).map_err(io_err)?;
+    append_migration_mod(&mig_mod)?;
+
+    println!("generated migration `{mig_mod}`");
+    if fields.is_some() {
+        let table = snake.strip_prefix("create_").unwrap_or(snake.as_str());
+        println!("  create table `{table}`");
+    }
+    Ok(())
+}
+
+fn generate_seed(name: &str) -> Result<(), String> {
+    validate_ident(name)?;
+    let snake = to_snake_case(name);
+    validate_ident(&snake)?;
+    let file = PathBuf::from("src/seeds").join(format!("{snake}.rs"));
+    if file.exists() {
+        return Err(format!("seed already exists: {}", file.display()));
+    }
+    fs::create_dir_all("src/seeds").map_err(io_err)?;
+    fs::write(&file, render_seed(&snake)).map_err(io_err)?;
+    ensure_seeds_registry(&snake)?;
+
+    println!("generated seed `{snake}`");
+    println!("  src/seeds/{snake}.rs");
+    println!("  use:  Db::from_env().seed(crate::seeds::run)");
+    Ok(())
+}
+
+fn generate_resource(name: &str, fields: Option<&str>, api: bool) -> Result<(), String> {
+    validate_ident(name)?;
+    let specs = match fields {
+        Some(raw) => Some(parse_fields(raw)?),
+        None => None,
+    };
+    if let Some(ref specs) = specs {
+        write_model(name, specs)?;
+    }
+
     let module_file = PathBuf::from("src/modules").join(format!("{name}.rs"));
     let module_dir = PathBuf::from("src/modules").join(name);
     if module_file.exists() || module_dir.exists() {
@@ -236,13 +375,68 @@ fn generate_crud(name: &str) -> Result<(), String> {
     fs::create_dir_all(&module_dir).map_err(io_err)?;
 
     let plural = pluralize(name);
-    fs::write(module_dir.join("mod.rs"), render_crud_mod(name, &plural)).map_err(io_err)?;
-    fs::write(module_dir.join("dto.rs"), render_crud_dto()).map_err(io_err)?;
-    fs::write(module_dir.join("handlers.rs"), render_crud_handlers(name)).map_err(io_err)?;
-    fs::write(module_dir.join("routes.rs"), render_crud_routes(&plural)).map_err(io_err)?;
+    let field_slice = specs.as_deref();
 
-    register_module(name)?;
-    println!("generated crud module `{name}` at /{plural}");
+    if api {
+        fs::write(module_dir.join("mod.rs"), render_crud_mod(name, &plural)).map_err(io_err)?;
+        fs::write(module_dir.join("dto.rs"), render_crud_dto(field_slice)).map_err(io_err)?;
+        fs::write(
+            module_dir.join("handlers.rs"),
+            render_crud_handlers(name, field_slice),
+        )
+        .map_err(io_err)?;
+        fs::write(module_dir.join("routes.rs"), render_crud_routes(&plural)).map_err(io_err)?;
+
+        fs::create_dir_all("tests").map_err(io_err)?;
+        let test_path = PathBuf::from("tests").join(format!("{name}_api.rs"));
+        if !test_path.exists() {
+            fs::write(&test_path, render_resource_test(name, &plural, true)).map_err(io_err)?;
+        }
+
+        register_module(name)?;
+        println!("generated api resource `{name}` at /{plural}");
+        println!("  tests/{name}_api.rs");
+    } else {
+        let title = to_type_name(name);
+        fs::write(module_dir.join("mod.rs"), render_web_mod(name, &plural)).map_err(io_err)?;
+        fs::write(module_dir.join("dto.rs"), render_web_dto(field_slice)).map_err(io_err)?;
+        fs::write(
+            module_dir.join("handlers.rs"),
+            render_web_handlers(name, &plural, field_slice),
+        )
+        .map_err(io_err)?;
+        fs::write(module_dir.join("routes.rs"), render_web_routes(&plural)).map_err(io_err)?;
+
+        ensure_root_layout()?;
+        let views = PathBuf::from("views").join(&plural);
+        fs::create_dir_all(&views).map_err(io_err)?;
+        fs::write(
+            views.join("index.html"),
+            render_web_index_view(&plural, &title),
+        )
+        .map_err(io_err)?;
+        fs::write(
+            views.join("show.html"),
+            render_web_show_view(&plural, &title),
+        )
+        .map_err(io_err)?;
+        fs::write(
+            views.join("form.html"),
+            render_web_form_view(&plural, &title, field_slice),
+        )
+        .map_err(io_err)?;
+
+        fs::create_dir_all("tests").map_err(io_err)?;
+        let test_path = PathBuf::from("tests").join(format!("{name}_resource.rs"));
+        if !test_path.exists() {
+            fs::write(&test_path, render_resource_test(name, &plural, false)).map_err(io_err)?;
+        }
+
+        register_module(name)?;
+        println!("generated web resource `{name}` at /{plural}");
+        println!("  views/{plural}/{{index,show,form}}.html");
+        println!("  tests/{name}_resource.rs");
+    }
     Ok(())
 }
 

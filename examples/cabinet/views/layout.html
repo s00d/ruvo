@@ -83,6 +83,7 @@
         <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/">{{ t("nav.home") }}</a>
         {% if user %}
           <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/cabinet">{{ t("nav.cabinet") }}</a>
+          <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/notifications">Inbox{% if notifications_unread is defined and notifications_unread > 0 %} ({{ notifications_unread }}){% endif %}</a>
           <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/cabinet/notes">{{ t("nav.notes") }}</a>
           <a class="nav-link rounded px-1 py-1 text-mist-400 transition-colors duration-200 hover:text-mist-100" href="/cabinet/profile">{{ t("nav.profile") }}</a>
           {% if user.email_verified %}
@@ -114,6 +115,11 @@
   </div>
 
   <main class="mx-auto w-full max-w-3xl flex-1 animate-rise px-5 py-10 pb-16">
+    {% if status %}
+    <div class="mb-6 rounded-lg border border-tide-500/40 bg-tide-500/10 px-4 py-3 text-sm text-tide-400">
+      {{ status }}
+    </div>
+    {% endif %}
     {% if errors %}
     <div id="vue-flash" data-vue="flash" class="mb-6" v-show="visible">
       <ul class="rounded-lg border border-red-400/30 bg-red-950/40 px-4 py-3 text-sm text-red-200">

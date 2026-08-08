@@ -69,6 +69,11 @@ impl SqlStore {
             }
         };
         conn.execute_unprepared(ddl).await?;
+        let expires_idx = match backend {
+            DbBackend::MySql => "CREATE INDEX ruvo_kv_expires_at_idx ON ruvo_kv (expires_at)",
+            _ => "CREATE INDEX IF NOT EXISTS ruvo_kv_expires_at_idx ON ruvo_kv (expires_at)",
+        };
+        let _ = conn.execute_unprepared(expires_idx).await;
         Ok(())
     }
 

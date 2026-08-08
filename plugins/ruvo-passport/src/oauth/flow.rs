@@ -123,18 +123,22 @@ pub fn authorize_url(
         if !provider.scopes.is_empty() {
             q.append_pair("scope", &provider.scopes.join(" "));
         }
-        // Google wants access_type/offline optionally — skip for MVP.
+        for (k, v) in &provider.auth_params {
+            q.append_pair(k, v);
+        }
     }
     Ok(url.into())
 }
 
 #[derive(Debug, Deserialize)]
 struct TokenResponse {
+    #[serde(default)]
     access_token: String,
     refresh_token: Option<String>,
     token_type: Option<String>,
     #[serde(default)]
     scope: Option<String>,
+    id_token: Option<String>,
     // GitHub sometimes returns error in body with 200.
     error: Option<String>,
     error_description: Option<String>,
@@ -147,12 +151,13 @@ pub async fn exchange_code(
     redirect_uri: &str,
     code_verifier: &str,
 ) -> Result<OauthTokens> {
+    let client_secret = provider.resolve_client_secret()?;
     let form = vec![
         ("grant_type", "authorization_code".to_string()),
         ("code", code.to_string()),
         ("redirect_uri", redirect_uri.to_string()),
         ("client_id", provider.client_id.clone()),
-        ("client_secret", provider.client_secret.clone()),
+        ("client_secret", client_secret),
         ("code_verifier", code_verifier.to_string()),
     ];
     // GitHub wants Accept: application/json
@@ -194,6 +199,7 @@ pub async fn exchange_code(
         refresh_token: parsed.refresh_token,
         token_type: parsed.token_type,
         scope: parsed.scope,
+        id_token: parsed.id_token,
     })
 }
 
@@ -202,6 +208,7 @@ fn parse_form_token(body: &str) -> Result<TokenResponse> {
     let mut refresh_token = None;
     let mut token_type = None;
     let mut scope = None;
+    let mut id_token = None;
     let mut error = None;
     let mut error_description = None;
     for (k, v) in url::form_urlencoded::parse(body.as_bytes()) {
@@ -210,6 +217,7 @@ fn parse_form_token(body: &str) -> Result<TokenResponse> {
             "refresh_token" => refresh_token = Some(v.into_owned()),
             "token_type" => token_type = Some(v.into_owned()),
             "scope" => scope = Some(v.into_owned()),
+            "id_token" => id_token = Some(v.into_owned()),
             "error" => error = Some(v.into_owned()),
             "error_description" => error_description = Some(v.into_owned()),
             _ => {}
@@ -220,9 +228,28 @@ fn parse_form_token(body: &str) -> Result<TokenResponse> {
         refresh_token,
         token_type,
         scope,
+        id_token,
         error,
         error_description,
     })
+}
+
+/// Resolve profile via userinfo, or from `id_token` when Apple / empty userinfo.
+pub async fn resolve_profile(
+    http: &reqwest::Client,
+    provider: &OauthProvider,
+    tokens: &OauthTokens,
+) -> Result<(OauthProfile, serde_json::Value)> {
+    if provider.profile_kind == ProfileKind::Apple || provider.userinfo_url.is_empty() {
+        let id_token = tokens
+            .id_token
+            .as_deref()
+            .ok_or_else(|| Error::Internal("oauth: missing id_token for profile".into()))?;
+        let raw = decode_jwt_payload(id_token)?;
+        let profile = parse_profile(provider.profile_kind, &raw)?;
+        return Ok((profile, raw));
+    }
+    fetch_profile(http, provider, &tokens.access_token).await
 }
 
 pub async fn fetch_profile(
@@ -291,12 +318,30 @@ async fn fetch_github_email(http: &reqwest::Client, access_token: &str) -> Resul
     Ok(email)
 }
 
+/// Decode JWT payload without verifying the signature (MVP; state+PKCE bind the flow).
+pub fn decode_jwt_payload(token: &str) -> Result<serde_json::Value> {
+    let payload_b64 = token
+        .split('.')
+        .nth(1)
+        .ok_or_else(|| Error::BadRequest("invalid id_token".into()))?;
+    let bytes = URL_SAFE_NO_PAD
+        .decode(payload_b64)
+        .or_else(|_| STANDARD.decode(payload_b64))
+        .map_err(|_| Error::BadRequest("invalid id_token encoding".into()))?;
+    serde_json::from_slice(&bytes)
+        .map_err(|e| Error::BadRequest(format!("invalid id_token json: {e}")))
+}
+
 pub fn parse_profile(kind: ProfileKind, raw: &serde_json::Value) -> Result<OauthProfile> {
     match kind {
         ProfileKind::Github => {
             let id = raw
                 .get("id")
-                .and_then(|v| v.as_i64().map(|n| n.to_string()).or_else(|| v.as_str().map(str::to_string)))
+                .and_then(|v| {
+                    v.as_i64()
+                        .map(|n| n.to_string())
+                        .or_else(|| v.as_str().map(str::to_string))
+                })
                 .ok_or_else(|| Error::Internal("github profile missing id".into()))?;
             Ok(OauthProfile {
                 provider_user_id: id,
@@ -309,11 +354,19 @@ pub fn parse_profile(kind: ProfileKind, raw: &serde_json::Value) -> Result<Oauth
                 raw: raw.clone(),
             })
         }
-        ProfileKind::Google => {
+        ProfileKind::Google | ProfileKind::Apple => {
             let id = raw
                 .get("sub")
                 .and_then(|v| v.as_str())
-                .ok_or_else(|| Error::Internal("google profile missing sub".into()))?
+                .ok_or_else(|| {
+                    Error::Internal(format!(
+                        "{} profile missing sub",
+                        match kind {
+                            ProfileKind::Apple => "apple",
+                            _ => "google",
+                        }
+                    ))
+                })?
                 .to_string();
             Ok(OauthProfile {
                 provider_user_id: id,
@@ -326,7 +379,11 @@ pub fn parse_profile(kind: ProfileKind, raw: &serde_json::Value) -> Result<Oauth
             let id = raw
                 .get("id")
                 .or_else(|| raw.get("sub"))
-                .and_then(|v| v.as_str().map(str::to_string).or_else(|| v.as_i64().map(|n| n.to_string())))
+                .and_then(|v| {
+                    v.as_str()
+                        .map(str::to_string)
+                        .or_else(|| v.as_i64().map(|n| n.to_string()))
+                })
                 .ok_or_else(|| Error::Internal("oauth profile missing id/sub".into()))?;
             Ok(OauthProfile {
                 provider_user_id: id,
@@ -349,3 +406,39 @@ pub fn cookie_decode(value: &str) -> Result<String> {
         .map_err(|_| Error::BadRequest("invalid oauth cookie".into()))?;
     String::from_utf8(bytes).map_err(|_| Error::BadRequest("invalid oauth cookie".into()))
 }
+
+#[cfg(test)]
+mod flow_tests {
+    use super::*;
+    use crate::oauth::OauthProvider;
+
+    #[test]
+    fn authorize_url_includes_auth_params() {
+        let p = OauthProvider::google().client_id("cid");
+        let url = authorize_url(&p, "http://localhost/cb", "st", "chal").unwrap();
+        assert!(url.contains("access_type=offline"));
+        assert!(url.contains("prompt=consent"));
+        assert!(url.contains("code_challenge=chal"));
+    }
+
+    #[test]
+    fn parse_apple_profile_from_claims() {
+        let raw = serde_json::json!({
+            "sub": "001234.abcd",
+            "email": "a@privaterelay.appleid.com",
+        });
+        let p = parse_profile(ProfileKind::Apple, &raw).unwrap();
+        assert_eq!(p.provider_user_id, "001234.abcd");
+        assert_eq!(p.email.as_deref(), Some("a@privaterelay.appleid.com"));
+    }
+
+    #[test]
+    fn decode_jwt_payload_ok() {
+        // header.payload.sig — payload = {"sub":"x"}
+        let payload = URL_SAFE_NO_PAD.encode(br#"{"sub":"x"}"#);
+        let token = format!("e30.{payload}.sig");
+        let v = decode_jwt_payload(&token).unwrap();
+        assert_eq!(v["sub"], "x");
+    }
+}
+

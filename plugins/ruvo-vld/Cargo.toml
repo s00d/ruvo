@@ -15,24 +15,35 @@ form = ["ruvo-core/multipart"]
 i18n = ["dep:ruvo-i18n"]
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
+ruvo-core = { workspace = true }
 ruvo-openapi = { path = "../ruvo-openapi", optional = true }
 ruvo-session = { path = "../ruvo-session", optional = true }
 ruvo-i18n = { path = "../ruvo-i18n", optional = true }
 ruvo-templates = { path = "../ruvo-templates", optional = true }
-minijinja = { version = "2", optional = true }
-vld = { version = "0.4", features = ["serialize"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-serde_qs = "0.13"
-bytes = "1"
-http = "1"
+minijinja = { workspace = true, optional = true }
+vld = { workspace = true, features = ["serialize"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde_qs = { workspace = true }
+bytes = { workspace = true }
+http = { workspace = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
-http = "1"
-bytes = "1"
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http = { workspace = true }
+bytes = { workspace = true }
 ruvo-openapi = { path = "../ruvo-openapi" }
-ruvo-core = { path = "../../crates/ruvo-core", features = ["testing", "multipart"] }
+ruvo-core = { workspace = true, features = ["testing", "multipart"] }
 ruvo-session = { path = "../ruvo-session" }
-vld = { version = "0.4", features = ["serialize", "openapi"] }
+ruvo-templates = { path = "../ruvo-templates" }
+tempfile = { workspace = true }
+vld = { workspace = true, features = ["serialize", "openapi"] }
+minijinja = { workspace = true }
+
+[[test]]
+name = "validate"
+required-features = ["openapi", "form", "flash"]
+
+[[test]]
+name = "flash_templates"
+required-features = ["flash-templates"]

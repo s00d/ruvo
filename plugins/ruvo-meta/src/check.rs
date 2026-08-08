@@ -1,4 +1,4 @@
-//! `register_check("meta")`.
+//! `register_audit("meta")`.
 
 use crate::defaults::MetaDefaults;
 use crate::page::MetaPage;
@@ -12,7 +12,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 pub fn register_meta_check(app: &mut App) {
-    app.register_check("meta", move |state| {
+    app.register_audit("meta", move |state| {
         async move {
             let defaults = state
                 .get::<MetaDefaults>()

@@ -367,6 +367,54 @@ pub async fn user_role_ids(db: &DbHandle, user_id: i64) -> Result<Vec<i64>> {
     Ok(rows.into_iter().map(|r| r.role_id).collect())
 }
 
+/// All user ids that have the given role slug (including via direct role_user).
+pub async fn user_ids_with_role(db: &DbHandle, role_slug: &str) -> Result<Vec<i64>> {
+    let Some(r) = role::Entity::find()
+        .filter(role::Column::Slug.eq(role_slug))
+        .one(db)
+        .await
+        .map_err(db_err)?
+    else {
+        return Ok(vec![]);
+    };
+    let rows = role_user::Entity::find()
+        .filter(role_user::Column::RoleId.eq(r.id))
+        .all(db)
+        .await
+        .map_err(db_err)?;
+    Ok(rows.into_iter().map(|r| r.user_id).collect())
+}
+
+/// Users who hold `permission_slug` via any role, plus all `admin` role members.
+pub async fn user_ids_with_permission(db: &DbHandle, permission_slug: &str) -> Result<Vec<i64>> {
+    let mut ids = user_ids_with_role(db, "admin").await?;
+    if let Some(p) = permission::Entity::find()
+        .filter(permission::Column::Slug.eq(permission_slug))
+        .one(db)
+        .await
+        .map_err(db_err)?
+    {
+        let links = permission_role::Entity::find()
+            .filter(permission_role::Column::PermissionId.eq(p.id))
+            .all(db)
+            .await
+            .map_err(db_err)?;
+        for link in links {
+            let rows = role_user::Entity::find()
+                .filter(role_user::Column::RoleId.eq(link.role_id))
+                .all(db)
+                .await
+                .map_err(db_err)?;
+            for row in rows {
+                if !ids.contains(&row.user_id) {
+                    ids.push(row.user_id);
+                }
+            }
+        }
+    }
+    Ok(ids)
+}
+
 pub async fn create_role(db: &DbHandle, name: &str, slug: &str) -> Result<role::Model> {
     let slug = slug.trim().to_lowercase();
     if slug.is_empty() || name.trim().is_empty() {

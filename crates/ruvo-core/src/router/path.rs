@@ -47,18 +47,14 @@ pub fn to_brace_path(path: &str) -> Option<String> {
             return None;
         }
         out.push('/');
-        if let Some(name) = seg.strip_prefix(':') {
-            out.push('{');
-            out.push_str(name);
-            out.push('}');
-        } else {
-            out.push_str(seg);
-        }
+        out.push_str(&colon_params_to_braces(seg));
     }
     Some(out)
 }
 
 /// Convert Express `:id` / `*path` to matchit `{id}` / `{*path}`.
+///
+/// Also rewrites inline params (`/sitemap-:n.xml` → `/sitemap-{n}.xml`).
 pub(crate) fn to_matchit_path(path: &str) -> String {
     let path = normalize_path(path);
     if path == "/" {
@@ -73,10 +69,8 @@ pub(crate) fn to_matchit_path(path: &str) -> String {
                 } else {
                     format!("{{*{name}}}")
                 }
-            } else if let Some(name) = seg.strip_prefix(':') {
-                format!("{{{name}}}")
             } else {
-                seg.to_string()
+                colon_params_to_braces(seg)
             }
         })
         .fold(String::new(), |mut acc, seg| {
@@ -84,6 +78,34 @@ pub(crate) fn to_matchit_path(path: &str) -> String {
             acc.push_str(&seg);
             acc
         })
+}
+
+/// `:id` → `{id}`; `sitemap-:n.xml` → `sitemap-{n}.xml`.
+fn colon_params_to_braces(seg: &str) -> String {
+    let bytes = seg.as_bytes();
+    let mut out = String::with_capacity(seg.len() + 2);
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b':' {
+            let start = i + 1;
+            let mut end = start;
+            while end < bytes.len()
+                && (bytes[end].is_ascii_alphanumeric() || bytes[end] == b'_')
+            {
+                end += 1;
+            }
+            if end > start {
+                out.push('{');
+                out.push_str(&seg[start..end]);
+                out.push('}');
+                i = end;
+                continue;
+            }
+        }
+        out.push(bytes[i] as char);
+        i += 1;
+    }
+    out
 }
 
 #[cfg(test)]
@@ -94,6 +116,16 @@ mod tests {
     fn brace_path_params() {
         assert_eq!(to_brace_path("/users/:id").as_deref(), Some("/users/{id}"));
         assert_eq!(to_brace_path("/").as_deref(), Some("/"));
+        assert_eq!(
+            to_brace_path("/sitemap-:n.xml").as_deref(),
+            Some("/sitemap-{n}.xml")
+        );
+    }
+
+    #[test]
+    fn matchit_inline_param() {
+        assert_eq!(to_matchit_path("/sitemap-:n.xml"), "/sitemap-{n}.xml");
+        assert_eq!(to_matchit_path("/users/:id"), "/users/{id}");
     }
 
     #[test]

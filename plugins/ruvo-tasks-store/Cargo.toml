@@ -2,7 +2,7 @@
 name = "ruvo-tasks-store"
 version = "0.4.0"
 edition = "2021"
-description = "TaskStore trait + memory / file / sql backends"
+description = "TaskStore trait + memory / file / sql / redis backends"
 license = "MIT"
 publish = false
 
@@ -11,18 +11,22 @@ default = ["unstable-store"]
 unstable-store = []
 file = ["tokio/fs", "tokio/io-util", "dep:serde", "dep:serde_json"]
 sql = ["dep:ruvo-db", "dep:chrono", "dep:sea-orm"]
+redis = ["dep:ruvo-redis", "dep:serde", "dep:serde_json", "dep:redis", "dep:base64"]
 
 [dependencies]
-bytes = "1"
-tokio = { version = "1", features = ["sync", "time", "rt", "macros"] }
-thiserror = "2"
-serde = { version = "1", optional = true, features = ["derive"] }
-serde_json = { version = "1", optional = true }
-ruvo-db = { path = "../ruvo-db", optional = true, default-features = false }
-chrono = { version = "0.4", optional = true, default-features = false, features = ["clock", "std"] }
-sea-orm = { version = "2.0", optional = true, default-features = false, features = ["runtime-tokio-rustls"] }
+bytes = { workspace = true }
+tokio = { workspace = true, features = ["sync", "time", "rt", "macros"] }
+thiserror = { workspace = true }
+serde = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }
+base64 = { workspace = true, optional = true }
+ruvo-db = { workspace = true, optional = true, default-features = false }
+ruvo-redis = { workspace = true, optional = true }
+chrono = { workspace = true, optional = true }
+sea-orm = { workspace = true, optional = true }
+redis = { workspace = true, optional = true, features = ["script"] }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
-tempfile = "3"
-ruvo-db = { path = "../ruvo-db", default-features = false, features = ["sqlite"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }
+tempfile = { workspace = true }
+ruvo-db = { workspace = true, default-features = false, features = ["sqlite"] }

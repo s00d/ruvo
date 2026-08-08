@@ -1,5 +1,5 @@
 use ruvo::prelude::*;
-use ruvo::{Json, Parser, ServerArgs};
+use ruvo::{Parser, ServerArgs};
 
 mod modules;
 
@@ -9,7 +9,6 @@ async fn main() -> Result<()> {
     args.init_tracing();
 
     let mut app = App::api().title("{{name}} API").version("0.1.0");
-    app.get("/health", || async { Json(serde_json::json!({ "ok": true })) });
     modules::register(&mut app);
     app.run().await
 }

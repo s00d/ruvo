@@ -9,8 +9,8 @@ use crate::ssrf::SsrfPolicy;
 use crate::transport::{OutRequest, OutResponse, Transport};
 use bytes::Bytes;
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
-use ruvo_core::extend::{named, BoxFuture};
-use ruvo_core::{App, Next, Plugin, Request};
+use ruvo_core::extend::BoxFuture;
+use ruvo_core::{App, Plugin, Request};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -561,45 +561,8 @@ impl Plugin for Http {
             fake,
         };
         app.state(client);
-
-        app.use_middleware(named(
-            "http-request-id",
-            |mut req: Request, next: Next| async move {
-                ensure_request_id(&mut req);
-                next(req).await
-            },
-        ));
+        // RequestId comes from core `request_id()` middleware (presets / app).
     }
-}
-
-/// Per-request correlation id.
-#[derive(Debug, Clone)]
-pub struct RequestId(pub String);
-
-fn ensure_request_id(req: &mut Request) {
-    if req.get::<RequestId>().is_some() {
-        return;
-    }
-    let id = req
-        .header("x-request-id")
-        .filter(|s| !s.is_empty())
-        .map(str::to_owned)
-        .or_else(|| {
-            req.header("traceparent")
-                .filter(|s| !s.is_empty())
-                .map(str::to_owned)
-        })
-        .unwrap_or_else(generate_request_id);
-    req.set(RequestId(id));
-}
-
-fn generate_request_id() -> String {
-    use std::time::{SystemTime, UNIX_EPOCH};
-    let nanos = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_nanos();
-    format!("req-{nanos:x}")
 }
 
 pub(crate) fn propagation_headers(req: &Request) -> HeaderMap {
@@ -610,7 +573,7 @@ pub(crate) fn propagation_headers(req: &Request) -> HeaderMap {
         }
     }
     if let Some(id) = req
-        .get::<RequestId>()
+        .get::<ruvo_core::RequestId>()
         .map(|r| r.0.as_str())
         .or_else(|| req.header("x-request-id"))
     {

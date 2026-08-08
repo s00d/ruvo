@@ -19,9 +19,8 @@ doc_schema!(Ping);
 #[tokio::main]
 async fn main() -> Result<()> {
     let mut app = App::api().title("Ping API").version("1.0");
-    app.get("/health", || async { Json(serde_json::json!({ "ok": true })) });
     app.post("/ping", ping).doc(Doc::new().body::<Ping>().ok::<Ping>());
-    println!("api on :3000 — docs at /docs");
+    println!("api on :3000 — docs at /docs, probes /healthz /ready");
     app.listen(3000).await
 }
 

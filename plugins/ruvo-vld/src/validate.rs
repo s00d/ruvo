@@ -550,7 +550,7 @@ impl ruvo_core::Plugin for Vld {
     }
 
     fn install(self, app: &mut App) {
-        app.register_check("vld", |state| async move {
+        app.register_audit("vld", |state| async move {
             let Some(table) = state.get::<RouteTable>() else {
                 return Ok(());
             };

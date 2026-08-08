@@ -280,7 +280,7 @@ async fn flash_html_accept_redirects() {
                 .build(),
         )
         .await;
-    assert_eq!(html.status_code().as_u16(), 302);
+    assert_eq!(html.status_code().as_u16(), 303);
     assert_eq!(
         html.headers()
             .get("location")
@@ -348,4 +348,59 @@ async fn validate_form_multipart_text() {
         )
         .await;
     assert_eq!(res.body_bytes(), Some(b"Alex".as_slice()));
+}
+
+#[tokio::test]
+async fn vld_plugin_audit_and_validate_query_route() {
+    use ruvo_core::CheckKind;
+    use ruvo_vld::{ValidExt, ValidateRouteExt, Vld};
+
+    vld::schema! {
+        #[derive(Debug, Clone)]
+        pub struct Search {
+            pub q: String => vld::string().min(1),
+        }
+    }
+    ruvo_vld::doc_schema!(Search);
+
+    let mut bare = App::new();
+    bare.post("/x", |_r: Request| async { Response::text("ok") });
+    bare.install(Vld);
+    let server = bare.build().unwrap();
+    let results = bare
+        .run_checks(server.state(), &[CheckKind::Audit])
+        .await;
+    assert!(results.iter().any(|r| r.name == "vld" && !r.ok));
+
+    let mut app = App::new();
+    app.get("/search", |req: Request| async move {
+        let q = req.valid::<Search>();
+        Response::text(q.q.clone())
+    })
+    .validate_query::<Search>();
+    app.install(Vld);
+
+    let server = app.build().unwrap();
+    let ok = server
+        .handle_request(Method::GET, "/search?q=hi", "")
+        .await;
+    assert_eq!(ok.body_bytes(), Some(b"hi".as_slice()));
+
+    // Coercion path (openapi feature): numeric string → number via schema.
+    vld::schema! {
+        #[derive(Debug, Clone)]
+        pub struct NumQ {
+            pub n: f64 => vld::number().min(1.0),
+        }
+    }
+    ruvo_vld::doc_schema!(NumQ);
+    let mut app2 = App::new();
+    app2.get("/n", |req: Request| async move {
+        let q = req.valid::<NumQ>();
+        Response::text((q.n as i64).to_string())
+    })
+    .validate_query::<NumQ>();
+    let s2 = app2.build().unwrap();
+    let res = s2.handle_request(Method::GET, "/n?n=3", "").await;
+    assert_eq!(res.body_bytes(), Some(b"3".as_slice()));
 }

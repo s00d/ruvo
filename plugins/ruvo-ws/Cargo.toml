@@ -7,20 +7,20 @@ license = "MIT"
 publish = false
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
- hyper = { version = "1", features = ["server", "client", "http2"] }
- hyper-util = { version = "0.1", features = ["tokio", "client-legacy", "http2"] }
-tokio-tungstenite = { version = "0.26", default-features = false, features = ["connect"] }
-futures-util = { version = "0.3", features = ["sink"] }
-http = "1"
-tracing = "0.1"
-bytes = "1"
-tokio = { version = "1", features = ["sync"] }
+ruvo-core = { workspace = true }
+ hyper = { workspace = true, features = ["server", "client", "http2"] }
+ hyper-util = { workspace = true, features = ["tokio", "client-legacy", "http2"] }
+tokio-tungstenite = { workspace = true, default-features = false, features = ["connect"] }
+futures-util = { workspace = true, features = ["sink"] }
+http = { workspace = true }
+tracing = { workspace = true }
+bytes = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }
 
 [dev-dependencies]
-ruvo-core = { path = "../../crates/ruvo-core", features = ["testing"] }
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "time", "io-util"] }
-tokio-tungstenite = { version = "0.26", default-features = false, features = ["connect"] }
-futures-util = { version = "0.3", default-features = false, features = ["std"] }
-http = "1"
-http-body-util = "0.1"
+ruvo-core = { workspace = true, features = ["testing"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "net", "time", "io-util"] }
+tokio-tungstenite = { workspace = true, default-features = false, features = ["connect"] }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+http = { workspace = true }
+http-body-util = { workspace = true }

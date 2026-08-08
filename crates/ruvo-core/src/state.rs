@@ -111,3 +111,27 @@ impl MatchedMetaCapture {
         self.inner.lock().unwrap().clone()
     }
 }
+
+/// Matched route path template (e.g. `/users/:id`), set after route match.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MatchedRoute(pub String);
+
+/// Capture for root middleware: filled when a route matches (low-cardinality metrics).
+#[derive(Clone, Default)]
+pub struct MatchedRouteCapture {
+    inner: std::sync::Arc<std::sync::Mutex<Option<String>>>,
+}
+
+impl MatchedRouteCapture {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn set(&self, route: impl Into<String>) {
+        *self.inner.lock().unwrap() = Some(route.into());
+    }
+
+    pub fn get(&self) -> Option<String> {
+        self.inner.lock().unwrap().clone()
+    }
+}

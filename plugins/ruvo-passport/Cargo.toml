@@ -23,6 +23,7 @@ jwt = [
     "dep:rand_core",
     "dep:sha2",
     "dep:chrono",
+    "dep:serde_json",
 ]
 # OAuth2 login. Facade: `passport-oauth`.
 oauth = [
@@ -35,31 +36,47 @@ oauth = [
 ]
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
-http = "1"
-serde = { version = "1", features = ["derive"] }
+ruvo-core = { workspace = true }
+http = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 ruvo-session = { path = "../ruvo-session", optional = true }
-jsonwebtoken = { version = "9", optional = true }
-ruvo-db = { path = "../ruvo-db", optional = true }
-sea-orm = { version = "2.0", optional = true, default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
-sea-orm-migration = { version = "2.0", optional = true, default-features = false, features = ["runtime-tokio-rustls"] }
-async-trait = { version = "0.1", optional = true }
-argon2 = { version = "0.5", optional = true }
-password-hash = { version = "0.5", optional = true }
-rand_core = { version = "0.6", optional = true, features = ["std"] }
-getrandom = { version = "0.2", optional = true }
-sha2 = { version = "0.10", optional = true }
-chrono = { version = "0.4", optional = true, default-features = false, features = ["clock", "std", "serde"] }
-reqwest = { version = "0.12", optional = true, default-features = false, features = ["json", "rustls-tls"] }
-serde_json = { version = "1", optional = true }
-url = { version = "2", optional = true }
-base64 = { version = "0.22", optional = true }
-hmac = { version = "0.12", optional = true }
+jsonwebtoken = { workspace = true, optional = true }
+ruvo-db = { workspace = true, optional = true }
+sea-orm = { workspace = true, optional = true, default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, optional = true, default-features = false, features = ["runtime-tokio-rustls"] }
+async-trait = { workspace = true, optional = true }
+argon2 = { workspace = true, optional = true }
+password-hash = { workspace = true, optional = true }
+rand_core = { workspace = true, optional = true, features = ["std"] }
+getrandom = { workspace = true, optional = true }
+sha2 = { workspace = true, optional = true }
+chrono = { workspace = true, optional = true, default-features = false, features = ["clock", "std", "serde"] }
+reqwest = { workspace = true, optional = true, default-features = false, features = ["json", "rustls-tls"] }
+serde_json = { workspace = true, optional = true }
+url = { workspace = true, optional = true }
+base64 = { workspace = true, optional = true }
+hmac = { workspace = true, optional = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-jsonwebtoken = "9"
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+jsonwebtoken = { workspace = true }
+chrono = { workspace = true, default-features = false, features = ["clock", "std"] }
+ruvo-core = { workspace = true, features = ["testing"] }
+ruvo-testing = { workspace = true, features = ["sqlite"] }
 ruvo-session = { path = "../ruvo-session" }
 ruvo-cookies = { path = "../ruvo-cookies" }
+ruvo-db = { workspace = true, features = ["sqlite"] }
+sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite"] }
+tempfile = { workspace = true }
+http = { workspace = true }
+
+[[test]]
+name = "jwt_auth"
+required-features = ["jwt"]
+
+[[test]]
+name = "api_tokens"
+required-features = ["jwt"]

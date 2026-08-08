@@ -148,16 +148,38 @@ pub(crate) fn chain_from_entries(entries: &[MwEntry], handler: Handler) -> Handl
     build_chain(&mws, handler)
 }
 
-/// Request logger (`method path → status`).
-pub fn logger() -> Middleware {
-    Arc::new(|req, next| {
-        Box::pin(async move {
-            let method = req.method.clone();
-            let path = req.path.clone();
-            let res = next(req).await;
-            tracing::info!("{method} {path} → {}", res.status_code());
-            res
-        })
+/// Request logger (`method`, `path`, `status`, `latency_ms`, optional `request_id`).
+pub fn logger() -> MwEntry {
+    named("logger", |req: Request, next: Next| async move {
+        let method = req.method.as_str().to_string();
+        let path = req.path.clone();
+        let request_id = req
+            .get::<crate::request_id::RequestId>()
+            .map(|r| r.0.clone())
+            .unwrap_or_default();
+        let start = std::time::Instant::now();
+        let res = next(req).await;
+        let status = res.status_code().as_u16();
+        let latency_ms = start.elapsed().as_millis() as u64;
+        if request_id.is_empty() {
+            tracing::info!(
+                method = %method,
+                path = %path,
+                status,
+                latency_ms,
+                "request"
+            );
+        } else {
+            tracing::info!(
+                request_id = %request_id,
+                method = %method,
+                path = %path,
+                status,
+                latency_ms,
+                "request"
+            );
+        }
+        res
     })
 }
 

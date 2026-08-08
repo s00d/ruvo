@@ -62,7 +62,8 @@ impl SqlTaskStore {
                     lease_until text,
                     dedup_key text UNIQUE,
                     status text NOT NULL,
-                    worker text
+                    worker text,
+                    priority integer NOT NULL DEFAULT 0
                 )
                 "#
             }
@@ -78,6 +79,7 @@ impl SqlTaskStore {
                     dedup_key varchar(255) NULL,
                     status varchar(32) NOT NULL,
                     worker varchar(255) NULL,
+                    priority int NOT NULL DEFAULT 0,
                     UNIQUE KEY ruvo_tasks_dedup (dedup_key)
                 )
                 "#
@@ -93,21 +95,32 @@ impl SqlTaskStore {
                     lease_until TEXT,
                     dedup_key TEXT UNIQUE,
                     status TEXT NOT NULL,
-                    worker TEXT
+                    worker TEXT,
+                    priority INTEGER NOT NULL DEFAULT 0
                 )
                 "#
             }
         };
         conn.execute_unprepared(ddl).await?;
-        let idx = match backend {
+        let claim_idx = match backend {
             DbBackend::MySql => {
-                "CREATE INDEX ruvo_tasks_claim_idx ON ruvo_tasks (queue, status, run_at)"
+                "CREATE INDEX ruvo_tasks_claim_idx ON ruvo_tasks (queue, status, priority, run_at)"
             }
             _ => {
-                "CREATE INDEX IF NOT EXISTS ruvo_tasks_claim_idx ON ruvo_tasks (queue, status, run_at)"
+                "CREATE INDEX IF NOT EXISTS ruvo_tasks_claim_idx ON ruvo_tasks (queue, status, priority, run_at)"
             }
         };
-        let _ = conn.execute_unprepared(idx).await;
+        let _ = conn.execute_unprepared(claim_idx).await;
+        // `reap` filters running jobs by expired lease.
+        let reap_idx = match backend {
+            DbBackend::MySql => {
+                "CREATE INDEX ruvo_tasks_reap_idx ON ruvo_tasks (status, lease_until)"
+            }
+            _ => {
+                "CREATE INDEX IF NOT EXISTS ruvo_tasks_reap_idx ON ruvo_tasks (status, lease_until)"
+            }
+        };
+        let _ = conn.execute_unprepared(reap_idx).await;
         Ok(())
     }
 
@@ -202,11 +215,18 @@ fn row_to_task(row: &QueryResult) -> Result<Task, TaskError> {
         dedup_key: row.try_get_by("dedup_key").ok().flatten(),
         status: parse_status(&status),
         worker: row.try_get_by("worker").ok().flatten(),
+        priority: row
+            .try_get_by::<i32, _>("priority")
+            .or_else(|_| {
+                row.try_get_by::<i64, _>("priority")
+                    .map(|v| v as i32)
+            })
+            .unwrap_or(0),
     })
 }
 
 fn select_cols() -> &'static str {
-    "id, queue, payload, run_at, attempts, lease_until, dedup_key, status, worker"
+    "id, queue, payload, run_at, attempts, lease_until, dedup_key, status, worker, priority"
 }
 
 impl TaskStore for SqlTaskStore {
@@ -233,8 +253,8 @@ impl TaskStore for SqlTaskStore {
                 backend,
                 r#"
                 INSERT INTO ruvo_tasks
-                    (id, queue, payload, run_at, attempts, lease_until, dedup_key, status, worker)
-                VALUES ($1, $2, $3, $4, 0, NULL, $5, $6, NULL)
+                    (id, queue, payload, run_at, attempts, lease_until, dedup_key, status, worker, priority)
+                VALUES ($1, $2, $3, $4, 0, NULL, $5, $6, NULL, $7)
                 "#,
                 [
                     val_str(id.clone()),
@@ -243,6 +263,7 @@ impl TaskStore for SqlTaskStore {
                     val_str(run_at),
                     val_str_opt(opts.dedup_key.as_deref()),
                     val_str(status_str(TaskStatus::Pending)),
+                    Value::Int(Some(opts.priority)),
                 ],
             );
             match conn.execute_raw(stmt).await {
@@ -475,7 +496,7 @@ async fn claim_skip_locked(
                     WHERE queue = $1
                       AND status = 'pending'
                       AND run_at <= $2
-                    ORDER BY run_at
+                    ORDER BY priority DESC, run_at ASC, id ASC
                     LIMIT $3
                     FOR UPDATE SKIP LOCKED
                     "#,
@@ -551,7 +572,7 @@ async fn claim_select_update(
                     WHERE queue = $1
                       AND status = 'pending'
                       AND run_at <= $2
-                    ORDER BY run_at
+                    ORDER BY priority DESC, run_at ASC, id ASC
                     LIMIT $3
                     "#,
                     [
@@ -626,6 +647,7 @@ mod tests {
                 payload: Bytes::from_static(b"{}"),
                 run_at: None,
                 dedup_key: None,
+                priority: 0,
             })
             .await
             .unwrap();
@@ -641,5 +663,104 @@ mod tests {
             .await
             .unwrap();
         assert!(again.is_empty());
+    }
+
+    #[tokio::test]
+    async fn dedup_returns_same_id() {
+        let store = mem_store().await;
+        let a = store
+            .enqueue(EnqueueOpts {
+                queue: "default".into(),
+                payload: Bytes::from_static(b"1"),
+                run_at: None,
+                dedup_key: Some("k1".into()),
+                priority: 0,
+            })
+            .await
+            .unwrap();
+        let b = store
+            .enqueue(EnqueueOpts {
+                queue: "default".into(),
+                payload: Bytes::from_static(b"2"),
+                run_at: None,
+                dedup_key: Some("k1".into()),
+                priority: 0,
+            })
+            .await
+            .unwrap();
+        assert_eq!(a, b);
+        let claimed = store
+            .claim("default", "w", Duration::from_secs(5), 10)
+            .await
+            .unwrap();
+        assert_eq!(claimed.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn priority_claim_order() {
+        let store = mem_store().await;
+        let low = store
+            .enqueue(EnqueueOpts {
+                queue: "prio".into(),
+                payload: Bytes::from_static(b"low"),
+                run_at: None,
+                dedup_key: None,
+                priority: 1,
+            })
+            .await
+            .unwrap();
+        let high = store
+            .enqueue(EnqueueOpts {
+                queue: "prio".into(),
+                payload: Bytes::from_static(b"high"),
+                run_at: None,
+                dedup_key: None,
+                priority: 10,
+            })
+            .await
+            .unwrap();
+        let first = store
+            .claim("prio", "w", Duration::from_secs(5), 1)
+            .await
+            .unwrap();
+        assert_eq!(first[0].id, high);
+        let second = store
+            .claim("prio", "w", Duration::from_secs(5), 1)
+            .await
+            .unwrap();
+        assert_eq!(second[0].id, low);
+    }
+
+    #[tokio::test]
+    async fn heartbeat_fail_list() {
+        let store = mem_store().await;
+        let id = store
+            .enqueue(EnqueueOpts {
+                queue: "default".into(),
+                payload: Bytes::from_static(b"x"),
+                run_at: None,
+                dedup_key: None,
+                priority: 0,
+            })
+            .await
+            .unwrap();
+        let claimed = store
+            .claim("default", "w1", Duration::from_secs(30), 1)
+            .await
+            .unwrap();
+        assert_eq!(claimed[0].id, id);
+        store
+            .heartbeat(&id, Duration::from_secs(60))
+            .await
+            .unwrap();
+        store.fail(&id, None).await.unwrap();
+        let listed = store.list("default", 10).await.unwrap();
+        assert_eq!(listed.len(), 1);
+        assert_eq!(listed[0].status, TaskStatus::Failed);
+        let empty = store
+            .claim("default", "w2", Duration::from_secs(5), 10)
+            .await
+            .unwrap();
+        assert!(empty.is_empty());
     }
 }

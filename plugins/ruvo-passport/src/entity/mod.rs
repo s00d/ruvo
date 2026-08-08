@@ -1,5 +1,6 @@
 //! SeaORM entities for auth tables.
 
+pub mod api_token;
 pub mod refresh_token;
 pub mod user;
 

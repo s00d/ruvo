@@ -23,8 +23,11 @@ impl WebApp {
         #[cfg(feature = "env")]
         let _ = ruvo_env::load();
 
+        let mut inner = App::new();
+        let _ = inner.configure();
+
         Self {
-            inner: App::new(),
+            inner,
             site: None,
             public_url: None,
             views: PathBuf::from("views"),
@@ -67,8 +70,9 @@ impl WebApp {
 
         use crate::{memory_sessions, Cors, Csrf, Meta, Robots, Shield, Sitemap, Static, Templates};
 
+        self.inner.use_middleware(crate::request_id());
         self.inner.use_middleware(crate::logger());
-        self.inner.install(Cors::new().origin("*"));
+        self.inner.install(Cors::new());
         self.inner.install(Shield::new());
         self.inner.install(memory_sessions());
         self.inner.install(Csrf::new());
@@ -79,8 +83,7 @@ impl WebApp {
         }
 
         if self.views.is_dir() {
-            self.inner
-                .install(Templates::minijinja(&self.views).autoreload(cfg!(debug_assertions)));
+            self.inner.install(Templates::minijinja(&self.views));
         }
 
         let mut meta = Meta::new();
@@ -93,6 +96,7 @@ impl WebApp {
         self.inner.install(meta);
         self.inner.install(Sitemap::new());
         self.inner.install(Robots::new());
+        self.inner.with_probes();
     }
 
     /// Bind `0.0.0.0:port` and serve.
@@ -147,8 +151,11 @@ impl ApiApp {
         #[cfg(feature = "env")]
         let _ = ruvo_env::load();
 
+        let mut inner = App::new();
+        let _ = inner.configure();
+
         Self {
-            inner: App::new(),
+            inner,
             title: "API".into(),
             version: "1.0".into(),
             docs_mount: "/docs".into(),
@@ -179,12 +186,14 @@ impl ApiApp {
 
         use crate::{memory_sessions, Cors, OpenApi};
 
+        self.inner.use_middleware(crate::request_id());
         self.inner.use_middleware(crate::logger());
-        self.inner.install(Cors::new().origin("*"));
+        self.inner.install(Cors::new());
         self.inner.install(memory_sessions());
         self.inner.install(
             OpenApi::new(self.title.clone(), self.version.clone()).mount(self.docs_mount.clone()),
         );
+        self.inner.with_probes();
     }
 
     pub async fn listen(mut self, port: u16) -> Result<()> {

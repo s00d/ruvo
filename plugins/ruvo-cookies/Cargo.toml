@@ -7,9 +7,10 @@ license = "MIT"
 publish = false
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
-cookie = { version = "0.18", features = ["percent-encode"] }
-http = "1"
+ruvo-core = { workspace = true }
+cookie = { workspace = true, features = ["percent-encode"] }
+http = { workspace = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["macros", "rt"] }
+tokio = { workspace = true, features = ["macros", "rt"] }
+cookie = { workspace = true, features = ["percent-encode"] }

@@ -26,6 +26,11 @@ pub struct TokenPair {
 }
 
 pub fn hash_refresh_token(raw: &str) -> String {
+    hash_token(raw)
+}
+
+/// SHA-256 hex digest (refresh tokens + PATs).
+pub fn hash_token(raw: &str) -> String {
     use sha2::{Digest, Sha256};
     let mut h = Sha256::new();
     h.update(raw.as_bytes());

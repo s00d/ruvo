@@ -38,6 +38,13 @@ impl From<ruvo_vld::ValidationError> for AppError {
     }
 }
 
+#[cfg(feature = "storage")]
+impl From<ruvo_storage::StorageError> for AppError {
+    fn from(err: ruvo_storage::StorageError) -> Self {
+        Self::Core(err.into())
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         match self {

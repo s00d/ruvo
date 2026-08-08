@@ -1,7 +1,7 @@
 mod file;
 mod typed;
 
-pub use typed::{Html, Json, NoContent, Redirect, Text};
+pub use typed::{referer_or, Html, Json, NoContent, Redirect, Text};
 
 use crate::error::IntoResponse;
 use bytes::Bytes;

@@ -1,15 +1,25 @@
 use crate::handle::DbPool;
+use crate::migrate_cli::run_migrate;
 use crate::tx::inject_conn;
+use ruvo_core::extend::StateMap;
 use ruvo_core::{App, Error, Plugin};
 use sea_orm::{Database, DatabaseConnection};
 use sea_orm_migration::MigratorTrait;
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::Arc;
 
 type MigrateFn = Arc<
     dyn Fn(
             DatabaseConnection,
             Vec<String>,
-        ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), Error>> + Send>>
+        ) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send>>
+        + Send
+        + Sync,
+>;
+
+type SeedFn = Arc<
+    dyn Fn(Arc<StateMap>) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send>>
         + Send
         + Sync,
 >;
@@ -18,12 +28,17 @@ type MigrateFn = Arc<
 pub struct Db {
     url: String,
     migrate: Option<MigrateFn>,
+    seed: Option<SeedFn>,
 }
 
 impl Db {
     pub fn from_env() -> Self {
         let url = std::env::var("DATABASE_URL").unwrap_or_default();
-        Self { url, migrate: None }
+        Self {
+            url,
+            migrate: None,
+            seed: None,
+        }
     }
 
     pub fn url(mut self, url: impl Into<String>) -> Self {
@@ -31,11 +46,21 @@ impl Db {
         self
     }
 
-    /// Register `myapp migrate` / `migrate status` / `migrate down` CLI hooks.
+    /// Register `myapp migrate [up|down|status] [N]` CLI hooks.
     pub fn migrations<M: MigratorTrait + 'static>(mut self) -> Self {
         self.migrate = Some(Arc::new(move |conn, args| {
             Box::pin(async move { run_migrate::<M>(conn, &args).await })
         }));
+        self
+    }
+
+    /// Register `myapp seed` CLI (runs after DB startup; not on every server start).
+    pub fn seed<F, Fut>(mut self, f: F) -> Self
+    where
+        F: Fn(Arc<StateMap>) -> Fut + Send + Sync + 'static,
+        Fut: Future<Output = Result<(), Error>> + Send + 'static,
+    {
+        self.seed = Some(Arc::new(move |state| Box::pin(f(state))));
         self
     }
 }
@@ -47,15 +72,31 @@ impl Plugin for Db {
 
     fn meta(&self) -> ruvo_core::PluginMeta {
         ruvo_core::PluginMeta::new("Database")
-            .description("SeaORM pool and migrate CLI hooks")
+            .description("SeaORM pool, migrate CLI, optional seed CLI")
             .version(env!("CARGO_PKG_VERSION"))
     }
 
-    fn install(self, app: &mut App) {
+    fn install(mut self, app: &mut App) {
+        // Env wins, then builder `.url()`, then `[db] url` in toml.
+        if let Ok(u) = std::env::var("DATABASE_URL") {
+            if !u.is_empty() {
+                self.url = u;
+            }
+        }
+        if self.url.is_empty() {
+            if let Some(u) = app
+                .config_doc()
+                .and_then(|d| d.section("db"))
+                .and_then(|s| s.get("url").and_then(|v| v.as_str()).map(str::to_string))
+            {
+                self.url = u;
+            }
+        }
+
         if self.url.is_empty() {
             app.on_startup(|_state| async {
                 Err(Error::Internal(
-                    "DATABASE_URL is empty; set it before installing Db".into(),
+                    "database url is empty; set DATABASE_URL or [db] url in ruvo.toml".into(),
                 ))
             });
             return;
@@ -114,29 +155,12 @@ impl Plugin for Db {
                 }
             });
         }
-    }
-}
 
-async fn run_migrate<M: MigratorTrait>(
-    conn: DatabaseConnection,
-    args: &[String],
-) -> Result<(), Error> {
-    let sub = args.first().map(String::as_str).unwrap_or("");
-    match sub {
-        "" | "up" => M::up(&conn, None)
-            .await
-            .map_err(|e| Error::Internal(format!("migrate up: {e}")))?,
-        "status" => M::status(&conn)
-            .await
-            .map_err(|e| Error::Internal(format!("migrate status: {e}")))?,
-        "down" => M::down(&conn, Some(1))
-            .await
-            .map_err(|e| Error::Internal(format!("migrate down: {e}")))?,
-        other => {
-            return Err(Error::Internal(format!(
-                "unknown migrate subcommand `{other}` (use up|status|down)"
-            )));
+        if let Some(seed) = self.seed {
+            app.register_cli("seed", move |state, _args| {
+                let seed = Arc::clone(&seed);
+                async move { seed(state).await }
+            });
         }
     }
-    Ok(())
 }

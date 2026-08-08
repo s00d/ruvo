@@ -1,6 +1,7 @@
 //! `req.http()` — client bound to inbound deadline and trace headers.
 
-use crate::client::{propagation_headers, HttpClient, NamedClient, PendingRequest, RequestId};
+use crate::client::{propagation_headers, HttpClient, NamedClient, PendingRequest};
+use ruvo_core::RequestId;
 use http::Method;
 use ruvo_core::Request;
 

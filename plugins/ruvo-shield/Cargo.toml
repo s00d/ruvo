@@ -7,8 +7,8 @@ license = "MIT"
 publish = false
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
+ruvo-core = { workspace = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
-http = "1"
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http = { workspace = true }

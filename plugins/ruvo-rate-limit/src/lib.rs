@@ -1,12 +1,29 @@
 //! Rate limiting for Ruvo (Express [`express-rate-limit`](https://www.npmjs.com/package/express-rate-limit)-style).
 
-use ruvo_core::extend::named;
-use ruvo_core::{with_state, App, ClientAddr, Plugin, Request, Response};
+use ruvo_core::extend::{named, MwEntry};
+use ruvo_core::{
+    with_state, App, ClientAddr, Plugin, RateLimitIdentity, Request, Response,
+};
 use ruvo_store::KvStore;
+use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::net::IpAddr;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+
+/// How the rate-limit key is derived (overridden by [`RateLimit::key_fn`]).
+#[derive(Clone, Copy, Debug, Default)]
+pub enum RateLimitKey {
+    /// Client IP ([`ClientAddr`]).
+    #[default]
+    Ip,
+    /// [`RateLimitIdentity`] when set, otherwise IP.
+    Identity,
+    /// `ip` + lowercased form/json field (empty field → IP only).
+    IpAndInput {
+        field: &'static str,
+    },
+}
 
 /// Result of a rate-limit check.
 struct Outcome {
@@ -20,12 +37,15 @@ struct Outcome {
 type KeyFn = Arc<dyn Fn(&Request) -> String + Send + Sync>;
 type SkipFn = Arc<dyn Fn(&Request) -> bool + Send + Sync>;
 
-/// Rate limiter plugin.
+/// Rate limiter plugin / route middleware.
 pub struct RateLimit {
     max: usize,
     window: Duration,
     max_entries: usize,
     message: String,
+    key: RateLimitKey,
+    /// Optional prefix so presets (login/forgot) do not share buckets.
+    prefix: Option<&'static str>,
     key_fn: Option<KeyFn>,
     skip: Option<SkipFn>,
     backend: Backend,
@@ -44,6 +64,8 @@ impl RateLimit {
             window,
             max_entries: 10_000,
             message: "Too Many Requests".into(),
+            key: RateLimitKey::Ip,
+            prefix: None,
             key_fn: None,
             skip: None,
             backend: Backend::LocalSliding,
@@ -66,7 +88,19 @@ impl RateLimit {
         self
     }
 
-    /// Custom rate-limit key (default: client IP).
+    /// Built-in key strategy (default [`RateLimitKey::Ip`]).
+    pub fn key(mut self, key: RateLimitKey) -> Self {
+        self.key = key;
+        self
+    }
+
+    /// Prefix prepended to the resolved key (`login:…`, `forgot:…`).
+    pub fn prefix(mut self, prefix: &'static str) -> Self {
+        self.prefix = Some(prefix);
+        self
+    }
+
+    /// Custom rate-limit key (overrides [`Self::key`]).
     pub fn key_fn<F>(mut self, f: F) -> Self
     where
         F: Fn(&Request) -> String + Send + Sync + 'static,
@@ -91,18 +125,107 @@ impl RateLimit {
             window,
             max_entries: 10_000,
             message: "Too Many Requests".into(),
+            key: RateLimitKey::Ip,
+            prefix: None,
             key_fn: None,
             skip: None,
             backend: Backend::SharedFixed(store),
+        }
+    }
+
+    /// Login POST throttle: 5 / 60s, key = IP + email.
+    pub fn login() -> Self {
+        Self::per_minute(5)
+            .prefix("login")
+            .key(RateLimitKey::IpAndInput { field: "email" })
+    }
+
+    /// Forgot-password throttle: 5 / 60s, IP + email.
+    pub fn forgot() -> Self {
+        Self::per_minute(5)
+            .prefix("forgot")
+            .key(RateLimitKey::IpAndInput { field: "email" })
+    }
+
+    /// 2FA challenge throttle: 5 / 60s, IP.
+    pub fn challenge() -> Self {
+        Self::per_minute(5).prefix("2fa").key(RateLimitKey::Ip)
+    }
+
+    /// Email verification resend: 6 / 60s, IP + email.
+    pub fn resend() -> Self {
+        Self::new(6, Duration::from_secs(60))
+            .prefix("verify-resend")
+            .key(RateLimitKey::IpAndInput { field: "email" })
+    }
+
+    /// Route / mount middleware (same check as the plugin).
+    pub fn middleware(self) -> MwEntry {
+        let runtime = self.into_runtime();
+        named(
+            runtime.mw_name(),
+            with_state(runtime, |rt, mut req, next| async move {
+                if rt.skip.as_ref().is_some_and(|f| f(&req)) {
+                    return next(req).await;
+                }
+                let key =
+                    resolve_key(&mut req, rt.key_fn.as_ref(), rt.key, rt.prefix).await;
+                let out = match &rt.backend {
+                    RuntimeBackend::Sliding(w) => w.check(&key),
+                    RuntimeBackend::Fixed(w) => w.check(&key).await,
+                };
+                if !out.allowed {
+                    return limited(rt.message.as_str(), &out);
+                }
+                let mut res = next(req).await;
+                attach_headers(&mut res, &out);
+                res
+            }),
+        )
+    }
+
+    fn into_runtime(self) -> RateLimitRuntime {
+        let backend = match self.backend {
+            Backend::LocalSliding => RuntimeBackend::Sliding(Arc::new(SlidingWindow::new(
+                self.max,
+                self.window,
+                self.max_entries,
+            ))),
+            Backend::SharedFixed(store) => RuntimeBackend::Fixed(Arc::new(FixedWindow {
+                store,
+                max: self.max as u64,
+                window: self.window,
+            })),
+        };
+        RateLimitRuntime {
+            message: self.message,
+            key: self.key,
+            prefix: self.prefix,
+            key_fn: self.key_fn,
+            skip: self.skip,
+            backend,
+            name: self
+                .prefix
+                .map(|p| format!("rate-limit:{p}"))
+                .unwrap_or_else(|| "rate-limit".into()),
         }
     }
 }
 
 struct RateLimitRuntime {
     message: String,
+    key: RateLimitKey,
+    prefix: Option<&'static str>,
     key_fn: Option<KeyFn>,
     skip: Option<SkipFn>,
     backend: RuntimeBackend,
+    name: String,
+}
+
+impl RateLimitRuntime {
+    fn mw_name(&self) -> String {
+        self.name.clone()
+    }
 }
 
 enum RuntimeBackend {
@@ -122,31 +245,15 @@ impl Plugin for RateLimit {
     }
 
     fn install(self, app: &mut App) {
-        let backend = match self.backend {
-            Backend::LocalSliding => RuntimeBackend::Sliding(Arc::new(SlidingWindow::new(
-                self.max,
-                self.window,
-                self.max_entries,
-            ))),
-            Backend::SharedFixed(store) => RuntimeBackend::Fixed(Arc::new(FixedWindow {
-                store,
-                max: self.max as u64,
-                window: self.window,
-            })),
-        };
-        let runtime = RateLimitRuntime {
-            message: self.message,
-            key_fn: self.key_fn,
-            skip: self.skip,
-            backend,
-        };
+        let runtime = self.into_runtime();
         app.use_middleware(named(
-            "rate-limit",
-            with_state(runtime, |rt, req, next| async move {
+            runtime.mw_name(),
+            with_state(runtime, |rt, mut req, next| async move {
                 if rt.skip.as_ref().is_some_and(|f| f(&req)) {
                     return next(req).await;
                 }
-                let key = resolve_key(&req, rt.key_fn.as_ref());
+                let key =
+                    resolve_key(&mut req, rt.key_fn.as_ref(), rt.key, rt.prefix).await;
                 let out = match &rt.backend {
                     RuntimeBackend::Sliding(w) => w.check(&key),
                     RuntimeBackend::Fixed(w) => w.check(&key).await,
@@ -162,11 +269,62 @@ impl Plugin for RateLimit {
     }
 }
 
-fn resolve_key(req: &Request, key_fn: Option<&KeyFn>) -> String {
-    if let Some(f) = key_fn {
-        return f(req);
+async fn resolve_key(
+    req: &mut Request,
+    key_fn: Option<&KeyFn>,
+    strategy: RateLimitKey,
+    prefix: Option<&'static str>,
+) -> String {
+    let raw = if let Some(f) = key_fn {
+        f(req)
+    } else {
+        match strategy {
+            RateLimitKey::Ip => client_ip(req).to_string(),
+            RateLimitKey::Identity => {
+                if let Some(id) = req.get::<RateLimitIdentity>() {
+                    format!("id:{}", id.0)
+                } else {
+                    client_ip(req).to_string()
+                }
+            }
+            RateLimitKey::IpAndInput { field } => {
+                let ip = client_ip(req);
+                match peek_input_field(req, field).await {
+                    Some(v) if !v.is_empty() => format!("{ip}:{}", v.to_ascii_lowercase()),
+                    _ => ip.to_string(),
+                }
+            }
+        }
+    };
+    match prefix {
+        Some(p) => format!("{p}:{raw}"),
+        None => raw,
     }
-    client_ip(req).to_string()
+}
+
+async fn peek_input_field(req: &mut Request, field: &str) -> Option<String> {
+    let ct = req
+        .header("content-type")
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    if ct.contains("application/json") {
+        let Ok(v) = req.json::<JsonValue>().await else {
+            return None;
+        };
+        return v
+            .get(field)
+            .and_then(|x| x.as_str())
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty());
+    }
+    // form / multipart / urlencoded — cached on request via input()
+    if let Ok(data) = req.input().await {
+        return data
+            .get(field)
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty());
+    }
+    None
 }
 
 fn client_ip(req: &Request) -> IpAddr {

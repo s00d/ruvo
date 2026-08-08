@@ -12,3 +12,107 @@ members = [
     "examples/misc/*",
 ]
 exclude = ["ci-smoke-min", "ci-smoke-api", "ci-smoke-web", ".ci-gen"]
+
+[workspace.dependencies]
+# Workspace crates
+ruvo-core = { path = "crates/ruvo-core" }
+ruvo = { path = "crates/ruvo" }
+ruvo-testing = { path = "crates/ruvo-testing", default-features = false }
+ruvo-db = { path = "plugins/ruvo-db", default-features = false }
+ruvo-redis = { path = "plugins/ruvo-redis" }
+ruvo-store = { path = "plugins/ruvo-store" }
+ruvo-tasks-store = { path = "plugins/ruvo-tasks-store" }
+ruvo-tasks = { path = "plugins/ruvo-tasks" }
+ruvo-storage = { path = "plugins/ruvo-storage" }
+ruvo-observability = { path = "plugins/ruvo-observability", default-features = false }
+
+# Shared third-party
+arc-swap = "1"
+argon2 = "0.5"
+async-compression = { version = "0.4", features = ["tokio", "gzip", "deflate", "brotli"] }
+async-trait = "0.1"
+base64 = "0.22"
+bytes = "1"
+chacha20poly1305 = { version = "0.10", features = ["std"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+clap = { version = "4", features = ["derive"] }
+cookie = { version = "0.18", features = ["percent-encode"] }
+criterion = { version = "0.5", features = ["async_tokio"] }
+cron = "0.15"
+ctrlc = "3"
+dotenvy = "0.15"
+file-rotate = "0.8"
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+getrandom = "0.2"
+h3 = "0.0.8"
+h3-quinn = "0.0.10"
+hkdf = "0.12"
+hmac = "0.12"
+http = "1"
+http-body = "1"
+http-body-util = "0.1"
+httpdate = "1"
+hyper = { version = "1" }
+hyper-util = { version = "0.1" }
+include_dir = "0.7"
+insta = { version = "1", features = ["json", "redactions", "filters"] }
+jsonwebtoken = "9"
+lettre = { version = "0.11", default-features = false, features = [
+    "builder",
+    "hostname",
+    "smtp-transport",
+    "pool",
+    "tokio1",
+    "tokio1-rustls",
+    "ring",
+    "rustls-platform-verifier",
+    "file-transport",
+] }
+matchit = "0.9"
+metrics = "0.24"
+metrics-exporter-prometheus = { version = "0.16", default-features = false }
+mime_guess = "2"
+minijinja = "2"
+minijinja-autoreload = "2"
+multer = "3"
+notify = { version = "6", default-features = false, features = ["macos_fsevent"] }
+opendal = { version = "0.58", default-features = true }
+opentelemetry = { version = "0.30", default-features = false, features = ["trace"] }
+opentelemetry_sdk = { version = "0.30", default-features = false, features = ["trace", "rt-tokio"] }
+opentelemetry-otlp = { version = "0.30", default-features = false, features = ["grpc-tonic", "trace"] }
+password-hash = "0.5"
+percent-encoding = "2"
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
+quinn = { version = "0.11", features = ["rustls"] }
+rand = "0.8"
+rand_core = { version = "0.6", features = ["std"] }
+rcgen = "0.13"
+redis = { version = "0.32", default-features = false, features = ["tokio-comp", "connection-manager"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+rustls-pemfile = "2"
+rustls-pki-types = "1"
+sea-orm = { version = "2.0", default-features = false, features = ["runtime-tokio-rustls"] }
+sea-orm-migration = { version = "2.0", default-features = false, features = ["runtime-tokio-rustls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_qs = "0.13"
+serde_urlencoded = "0.7"
+sha2 = "0.10"
+socket2 = { version = "0.5", features = ["all"] }
+tempfile = "3"
+thiserror = "2"
+tokio = { version = "1" }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+tokio-tungstenite = { version = "0.26", default-features = false, features = ["connect"] }
+tokio-util = { version = "0.7", features = ["io"] }
+toml = { version = "0.8", default-features = false, features = ["parse"] }
+totp-rs = { version = "5", features = ["gen_secret", "otpauth"] }
+tracing = "0.1"
+tracing-appender = "0.2"
+tracing-opentelemetry = "0.31"
+tracing-subscriber = { version = "0.3", default-features = false, features = ["env-filter", "fmt", "std", "registry", "ansi"] }
+url = "2"
+urlencoding = "2"
+vld = { version = "0.4", default-features = true, features = ["serialize"] }

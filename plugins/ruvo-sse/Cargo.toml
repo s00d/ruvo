@@ -7,14 +7,14 @@ license = "MIT"
 publish = false
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
-bytes = "1"
-futures-util = { version = "0.3", default-features = false, features = ["std"] }
-tokio = { version = "1", features = ["sync", "time", "rt", "macros"] }
-tokio-stream = { version = "0.1", features = ["sync"] }
+ruvo-core = { workspace = true }
+bytes = { workspace = true }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+tokio = { workspace = true, features = ["sync", "time", "rt", "macros"] }
+tokio-stream = { workspace = true, features = ["sync"] }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
-http = "1"
-http-body-util = "0.1"
-futures-util = { version = "0.3", default-features = false, features = ["std"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }
+http = { workspace = true }
+http-body-util = { workspace = true }
+futures-util = { workspace = true, default-features = false, features = ["std"] }

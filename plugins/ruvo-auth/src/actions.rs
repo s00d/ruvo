@@ -14,9 +14,12 @@ use crate::token::{
 use crate::two_factor;
 use ruvo_core::{Error, IntoResponse, Json, Redirect, Request, Response, Result};
 use ruvo_db::DbExt;
-use ruvo_passport::{verify_password, PassportExt};
+use ruvo_passport::verify_password;
 use ruvo_session::SessionExt;
 use serde_json::json;
+
+#[cfg(feature = "activity")]
+use crate::activity_log::log_event;
 
 fn ok_redirect(path: &str) -> Response {
     Redirect::see_other(path).into_response()
@@ -49,11 +52,24 @@ fn field_fail(req: &Request, path: &str, field: &str, msg: &str, status: u16) ->
     }
     #[cfg(feature = "vld")]
     {
+        use ruvo_core::FormData;
         use serde_json::json;
-        req.session().set(
-            "flash_errors",
-            json!({ field: msg }).to_string(),
-        );
+        req.flash_errors(&json!({ field: msg }));
+        let mut old = serde_json::Map::new();
+        if let Some(data) = req.get::<FormData>() {
+            for (k, values) in data.text_map() {
+                if let Some(v) = values.first() {
+                    // Never echo passwords into flash_old.
+                    if k == "password" || k == "password_confirmation" || k == "current_password" {
+                        continue;
+                    }
+                    old.insert(k.clone(), json!(v));
+                }
+            }
+        }
+        if !old.is_empty() {
+            req.flash_old(&serde_json::Value::Object(old));
+        }
         return ok_redirect(path);
     }
     #[cfg(not(feature = "vld"))]
@@ -174,6 +190,51 @@ async fn creds(req: &mut Request) -> Result<CredsForm> {
     read_creds(req).await
 }
 
+/// Minimal HTML register form (when `web_forms(true)`). CSRF field filled if session has one.
+pub async fn register_form(req: Request) -> Result<Response> {
+    let state = req.state::<FortifyState>().clone();
+    require_feature(&state, Feature::Registration)?;
+    let csrf = session_csrf(&req);
+    let action = req.path.clone();
+    Ok(Response::html(format!(
+        r#"<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Register</title></head>
+<body>
+<form method="post" action="{action}">
+<input type="hidden" name="csrf" value="{csrf}">
+<label>Name <input name="name" required></label>
+<label>Email <input name="email" type="email" required></label>
+<label>Password <input name="password" type="password" required></label>
+<label>Confirm <input name="password_confirmation" type="password" required></label>
+<button type="submit">Register</button>
+</form>
+</body></html>"#
+    )))
+}
+
+/// Minimal HTML login form (when `web_forms(true)`).
+pub async fn login_form(req: Request) -> Result<Response> {
+    let csrf = session_csrf(&req);
+    let action = req.path.clone();
+    Ok(Response::html(format!(
+        r#"<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Login</title></head>
+<body>
+<form method="post" action="{action}">
+<input type="hidden" name="csrf" value="{csrf}">
+<label>Email <input name="email" type="email" required></label>
+<label>Password <input name="password" type="password" required></label>
+<button type="submit">Login</button>
+</form>
+</body></html>"#
+    )))
+}
+
+fn session_csrf(req: &Request) -> String {
+    use ruvo_session::SessionExt;
+    req.session().get("csrf").unwrap_or_default()
+}
+
 pub async fn register(mut req: Request) -> Result<Response> {
     let state = req.state::<FortifyState>().clone();
     require_feature(&state, Feature::Registration)?;
@@ -233,6 +294,17 @@ pub async fn register(mut req: Request) -> Result<Response> {
         req = hook(cu.clone(), req).await?;
     }
 
+    #[cfg(feature = "activity")]
+    log_event(
+        &req,
+        Some(cu.id),
+        "user.registered",
+        "user",
+        cu.id,
+        json!({ "email": cu.email }),
+    )
+    .await;
+
     finish_login(&mut req, cu, &state).await
 }
 
@@ -266,6 +338,16 @@ pub async fn login(mut req: Request) -> Result<Response> {
     let cu = store::load_current_user(&db, user.id)
         .await?
         .ok_or(Error::Unauthorized)?;
+    #[cfg(feature = "activity")]
+    log_event(
+        &req,
+        Some(cu.id),
+        "user.login",
+        "user",
+        cu.id,
+        json!({}),
+    )
+    .await;
     finish_login(&mut req, cu, &state).await
 }
 
@@ -274,7 +356,12 @@ pub async fn logout(mut req: Request) -> Result<Response> {
         .try_state::<FortifyState>()
         .map(|s| s.home_path.clone())
         .unwrap_or_else(|| "/".into());
-    req.logout();
+    #[cfg(feature = "activity")]
+    if let Some(id) = req.get::<CurrentUser>().map(|u| u.id) {
+        log_event(&req, Some(id), "user.logout", "user", id, json!({})).await;
+    }
+    use crate::guard::AuthExt;
+    req.logout_user();
     if wants_json(&req) {
         return Ok(json_ok(json!({ "ok": true })));
     }
@@ -338,6 +425,16 @@ pub async fn reset_password(mut req: Request) -> Result<Response> {
     if let Err(e) = store::set_password(&db, u.id, password).await {
         return Ok(map_err(&req, &state.paths.reset_password, e));
     }
+    #[cfg(feature = "activity")]
+    log_event(
+        &req,
+        None,
+        "password.changed",
+        "user",
+        u.id,
+        json!({ "via": "reset" }),
+    )
+    .await;
     if wants_json(&req) {
         return Ok(json_ok(json!({ "ok": true })));
     }
@@ -359,6 +456,16 @@ pub async fn verify_email(mut req: Request) -> Result<Response> {
     };
     let db = req.db().clone();
     store::mark_email_verified(&db, id).await?;
+    #[cfg(feature = "activity")]
+    log_event(
+        &req,
+        Some(id),
+        "email.verified",
+        "user",
+        id,
+        json!({}),
+    )
+    .await;
     if wants_json(&req) {
         return Ok(json_ok(json!({ "ok": true })));
     }
@@ -410,7 +517,35 @@ pub async fn update_profile(mut req: Request) -> Result<Response> {
         }
         Err(e) => return Ok(map_err(&req, &state.profile_path, e)),
     }
+    #[cfg(feature = "activity")]
+    {
+        let mut changed = serde_json::Map::new();
+        if name != user.name {
+            changed.insert(
+                "name".into(),
+                json!({ "old": user.name, "new": name }),
+            );
+        }
+        if email != user.email {
+            changed.insert(
+                "email".into(),
+                json!({ "old": user.email, "new": email }),
+            );
+        }
+        if !changed.is_empty() {
+            log_event(
+                &req,
+                Some(user.id),
+                "profile.updated",
+                "user",
+                user.id,
+                serde_json::Value::Object(changed),
+            )
+            .await;
+        }
+    }
     if let Some(cu) = store::load_current_user(&db, user.id).await? {
+        req.set(ruvo_core::RateLimitIdentity(cu.id.to_string()));
         req.set(cu);
     }
     if wants_json(&req) {
@@ -453,6 +588,16 @@ pub async fn update_password(mut req: Request) -> Result<Response> {
         ));
     }
     store::set_password(&db, user.id, password).await?;
+    #[cfg(feature = "activity")]
+    log_event(
+        &req,
+        Some(user.id),
+        "password.changed",
+        "user",
+        user.id,
+        json!({ "via": "profile" }),
+    )
+    .await;
     if wants_json(&req) {
         return Ok(json_ok(json!({ "ok": true })));
     }
@@ -503,6 +648,16 @@ pub async fn two_factor_enable(req: Request) -> Result<Response> {
     let codes_json = hash_recovery_codes(&codes)?;
     let db = req.db().clone();
     store::enable_2fa_secret(&db, user.id, &secret, &codes_json).await?;
+    #[cfg(feature = "activity")]
+    log_event(
+        &req,
+        Some(user.id),
+        "2fa.enabled",
+        "user",
+        user.id,
+        json!({}),
+    )
+    .await;
     let url = two_factor::otpauth_url(&secret, &state.app_name, &user.email)?;
     if wants_json(&req) {
         return Ok(json_ok(json!({
@@ -548,6 +703,16 @@ pub async fn two_factor_confirm(mut req: Request) -> Result<Response> {
         ));
     }
     store::confirm_2fa(&db, user.id).await?;
+    #[cfg(feature = "activity")]
+    log_event(
+        &req,
+        Some(user.id),
+        "2fa.confirmed",
+        "user",
+        user.id,
+        json!({}),
+    )
+    .await;
     req.session().remove("fortify:2fa_secret");
     req.session().remove("fortify:2fa_codes");
     req.session().remove("fortify:2fa_url");
@@ -584,6 +749,16 @@ pub async fn two_factor_disable(mut req: Request) -> Result<Response> {
         ));
     }
     store::disable_2fa(&db, user.id).await?;
+    #[cfg(feature = "activity")]
+    log_event(
+        &req,
+        Some(user.id),
+        "2fa.disabled",
+        "user",
+        user.id,
+        json!({}),
+    )
+    .await;
     if wants_json(&req) {
         return Ok(json_ok(json!({ "ok": true })));
     }
@@ -629,6 +804,16 @@ pub async fn two_factor_challenge(mut req: Request) -> Result<Response> {
     let cu = store::load_current_user(&db, user_id)
         .await?
         .ok_or(Error::Unauthorized)?;
+    #[cfg(feature = "activity")]
+    log_event(
+        &req,
+        Some(cu.id),
+        "user.login",
+        "user",
+        cu.id,
+        json!({ "via": "2fa" }),
+    )
+    .await;
     finish_login(&mut req, cu, &state).await
 }
 
@@ -765,6 +950,19 @@ pub async fn roles_create(mut req: Request) -> Result<Response> {
     let slug = body.slug.as_deref().unwrap_or("").trim();
     let db = req.db().clone();
     let r = store::create_role(&db, name, slug).await?;
+    #[cfg(feature = "activity")]
+    {
+        let actor = req.get::<CurrentUser>().map(|u| u.id);
+        log_event(
+            &req,
+            actor,
+            "role.created",
+            "role",
+            r.id,
+            json!({ "name": r.name, "slug": r.slug }),
+        )
+        .await;
+    }
     Ok((201, Json(json!({ "role": role_json(&r) }))).into_response())
 }
 
@@ -783,6 +981,19 @@ pub async fn roles_update(mut req: Request) -> Result<Response> {
         state.allow_system_role_delete,
     )
     .await?;
+    #[cfg(feature = "activity")]
+    {
+        let actor = req.get::<CurrentUser>().map(|u| u.id);
+        log_event(
+            &req,
+            actor,
+            "role.updated",
+            "role",
+            r.id,
+            json!({ "name": r.name, "slug": r.slug }),
+        )
+        .await;
+    }
     Ok(json_ok(json!({ "role": role_json(&r) })))
 }
 
@@ -793,6 +1004,11 @@ pub async fn roles_delete(req: Request) -> Result<Response> {
     let id = parse_id(&req)?;
     let db = req.db().clone();
     store::delete_role(&db, id, state.allow_system_role_delete).await?;
+    #[cfg(feature = "activity")]
+    {
+        let actor = req.get::<CurrentUser>().map(|u| u.id);
+        log_event(&req, actor, "role.deleted", "role", id, json!({})).await;
+    }
     Ok(json_ok(json!({ "ok": true })))
 }
 
@@ -804,6 +1020,19 @@ pub async fn roles_sync_permissions(mut req: Request) -> Result<Response> {
     let body: IdsBody = req.json().await.unwrap_or_default();
     let db = req.db().clone();
     store::sync_role_permissions(&db, id, &body.permission_ids).await?;
+    #[cfg(feature = "activity")]
+    {
+        let actor = req.get::<CurrentUser>().map(|u| u.id);
+        log_event(
+            &req,
+            actor,
+            "role.permissions.synced",
+            "role",
+            id,
+            json!({ "permission_ids": body.permission_ids }),
+        )
+        .await;
+    }
     Ok(json_ok(json!({
         "ok": true,
         "permission_ids": body.permission_ids,
@@ -833,6 +1062,19 @@ pub async fn permissions_create(mut req: Request) -> Result<Response> {
         body.slug.as_deref().unwrap_or(""),
     )
     .await?;
+    #[cfg(feature = "activity")]
+    {
+        let actor = req.get::<CurrentUser>().map(|u| u.id);
+        log_event(
+            &req,
+            actor,
+            "permission.created",
+            "permission",
+            p.id,
+            json!({ "name": p.name, "slug": p.slug }),
+        )
+        .await;
+    }
     Ok((201, Json(json!({ "permission": perm_json(&p) }))).into_response())
 }
 
@@ -844,6 +1086,19 @@ pub async fn permissions_update(mut req: Request) -> Result<Response> {
     let body: NameSlugBody = req.json().await.unwrap_or_default();
     let db = req.db().clone();
     let p = store::update_permission(&db, id, body.name.as_deref(), body.slug.as_deref()).await?;
+    #[cfg(feature = "activity")]
+    {
+        let actor = req.get::<CurrentUser>().map(|u| u.id);
+        log_event(
+            &req,
+            actor,
+            "permission.updated",
+            "permission",
+            p.id,
+            json!({ "name": p.name, "slug": p.slug }),
+        )
+        .await;
+    }
     Ok(json_ok(json!({ "permission": perm_json(&p) })))
 }
 
@@ -854,6 +1109,19 @@ pub async fn permissions_delete(req: Request) -> Result<Response> {
     let id = parse_id(&req)?;
     let db = req.db().clone();
     store::delete_permission(&db, id).await?;
+    #[cfg(feature = "activity")]
+    {
+        let actor = req.get::<CurrentUser>().map(|u| u.id);
+        log_event(
+            &req,
+            actor,
+            "permission.deleted",
+            "permission",
+            id,
+            json!({}),
+        )
+        .await;
+    }
     Ok(json_ok(json!({ "ok": true })))
 }
 
@@ -875,6 +1143,19 @@ pub async fn user_roles_sync(mut req: Request) -> Result<Response> {
     let body: IdsBody = req.json().await.unwrap_or_default();
     let db = req.db().clone();
     store::set_user_roles(&db, id, &body.role_ids).await?;
+    #[cfg(feature = "activity")]
+    {
+        let actor = req.get::<CurrentUser>().map(|u| u.id);
+        log_event(
+            &req,
+            actor,
+            "user.roles.synced",
+            "user",
+            id,
+            json!({ "role_ids": body.role_ids }),
+        )
+        .await;
+    }
     Ok(json_ok(json!({ "ok": true, "role_ids": body.role_ids })))
 }
 
@@ -907,7 +1188,8 @@ async fn finish_login(
     cu: CurrentUser,
     state: &FortifyState,
 ) -> Result<Response> {
-    req.login(cu.id.to_string(), cu.clone());
+    use crate::guard::AuthExt;
+    req.login_user(cu.clone());
     if wants_json(req) {
         return Ok(json_ok(json!({
             "id": cu.id,

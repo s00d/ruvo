@@ -1,5 +1,5 @@
 use ruvo::prelude::*;
-use ruvo::{Cors, Json, Static};
+use ruvo::{Cors, Static};
 
 mod modules;
 
@@ -32,9 +32,9 @@ async fn main() -> Result<()> {
     });
     app.use_middleware(logger());
     app.install(Cors::new().origin("*"));
+    app.with_probes();
 
     app.get("/", home);
-    app.get("/health", || async { Json(serde_json::json!({ "ok": true })) });
     modules::register(&mut app);
 
     app.install(Static::new(

@@ -1,7 +1,9 @@
 use crate::entity::note;
 use chrono::{FixedOffset, Utc};
-use ruvo::{ActiveModelTrait, ColumnTrait, DbHandle, EntityTrait, Error, Result, Set};
-use sea_orm::{QueryFilter, QueryOrder, QuerySelect};
+use ruvo::{
+    ActiveModelTrait, ColumnTrait, DbHandle, EntityTrait, Error, Page, PageParams, PaginateExt,
+    QueryFilter, QueryOrder, Result, Set,
+};
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct Note {
@@ -23,6 +25,7 @@ fn map_note(m: note::Model) -> Note {
 }
 
 pub async fn list_notes(db: &DbHandle, user_id: i64, limit: u64) -> Result<Vec<Note>> {
+    use sea_orm::QuerySelect;
     let rows = note::Entity::find()
         .filter(note::Column::UserId.eq(user_id))
         .order_by_desc(note::Column::Id)
@@ -31,6 +34,26 @@ pub async fn list_notes(db: &DbHandle, user_id: i64, limit: u64) -> Result<Vec<N
         .await
         .map_err(|e| Error::Internal(e.to_string()))?;
     Ok(rows.into_iter().map(map_note).collect())
+}
+
+pub async fn paginate_notes(
+    db: &DbHandle,
+    user_id: i64,
+    params: PageParams,
+) -> Result<Page<Note>> {
+    let page = note::Entity::find()
+        .filter(note::Column::UserId.eq(user_id))
+        .order_by_desc(note::Column::Id)
+        .paginate_ruvo(db, params)
+        .await
+        .map_err(Error::from)?;
+    Ok(Page {
+        data: page.data.into_iter().map(map_note).collect(),
+        total: page.total,
+        page: page.page,
+        per_page: page.per_page,
+        last_page: page.last_page,
+    })
 }
 
 pub async fn create_note(db: &DbHandle, user_id: i64, title: &str, body: &str) -> Result<i64> {

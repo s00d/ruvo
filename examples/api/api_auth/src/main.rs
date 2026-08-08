@@ -5,7 +5,7 @@
 //! curl -H 'x-api-key: demo' http://127.0.0.1:3000/me
 //! ```
 
-use ruvo::{App, Auth, Json, Passport, PassportExt, Request, Response, Result};
+use ruvo::{App, Auth, Json, Passport, PassportExt, Request, Result};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -38,13 +38,14 @@ fn build_app() -> App {
                 let keys = Arc::clone(&req.state::<Keys>());
                 async move { Ok(keys.0.get(&key).cloned()) }
             })
-            .skip("/health")
+            .skip("/healthz")
+            .skip("/ready")
             .middleware(),
         ),
     );
     app.use_middleware(Passport::authenticate("api-key"));
+    app.with_probes();
 
-    app.get("/health", |_r: Request| async { Response::text("ok") });
     app.get("/me", |req: Request| async move {
         Ok::<_, ruvo::Error>(Json(req.require_user::<User>()?.clone()))
     });

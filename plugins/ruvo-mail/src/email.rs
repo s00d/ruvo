@@ -19,7 +19,14 @@ pub struct EmailSnapshot {
     pub attachments: Vec<String>,
 }
 
-/// Fluent outbound message (Nodemailer-style `sendMail` fields).
+#[cfg(feature = "templates")]
+#[derive(Clone)]
+struct PendingView {
+    name: String,
+    ctx: serde_json::Value,
+}
+
+/// Fluent outbound message (Nodemailer / Laravel-style).
 #[derive(Clone)]
 pub struct Email {
     client: Option<MailClient>,
@@ -31,6 +38,16 @@ pub struct Email {
     text: Option<String>,
     html: Option<String>,
     attachments: Vec<Attachment>,
+    #[cfg(feature = "templates")]
+    html_view: Option<PendingView>,
+    #[cfg(feature = "templates")]
+    text_view: Option<PendingView>,
+    #[cfg(feature = "templates")]
+    ambient: Option<ruvo_templates::FrozenAmbient>,
+    #[cfg(feature = "markdown")]
+    pending_markdown: Option<String>,
+    #[cfg(all(feature = "templates", feature = "markdown"))]
+    markdown_view: Option<PendingView>,
 }
 
 #[derive(Clone)]
@@ -51,16 +68,36 @@ impl Email {
             text: None,
             html: None,
             attachments: Vec::new(),
+            #[cfg(feature = "templates")]
+            html_view: None,
+            #[cfg(feature = "templates")]
+            text_view: None,
+            #[cfg(feature = "templates")]
+            ambient: None,
+            #[cfg(feature = "markdown")]
+            pending_markdown: None,
+            #[cfg(all(feature = "templates", feature = "markdown"))]
+            markdown_view: None,
         }
     }
 
     pub(crate) fn with_client(client: MailClient) -> Self {
         let from = client.default_from.clone();
+        #[cfg(feature = "templates")]
+        let ambient = client.templates().map(|t| t.freeze_globals());
         Self {
             client: Some(client),
             from,
+            #[cfg(feature = "templates")]
+            ambient,
             ..Self::new()
         }
+    }
+
+    #[cfg(feature = "templates")]
+    pub(crate) fn with_ambient(mut self, ambient: ruvo_templates::FrozenAmbient) -> Self {
+        self.ambient = Some(ambient);
+        self
     }
 
     pub fn from(mut self, addr: impl Into<String>) -> Self {
@@ -90,11 +127,95 @@ impl Email {
 
     pub fn text(mut self, body: impl Into<String>) -> Self {
         self.text = Some(body.into());
+        #[cfg(feature = "templates")]
+        {
+            self.text_view = None;
+        }
         self
     }
 
     pub fn html(mut self, body: impl Into<String>) -> Self {
         self.html = Some(body.into());
+        #[cfg(feature = "templates")]
+        {
+            self.html_view = None;
+        }
+        #[cfg(feature = "markdown")]
+        {
+            self.pending_markdown = None;
+        }
+        #[cfg(all(feature = "templates", feature = "markdown"))]
+        {
+            self.markdown_view = None;
+        }
+        self
+    }
+
+    /// Defer MiniJinja HTML render until [`Self::send`] (Laravel-style `view`).
+    ///
+    /// Layouts: `{% extends "mail/layout.html" %}` in the template file.
+    /// Requires feature `templates` and an installed [`ruvo_templates::MiniJinjaTemplates`]
+    /// wired onto the [`MailClient`] (Templates → Mail install order, or startup hook).
+    #[cfg(feature = "templates")]
+    pub fn view<T: serde::Serialize>(mut self, name: impl Into<String>, ctx: T) -> Self {
+        let ctx = serde_json::to_value(ctx).unwrap_or(serde_json::Value::Null);
+        self.html_view = Some(PendingView {
+            name: name.into(),
+            ctx,
+        });
+        self.html = None;
+        #[cfg(feature = "markdown")]
+        {
+            self.pending_markdown = None;
+        }
+        #[cfg(all(feature = "templates", feature = "markdown"))]
+        {
+            self.markdown_view = None;
+        }
+        self
+    }
+
+    /// Like [`Self::view`], but for the plain-text body.
+    #[cfg(feature = "templates")]
+    pub fn text_view<T: serde::Serialize>(mut self, name: impl Into<String>, ctx: T) -> Self {
+        let ctx = serde_json::to_value(ctx).unwrap_or(serde_json::Value::Null);
+        self.text_view = Some(PendingView {
+            name: name.into(),
+            ctx,
+        });
+        self.text = None;
+        self
+    }
+
+    /// Defer markdown→HTML until [`Self::send`] (feature `markdown`).
+    ///
+    /// Also sets the plain-text body to the raw markdown source (unless you call
+    /// [`Self::text`] afterwards).
+    #[cfg(feature = "markdown")]
+    pub fn markdown(mut self, md: impl Into<String>) -> Self {
+        let md = md.into();
+        self.text = Some(md.clone());
+        self.pending_markdown = Some(md);
+        self.html = None;
+        #[cfg(feature = "templates")]
+        {
+            self.html_view = None;
+            self.markdown_view = None;
+        }
+        self
+    }
+
+    /// Render a MiniJinja template as markdown, then convert to HTML at send.
+    #[cfg(all(feature = "templates", feature = "markdown"))]
+    pub fn markdown_view<T: serde::Serialize>(mut self, name: impl Into<String>, ctx: T) -> Self {
+        let ctx = serde_json::to_value(ctx).unwrap_or(serde_json::Value::Null);
+        self.markdown_view = Some(PendingView {
+            name: name.into(),
+            ctx,
+        });
+        self.html = None;
+        self.html_view = None;
+        self.pending_markdown = None;
         self
     }
 
@@ -118,6 +239,59 @@ impl Email {
             .clone()
             .ok_or_else(|| Error::Internal("mail: no client — use MailClient::send".into()))?;
         client.send(self).await
+    }
+
+    #[cfg(any(feature = "templates", feature = "markdown"))]
+    pub(crate) fn resolve_body(&mut self, client: &MailClient) -> Result<()> {
+        #[cfg(feature = "templates")]
+        {
+            let needs_templates = self.html_view.is_some()
+                || self.text_view.is_some()
+                || {
+                    #[cfg(feature = "markdown")]
+                    {
+                        self.markdown_view.is_some()
+                    }
+                    #[cfg(not(feature = "markdown"))]
+                    {
+                        false
+                    }
+                };
+            if needs_templates {
+                let templates = client.templates().ok_or_else(|| {
+                    Error::Internal(
+                        "mail view requires Templates plugin (install Templates before Mail, or enable mail-templates)"
+                            .into(),
+                    )
+                })?;
+                let ambient = self
+                    .ambient
+                    .clone()
+                    .unwrap_or_else(|| templates.freeze_globals());
+                if let Some(view) = self.html_view.take() {
+                    self.html = Some(templates.render_owned(&ambient, &view.name, view.ctx)?);
+                }
+                if let Some(view) = self.text_view.take() {
+                    self.text = Some(templates.render_owned(&ambient, &view.name, view.ctx)?);
+                }
+                #[cfg(feature = "markdown")]
+                if let Some(view) = self.markdown_view.take() {
+                    let md = templates.render_owned(&ambient, &view.name, view.ctx)?;
+                    if self.text.is_none() {
+                        self.text = Some(md.clone());
+                    }
+                    self.html = Some(crate::markdown::to_html(&md));
+                }
+                let _ = self.ambient.take();
+            }
+        }
+
+        #[cfg(feature = "markdown")]
+        if let Some(md) = self.pending_markdown.take() {
+            self.html = Some(crate::markdown::to_html(&md));
+        }
+
+        Ok(())
     }
 
     pub(crate) fn snapshot(&self) -> EmailSnapshot {

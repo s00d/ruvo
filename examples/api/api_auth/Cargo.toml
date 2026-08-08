@@ -9,7 +9,7 @@ name = "api_auth"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { path = "../../../crates/ruvo", features = ["passport"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-serde = { version = "1", features = ["derive"] }
-tracing = "0.1"
+ruvo = { workspace = true, features = ["passport"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+serde = { workspace = true, features = ["derive"] }
+tracing = { workspace = true }

@@ -11,7 +11,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 mod input;
-pub use input::{FormData, Upload};
+pub use input::{FormData, Upload, UploadRules};
 
 /// Request body: buffered bytes or a lazy stream (collected on demand).
 pub enum ReqBody {
@@ -310,6 +310,11 @@ impl Request {
         T: Send + Sync + 'static,
     {
         self.state.get::<T>()
+    }
+
+    /// Shared application [`StateMap`] (same bag as `app.state(...)`).
+    pub fn states(&self) -> Arc<StateMap> {
+        Arc::clone(&self.state)
     }
 
     /// Store a per-request value (e.g. from auth middleware).

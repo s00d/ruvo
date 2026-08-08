@@ -159,6 +159,21 @@ fn render_failed_err(name: &str, e: &minijinja::Error) -> Error {
     }
 }
 
+/// Pre-evaluated ambient template context (globals ± per-request helpers).
+///
+/// Freeze once at compose time (e.g. `req.mail()`), then render later without a
+/// [`Request`] — used by mail deferred `.view()` and other non-HTTP consumers.
+#[derive(Clone, Default)]
+pub struct FrozenAmbient {
+    map: HashMap<String, Value>,
+}
+
+impl FrozenAmbient {
+    pub fn is_empty(&self) -> bool {
+        self.map.is_empty()
+    }
+}
+
 /// MiniJinja template set stored in Ruvo app state.
 #[derive(Clone)]
 pub struct MiniJinjaTemplates {
@@ -175,16 +190,62 @@ enum MiniJinjaTemplatesEngine {
 }
 
 impl MiniJinjaTemplates {
-    pub fn render_html<T: Serialize>(&self, req: &Request, name: &str, ctx: T) -> Result<Response> {
-        let mut merged: HashMap<String, Value> = (*self.globals).clone();
-
+    /// Globals + per-request helpers evaluated against `req` (owned, no borrow).
+    pub fn freeze_ambient(&self, req: &Request) -> FrozenAmbient {
+        let mut map = self.merge_base();
         for (k, provider) in self.helpers.snapshot() {
-            merged.insert(k, provider(req));
+            map.insert(k, provider(req));
         }
         for (k, provider) in self.per_request.iter() {
-            merged.insert(k.clone(), (provider)(req));
+            map.insert(k.clone(), (provider)(req));
         }
+        FrozenAmbient { map }
+    }
 
+    /// Globals only — for background jobs / mail compose without a [`Request`].
+    pub fn freeze_globals(&self) -> FrozenAmbient {
+        FrozenAmbient {
+            map: self.merge_base(),
+        }
+    }
+
+    /// Render `name` merging a previously frozen ambient map with local `ctx`.
+    pub fn render_owned<T: Serialize>(
+        &self,
+        ambient: &FrozenAmbient,
+        name: &str,
+        ctx: T,
+    ) -> Result<String> {
+        self.render_merged(name, ambient.map.clone(), ctx)
+    }
+
+    /// Render a template to a string (same ambient merge as [`Self::render_html`]).
+    ///
+    /// Use for email bodies, fragments, or any non-HTTP consumer. Layouts work via
+    /// Jinja `{% extends %}` in the template file.
+    pub fn render_str<T: Serialize>(&self, req: &Request, name: &str, ctx: T) -> Result<String> {
+        self.render_owned(&self.freeze_ambient(req), name, ctx)
+    }
+
+    /// Render with globals only (no per-request helpers) — for background jobs without a [`Request`].
+    pub fn render_str_globals<T: Serialize>(&self, name: &str, ctx: T) -> Result<String> {
+        self.render_owned(&self.freeze_globals(), name, ctx)
+    }
+
+    pub fn render_html<T: Serialize>(&self, req: &Request, name: &str, ctx: T) -> Result<Response> {
+        Ok(Response::html(self.render_str(req, name, ctx)?))
+    }
+
+    fn merge_base(&self) -> HashMap<String, Value> {
+        (*self.globals).clone()
+    }
+
+    fn render_merged<T: Serialize>(
+        &self,
+        name: &str,
+        mut merged: HashMap<String, Value>,
+        ctx: T,
+    ) -> Result<String> {
         let json = serde_json::to_value(ctx).map_err(Error::from)?;
         let obj = json.as_object().ok_or_else(|| {
             Error::BadRequest("templates.render ctx must serialize to an object".into())
@@ -192,10 +253,9 @@ impl MiniJinjaTemplates {
         for (k, v) in obj {
             merged.insert(k.clone(), Value::from_serialize(v));
         }
-
         let ctx_val = Value::from(merged);
 
-        let out = match &self.engine {
+        match &self.engine {
             MiniJinjaTemplatesEngine::Static(env) => {
                 let tmpl = env
                     .get_template(name)
@@ -213,8 +273,7 @@ impl MiniJinjaTemplates {
                 tmpl.render(ctx_val)
                     .map_err(|e| render_failed_err(name, &e))
             }
-        }?;
-        Ok(Response::html(out))
+        }
     }
 
     /// Schedule a filesystem reload on the next render (no-op for static engine).
@@ -244,6 +303,7 @@ impl Templates {
 pub struct MiniJinjaTemplatesBuilder {
     dir: PathBuf,
     autoreload: bool,
+    autoreload_explicit: bool,
     globals: HashMap<String, Value>,
     per_request: HashMap<String, PerRequestProvider>,
 }
@@ -253,6 +313,7 @@ impl MiniJinjaTemplatesBuilder {
         Self {
             dir,
             autoreload: cfg!(debug_assertions),
+            autoreload_explicit: false,
             globals: HashMap::new(),
             per_request: HashMap::new(),
         }
@@ -283,6 +344,7 @@ impl MiniJinjaTemplatesBuilder {
     /// Enable/disable filesystem autoreload (dev convenience).
     pub fn autoreload(mut self, enabled: bool) -> Self {
         self.autoreload = enabled;
+        self.autoreload_explicit = true;
         self
     }
 }
@@ -292,7 +354,16 @@ impl Plugin for MiniJinjaTemplatesBuilder {
         "templates"
     }
 
-    fn install(self, app: &mut ruvo_core::App) {
+    fn install(mut self, app: &mut ruvo_core::App) {
+        if !self.autoreload_explicit {
+            if let Some(doc) = app.config_doc() {
+                if let Some(section) = doc.section("templates") {
+                    if let Some(v) = section.get("autoreload").and_then(|v| v.as_bool()) {
+                        self.autoreload = v;
+                    }
+                }
+            }
+        }
         let helpers = ensure_helpers(app);
         let globals = Arc::new(self.globals);
         let per_request = Arc::new(self.per_request);
@@ -328,7 +399,7 @@ impl Plugin for MiniJinjaTemplatesBuilder {
             helpers,
         });
 
-        app.register_check("templates", move |_state| {
+        app.register_audit("templates", move |_state| {
             let dir = check_dir.clone();
             async move { compile_templates_in_dir(&dir) }
         });
@@ -374,15 +445,23 @@ fn walkdir_templates(dir: &Path) -> Result<Vec<PathBuf>> {
     Ok(out)
 }
 
-/// Extension that renders a template into a HTML response.
+/// Extension that renders a template into a HTML response or string.
 pub trait RenderExt {
     fn render<T: Serialize>(&self, name: &str, ctx: T) -> Result<Response>;
+
+    /// Same merge as [`Self::render`], but returns the HTML/string body (e.g. for email).
+    fn render_str<T: Serialize>(&self, name: &str, ctx: T) -> Result<String>;
 }
 
 impl RenderExt for Request {
     fn render<T: Serialize>(&self, name: &str, ctx: T) -> Result<Response> {
         let templates = self.state::<MiniJinjaTemplates>();
         templates.render_html(self, name, ctx)
+    }
+
+    fn render_str<T: Serialize>(&self, name: &str, ctx: T) -> Result<String> {
+        let templates = self.state::<MiniJinjaTemplates>();
+        templates.render_str(self, name, ctx)
     }
 }
 

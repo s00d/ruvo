@@ -1,4 +1,4 @@
-//! Fortify-style AuthMigrator: passport tables + profile/2FA/RBAC.
+//! Fortify AuthMigrator: passport tables + password-reset + RBAC (single init step).
 
 use sea_orm_migration::prelude::*;
 
@@ -9,13 +9,12 @@ pub struct AuthMigrator;
 impl MigratorTrait for AuthMigrator {
     fn migrations() -> Vec<Box<dyn MigrationTrait>> {
         let mut v = ruvo_passport::AuthMigrator::migrations();
-        v.push(Box::new(m20260307_000003_fortify::Migration));
-        v.push(Box::new(m20260307_000004_rbac::Migration));
+        v.push(Box::new(m20260308_000002_fortify::Migration));
         v
     }
 }
 
-mod m20260307_000003_fortify {
+mod m20260308_000002_fortify {
     use sea_orm_migration::prelude::*;
 
     #[derive(DeriveMigrationName)]
@@ -24,18 +23,6 @@ mod m20260307_000003_fortify {
     #[async_trait::async_trait]
     impl MigrationTrait for Migration {
         async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-            // Extend auth_users with Fortify columns (idempotent-ish via IF NOT EXISTS pattern).
-            for sql in [
-                "ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS name varchar NOT NULL DEFAULT ''",
-                "ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS avatar_path varchar NULL",
-                "ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS email_verified_at timestamptz NULL",
-                "ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS two_factor_secret varchar NULL",
-                "ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS two_factor_recovery_codes text NULL",
-                "ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS two_factor_confirmed_at timestamptz NULL",
-            ] {
-                manager.get_connection().execute_unprepared(sql).await?;
-            }
-
             manager
                 .create_table(
                     Table::create()
@@ -61,39 +48,6 @@ mod m20260307_000003_fortify {
                 )
                 .await?;
 
-            Ok(())
-        }
-
-        async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-            manager
-                .drop_table(
-                    Table::drop()
-                        .table(AuthPasswordResetTokens::Table)
-                        .to_owned(),
-                )
-                .await?;
-            Ok(())
-        }
-    }
-
-    #[derive(Iden)]
-    enum AuthPasswordResetTokens {
-        Table,
-        Email,
-        TokenHash,
-        CreatedAt,
-    }
-}
-
-mod m20260307_000004_rbac {
-    use sea_orm_migration::prelude::*;
-
-    #[derive(DeriveMigrationName)]
-    pub struct Migration;
-
-    #[async_trait::async_trait]
-    impl MigrationTrait for Migration {
-        async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
             manager
                 .create_table(
                     Table::create()
@@ -160,6 +114,31 @@ mod m20260307_000004_rbac {
                                 .col(AuthRoleUser::UserId)
                                 .col(AuthRoleUser::RoleId),
                         )
+                        .foreign_key(
+                            ForeignKey::create()
+                                .name("fk_auth_role_user_user")
+                                .from(AuthRoleUser::Table, AuthRoleUser::UserId)
+                                .to(AuthUsers::Table, AuthUsers::Id)
+                                .on_delete(ForeignKeyAction::Cascade),
+                        )
+                        .foreign_key(
+                            ForeignKey::create()
+                                .name("fk_auth_role_user_role")
+                                .from(AuthRoleUser::Table, AuthRoleUser::RoleId)
+                                .to(AuthRoles::Table, AuthRoles::Id)
+                                .on_delete(ForeignKeyAction::Cascade),
+                        )
+                        .to_owned(),
+                )
+                .await?;
+
+            manager
+                .create_index(
+                    Index::create()
+                        .if_not_exists()
+                        .name("idx_auth_role_user_role_id")
+                        .table(AuthRoleUser::Table)
+                        .col(AuthRoleUser::RoleId)
                         .to_owned(),
                 )
                 .await?;
@@ -184,35 +163,59 @@ mod m20260307_000004_rbac {
                                 .col(AuthPermissionRole::RoleId)
                                 .col(AuthPermissionRole::PermissionId),
                         )
+                        .foreign_key(
+                            ForeignKey::create()
+                                .name("fk_auth_permission_role_role")
+                                .from(AuthPermissionRole::Table, AuthPermissionRole::RoleId)
+                                .to(AuthRoles::Table, AuthRoles::Id)
+                                .on_delete(ForeignKeyAction::Cascade),
+                        )
+                        .foreign_key(
+                            ForeignKey::create()
+                                .name("fk_auth_permission_role_perm")
+                                .from(
+                                    AuthPermissionRole::Table,
+                                    AuthPermissionRole::PermissionId,
+                                )
+                                .to(AuthPermissions::Table, AuthPermissions::Id)
+                                .on_delete(ForeignKeyAction::Cascade),
+                        )
                         .to_owned(),
                 )
                 .await?;
 
-            // Seed roles + permissions
+            manager
+                .create_index(
+                    Index::create()
+                        .if_not_exists()
+                        .name("idx_auth_permission_role_permission_id")
+                        .table(AuthPermissionRole::Table)
+                        .col(AuthPermissionRole::PermissionId)
+                        .to_owned(),
+                )
+                .await?;
+
             let conn = manager.get_connection();
             conn.execute_unprepared(
-                "INSERT INTO auth_roles (name, slug) VALUES ('User', 'user'), ('Admin', 'admin') ON CONFLICT (slug) DO NOTHING",
+                "INSERT INTO auth_roles (name, slug) VALUES ('User', 'user'), ('Admin', 'admin')",
             )
             .await?;
             conn.execute_unprepared(
                 "INSERT INTO auth_permissions (name, slug) VALUES \
                  ('Cabinet access', 'cabinet.access'), \
-                 ('Manage users', 'users.manage') \
-                 ON CONFLICT (slug) DO NOTHING",
+                 ('Manage users', 'users.manage')",
             )
             .await?;
             conn.execute_unprepared(
                 "INSERT INTO auth_permission_role (role_id, permission_id) \
                  SELECT r.id, p.id FROM auth_roles r, auth_permissions p \
-                 WHERE r.slug = 'user' AND p.slug = 'cabinet.access' \
-                 ON CONFLICT DO NOTHING",
+                 WHERE r.slug = 'user' AND p.slug = 'cabinet.access'",
             )
             .await?;
             conn.execute_unprepared(
                 "INSERT INTO auth_permission_role (role_id, permission_id) \
                  SELECT r.id, p.id FROM auth_roles r, auth_permissions p \
-                 WHERE r.slug = 'admin' \
-                 ON CONFLICT DO NOTHING",
+                 WHERE r.slug = 'admin'",
             )
             .await?;
 
@@ -232,8 +235,29 @@ mod m20260307_000004_rbac {
             manager
                 .drop_table(Table::drop().table(AuthRoles::Table).to_owned())
                 .await?;
+            manager
+                .drop_table(
+                    Table::drop()
+                        .table(AuthPasswordResetTokens::Table)
+                        .to_owned(),
+                )
+                .await?;
             Ok(())
         }
+    }
+
+    #[derive(Iden)]
+    enum AuthUsers {
+        Table,
+        Id,
+    }
+
+    #[derive(Iden)]
+    enum AuthPasswordResetTokens {
+        Table,
+        Email,
+        TokenHash,
+        CreatedAt,
     }
 
     #[derive(Iden)]

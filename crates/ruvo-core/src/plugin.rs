@@ -67,7 +67,7 @@
 //!
 //! ```rust,ignore
 //! app.install(|app: &mut App| {
-//!     app.get("/health", || async { Response::text("ok") });
+//!     app.get("/healthz", || async { Response::text("ok") });
 //! });
 //! ```
 //!

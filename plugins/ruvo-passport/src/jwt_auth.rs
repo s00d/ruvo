@@ -1,5 +1,9 @@
 //! Batteries-included JWT auth plugin (feature `jwt`).
 
+use crate::api_token::{
+    auth_user_for_api_token, create_api_token, is_pat, list_api_tokens, revoke_api_token,
+    ApiTokenInfo, CreateApiToken, CreatedApiToken, ApiTokenRow,
+};
 use crate::extract::Extract;
 use crate::jwt::Jwt;
 use crate::store::{
@@ -8,7 +12,7 @@ use crate::store::{
 };
 use crate::AuthExt;
 use ruvo_core::extend::{named, MwEntry};
-use ruvo_core::{App, Error, Json, Plugin, Request, Response, Result, Router};
+use ruvo_core::{App, Error, Json, Plugin, RateLimitIdentity, Request, Response, Result, Router};
 use ruvo_db::DbExt;
 use serde::Deserialize;
 use std::sync::Arc;
@@ -30,6 +34,9 @@ pub struct JwtAuth {
     access_ttl: u64,
     refresh_ttl: u64,
     mount: String,
+    /// Install PAT CRUD under [`Self::tokens_mount`] (default on).
+    tokens: bool,
+    tokens_mount: String,
 }
 
 impl JwtAuth {
@@ -39,6 +46,8 @@ impl JwtAuth {
             access_ttl: DEFAULT_ACCESS_TTL,
             refresh_ttl: DEFAULT_REFRESH_TTL,
             mount: "/auth".into(),
+            tokens: true,
+            tokens_mount: "/auth/tokens".into(),
         }
     }
 
@@ -74,7 +83,21 @@ impl JwtAuth {
         self
     }
 
-    /// Middleware: `Authorization: Bearer <access>` → `req.set(AuthUser)`.
+    /// Enable/disable PAT CRUD routes (default `true`).
+    pub fn tokens(mut self, on: bool) -> Self {
+        self.tokens = on;
+        self
+    }
+
+    /// Mount path for PAT CRUD (default `/auth/tokens`).
+    pub fn tokens_mount(mut self, path: impl Into<String>) -> Self {
+        self.tokens_mount = path.into();
+        self
+    }
+
+    /// Middleware: `Authorization: Bearer <jwt|rvpat_…>` → `req.set(AuthUser)`.
+    ///
+    /// Personal access tokens (`rvpat_…`) are checked first by prefix; otherwise JWT.
     pub fn guard() -> MwEntry {
         named(
             "jwt-auth-guard",
@@ -82,21 +105,39 @@ impl JwtAuth {
                 let Some(creds) = Extract::bearer().run(&req) else {
                     return Error::Unauthorized.into_response();
                 };
+                let raw = creds.value().to_string();
+                let db = req.db().clone();
+
+                if is_pat(&raw) {
+                    match auth_user_for_api_token(&db, &raw).await {
+                        Ok((auth, info)) => {
+                            req.set(crate::Authenticated {
+                                id: auth.id.to_string(),
+                            });
+                            req.set(RateLimitIdentity(auth.id.to_string()));
+                            req.set(info);
+                            req.set(auth);
+                            return next(req).await;
+                        }
+                        Err(e) => return e.into_response(),
+                    }
+                }
+
                 let state = Arc::clone(&req.state::<JwtAuthState>());
-                let claims = match state.jwt.decode_access(creds.value()) {
+                let claims = match state.jwt.decode_access(&raw) {
                     Ok(c) => c,
                     Err(_) => return Error::Unauthorized.into_response(),
                 };
                 let Ok(id) = claims.sub.parse::<i64>() else {
                     return Error::Unauthorized.into_response();
                 };
-                let db = req.db().clone();
                 match find_user_by_id(&db, id).await {
                     Ok(Some(u)) => {
                         let auth = AuthUser::from(&u);
                         req.set(crate::Authenticated {
                             id: auth.id.to_string(),
                         });
+                        req.set(RateLimitIdentity(auth.id.to_string()));
                         req.set(auth);
                         next(req).await
                     }
@@ -119,7 +160,7 @@ impl Plugin for JwtAuth {
 
     fn meta(&self) -> ruvo_core::PluginMeta {
         ruvo_core::PluginMeta::new("JWT Auth")
-            .description("Users + access/refresh JWT (register/login/refresh/logout)")
+            .description("Users + access/refresh JWT + personal access tokens")
             .version(env!("CARGO_PKG_VERSION"))
     }
 
@@ -146,6 +187,15 @@ impl Plugin for JwtAuth {
         r.post("/refresh", refresh_handler);
         r.post("/logout", logout_handler);
         app.mount(&self.mount, r);
+
+        if self.tokens {
+            let mut t = Router::new();
+            t.use_middleware(Self::guard());
+            t.get("/", list_tokens_handler);
+            t.post("/", create_token_handler);
+            t.delete("/:id", revoke_token_handler);
+            app.mount(&self.tokens_mount, t);
+        }
     }
 }
 
@@ -190,10 +240,37 @@ async fn logout_handler(mut req: Request) -> Result<Response> {
     Ok(Response::text("ok"))
 }
 
+async fn list_tokens_handler(req: Request) -> Result<Json<Vec<ApiTokenRow>>> {
+    let user = req.require_auth_user()?;
+    let rows = list_api_tokens(req.db(), user.id).await?;
+    Ok(Json(rows))
+}
+
+async fn create_token_handler(mut req: Request) -> Result<(u16, Json<CreatedApiToken>)> {
+    let user_id = req.require_auth_user()?.id;
+    let body: CreateApiToken = req.json().await?;
+    let created = create_api_token(req.db(), user_id, body).await?;
+    Ok((201, Json(created)))
+}
+
+async fn revoke_token_handler(req: Request) -> Result<Response> {
+    let user = req.require_auth_user()?;
+    let id: i64 = req
+        .param("id")
+        .ok_or_else(|| Error::BadRequest("missing id".into()))?
+        .parse()
+        .map_err(|_| Error::BadRequest("invalid id".into()))?;
+    if !revoke_api_token(req.db(), user.id, id).await? {
+        return Err(Error::NotFound);
+    }
+    Ok(Response::text("ok"))
+}
+
 /// Convenience: require [`AuthUser`] in handlers after [`JwtAuth::guard`].
 pub trait JwtAuthExt {
     fn auth_user(&self) -> Option<&AuthUser>;
     fn require_auth_user(&self) -> Result<&AuthUser>;
+    fn api_token(&self) -> Option<&ApiTokenInfo>;
 }
 
 impl JwtAuthExt for Request {
@@ -203,5 +280,9 @@ impl JwtAuthExt for Request {
 
     fn require_auth_user(&self) -> Result<&AuthUser> {
         self.require_user::<AuthUser>()
+    }
+
+    fn api_token(&self) -> Option<&ApiTokenInfo> {
+        self.get::<ApiTokenInfo>()
     }
 }

@@ -29,9 +29,12 @@ impl OpenApiDocExt for ruvo_core::Router {
 /// Serves Scalar UI and OpenAPI JSON from the compiled [`RouteTable`].
 pub struct OpenApi {
     title: String,
+    title_explicit: bool,
     version: String,
+    version_explicit: bool,
     servers: Vec<String>,
     mount: String,
+    mount_explicit: bool,
     local_assets: Option<PathBuf>,
 }
 
@@ -39,9 +42,12 @@ impl OpenApi {
     pub fn new(title: impl Into<String>, version: impl Into<String>) -> Self {
         Self {
             title: title.into(),
+            title_explicit: true,
             version: version.into(),
+            version_explicit: true,
             servers: Vec::new(),
             mount: "/docs".into(),
+            mount_explicit: false,
             local_assets: None,
         }
     }
@@ -53,6 +59,7 @@ impl OpenApi {
 
     pub fn mount(mut self, path: impl Into<String>) -> Self {
         self.mount = path.into();
+        self.mount_explicit = true;
         self
     }
 
@@ -77,7 +84,32 @@ impl Plugin for OpenApi {
         "openapi"
     }
 
-    fn install(self, app: &mut App) {
+    fn install(mut self, app: &mut App) {
+        if let Some(doc) = app.config_doc() {
+            if let Some(section) = doc.section("openapi") {
+                // `OpenApi::new(title, version)` marks those explicit; only fill mount / extras.
+                if !self.title_explicit {
+                    if let Some(t) = section.get("title").and_then(|v| v.as_str()) {
+                        self.title = t.to_string();
+                    }
+                }
+                if !self.version_explicit {
+                    if let Some(v) = section.get("version").and_then(|v| v.as_str()) {
+                        self.version = v.to_string();
+                    }
+                }
+                if !self.mount_explicit {
+                    if let Some(m) = section.get("mount").and_then(|v| v.as_str()) {
+                        self.mount = m.to_string();
+                    }
+                }
+                if self.servers.is_empty() {
+                    if let Some(s) = section.get("server").and_then(|v| v.as_str()) {
+                        self.servers.push(s.to_string());
+                    }
+                }
+            }
+        }
         let mount = if self.mount.ends_with('/') && self.mount.len() > 1 {
             self.mount.trim_end_matches('/').to_string()
         } else {
@@ -130,7 +162,7 @@ impl Plugin for OpenApi {
         .doc(Doc::skip());
 
         let mount_check = mount.clone();
-        app.register_check("openapi", move |state| {
+        app.register_audit("openapi", move |state| {
             let mount = mount_check.clone();
             async move {
                 let Some(table) = state.get::<RouteTable>() else {

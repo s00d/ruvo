@@ -23,6 +23,8 @@ struct TaskFile {
     dedup_key: Option<String>,
     status: String,
     worker: Option<String>,
+    #[serde(default)]
+    priority: i32,
 }
 
 fn to_ms(t: SystemTime) -> u64 {
@@ -65,6 +67,7 @@ impl From<&Task> for TaskFile {
             dedup_key: t.dedup_key.clone(),
             status: status_str(t.status).into(),
             worker: t.worker.clone(),
+            priority: t.priority,
         }
     }
 }
@@ -81,6 +84,7 @@ impl From<TaskFile> for Task {
             dedup_key: f.dedup_key,
             status: parse_status(&f.status),
             worker: f.worker,
+            priority: f.priority,
         }
     }
 }
@@ -179,6 +183,7 @@ impl TaskStore for FileTaskStore {
                 dedup_key: opts.dedup_key.clone(),
                 status: TaskStatus::Pending,
                 worker: None,
+                priority: opts.priority,
             };
             self.write_task("pending", &task).await?;
             if let Some(dk) = opts.dedup_key {
@@ -216,12 +221,12 @@ impl TaskStore for FileTaskStore {
                 }
                 let t = self.read_task(&path).await?;
                 if t.queue == queue && t.run_at <= now {
-                    candidates.push((t.run_at, path, t));
+                    candidates.push((std::cmp::Reverse(t.priority), t.run_at, t.id.clone(), path, t));
                 }
             }
-            candidates.sort_by_key(|(run_at, _, _)| *run_at);
+            candidates.sort_by(|a, b| (&a.0, &a.1, &a.2).cmp(&(&b.0, &b.1, &b.2)));
             let mut out = Vec::new();
-            for (_, path, mut t) in candidates.into_iter().take(limit) {
+            for (_, _, _, path, mut t) in candidates.into_iter().take(limit) {
                 t.status = TaskStatus::Running;
                 t.attempts += 1;
                 t.worker = Some(worker.to_string());
@@ -229,7 +234,6 @@ impl TaskStore for FileTaskStore {
                 let dest = self.path("active", &t.id);
                 self.write_task("active", &t).await?;
                 let _ = tokio::fs::remove_file(&path).await;
-                // ensure dest exists (write_task already wrote)
                 let _ = dest;
                 out.push(t);
             }

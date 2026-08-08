@@ -1,27 +1,35 @@
-//! Full JWT auth: users + refresh via `JwtAuth` + `AuthMigrator`.
+//! Full JWT auth + personal access tokens via `JwtAuth` + `AuthMigrator`.
 //!
 //! ```bash
 //! export DATABASE_URL=postgres://postgres@localhost/ruvo
 //! export JWT_SECRET=dev-secret-change-me
 //! cargo run -p api_jwt -- migrate
+//! # or: cargo ruvo db migrate -p api_jwt
 //! cargo run -p api_jwt
 //!
+//! # register / login → JWT
 //! curl -s -X POST http://127.0.0.1:3000/auth/register \
 //!   -H 'content-type: application/json' \
 //!   -d '{"email":"ada@example.com","password":"secret123"}'
 //! curl -s http://127.0.0.1:3000/api/me -H "authorization: Bearer <access_token>"
+//!
+//! # create PAT (machine client) — plaintext returned once
+//! curl -s -X POST http://127.0.0.1:3000/auth/tokens \
+//!   -H "authorization: Bearer <access_token>" \
+//!   -H 'content-type: application/json' \
+//!   -d '{"name":"ci","abilities":[]}'
+//! curl -s http://127.0.0.1:3000/api/me -H "authorization: Bearer <rvpat_…>"
 //! ```
 
 use ruvo::{
-    App, AuthMigrator, Db, JwtAuth, JwtAuthExt, Json, Request, Response, Result, Router,
+    App, AuthMigrator, Db, JwtAuth, JwtAuthExt, Json, Request, Result, Router,
 };
 
 fn build_app() -> App {
     let mut app = App::new();
     app.install(Db::from_env().migrations::<AuthMigrator>());
     app.install(JwtAuth::from_env().mount("/auth"));
-
-    app.get("/health", |_r: Request| async { Response::text("ok") });
+    app.with_probes();
 
     let mut api = Router::new();
     api.use_middleware(JwtAuth::guard());
@@ -37,6 +45,6 @@ fn build_app() -> App {
 async fn main() -> Result<()> {
     let _ = ruvo::ruvo_env::load();
     let app = build_app();
-    tracing::info!("API http://127.0.0.1:3000  /auth/*  /api/me");
+    tracing::info!("API http://127.0.0.1:3000  /auth/*  /auth/tokens  /api/me");
     app.run().await
 }

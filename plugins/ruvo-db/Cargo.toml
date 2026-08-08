@@ -13,13 +13,20 @@ sqlite = ["sea-orm/sqlx-sqlite", "sea-orm-migration/sqlx-sqlite"]
 mysql = ["sea-orm/sqlx-mysql", "sea-orm-migration/sqlx-mysql"]
 
 [dependencies]
-ruvo-core = { path = "../../crates/ruvo-core" }
-sea-orm = { version = "2.0", default-features = false, features = ["runtime-tokio-rustls", "macros"] }
-sea-orm-migration = { version = "2.0", default-features = false, features = ["runtime-tokio-rustls"] }
-async-trait = "0.1"
-tokio = { version = "1", features = ["sync"] }
-tracing = "0.1"
+ruvo-core = { workspace = true }
+sea-orm = { workspace = true, features = ["macros"] }
+sea-orm-migration = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }
+tracing = { workspace = true }
+serde = { workspace = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
-http = "1"
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http = { workspace = true }
+tempfile = { workspace = true }
+ruvo-core = { workspace = true, features = ["testing"] }
+
+[[test]]
+name = "sqlite"
+required-features = ["sqlite"]

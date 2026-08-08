@@ -12,6 +12,8 @@ mod passport;
 mod jwt;
 
 #[cfg(feature = "jwt")]
+mod api_token;
+#[cfg(feature = "jwt")]
 mod entity;
 #[cfg(feature = "jwt")]
 mod jwt_auth;
@@ -34,16 +36,26 @@ pub use jwt::{Claims, Jwt, JwtError};
 #[cfg(feature = "jwt")]
 pub use jwt_auth::{JwtAuth, JwtAuthExt, JwtAuthState};
 #[cfg(feature = "jwt")]
+pub use api_token::{
+    create_api_token, list_api_tokens, revoke_api_token, token_can, user_for_api_token,
+    ApiTokenInfo, ApiTokenRow, CreateApiToken, CreatedApiToken, PAT_PREFIX,
+};
+#[cfg(feature = "jwt")]
 pub use migration::AuthMigrator;
 #[cfg(feature = "jwt")]
 pub use password::{hash_password, verify_password};
 #[cfg(feature = "jwt")]
-pub use store::{hash_refresh_token, issue_token_pair, AuthUser, TokenPair};
+pub use store::{
+    hash_refresh_token, hash_token, issue_token_pair, register_user, AuthUser, TokenPair,
+};
 
 #[cfg(feature = "oauth")]
 pub use oauth::{
-    test_support as oauth_test_support, Oauth, OauthProfile, OauthProvider, OauthTokens, ProfileKind,
+    drivers as oauth_drivers, test_support as oauth_test_support, Oauth, OauthProfile,
+    OauthProvider, OauthTokens, ProfileKind,
 };
+#[cfg(feature = "oauth")]
+pub use oauth::drivers::{Apple, Custom, Driver, Github, Google};
 
 use extract::Extract as ExtractChain;
 use ruvo_core::extend::{named, BoxFuture, MwEntry};

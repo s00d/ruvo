@@ -23,4 +23,4 @@ mod i18n_msg;
 #[cfg(feature = "flash-templates")]
 mod flash_templates;
 #[cfg(feature = "flash-templates")]
-pub use flash_templates::with_validation_flash;
+pub use flash_templates::{with_flash, with_validation_flash};

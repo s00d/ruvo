@@ -197,3 +197,90 @@ async fn http_error_into_response_status() {
         502
     );
 }
+
+#[tokio::test]
+async fn with_config_from_app_named_timeout_and_bearer() {
+    std::env::set_var("RUVO_TEST_HTTP_TOKEN", "secret-token");
+    let fake = FakeTransport::new().get(
+        "https://api.example.com/v1/me",
+        StubBody::Json(json!({ "ok": true })),
+    );
+    let mut app = App::new();
+    app.configure_from_str(
+        r#"
+[default.http.api]
+base_url = "https://api.example.com"
+timeout = "2s"
+retries = 1
+bearer_env = "RUVO_TEST_HTTP_TOKEN"
+"#,
+    )
+    .unwrap();
+    let http = Http::new()
+        .with_fake(fake.clone())
+        .with_config_from_app(&app);
+    app.install(http);
+    app.get("/me", |req: Request| async move {
+        let res = req
+            .http()
+            .named("api")
+            .get("/v1/me")
+            .send()
+            .await
+            .unwrap();
+        Response::text(res.status_u16().to_string())
+    });
+    let server = app.build().unwrap();
+    let res = server.handle_request(Method::GET, "/me", "").await;
+    assert_eq!(res.body_bytes(), Some(b"200".as_slice()));
+    let sent = fake.sent();
+    assert_eq!(sent.len(), 1);
+    assert_eq!(sent[0].timeout, Some(Duration::from_secs(2)));
+    assert_eq!(
+        sent[0]
+            .headers
+            .get("authorization")
+            .and_then(|v| v.to_str().ok()),
+        Some("Bearer secret-token")
+    );
+    std::env::remove_var("RUVO_TEST_HTTP_TOKEN");
+}
+
+#[tokio::test]
+async fn fake_builder_stubs_get_and_fail() {
+    let mut app = App::new();
+    app.install(
+        Http::fake()
+            .get(
+                "https://api.example.com/ok",
+                StubBody::Json(json!({ "n": 1 })),
+            )
+            .fail("https://api.example.com/boom", "down"),
+    );
+    app.get("/ok", |req: Request| async move {
+        let v = req
+            .http()
+            .get("https://api.example.com/ok")
+            .send()
+            .await
+            .unwrap()
+            .json::<serde_json::Value>()
+            .unwrap();
+        Response::json(&v)
+    });
+    app.get("/boom", |req: Request| async move {
+        let err = req
+            .http()
+            .get("https://api.example.com/boom")
+            .send()
+            .await
+            .unwrap_err();
+        Response::text(format!("{err}"))
+    });
+    let server = app.build().unwrap();
+    let ok = server.handle_request(Method::GET, "/ok", "").await;
+    assert_eq!(ok.status_code().as_u16(), 200);
+    let boom = server.handle_request(Method::GET, "/boom", "").await;
+    let body = String::from_utf8(boom.body_bytes().unwrap().to_vec()).unwrap();
+    assert!(body.contains("down"), "{body}");
+}
