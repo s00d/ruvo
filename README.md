@@ -10,9 +10,15 @@
 
 # Sova
 
-Very simple HTTP framework for Rust, inspired by Express on Node.js.
+Sova exists to make writing HTTP servers in Rust feel fast again.
 
-You get an `App`, a `Router`, middleware, and optional plugins — without drowning in Tower/Hyper boilerplate. Presets like `App::web()` / `App::api()` wire a sensible stack so you can ship a site or JSON API quickly, then turn features on as you need them.
+The goal is not a line-for-line port of Express. Express won because it stayed out of the way: an app, routes, middleware, and enough structure to grow without ceremony. Sova aims at that same lightness — familiar shapes (`App`, `Router`, middleware, plugins) on top of Rust’s performance and type system, without dragging you through Tower/Hyper boilerplate just to say hello.
+
+**Core stays thin.** It is a small wrapper around the HTTP foundation: request path, routing, the middleware onion, and a plugin hook. It does not try to own every concern of a production app.
+
+**Plugins own their domains.** Session, auth, DB, mail, storage, WebSockets, and the rest are opt-in crates. Each one fully owns the logic it is responsible for; you install what you need and leave the rest out. Presets like `App::web()` / `App::api()` wire a sensible starting stack so you can ship a site or JSON API quickly, then grow feature by feature.
+
+There is already a solid pack of ready plugins for common server work — see the list below and the docs for guides.
 
 **Docs:** [https://s00d.github.io/sova/](https://s00d.github.io/sova/)
 
