@@ -33,6 +33,7 @@
 .vp-doc h1 + p > img {
   display: block;
   width: 100%;
+  height: auto;
   max-width: 920px;
   margin: 0.25rem 0 1.5rem;
   border-radius: 16px;
