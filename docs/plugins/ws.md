@@ -5,7 +5,7 @@ editLink: false
 
 # `ws`
 
-**WebSocket hub, origin allowlist, max message size** · crate `sova-ws` · id `ws`
+**WebSocket hub, origin allowlist, max message size** · crate `sova-ws` `0.1.0` · id `ws`
 
 ```bash
 cargo add sova --features ws

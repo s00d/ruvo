@@ -5,7 +5,7 @@ editLink: false
 
 # `storage`
 
-**Object storage (local / memory / S3 / GCS / Azure)** · crate `sova-storage` · id `storage`
+**Object storage (local / memory / S3 / GCS / Azure)** · crate `sova-storage` `0.1.0` · id `storage`
 
 ```bash
 cargo add sova --features storage,storage-azure,storage-gcs,storage-memory,storage-s3

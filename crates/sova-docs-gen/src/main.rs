@@ -185,6 +185,7 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
 
         let cargo_toml = fs::read_to_string(crate_dir.join("Cargo.toml")).unwrap_or_default();
         let pkg_desc = cargo_description(&cargo_toml).unwrap_or_default();
+        let version = cargo_version(&cargo_toml).unwrap_or_else(|| "?".into());
         let facade_feats = {
             let mut set = BTreeMap::new();
             for f in crate_to_features.get(&crate_name).into_iter().flatten() {
@@ -219,7 +220,7 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
 
         let mut page = format!(
             "---\ntitle: {slug}\neditLink: false\n---\n\n# `{slug}`\n\n\
-**{summary}** · crate `{crate_name}` · id `{plugin_id}`\n"
+**{summary}** · crate `{crate_name}` `{version}` · id `{plugin_id}`\n"
         );
         page.push_str(&feats_section);
         if !crate_docs.is_empty() {
@@ -249,7 +250,7 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
         };
         let summary_cell = summary.replace('|', "\\|");
         plugin_index_rows.push(format!(
-            "| [`{slug}`](/plugins/{slug}) | {summary_cell} | {feats_cell} |"
+            "| [`{slug}`](/plugins/{slug}) | `{version}` | {summary_cell} | {feats_cell} |"
         ));
         nav_entries.push(format!(
             "  {{ text: '{slug}', link: '/plugins/{slug}' }}"
@@ -258,7 +259,7 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
     }
 
     let plugins_table = format!(
-        "| Plugin | Summary | Features |\n|--------|---------|----------|\n{}",
+        "| Plugin | Version | Summary | Features |\n|--------|---------|---------|----------|\n{}",
         plugin_index_rows.join("\n")
     );
     w.patch_marker("plugins/index.md", "plugins-table", &plugins_table)?;
@@ -445,9 +446,17 @@ fn parse_feature_docs(path: &Path) -> Result<BTreeMap<String, String>, String> {
 }
 
 fn cargo_description(toml_text: &str) -> Option<String> {
+    cargo_package_str(toml_text, "description")
+}
+
+fn cargo_version(toml_text: &str) -> Option<String> {
+    cargo_package_str(toml_text, "version")
+}
+
+fn cargo_package_str(toml_text: &str, key: &str) -> Option<String> {
     for line in toml_text.lines() {
         let line = line.trim();
-        if let Some(rest) = line.strip_prefix("description") {
+        if let Some(rest) = line.strip_prefix(key) {
             let rest = rest.trim().trim_start_matches('=').trim();
             if let Some(s) = rest.strip_prefix('"').and_then(|r| r.strip_suffix('"')) {
                 return Some(s.to_string());

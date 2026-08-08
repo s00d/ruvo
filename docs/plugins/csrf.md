@@ -5,7 +5,7 @@ editLink: false
 
 # `csrf`
 
-**Session double-submit CSRF (Laravel-style except/XSRF cookie)** · crate `sova-csrf` · id `csrf`
+**Session double-submit CSRF (Laravel-style except/XSRF cookie)** · crate `sova-csrf` `0.1.0` · id `csrf`
 
 ```bash
 cargo add sova --features csrf

@@ -5,7 +5,7 @@ editLink: false
 
 # `mail`
 
-**Outbound email via lettre (SMTP / fake / file)** · crate `sova-mail` · id `mail`
+**Outbound email via lettre (SMTP / fake / file)** · crate `sova-mail` `0.1.0` · id `mail`
 
 ```bash
 cargo add sova --features mail,mail-markdown,mail-templates

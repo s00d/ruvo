@@ -5,7 +5,7 @@ editLink: false
 
 # `tasks-store`
 
-**TaskStore trait + memory / file / sql / redis backends** · crate `sova-tasks-store` · id `tasks-store`
+**TaskStore trait + memory / file / sql / redis backends** · crate `sova-tasks-store` `0.1.0` · id `tasks-store`
 
 ```bash
 cargo add sova --features tasks-file,tasks-redis,tasks-sql,tasks-store

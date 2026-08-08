@@ -5,7 +5,7 @@ editLink: false
 
 # `db`
 
-**SeaORM pool, migrate CLI, optional seed CLI** · crate `sova-db` · id `db`
+**SeaORM pool, migrate CLI, optional seed CLI** · crate `sova-db` `0.1.0` · id `db`
 
 ```bash
 cargo add sova --features db,db-mysql,db-sqlite

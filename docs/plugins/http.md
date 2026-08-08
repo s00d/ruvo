@@ -5,7 +5,7 @@ editLink: false
 
 # `http`
 
-**Outbound HTTP client with SSRF guards and named configs** · crate `sova-http` · id `http`
+**Outbound HTTP client with SSRF guards and named configs** · crate `sova-http` `0.1.0` · id `http`
 
 ```bash
 cargo add sova --features http-client

@@ -5,7 +5,7 @@ editLink: false
 
 # `static`
 
-**Serve files from a directory under a mount path** · crate `sova-static` · id `static`
+**Serve files from a directory under a mount path** · crate `sova-static` `0.1.0` · id `static`
 
 ```bash
 cargo add sova --features static-files

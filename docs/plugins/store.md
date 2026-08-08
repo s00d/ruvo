@@ -5,7 +5,7 @@ editLink: false
 
 # `store`
 
-**KvStore trait + memory / file / sql / redis backends for Sova** · crate `sova-store` · id `store`
+**KvStore trait + memory / file / sql / redis backends for Sova** · crate `sova-store` `0.1.0` · id `store`
 
 ```bash
 cargo add sova --features store,store-crypto,store-file,store-redis,store-sql

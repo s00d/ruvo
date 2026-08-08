@@ -5,7 +5,7 @@ editLink: false
 
 # `env`
 
-**Cascade .env loading for Sova apps (dotenvy)** · crate `sova-env` · id `env`
+**Cascade .env loading for Sova apps (dotenvy)** · crate `sova-env` `0.1.0` · id `env`
 
 ```bash
 cargo add sova --features env

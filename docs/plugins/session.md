@@ -5,7 +5,7 @@ editLink: false
 
 # `session`
 
-**Cookie sessions backed by a SessionStore** · crate `sova-session` · id `session`
+**Cookie sessions backed by a SessionStore** · crate `sova-session` `0.1.0` · id `session`
 
 ```bash
 cargo add sova --features session,session-redis,session-sql

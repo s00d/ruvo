@@ -5,7 +5,7 @@ editLink: false
 
 # `redis`
 
-**Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues** · crate `sova-redis` · id `redis`
+**Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues** · crate `sova-redis` `0.1.0` · id `redis`
 
 ```bash
 cargo add sova --features redis

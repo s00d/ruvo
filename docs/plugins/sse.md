@@ -5,7 +5,7 @@ editLink: false
 
 # `sse`
 
-**Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive)** · crate `sova-sse` · id `sse`
+**Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive)** · crate `sova-sse` `0.1.0` · id `sse`
 
 ```bash
 cargo add sova --features sse-feed

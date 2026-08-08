@@ -5,7 +5,7 @@ editLink: false
 
 # `vld`
 
-**Request validation hooks and coverage check** · crate `sova-vld` · id `vld`
+**Request validation hooks and coverage check** · crate `sova-vld` `0.1.0` · id `vld`
 
 ```bash
 cargo add sova --features vld,vld-flash,vld-flash-templates,vld-form,vld-i18n,vld-openapi

@@ -5,7 +5,7 @@ editLink: false
 
 # `rate-limit`
 
-**Per-key request rate limiting** · crate `sova-rate-limit` · id `rate-limit`
+**Per-key request rate limiting** · crate `sova-rate-limit` `0.1.0` · id `rate-limit`
 
 ```bash
 cargo add sova --features rate-limit

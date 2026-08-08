@@ -5,7 +5,7 @@ editLink: false
 
 # `passport`
 
-**Users + access/refresh JWT + personal access tokens** · crate `sova-passport` · id `passport`
+**Users + access/refresh JWT + personal access tokens** · crate `sova-passport` `0.1.0` · id `passport`
 
 ```bash
 cargo add sova --features passport,passport-jwt,passport-oauth,passport-session

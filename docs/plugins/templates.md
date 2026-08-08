@@ -5,7 +5,7 @@ editLink: false
 
 # `templates`
 
-**MiniJinja HTML templates with optional autoreload** · crate `sova-templates` · id `templates`
+**MiniJinja HTML templates with optional autoreload** · crate `sova-templates` `0.1.0` · id `templates`
 
 ```bash
 cargo add sova --features templates

@@ -5,7 +5,7 @@ editLink: false
 
 # `auth`
 
-**Register/login, verify, reset, 2FA, profile, roles** · crate `sova-auth` · id `fortify`
+**Register/login, verify, reset, 2FA, profile, roles** · crate `sova-auth` `0.1.0` · id `fortify`
 
 ```bash
 cargo add sova --features auth,auth-activity,auth-vld
