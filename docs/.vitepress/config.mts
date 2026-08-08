@@ -30,7 +30,7 @@ export default defineConfig({
     ['meta', { name: 'twitter:image', content: ogImage }],
   ],
   themeConfig: {
-    logo: { src: '/logo.svg', alt: 'Sova' },
+    logo: { src: '/logo.png', alt: 'Sova' },
     siteTitle: 'Sova',
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
