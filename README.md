@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/sova-header.svg" alt="Sova" width="720" />
+</p>
+
 # Sova
 
 Express-like HTTP for Rust: `App`, `Router`, middleware, plugins — Hyper stays hidden.
