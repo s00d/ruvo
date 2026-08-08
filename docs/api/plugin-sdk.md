@@ -5,7 +5,7 @@ editLink: false
 
 # Plugin SDK
 
-![Plugin SDK](/banners/plugin-sdk.svg?v=8)
+![Plugin SDK](/banners/plugin-sdk.svg?v=11)
 
 > Auto-generated from `crates/sova-core/src/plugin.rs`. For writing plugins — app usage is under [Plugins](/plugins/).
 

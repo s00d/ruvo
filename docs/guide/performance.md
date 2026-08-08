@@ -1,6 +1,6 @@
 # Performance
 
-![Performance](/banners/performance.svg?v=8)
+![Performance](/banners/performance.svg?v=11)
 
 Sova vs Axum vs Actix-web on an **identical multi-page fixture site** (same HTML/JSON bodies, verified SHA-256).
 

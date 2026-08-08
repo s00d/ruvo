@@ -1,6 +1,6 @@
 # cargo-sovax
 
-![cargo-sovax](/banners/cargo-sovax.svg?v=8)
+![cargo-sovax](/banners/cargo-sovax.svg?v=11)
 
 Install as `cargo-sovax`, run as **`cargo sovax …`** (Cargo subcommand).  
 Scaffolding, watch, build, and DB helpers for Sova apps.
