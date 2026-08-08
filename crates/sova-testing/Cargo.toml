@@ -2,7 +2,7 @@
 name = "sova-testing"
 version = "0.1.0"
 edition = "2021"
-description = "Framework-style test harness for Sova (sqlite, acting_as, factories, snapshots)"
+description = "Framework-style test harness for Sova (sqlite, TestApp, snapshots)"
 license = "MIT"
 repository = "https://github.com/s00d/sova"
 homepage = "https://s00d.github.io/sova/"
@@ -13,14 +13,12 @@ categories = ["web-programming::http-server", "network-programming"]
 [features]
 default = ["sqlite"]
 sqlite = ["sova-db/sqlite"]
-auth = ["dep:sova-auth"]
-notifications = ["dep:sova-notifications"]
+# Auth / notifications acting helpers live in those plugins' test utils
+# (avoids crates.io cycle: testing → auth → testing).
 
 [dependencies]
 sova-core = { workspace = true, features = ["testing"] }
 sova-db = { workspace = true, default-features = false }
-sova-auth = { workspace = true, optional = true }
-sova-notifications = { workspace = true, optional = true }
 sea-orm = { workspace = true, features = ["macros", "sqlx-sqlite"] }
 sea-orm-migration = { workspace = true, features = ["sqlx-sqlite"] }
 async-trait = { workspace = true }
@@ -33,4 +31,3 @@ tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 [dev-dependencies]
 http = { workspace = true }
 serde_json = { workspace = true }
-sova-auth = { workspace = true }

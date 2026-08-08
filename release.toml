@@ -5,15 +5,20 @@
 # crates.io rate-limits ~5 NEW crates per ~10 minutes on first publish.
 # Publish one crate at a time (or batches of ≤5), wait when rate-limited.
 #
-# === First-time publish order (foundations → leaves → dependents → facade) ===
+# === First-time publish order (foundations → test harness → leaves → facade) ===
 #
 #   cargo publish -p sova-core
 #   cargo publish -p sovax
 #   cargo publish -p sova-cookies
 #   cargo publish -p sova-cors
 #   cargo publish -p sova-shield
-#   # …then session/csrf/db/… then facade `sova`
+#   # …session / csrf / db / …
+#   cargo publish -p sova-testing   # BEFORE plugins that list it in [dev-dependencies]
+#   # …activity / auth / notifications / …
+#   # …then facade `sova`
 #
+# Do not give sova-testing deps on auth/notifications (cycle with their dev-deps).
+
 # `cargo-sovax` / `sova-docs-gen` stay publish = false.
 # In-app CLI helpers: crate `sovax`. Scaffolding binary: `cargo-sovax` → `cargo sovax`.
 #

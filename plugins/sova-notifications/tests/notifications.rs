@@ -2,7 +2,10 @@
 
 use sova_core::{Json, Request, ResponseAssert, TestClient};
 use sova_notifications::{Channel, Notifications, NotificationsMigrator, Notify, Via};
-use sova_testing::{ActingAs, TestApp};
+use sova_testing::TestApp;
+
+mod common;
+use common::ActingAs;
 use serde_json::json;
 
 #[tokio::test]
