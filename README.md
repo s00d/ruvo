@@ -5,7 +5,7 @@
 [![Donate](https://img.shields.io/badge/Donate-Donationalerts-ff4081?style=for-the-badge)](https://www.donationalerts.com/r/s00d88)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/s00d/sova/master/assets/branding/sova-readme-banner.png?v=4" alt="Sova" width="720" />
+  <img src="https://raw.githubusercontent.com/s00d/sova/master/assets/branding/sova-readme-banner.png?v=5" alt="Sova" width="720" />
 </p>
 
 # Sova

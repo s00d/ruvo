@@ -1,6 +1,6 @@
 # Getting started
 
-![Getting started](/banners/getting-started.svg?v=6)
+![Getting started](/banners/getting-started.svg?v=7)
 
 Sova’s idea is simple: **start from a preset**, put routes in **modules**, call **`app.run()`**.  
 Do not hand-roll Cors + Session + logger + probes on every app — that is what `App::web()` / `App::api()` are for.

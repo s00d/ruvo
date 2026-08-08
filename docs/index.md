@@ -5,7 +5,7 @@ hero:
   text: Express-like HTTP for Rust
   tagline: App, Router, middleware, plugins — Hyper stays hidden.
   image:
-    src: /logo.png?v=6
+    src: /logo.png?v=7
     alt: Sova
   actions:
     - theme: brand
