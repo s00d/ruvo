@@ -20,7 +20,7 @@ ruvo = { version = "0.1.0", path = "crates/ruvo" }
 ruvo-testing = { version = "0.1.0", path = "crates/ruvo-testing", default-features = false }
 ruvo-activity = { version = "0.1.0", path = "plugins/ruvo-activity" }
 ruvo-auth = { version = "0.1.0", path = "plugins/ruvo-auth" }
-ruvo-cli = { version = "0.1.0", path = "plugins/ruvo-cli" }
+ruvox = { version = "0.1.0", path = "plugins/ruvox" }
 ruvo-compress = { version = "0.1.0", path = "plugins/ruvo-compress" }
 ruvo-cookies = { version = "0.1.0", path = "plugins/ruvo-cookies" }
 ruvo-cors = { version = "0.1.0", path = "plugins/ruvo-cors" }

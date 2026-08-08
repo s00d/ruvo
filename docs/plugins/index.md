@@ -19,7 +19,7 @@ Open a plugin page from the table. Extra notes for heavier stacks are below.
 |--------|---------|----------|
 | [`activity`](/plugins/activity) | Audit / activity log (who changed what) | `activity` |
 | [`auth`](/plugins/auth) | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-vld` |
-| [`cli`](/plugins/cli) | CLI ServerArgs / listen_args for Ruvo (local dev) | `cli` |
+| [`cli`](/plugins/cli) | CLI ServerArgs / listen_args for Ruvo (`ruvox`) | `cli` |
 | [`compress`](/plugins/compress) | gzip / deflate / brotli response compression | `compress` |
 | [`cookies`](/plugins/cookies) | Parse Cookie header into request-local Cookies | `cookies` |
 | [`cors`](/plugins/cors) | Cross-Origin Resource Sharing headers | `cors` |

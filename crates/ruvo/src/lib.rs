@@ -177,7 +177,7 @@ pub use ruvo_templates::{
 
 
 #[cfg(feature = "cli")]
-pub use ruvo_cli::{Parser, ServerArgs};
+pub use ruvox::{Parser, ServerArgs};
 
 #[cfg(feature = "vld")]
 pub use ruvo_vld::{

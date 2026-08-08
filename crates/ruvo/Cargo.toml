@@ -25,7 +25,7 @@ session-sql = ["session", "store-sql", "ruvo-session/sql"]
 session-redis = ["session", "redis", "ruvo-session/redis"]
 templates = ["dep:ruvo-templates", "ruvo-i18n?/templates"]
 multipart = ["ruvo-core/multipart"]
-cli = ["dep:ruvo-cli"]
+cli = ["dep:ruvox"]
 vld = ["dep:ruvo-vld", "dep:vld"]
 openapi = ["dep:ruvo-openapi"]
 i18n = ["dep:ruvo-i18n"]
@@ -126,7 +126,7 @@ ruvo-session = { workspace = true, optional = true }
 ruvo-compress = { workspace = true, optional = true }
 ruvo-rate-limit = { workspace = true, optional = true }
 ruvo-templates = { workspace = true, optional = true }
-ruvo-cli = { workspace = true, optional = true }
+ruvox = { workspace = true, optional = true }
 ruvo-vld = { workspace = true, optional = true }
 ruvo-openapi = { workspace = true, optional = true }
 ruvo-i18n = { workspace = true, optional = true }

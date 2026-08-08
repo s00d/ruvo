@@ -18,7 +18,7 @@
 /// Feature `session-redis`: Persist sessions in Redis via `RedisPool`.
 /// Feature `templates`: MiniJinja templates (`ruvo-templates`).
 /// Feature `multipart`: Unified urlencoded/multipart `Request::input` / uploads.
-/// Feature `cli`: `ServerArgs` and log CLI flags (`ruvo-cli`).
+/// Feature `cli`: `ServerArgs` and log CLI flags (`ruvox`).
 /// Feature `vld`: Request validation (`ruvo-vld` + `vld`).
 /// Feature `openapi`: OpenAPI 3.1 + Scalar UI (`ruvo-openapi`).
 /// Feature `i18n`: Locales and catalogs (`ruvo-i18n`).

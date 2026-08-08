@@ -15,9 +15,8 @@
 #   cargo publish -p ruvo-compress
 #   # …then session/csrf/db/… then facade
 #
-# NOTE: the facade crate name `ruvo` is already taken on crates.io
-# (0.0.0-reserved by another owner). Publish plugins/`ruvo-core` as-is;
-# rename the facade before publishing it (e.g. `ruvo-http`).
+# NOTE: facade crate name `ruvo` and old `ruvo-cli` are taken on crates.io.
+# Console helpers ship as `ruvox`. Rename the facade before publishing it.
 #
 # After all crates exist:
 #   cargo release patch --workspace --execute
