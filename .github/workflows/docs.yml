@@ -8,18 +8,8 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  # Manual only — no auto-run on push.
   workflow_dispatch:
-  push:
-    branches: [master]
-    paths:
-      - 'docs/**'
-      - 'crates/sova-docs-gen/**'
-      - 'crates/sova-core/src/plugin.rs'
-      - 'crates/sova/Cargo.toml'
-      - 'crates/sova/src/doc_features.rs'
-      - 'plugins/**'
-      - 'package.json'
-      - '.github/workflows/docs.yml'
 
 jobs:
   docs:
@@ -27,8 +17,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
         with:
@@ -41,12 +29,6 @@ jobs:
           node-version: 22
           cache: 'pnpm'
           cache-dependency-path: docs/pnpm-lock.yaml
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Generate docs from sources
-        run: cargo run -q -p sova-docs-gen
 
       - name: Install docs dependencies
         run: pnpm -C docs install --frozen-lockfile
