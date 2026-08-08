@@ -465,12 +465,14 @@ fn rust_sources(crate_dir: &Path) -> Vec<PathBuf> {
     if !src.is_dir() {
         return Vec::new();
     }
-    WalkDir::new(src)
+    let mut paths: Vec<PathBuf> = WalkDir::new(src)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path().extension().and_then(|s| s.to_str()) == Some("rs"))
         .map(|e| e.into_path())
-        .collect()
+        .collect();
+    paths.sort();
+    paths
 }
 
 fn extract_crate_docs(src: &str) -> Result<String, String> {

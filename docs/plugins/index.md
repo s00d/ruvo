@@ -28,11 +28,11 @@ Open a plugin page from the table. Extra notes for heavier stacks are below.
 | [`http`](/plugins/http) | Outbound HTTP client with SSRF guards and named configs | `http-client` |
 | [`i18n`](/plugins/i18n) | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |
 | [`mail`](/plugins/mail) | Outbound email via lettre (SMTP / fake / file) | `mail`, `mail-markdown`, `mail-templates` |
-| [`meta`](/plugins/meta) | Serve robots.txt with allow/disallow and Sitemap line | `meta`, `meta-i18n`, `meta-store`, `meta-templates` |
+| [`meta`](/plugins/meta) | Document meta, OG/Twitter, JSON-LD, and head inject | `meta`, `meta-i18n`, `meta-store`, `meta-templates` |
 | [`notifications`](/plugins/notifications) | DB inbox, channels with ACL, optional WS/mail | `notifications`, `notifications-auth`, `notifications-mail`, `notifications-templates`, `notifications-ws` |
 | [`observability`](/plugins/observability) | HTTP metrics, OpenTelemetry, Elasticsearch log shipping | `observability`, `observability-elasticsearch`, `observability-otel` |
 | [`openapi`](/plugins/openapi) | OpenAPI 3.1 document + Scalar UI at mount path | `openapi` |
-| [`passport`](/plugins/passport) | OAuth2 login (authorization code + PKCE) | `passport`, `passport-jwt`, `passport-oauth`, `passport-session` |
+| [`passport`](/plugins/passport) | Users + access/refresh JWT + personal access tokens | `passport`, `passport-jwt`, `passport-oauth`, `passport-session` |
 | [`quic`](/plugins/quic) | QUIC datagrams BackgroundService helpers for Sova | `quic-udp` |
 | [`rate-limit`](/plugins/rate-limit) | Per-key request rate limiting | `rate-limit` |
 | [`redis`](/plugins/redis) | Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues | `redis` |

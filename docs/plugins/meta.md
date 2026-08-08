@@ -5,7 +5,7 @@ editLink: false
 
 # `meta`
 
-**Serve robots.txt with allow/disallow and Sitemap line** · crate `sova-meta` · id `meta`
+**Document meta, OG/Twitter, JSON-LD, and head inject** · crate `sova-meta` · id `sitemap`
 
 ```bash
 cargo add sova --features meta,meta-i18n,meta-store,meta-templates

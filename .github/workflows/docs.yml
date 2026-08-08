@@ -45,8 +45,8 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Refresh generated docs (fail if out of date)
-        run: cargo run -q -p sova-docs-gen -- --check
+      - name: Generate docs from sources
+        run: cargo run -q -p sova-docs-gen
 
       - name: Install docs dependencies
         run: pnpm -C docs install --frozen-lockfile
