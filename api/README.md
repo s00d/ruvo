@@ -4,18 +4,18 @@ Text dumps from [`cargo-public-api`](https://github.com/cargo-public-api/cargo-p
 
 | File | Package | Features |
 |------|---------|----------|
-| `ruvo-core.txt` | `ruvo-core` | default (+ `tls` when TLS API changes) |
-| `ruvo.txt` | `ruvo` facade re-exports | default |
-| `ruvo-store.txt` | `ruvo-store` | `unstable-store` (compat flag; trait is stable) |
-| `ruvo-tasks-store.txt` | `ruvo-tasks-store` | `unstable-store` (compat flag; trait is stable) |
+| `sova-core.txt` | `sova-core` | default (+ `tls` when TLS API changes) |
+| `sova.txt` | `sova` facade re-exports | default |
+| `sova_store.txt` | `sova_store` | `unstable-store` (compat flag; trait is stable) |
+| `sova-tasks-store.txt` | `sova-tasks-store` | `unstable-store` (compat flag; trait is stable) |
 
 Regenerate:
 
 ```bash
-cargo +nightly public-api -p ruvo-core --simplified > api/ruvo-core.txt
-cargo +nightly public-api -p ruvo --simplified > api/ruvo.txt
-cargo +nightly public-api -p ruvo-store --features unstable-store --simplified > api/ruvo-store.txt
-cargo +nightly public-api -p ruvo-tasks-store --features unstable-store --simplified > api/ruvo-tasks-store.txt
+cargo +nightly public-api -p sova-core --simplified > api/sova-core.txt
+cargo +nightly public-api -p sova --simplified > api/sova.txt
+cargo +nightly public-api -p sova_store --features unstable-store --simplified > api/sova_store.txt
+cargo +nightly public-api -p sova-tasks-store --features unstable-store --simplified > api/sova-tasks-store.txt
 ```
 
 Check all:
@@ -24,4 +24,4 @@ Check all:
 ./scripts/check-public-api.sh
 ```
 
-When adding TLS or store-crypto, regenerate `ruvo-core.txt` / `ruvo.txt` with the matching feature flags if new symbols are exported from the facade.
+When adding TLS or store-crypto, regenerate `sova-core.txt` / `sova.txt` with the matching feature flags if new symbols are exported from the facade.

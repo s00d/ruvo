@@ -5,17 +5,17 @@ editLink: false
 
 # `activity`
 
-**Audit / activity log (who changed what)** · crate `ruvo-activity` · id `activity`
+**Audit / activity log (who changed what)** · crate `sova-activity` · id `activity`
 
 ```bash
-cargo add ruvo --features activity
+cargo add sova --features activity
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `activity` | Audit / activity log table (`ruvo-activity`). |
+| `activity` | Audit / activity log table (`sova-activity`). |
 
-Laravel-style activity / audit log for Ruvo.
+Laravel-style activity / audit log for Sova.
 
 ```rust
  app.install(Db::from_env().migrations::<ActivityMigrator>());

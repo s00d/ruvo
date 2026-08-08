@@ -8,8 +8,8 @@
 //! # GET  /dequeue?queue=jobs
 //! ```
 
-use ruvo::prelude::*;
-use ruvo::{
+use sova::prelude::*;
+use sova::{
     bearer_guard, store, tasks, AppStore, Cache, Job, Redis, RedisExt, RedisPool,
     RedisSessionStore, SessionLayer, SharedStore, Tasks,
 };
@@ -36,7 +36,7 @@ struct EnqueueBody {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let _ = ruvo::ruvo_env::load();
+    let _ = sova::sova_env::load();
 
     let mut app = App::new();
     app.install(Redis::from_env());
@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
     let kv = Arc::new(store::Redis::from_redis_pool(&pool));
     let task_store = Arc::new(tasks::Redis::from_redis_pool(&pool));
 
-    app.install(SharedStore::new(Arc::clone(&kv) as Arc<dyn ruvo::KvStore>));
+    app.install(SharedStore::new(Arc::clone(&kv) as Arc<dyn sova::KvStore>));
     app.install(SessionLayer::from_store(Arc::new(
         RedisSessionStore::from_redis_pool(&pool),
     )));

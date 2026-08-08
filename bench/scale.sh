@@ -25,7 +25,7 @@ run_profile() {
   echo "## $name" >&2
   for w in $WORKERS; do
     echo "building/running $name workers=$w ..." >&2
-    TOKIO_WORKER_THREADS="$w" cargo run -q -p "$pkg" >/tmp/ruvo-scale-$name-$w.log 2>&1 &
+    TOKIO_WORKER_THREADS="$w" cargo run -q -p "$pkg" >/tmp/sova-scale-$name-$w.log 2>&1 &
     local pid=$!
     cleanup() { kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; }
     trap cleanup EXIT
@@ -44,9 +44,9 @@ run_profile() {
       jar="$(mktemp)"
       curl -sf -c "$jar" -b "$jar" "http://127.0.0.1:$port/" >/dev/null
       local sid
-      sid="$(awk '/ruvo_sid/ {print $7}' "$jar" | tail -1)"
+      sid="$(awk '/sova_sid/ {print $7}' "$jar" | tail -1)"
       rm -f "$jar"
-      extra=(-H "Cookie: ruvo_sid=${sid}")
+      extra=(-H "Cookie: sova_sid=${sid}")
     fi
 
     local out

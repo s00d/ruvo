@@ -1,0 +1,21 @@
+[package]
+name = "sova-redis"
+version = "0.1.0"
+edition = "2021"
+description = "Shared Redis/Valkey pool plugin for Sova"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-redis"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[dependencies]
+sova-core = { workspace = true }
+redis = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }
+thiserror = { workspace = true }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }

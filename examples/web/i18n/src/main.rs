@@ -1,7 +1,7 @@
 //! i18n example: SSR page + JSON catalog for the frontend.
 
-use ruvo::prelude::*;
-use ruvo::{mount_localized, I18n, I18nExt, I18nRouteExt, Locale, PrefixMode};
+use sova::prelude::*;
+use sova::{mount_localized, I18n, I18nExt, I18nRouteExt, Locale, PrefixMode};
 use std::path::PathBuf;
 
 #[tokio::main]

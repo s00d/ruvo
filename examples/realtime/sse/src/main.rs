@@ -1,7 +1,7 @@
 //! Minimal Server-Sent Events example.
 
 use futures_util::stream;
-use ruvo::{App, Response, Result};
+use sova::{App, Response, Result};
 use std::convert::Infallible;
 use std::time::Duration;
 

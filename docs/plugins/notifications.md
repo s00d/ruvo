@@ -5,15 +5,15 @@ editLink: false
 
 # `notifications`
 
-**DB inbox, channels with ACL, optional WS/mail** · crate `ruvo-notifications` · id `notifications`
+**DB inbox, channels with ACL, optional WS/mail** · crate `sova-notifications` · id `notifications`
 
 ```bash
-cargo add ruvo --features notifications,notifications-auth,notifications-mail,notifications-templates,notifications-ws
+cargo add sova --features notifications,notifications-auth,notifications-mail,notifications-templates,notifications-ws
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `notifications` | DB inbox + channels (`ruvo-notifications`). |
+| `notifications` | DB inbox + channels (`sova-notifications`). |
 | `notifications-auth` | Role/permission audiences. |
 | `notifications-mail` | Mail delivery channel. |
 | `notifications-templates` | Unread helpers in templates. |

@@ -1,0 +1,60 @@
+[package]
+name = "sova-auth"
+version = "0.1.0"
+edition = "2021"
+description = "Fortify-style authentication for Sova (register, 2FA, reset, roles)"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-auth"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[features]
+default = []
+vld = ["dep:sova-vld", "dep:vld", "sova-vld/form", "sova-vld/flash", "sova-vld/openapi", "vld/openapi"]
+activity = ["dep:sova-activity"]
+templates = ["sova-mail/templates", "dep:sova-templates"]
+
+[dependencies]
+sova-core = { workspace = true, features = ["multipart"] }
+sova-db = { workspace = true }
+sova-passport = { workspace = true, features = ["jwt", "session"] }
+sova-mail = { workspace = true }
+sova-templates = { workspace = true, optional = true }
+sova-session = { workspace = true }
+sova-rate-limit = { workspace = true }
+sova-activity = { workspace = true, optional = true }
+sova-vld = { workspace = true, optional = true, features = ["form", "flash"] }
+vld = { workspace = true, optional = true, features = ["serialize"] }
+sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls"] }
+async-trait = { workspace = true }
+chrono = { workspace = true, default-features = false, features = ["clock", "std", "serde"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+getrandom = { workspace = true }
+hmac = { workspace = true }
+totp-rs = { workspace = true, features = ["gen_secret", "otpauth"] }
+urlencoding = { workspace = true }
+http = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+sova-core = { workspace = true, features = ["testing", "multipart"] }
+sova-db = { workspace = true, features = ["sqlite"] }
+sova-testing = { workspace = true, features = ["sqlite", "auth"] }
+sova-session = { workspace = true }
+sova-csrf = { workspace = true }
+sova-mail = { workspace = true }
+sova-activity = { workspace = true }
+sova-vld = { workspace = true, features = ["form", "flash"] }
+vld = { workspace = true, features = ["serialize"] }
+sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite"] }
+serde_json = { workspace = true }
+http = { workspace = true }
+async-trait = { workspace = true }
+totp-rs = { workspace = true, features = ["gen_secret", "otpauth"] }

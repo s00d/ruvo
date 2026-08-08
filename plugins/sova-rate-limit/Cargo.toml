@@ -1,0 +1,22 @@
+[package]
+name = "sova-rate-limit"
+version = "0.1.0"
+edition = "2021"
+description = "Rate limit plugin for Sova (local sliding + shared fixed window)"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-rate-limit"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[dependencies]
+sova-core = { workspace = true }
+sova-store = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+sova-core = { workspace = true, features = ["testing", "multipart"] }
+http = { workspace = true }
+serde_json = { workspace = true }

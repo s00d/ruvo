@@ -1,6 +1,6 @@
-use ruvo::vld;
+use sova::vld;
 use crate::db;
-use ruvo::{
+use sova::{
     doc_schema, CurrentUser, DbExt, Doc, DocVldExt, IntoResponse, Json, Meta, OpenApiDocExt, Request,
     Response, Result, ValidExt, ValidateRouteExt,
 };
@@ -25,7 +25,7 @@ vld::schema! {
 
 doc_schema!(ApiNote, CreateApiNote);
 
-pub fn register(app: &mut ruvo::App) {
+pub fn register(app: &mut sova::App) {
     app.get("/api/me", api_me)
         .doc(Doc::new().ok_schema(json!({
             "type": "object",
@@ -49,7 +49,7 @@ pub fn register(app: &mut ruvo::App) {
 
 async fn api_me(req: Request) -> Result<Response> {
     let Some(user) = req.get::<CurrentUser>() else {
-        return Err(ruvo::Error::Unauthorized.into());
+        return Err(sova::Error::Unauthorized.into());
     };
     Ok(Json(json!({
         "id": user.id,
@@ -66,7 +66,7 @@ async fn api_me(req: Request) -> Result<Response> {
 
 async fn api_list_notes(req: Request) -> Result<Response> {
     let Some(user) = req.get::<CurrentUser>() else {
-        return Err(ruvo::Error::Unauthorized.into());
+        return Err(sova::Error::Unauthorized.into());
     };
     let db = req.db().clone();
     let notes = db::list_notes(&db, user.id, 100).await?;
@@ -75,7 +75,7 @@ async fn api_list_notes(req: Request) -> Result<Response> {
 
 async fn api_create_note(req: Request) -> Result<Response> {
     let Some(user) = req.get::<CurrentUser>() else {
-        return Err(ruvo::Error::Unauthorized.into());
+        return Err(sova::Error::Unauthorized.into());
     };
     let body = req.valid::<CreateApiNote>().clone();
     let db = req.db().clone();

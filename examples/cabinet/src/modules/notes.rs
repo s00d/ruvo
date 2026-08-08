@@ -1,6 +1,6 @@
-use ruvo::vld;
+use sova::vld;
 use crate::db;
-use ruvo::{
+use sova::{
     doc_schema, CsrfExt, CurrentUser, DbExt, Meta, PageExt, Redirect, RenderExt, Request, Response,
     Result, Router, SessionExt, ValidExt, ValidateRouteExt,
 };
@@ -63,7 +63,7 @@ async fn delete(req: Request) -> Result<Response> {
     let id: i64 = form
         .id
         .parse()
-        .map_err(|_| ruvo::Error::BadRequest("bad note id".into()))?;
+        .map_err(|_| sova::Error::BadRequest("bad note id".into()))?;
     let user = req.get::<CurrentUser>().expect("CurrentUser");
     let db = req.db().clone();
     db::delete_note(&db, user.id, id).await?;
@@ -71,4 +71,4 @@ async fn delete(req: Request) -> Result<Response> {
     Ok(Redirect::back_or(&req, "/cabinet/notes").into_response())
 }
 
-use ruvo::IntoResponse;
+use sova::IntoResponse;

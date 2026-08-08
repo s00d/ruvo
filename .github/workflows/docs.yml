@@ -42,14 +42,14 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Refresh generated docs (fail if out of date)
-        run: cargo run -q -p ruvo-docs-gen -- --check
+        run: cargo run -q -p sova-docs-gen -- --check
 
       - name: Install docs dependencies
         run: pnpm -C docs install --frozen-lockfile
 
       - name: Build VitePress site
         env:
-          RUVO_DOCS_BASE: /ruvo/
+          SOVA_DOCS_BASE: /sova/
         run: pnpm -C docs build
 
       - name: Add nojekyll

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Compare public API of ruvo-core and ruvo against checked-in baselines.
+# Compare public API of sova-core and sova against checked-in baselines.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -34,7 +34,7 @@ check_crate() {
   echo "public-api baseline OK ($crate)"
 }
 
-check_crate ruvo-core "tls,dev-tls"
-check_crate ruvo "tls,dev-tls,env,store-crypto"
-check_crate ruvo-store unstable-store
-check_crate ruvo-tasks-store unstable-store
+check_crate sova-core "tls,dev-tls"
+check_crate sova "tls,dev-tls,env,store-crypto"
+check_crate sova_store unstable-store
+check_crate sova-tasks-store unstable-store

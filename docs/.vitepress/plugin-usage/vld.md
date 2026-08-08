@@ -1,9 +1,9 @@
 Validation belongs next to routes on **`App::api()`** (or web + `Vld` when you need forms).
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::vld;
-use ruvo::{
+use sova::prelude::*;
+use sova::vld;
+use sova::{
     doc_schema, Doc, DocVldExt, Json, OpenApiDocExt, Parser, Request, ServerArgs,
     ValidationError, ValidationExt,
 };

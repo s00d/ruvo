@@ -5,25 +5,25 @@ editLink: false
 
 # `store`
 
-**KvStore trait + memory / file / sql / redis backends for Ruvo** · crate `ruvo-store` · id `store`
+**KvStore trait + memory / file / sql / redis backends for Sova** · crate `sova-store` · id `store`
 
 ```bash
-cargo add ruvo --features store,store-crypto,store-file,store-redis,store-sql
+cargo add sova --features store,store-crypto,store-file,store-redis,store-sql
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `store` | KvStore + Cache (`ruvo-store`). |
+| `store` | KvStore + Cache (`sova_store`). |
 | `store-crypto` | XChaCha20-Poly1305 wrapper for KvStore. |
 | `store-file` | File-backed KvStore. |
 | `store-redis` | Redis KvStore on `RedisPool`. |
 | `store-sql` | SQL KvStore on `DbPool`. |
 
-Byte-oriented key-value store for Ruvo plugins (sessions, cache, CSRF, rate-limit).
+Byte-oriented key-value store for Sova plugins (sessions, cache, CSRF, rate-limit).
 
  Trait is stable (memory + file + sql + redis backends).
  Enable feature `unstable-store` for backwards-compatible feature flags.
- **Not in ruvo-core** — wire with `app.state(store.namespace("sess"))`.
+ **Not in sova-core** — wire with `app.state(store.namespace("sess"))`.
 
 ## Usage
 
@@ -31,8 +31,8 @@ Shared `KvStore` for rate-limit, cache, etc. Install beside a preset (cabinet us
 
 ```rust
 use std::sync::Arc;
-use ruvo::prelude::*;
-use ruvo::{Db, DbPool, Parser, ServerArgs, SharedStore};
+use sova::prelude::*;
+use sova::{Db, DbPool, Parser, ServerArgs, SharedStore};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
 
     app.install(Db::from_env());
     let pool = app.try_state::<DbPool>().expect("db").as_ref().clone();
-    let kv = Arc::new(ruvo::store::Sql::from_db_pool(&pool)) as Arc<dyn ruvo::KvStore>;
+    let kv = Arc::new(sova::store::Sql::from_db_pool(&pool)) as Arc<dyn sova::KvStore>;
     app.install(SharedStore::new(Arc::clone(&kv)));
 
     app.run().await

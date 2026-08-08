@@ -1,4 +1,4 @@
-use ruvo::App;
+use sova::App;
 
 pub mod auth;
 pub mod blog;

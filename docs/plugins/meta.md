@@ -5,28 +5,28 @@ editLink: false
 
 # `meta`
 
-**Serve robots.txt with allow/disallow and Sitemap line** · crate `ruvo-meta` · id `meta`
+**Serve robots.txt with allow/disallow and Sitemap line** · crate `sova-meta` · id `meta`
 
 ```bash
-cargo add ruvo --features meta,meta-i18n,meta-store,meta-templates
+cargo add sova --features meta,meta-i18n,meta-store,meta-templates
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `meta` | SEO head tags, Sitemap, Robots (`ruvo-meta`). |
+| `meta` | SEO head tags, Sitemap, Robots (`sova_meta`). |
 | `meta-i18n` | Locale-aware meta. |
 | `meta-store` | Meta helpers backed by KvStore. |
 | `meta-templates` | Inject meta into MiniJinja HTML. |
 
-Document meta, OG/Twitter, JSON-LD, sitemap and robots for Ruvo.
+Document meta, OG/Twitter, JSON-LD, sitemap and robots for Sova.
 
 ## Usage
 
 **`App::web()`** installs Meta + Sitemap + Robots. Set site / public URL on the preset, page tags on routes:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Html, Meta, Parser, ServerArgs};
+use sova::prelude::*;
+use sova::{Html, Meta, Parser, ServerArgs};
 
 #[tokio::main]
 async fn main() -> Result<()> {

@@ -1,5 +1,5 @@
 //! Form / multipart upload demo (`Request::input`, [`Upload`]).
-use ruvo::{App, Json, Request, Result};
+use sova::{App, Json, Request, Result};
 use std::path::PathBuf;
 
 #[tokio::main]
@@ -8,12 +8,12 @@ async fn main() -> Result<()> {
     app.max_body_size(8 * 1024 * 1024);
 
     app.get("/", |_| async {
-        ruvo::Response::html(include_str!("views/index.html"))
+        sova::Response::html(include_str!("views/index.html"))
     });
     app.post("/upload", upload);
     app.get("/sample", |_| async {
         let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml");
-        ruvo::Response::download(path).await
+        sova::Response::download(path).await
     });
     app.listen(3004).await
 }

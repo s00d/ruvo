@@ -9,7 +9,7 @@ name = "storage_demo"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["cli", "env", "storage", "storage-s3", "storage-memory"] }
+sova = { workspace = true, features = ["cli", "env", "storage", "storage-s3", "storage-memory"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 bytes = { workspace = true }
 serde = { workspace = true }

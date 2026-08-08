@@ -69,7 +69,7 @@
 {% endblock %}
 {% block scripts %}
 <script>
-RuvoAuth.mount("#vue-profile", {
+SovaAuth.mount("#vue-profile", {
   data() {
     return {
       error: "",
@@ -83,11 +83,11 @@ RuvoAuth.mount("#vue-profile", {
       this.busy = true;
       this.error = "";
       try {
-        const body = RuvoAuth.formFields(e.target);
-        await RuvoAuth.api.post("/profile", { name: body.name, email: body.email });
+        const body = SovaAuth.formFields(e.target);
+        await SovaAuth.api.post("/profile", { name: body.name, email: body.email });
         this.ok = "Saved";
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
       } finally {
         this.busy = false;
       }
@@ -97,8 +97,8 @@ RuvoAuth.mount("#vue-profile", {
       this.busy = true;
       this.error = "";
       try {
-        const body = RuvoAuth.formFields(e.target);
-        await RuvoAuth.api.post("/password", {
+        const body = SovaAuth.formFields(e.target);
+        await SovaAuth.api.post("/password", {
           current_password: body.current_password,
           password: body.password,
           password_confirmation: body.password_confirmation,
@@ -106,7 +106,7 @@ RuvoAuth.mount("#vue-profile", {
         this.ok = "Password updated";
         e.target.reset();
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
       } finally {
         this.busy = false;
       }

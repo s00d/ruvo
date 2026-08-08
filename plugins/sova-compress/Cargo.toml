@@ -1,0 +1,22 @@
+[package]
+name = "sova-compress"
+version = "0.1.0"
+edition = "2021"
+description = "Response compression plugin for Sova"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-compress"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[dependencies]
+sova-core = { workspace = true }
+async-compression = { workspace = true, features = ["tokio", "gzip", "deflate", "brotli"] }
+bytes = { workspace = true }
+http = { workspace = true }
+tokio = { workspace = true, features = ["io-util"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http-body-util = { workspace = true }

@@ -1,0 +1,64 @@
+[package]
+name = "sova-core"
+version = "0.1.0"
+edition = "2021"
+description = "Core HTTP primitives for Sova (App, Router, Request, Response)"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-core"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[features]
+testing = []
+listen-reuseport = ["dep:socket2"]
+tls = ["dep:rustls", "dep:tokio-rustls", "dep:rustls-pemfile", "dep:rustls-pki-types", "dep:arc-swap"]
+dev-tls = ["tls", "dep:rcgen"]
+multipart = ["dep:multer"]
+
+[dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "net", "fs", "io-util", "signal", "sync", "time"] }
+tokio-util = { workspace = true, features = ["io"] }
+hyper = { workspace = true, features = ["server", "client", "http1", "http2"] }
+hyper-util = { workspace = true, features = ["tokio", "server-auto", "server-graceful", "client-legacy", "http2", "service"] }
+http-body-util = { workspace = true }
+http-body = { workspace = true }
+http = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde_urlencoded = { workspace = true }
+toml = { workspace = true, default-features = false, features = ["parse"] }
+bytes = { workspace = true }
+mime_guess = { workspace = true }
+thiserror = { workspace = true }
+percent-encoding = { workspace = true }
+matchit = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+tracing-appender = { workspace = true }
+file-rotate = { workspace = true }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+multer = { workspace = true, optional = true }
+socket2 = { workspace = true, optional = true, features = ["all"] }
+rustls = { workspace = true, optional = true, default-features = false, features = ["ring", "std", "tls12", "logging"] }
+tokio-rustls = { workspace = true, optional = true, default-features = false, features = ["ring", "tls12"] }
+rustls-pemfile = { workspace = true, optional = true }
+rustls-pki-types = { workspace = true, optional = true }
+arc-swap = { workspace = true, optional = true }
+rcgen = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "test-util", "net", "time", "io-util"] }
+http-body-util = { workspace = true }
+bytes = { workspace = true }
+tempfile = { workspace = true }
+criterion = { workspace = true, features = ["async_tokio"] }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+http = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+
+[[bench]]
+name = "dispatch"
+harness = false

@@ -5,15 +5,15 @@ editLink: false
 
 # `vld`
 
-**Request validation hooks and coverage check** · crate `ruvo-vld` · id `vld`
+**Request validation hooks and coverage check** · crate `sova-vld` · id `vld`
 
 ```bash
-cargo add ruvo --features vld,vld-flash,vld-flash-templates,vld-form,vld-i18n,vld-openapi
+cargo add sova --features vld,vld-flash,vld-flash-templates,vld-form,vld-i18n,vld-openapi
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `vld` | Request validation (`ruvo-vld` + `vld`). |
+| `vld` | Request validation (`sova_vld` + `vld`). |
 | `vld-flash` | Validation errors into session flash. |
 | `vld-flash-templates` | Flash helpers in MiniJinja. |
 | `vld-form` | Bind validation to multipart/form input. |
@@ -27,9 +27,9 @@ Request validation via [`vld`].
 Validation belongs next to routes on **`App::api()`** (or web + `Vld` when you need forms).
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::vld;
-use ruvo::{
+use sova::prelude::*;
+use sova::vld;
+use sova::{
     doc_schema, Doc, DocVldExt, Json, OpenApiDocExt, Parser, Request, ServerArgs,
     ValidationError, ValidationExt,
 };

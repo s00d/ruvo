@@ -5,17 +5,17 @@ editLink: false
 
 # `compress`
 
-**gzip / deflate / brotli response compression** · crate `ruvo-compress` · id `compress`
+**gzip / deflate / brotli response compression** · crate `sova-compress` · id `compress`
 
 ```bash
-cargo add ruvo --features compress
+cargo add sova --features compress
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `compress` | gzip/deflate/brotli (`ruvo-compress`). |
+| `compress` | gzip/deflate/brotli (`sova-compress`). |
 
-Response compression for Ruvo (Express [`compression`](https://expressjs.com/en/resources/middleware/compression.html)-style).
+Response compression for Sova (Express [`compression`](https://expressjs.com/en/resources/middleware/compression.html)-style).
 
  Supports `br`, `gzip`, and `deflate`. Bodies are buffered then compressed
  (not streamed chunk-by-chunk).

@@ -9,7 +9,7 @@ name = "udp_echo"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["udp"] }
+sova = { workspace = true, features = ["udp"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }
 tracing = { workspace = true }

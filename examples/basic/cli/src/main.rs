@@ -1,6 +1,6 @@
 //! CLI args demo: `cargo run -p cli -- --port 3010 --log-file logs/cli.log`
-use ruvo::prelude::*;
-use ruvo::{Parser, ServerArgs};
+use sova::prelude::*;
+use sova::{Parser, ServerArgs};
 
 #[tokio::main]
 async fn main() -> Result<()> {

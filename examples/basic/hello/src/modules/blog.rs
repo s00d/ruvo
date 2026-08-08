@@ -1,4 +1,4 @@
-use ruvo::{Error, Json, Next, Request, Response, Router, Text};
+use sova::{Error, Json, Next, Request, Response, Router, Text};
 
 pub fn routes() -> Router {
     let mut r = Router::new();
@@ -16,7 +16,7 @@ pub fn routes() -> Router {
 async fn list_posts(_req: Request) -> Json<serde_json::Value> {
     Json(serde_json::json!({
         "posts": [
-            { "id": 1, "title": "Hello Ruvo" },
+            { "id": 1, "title": "Hello Sova" },
             { "id": 2, "title": "Express vibes" }
         ]
     }))

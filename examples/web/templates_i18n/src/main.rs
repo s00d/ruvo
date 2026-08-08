@@ -1,6 +1,6 @@
 //! MiniJinja templates with ambient i18n `t(...)`.
 
-use ruvo::{App, I18n, I18nExt, Locale, RenderExt, Request, Result, Templates, template_fn};
+use sova::{App, I18n, I18nExt, Locale, RenderExt, Request, Result, Templates, template_fn};
 use std::path::PathBuf;
 
 #[tokio::main]
@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
         req.render(
             "home.html",
             serde_json::json!({
-                "title": "Ruvo templates + i18n",
+                "title": "Sova templates + i18n",
                 "locale": req.locale(),
             }),
         )

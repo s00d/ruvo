@@ -6,8 +6,8 @@
 //! # terminal 3:  curl -X POST http://127.0.0.1:3020/grab
 //! ```
 
-use ruvo::extend::{wait_shutdown, BoxFuture, StateMap};
-use ruvo::{
+use sova::extend::{wait_shutdown, BoxFuture, StateMap};
+use sova::{
     App, BackgroundService, Cell, Error, IntoResponse, Json, Request, Response, Result, Shutdown,
     Slot,
 };
@@ -103,7 +103,7 @@ async fn grab(req: Request) -> Result<Response> {
         .unwrap_or(0);
     let preview = String::from_utf8_lossy(&buf[..n]).into_owned();
 
-    let _ = stream.write_all(b"ruvo share_demo: got you\n").await;
+    let _ = stream.write_all(b"sova share_demo: got you\n").await;
     let _ = stream.shutdown().await;
 
     handed.update(|c| c + 1);

@@ -5,10 +5,10 @@ editLink: false
 
 # `auth`
 
-**Register/login, verify, reset, 2FA, profile, roles** · crate `ruvo-auth` · id `fortify`
+**Register/login, verify, reset, 2FA, profile, roles** · crate `sova-auth` · id `fortify`
 
 ```bash
-cargo add ruvo --features auth,auth-activity,auth-vld
+cargo add sova --features auth,auth-activity,auth-vld
 ```
 
 | Feature | What you get |
@@ -17,12 +17,12 @@ cargo add ruvo --features auth,auth-activity,auth-vld
 | `auth-activity` | Fortify mutations write activity events. |
 | `auth-vld` | Fortify forms wired to `vld` flash/form. |
 
-Fortify-style authentication for Ruvo (register, verify, reset, 2FA, RBAC).
+Fortify-style authentication for Sova (register, verify, reset, 2FA, RBAC).
 
- Builds on [`ruvo_passport`] (session login) + [`ruvo_mail`] + [`ruvo_db`].
+ Builds on [`sova_passport`] (session login) + [`sova_mail`] + [`sova_db`].
 
 ```rust
- app.install(Db::from_env().migrations::<ruvo_auth::AuthMigrator>());
+ app.install(Db::from_env().migrations::<sova_auth::AuthMigrator>());
  app.install(Mail::from_env());
  app.install(memory_sessions());
  app.install(
@@ -46,8 +46,8 @@ Fortify sits **on the web preset** (sessions, csrf, templates already there). Ad
 
 ```rust
 // main.rs
-use ruvo::prelude::*;
-use ruvo::{
+use sova::prelude::*;
+use sova::{
     AuthFeature, AuthMigrator, Db, Fortify, Mail, Parser, ServerArgs,
 };
 
@@ -83,7 +83,7 @@ async fn main() -> Result<()> {
 
 ```rust
 // modules/mod.rs
-use ruvo::{App, Fortify, Html, Router};
+use sova::{App, Fortify, Html, Router};
 
 pub fn register(app: &mut App) {
     let mut cabinet = Router::new();

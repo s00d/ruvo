@@ -1,13 +1,13 @@
 //! Simple chat over WebSocket at `/ws`.
 
-use ruvo::{App, Html, Result, Ws, WsRouteExt};
-use ruvo::Message;
+use sova::{App, Html, Result, Ws, WsRouteExt};
+use sova::Message;
 
 const CHAT_HTML: &str = r#"<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Ruvo WS Chat</title>
+  <title>Sova WS Chat</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; }
     #log { border: 1px solid #ccc; min-height: 12rem; padding: .5rem; overflow-y: auto; }

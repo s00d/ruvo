@@ -1,8 +1,8 @@
 `App::web()` and `App::api()` already install Cors. You only customize when the default is wrong:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Cors, Parser, ServerArgs};
+use sova::prelude::*;
+use sova::{Cors, Parser, ServerArgs};
 
 #[tokio::main]
 async fn main() -> Result<()> {

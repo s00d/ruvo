@@ -9,6 +9,6 @@ name = "tls_hello"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["dev-tls", "cors"] }
+sova = { workspace = true, features = ["dev-tls", "cors"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }

@@ -5,25 +5,25 @@ editLink: false
 
 # `templates`
 
-**MiniJinja HTML templates with optional autoreload** · crate `ruvo-templates` · id `templates`
+**MiniJinja HTML templates with optional autoreload** · crate `sova-templates` · id `templates`
 
 ```bash
-cargo add ruvo --features templates
+cargo add sova --features templates
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `templates` | MiniJinja templates (`ruvo-templates`). |
+| `templates` | MiniJinja templates (`sova-templates`). |
 
-Template engines for Ruvo (MiniJinja).
+Template engines for Sova (MiniJinja).
 
 ## Usage
 
 If `views/` exists, **`App::web()`** already installs MiniJinja. Handlers only render:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Meta, Parser, RenderExt, Request, Response, ServerArgs};
+use sova::prelude::*;
+use sova::{Meta, Parser, RenderExt, Request, Response, ServerArgs};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -49,11 +49,11 @@ async fn home(req: Request) -> Response {
     req.render(
         "home.html",
         Page {
-            title: "Ruvo".into(),
+            title: "Sova".into(),
         },
     )
     .unwrap_or_else(|e| e.into_response())
 }
 ```
 
-i18n helper in templates: `.per_request("t", ruvo::template_fn)` after `into_app()` when you add the i18n plugin. Demos: `templates`, `templates_i18n`.
+i18n helper in templates: `.per_request("t", sova::template_fn)` after `into_app()` when you add the i18n plugin. Demos: `templates`, `templates_i18n`.

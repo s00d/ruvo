@@ -4,23 +4,23 @@
 //! cargo run -p meta_blog
 //! ```
 
-use ruvo::{schema, App, Html, Meta, MetaExt, Request, Result, Robots, Sitemap};
+use sova::{schema, App, Html, Meta, MetaExt, Request, Result, Robots, Sitemap};
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let mut app = App::new();
     app.install(
         Meta::new()
-            .site_name("Ruvo Blog")
-            .title_template("{} — Ruvo Blog")
+            .site_name("Sova Blog")
+            .title_template("{} — Sova Blog")
             .public_url("http://127.0.0.1:3000")
-            .twitter_site("@ruvo"),
+            .twitter_site("@sova"),
     );
     app.install(
         Sitemap::new().provider("/blog/:slug", |_ctx| async move {
             Ok(vec![
-                ruvo::Entry::new("/blog/hello"),
-                ruvo::Entry::new("/blog/meta"),
+                sova::Entry::new("/blog/hello"),
+                sova::Entry::new("/blog/meta"),
             ])
         }),
     );
@@ -29,9 +29,9 @@ async fn main() -> Result<()> {
     app.get("/", |mut req: Request| async move {
         req.meta()
             .title("Home")
-            .description("A tiny Ruvo blog with document meta.");
+            .description("A tiny Sova blog with document meta.");
         Html(
-            "<h1>Ruvo Blog</h1><p><a href=\"/blog/hello\">hello</a></p>".to_string(),
+            "<h1>Sova Blog</h1><p><a href=\"/blog/hello\">hello</a></p>".to_string(),
         )
     })
     .with(Meta::page().title("Home").description("Blog home"));
@@ -45,7 +45,7 @@ async fn main() -> Result<()> {
             .description(format!("Article about {slug}"))
             .jsonld_schema(&schema::Article {
                 headline: title.clone(),
-                author: Some("Ruvo".into()),
+                author: Some("Sova".into()),
                 ..Default::default()
             })
             .jsonld_schema(&schema::BreadcrumbList::from_pairs(&[

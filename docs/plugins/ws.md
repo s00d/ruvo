@@ -5,25 +5,25 @@ editLink: false
 
 # `ws`
 
-**WebSocket hub, origin allowlist, max message size** · crate `ruvo-ws` · id `ws`
+**WebSocket hub, origin allowlist, max message size** · crate `sova-ws` · id `ws`
 
 ```bash
-cargo add ruvo --features ws
+cargo add sova --features ws
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `ws` | WebSocket upgrades (`ruvo-ws`). |
+| `ws` | WebSocket upgrades (`sova_ws`). |
 
-WebSocket plugin for Ruvo (HTTP upgrade + rooms hub).
+WebSocket plugin for Sova (HTTP upgrade + rooms hub).
 
 ## Usage
 
 Install Ws on the **web preset**, keep modules/static/meta from the stack:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Html, Message, Parser, ServerArgs, Ws, WsRouteExt};
+use sova::prelude::*;
+use sova::{Html, Message, Parser, ServerArgs, Ws, WsRouteExt};
 
 #[tokio::main]
 async fn main() -> Result<()> {

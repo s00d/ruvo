@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Smoke load test against a running Ruvo server (default hello on :3000).
+# Smoke load test against a running Sova server (default hello on :3000).
 # Requires: oha (https://github.com/hatoo/oha)
 set -euo pipefail
 

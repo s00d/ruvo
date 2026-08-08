@@ -15,41 +15,41 @@ exclude = ["ci-smoke-min", "ci-smoke-api", "ci-smoke-web", ".ci-gen"]
 
 [workspace.dependencies]
 # Workspace crates (version+path so `cargo publish` can resolve)
-ruvo-core = { version = "0.1.0", path = "crates/ruvo-core" }
-ruvo = { version = "0.1.0", path = "crates/ruvo" }
-ruvo-testing = { version = "0.1.0", path = "crates/ruvo-testing", default-features = false }
-ruvo-activity = { version = "0.1.0", path = "plugins/ruvo-activity" }
-ruvo-auth = { version = "0.1.0", path = "plugins/ruvo-auth" }
-ruvox = { version = "0.1.0", path = "plugins/ruvox" }
-ruvo-compress = { version = "0.1.0", path = "plugins/ruvo-compress" }
-ruvo-cookies = { version = "0.1.0", path = "plugins/ruvo-cookies" }
-ruvo-cors = { version = "0.1.0", path = "plugins/ruvo-cors" }
-ruvo-csrf = { version = "0.1.0", path = "plugins/ruvo-csrf" }
-ruvo-db = { version = "0.1.0", path = "plugins/ruvo-db", default-features = false }
-ruvo-env = { version = "0.1.0", path = "plugins/ruvo-env" }
-ruvo-http = { version = "0.1.0", path = "plugins/ruvo-http" }
-ruvo-i18n = { version = "0.1.0", path = "plugins/ruvo-i18n" }
-ruvo-mail = { version = "0.1.0", path = "plugins/ruvo-mail" }
-ruvo-meta = { version = "0.1.0", path = "plugins/ruvo-meta" }
-ruvo-notifications = { version = "0.1.0", path = "plugins/ruvo-notifications" }
-ruvo-observability = { version = "0.1.0", path = "plugins/ruvo-observability", default-features = false }
-ruvo-openapi = { version = "0.1.0", path = "plugins/ruvo-openapi" }
-ruvo-passport = { version = "0.1.0", path = "plugins/ruvo-passport" }
-ruvo-quic = { version = "0.1.0", path = "plugins/ruvo-quic" }
-ruvo-rate-limit = { version = "0.1.0", path = "plugins/ruvo-rate-limit" }
-ruvo-redis = { version = "0.1.0", path = "plugins/ruvo-redis" }
-ruvo-session = { version = "0.1.0", path = "plugins/ruvo-session" }
-ruvo-shield = { version = "0.1.0", path = "plugins/ruvo-shield" }
-ruvo-sse = { version = "0.1.0", path = "plugins/ruvo-sse" }
-ruvo-static = { version = "0.1.0", path = "plugins/ruvo-static" }
-ruvo-storage = { version = "0.1.0", path = "plugins/ruvo-storage" }
-ruvo-store = { version = "0.1.0", path = "plugins/ruvo-store" }
-ruvo-tasks = { version = "0.1.0", path = "plugins/ruvo-tasks" }
-ruvo-tasks-store = { version = "0.1.0", path = "plugins/ruvo-tasks-store" }
-ruvo-templates = { version = "0.1.0", path = "plugins/ruvo-templates" }
-ruvo-udp = { version = "0.1.0", path = "plugins/ruvo-udp" }
-ruvo-vld = { version = "0.1.0", path = "plugins/ruvo-vld" }
-ruvo-ws = { version = "0.1.0", path = "plugins/ruvo-ws" }
+sova-core = { version = "0.1.0", path = "crates/sova-core" }
+sova = { version = "0.1.0", path = "crates/sova" }
+sova-testing = { version = "0.1.0", path = "crates/sova-testing", default-features = false }
+sova-activity = { version = "0.1.0", path = "plugins/sova-activity" }
+sova-auth = { version = "0.1.0", path = "plugins/sova-auth" }
+sovax = { version = "0.1.0", path = "plugins/sovax" }
+sova-compress = { version = "0.1.0", path = "plugins/sova-compress" }
+sova-cookies = { version = "0.1.0", path = "plugins/sova-cookies" }
+sova-cors = { version = "0.1.0", path = "plugins/sova-cors" }
+sova-csrf = { version = "0.1.0", path = "plugins/sova-csrf" }
+sova-db = { version = "0.1.0", path = "plugins/sova-db", default-features = false }
+sova-env = { version = "0.1.0", path = "plugins/sova-env" }
+sova-http = { version = "0.1.0", path = "plugins/sova-http" }
+sova-i18n = { version = "0.1.0", path = "plugins/sova-i18n" }
+sova-mail = { version = "0.1.0", path = "plugins/sova-mail" }
+sova-meta = { version = "0.1.0", path = "plugins/sova-meta" }
+sova-notifications = { version = "0.1.0", path = "plugins/sova-notifications" }
+sova-observability = { version = "0.1.0", path = "plugins/sova-observability", default-features = false }
+sova-openapi = { version = "0.1.0", path = "plugins/sova-openapi" }
+sova-passport = { version = "0.1.0", path = "plugins/sova-passport" }
+sova-quic = { version = "0.1.0", path = "plugins/sova-quic" }
+sova-rate-limit = { version = "0.1.0", path = "plugins/sova-rate-limit" }
+sova-redis = { version = "0.1.0", path = "plugins/sova-redis" }
+sova-session = { version = "0.1.0", path = "plugins/sova-session" }
+sova-shield = { version = "0.1.0", path = "plugins/sova-shield" }
+sova-sse = { version = "0.1.0", path = "plugins/sova-sse" }
+sova-static = { version = "0.1.0", path = "plugins/sova-static" }
+sova-storage = { version = "0.1.0", path = "plugins/sova-storage" }
+sova-store = { version = "0.1.0", path = "plugins/sova-store" }
+sova-tasks = { version = "0.1.0", path = "plugins/sova-tasks" }
+sova-tasks-store = { version = "0.1.0", path = "plugins/sova-tasks-store" }
+sova-templates = { version = "0.1.0", path = "plugins/sova-templates" }
+sova-udp = { version = "0.1.0", path = "plugins/sova-udp" }
+sova-vld = { version = "0.1.0", path = "plugins/sova-vld" }
+sova-ws = { version = "0.1.0", path = "plugins/sova-ws" }
 
 
 # Shared third-party

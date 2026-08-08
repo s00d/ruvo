@@ -5,19 +5,19 @@ editLink: false
 
 # `session`
 
-**Cookie sessions backed by a SessionStore** · crate `ruvo-session` · id `session`
+**Cookie sessions backed by a SessionStore** · crate `sova-session` · id `session`
 
 ```bash
-cargo add ruvo --features session,session-redis,session-sql
+cargo add sova --features session,session-redis,session-sql
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `session` | Cookie sessions + flash (`ruvo-session`). |
+| `session` | Cookie sessions + flash (`sova_session`). |
 | `session-redis` | Persist sessions in Redis via `RedisPool`. |
 | `session-sql` | Persist sessions in SQL via `DbPool`. |
 
-Cookie-backed sessions for Ruvo (Express [`express-session`](https://expressjs.com/en/resources/middleware/session.html)-style).
+Cookie-backed sessions for Sova (Express [`express-session`](https://expressjs.com/en/resources/middleware/session.html)-style).
 
  Flash helpers ([`Session::flash`], [`Session::take`]) store one-shot values for the next
  request (status messages, validation errors, old form input).
@@ -31,8 +31,8 @@ Cookie-backed sessions for Ruvo (Express [`express-session`](https://expressjs.c
 Cookie sessions are part of **`App::web()`** and **`App::api()`** (`memory_sessions`). Read/write in handlers — do not reinstall the layer unless you need SQL/Redis:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Html, Parser, Redirect, Request, ServerArgs, SessionExt};
+use sova::prelude::*;
+use sova::{Html, Parser, Redirect, Request, ServerArgs, SessionExt};
 
 #[tokio::main]
 async fn main() -> Result<()> {

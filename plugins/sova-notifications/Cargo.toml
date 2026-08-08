@@ -1,0 +1,49 @@
+[package]
+name = "sova-notifications"
+version = "0.1.0"
+edition = "2021"
+description = "Database notifications with channels, ACL, optional WS/mail"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-notifications"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[features]
+default = []
+ws = ["dep:sova-ws"]
+mail = ["dep:sova-mail"]
+auth = ["dep:sova-auth"]
+templates = ["dep:sova-templates", "dep:minijinja"]
+
+[dependencies]
+sova-core = { workspace = true }
+sova-db = { workspace = true }
+sova-ws = { workspace = true, optional = true }
+sova-mail = { workspace = true, optional = true }
+sova-auth = { workspace = true, optional = true }
+sova-templates = { workspace = true, optional = true }
+minijinja = { workspace = true, optional = true }
+sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls"] }
+async-trait = { workspace = true }
+chrono = { workspace = true, default-features = false, features = ["clock", "std", "serde"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+http = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+sova-core = { workspace = true, features = ["testing"] }
+sova-db = { workspace = true, features = ["sqlite"] }
+sova-testing = { workspace = true, features = ["sqlite", "notifications", "auth"] }
+sova-auth = { workspace = true }
+sova-session = { workspace = true }
+sova-mail = { workspace = true }
+sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite"] }
+serde_json = { workspace = true }
+http = { workspace = true }
+async-trait = { workspace = true }

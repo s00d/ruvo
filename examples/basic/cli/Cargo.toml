@@ -9,6 +9,6 @@ name = "cli"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["cli"] }
+sova = { workspace = true, features = ["cli"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }

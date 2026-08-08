@@ -7,7 +7,7 @@ editLink: false
 
 ![Plugin SDK](/banners/plugin-sdk.svg)
 
-> Auto-generated from `crates/ruvo-core/src/plugin.rs`. For writing plugins — app usage is under [Plugins](/plugins/).
+> Auto-generated from `crates/sova-core/src/plugin.rs`. For writing plugins — app usage is under [Plugins](/plugins/).
 
 Plugin extension trait and SDK metadata.
 
@@ -45,8 +45,8 @@ Plugin extension trait and SDK metadata.
  # Examples
 
 ```rust
- use ruvo_core::extend::with_leaked;
- use ruvo_core::{App, Plugin, PluginMeta, Request, Response};
+ use sova_core::extend::with_leaked;
+ use sova_core::{App, Plugin, PluginMeta, Request, Response};
 
  struct HelloHeader;
 
@@ -64,7 +64,7 @@ Plugin extension trait and SDK metadata.
      fn install(self, app: &mut App) {
          app.use_middleware(with_leaked((), |_s, req, next| async move {
              let mut res = next(req).await;
-             res = res.header("x-hello", "ruvo");
+             res = res.header("x-hello", "sova");
              res
          }));
      }
@@ -82,4 +82,4 @@ Plugin extension trait and SDK metadata.
  });
  ```
 
- Scaffold a new crate with `cargo ruvo generate plugin <name>`.
+ Scaffold a new crate with `cargo sova generate plugin <name>`.

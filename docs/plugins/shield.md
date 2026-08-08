@@ -5,17 +5,17 @@ editLink: false
 
 # `shield`
 
-**Baseline security response headers (helmet-style)** · crate `ruvo-shield` · id `shield`
+**Baseline security response headers (helmet-style)** · crate `sova-shield` · id `shield`
 
 ```bash
-cargo add ruvo --features shield
+cargo add sova --features shield
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `shield` | Security response headers (`ruvo-shield`). |
+| `shield` | Security response headers (`sova_shield`). |
 
-Security response headers (helmet-style subset). HSTS stays on [`ruvo_core::Tls`].
+Security response headers (helmet-style subset). HSTS stays on [`sova_core::Tls`].
 
 ## Usage
 

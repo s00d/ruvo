@@ -9,6 +9,6 @@ name = "api_oauth"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["passport-oauth", "env", "cli"] }
+sova = { workspace = true, features = ["passport-oauth", "env", "cli"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 tracing = { workspace = true }

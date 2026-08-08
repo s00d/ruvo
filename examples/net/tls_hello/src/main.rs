@@ -1,5 +1,5 @@
-use ruvo::prelude::*;
-use ruvo::Tls;
+use sova::prelude::*;
+use sova::Tls;
 
 #[tokio::main]
 async fn main() -> Result<()> {

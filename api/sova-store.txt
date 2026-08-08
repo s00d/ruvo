@@ -1,0 +1,60 @@
+pub mod sova_store
+pub mod sova_store::conformance
+pub async fn sova_store::conformance::run(alloc::sync::Arc<dyn sova_store::KvStore>)
+pub struct sova_store::MemoryStore
+impl sova_store::MemoryStore
+pub fn sova_store::MemoryStore::new() -> Self
+pub fn sova_store::MemoryStore::with_shards(usize) -> Self
+impl core::clone::Clone for sova_store::MemoryStore
+pub fn sova_store::MemoryStore::clone(&self) -> sova_store::MemoryStore
+impl core::default::Default for sova_store::MemoryStore
+pub fn sova_store::MemoryStore::default() -> Self
+impl sova_store::KvStore for sova_store::MemoryStore
+pub fn sova_store::MemoryStore::clear_prefix<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, u64>
+pub fn sova_store::MemoryStore::get<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, core::option::Option<bytes::bytes::Bytes>>
+pub fn sova_store::MemoryStore::incr<'a>(&'a self, &'a str, i64, core::option::Option<core::time::Duration>) -> sova_store::BoxFuture<'a, u64>
+pub fn sova_store::MemoryStore::remove<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, ()>
+pub fn sova_store::MemoryStore::set<'a>(&'a self, &'a str, bytes::bytes::Bytes, core::option::Option<core::time::Duration>) -> sova_store::BoxFuture<'a, ()>
+impl core::marker::Freeze for sova_store::MemoryStore
+impl core::marker::Send for sova_store::MemoryStore
+impl core::marker::Sync for sova_store::MemoryStore
+impl core::marker::Unpin for sova_store::MemoryStore
+impl core::marker::UnsafeUnpin for sova_store::MemoryStore
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_store::MemoryStore
+impl !core::panic::unwind_safe::UnwindSafe for sova_store::MemoryStore
+pub struct sova_store::Namespace
+impl core::clone::Clone for sova_store::Namespace
+pub fn sova_store::Namespace::clone(&self) -> sova_store::Namespace
+impl sova_store::KvStore for sova_store::Namespace
+pub fn sova_store::Namespace::clear_prefix<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, u64>
+pub fn sova_store::Namespace::get<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, core::option::Option<bytes::bytes::Bytes>>
+pub fn sova_store::Namespace::incr<'a>(&'a self, &'a str, i64, core::option::Option<core::time::Duration>) -> sova_store::BoxFuture<'a, u64>
+pub fn sova_store::Namespace::remove<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, ()>
+pub fn sova_store::Namespace::set<'a>(&'a self, &'a str, bytes::bytes::Bytes, core::option::Option<core::time::Duration>) -> sova_store::BoxFuture<'a, ()>
+impl core::marker::Freeze for sova_store::Namespace
+impl core::marker::Send for sova_store::Namespace
+impl core::marker::Sync for sova_store::Namespace
+impl core::marker::Unpin for sova_store::Namespace
+impl core::marker::UnsafeUnpin for sova_store::Namespace
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_store::Namespace
+impl !core::panic::unwind_safe::UnwindSafe for sova_store::Namespace
+pub trait sova_store::KvStore: core::marker::Send + core::marker::Sync + 'static
+pub fn sova_store::KvStore::clear_prefix<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, u64>
+pub fn sova_store::KvStore::get<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, core::option::Option<bytes::bytes::Bytes>>
+pub fn sova_store::KvStore::incr<'a>(&'a self, &'a str, i64, core::option::Option<core::time::Duration>) -> sova_store::BoxFuture<'a, u64>
+pub fn sova_store::KvStore::remove<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, ()>
+pub fn sova_store::KvStore::set<'a>(&'a self, &'a str, bytes::bytes::Bytes, core::option::Option<core::time::Duration>) -> sova_store::BoxFuture<'a, ()>
+impl sova_store::KvStore for sova_store::MemoryStore
+pub fn sova_store::MemoryStore::clear_prefix<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, u64>
+pub fn sova_store::MemoryStore::get<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, core::option::Option<bytes::bytes::Bytes>>
+pub fn sova_store::MemoryStore::incr<'a>(&'a self, &'a str, i64, core::option::Option<core::time::Duration>) -> sova_store::BoxFuture<'a, u64>
+pub fn sova_store::MemoryStore::remove<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, ()>
+pub fn sova_store::MemoryStore::set<'a>(&'a self, &'a str, bytes::bytes::Bytes, core::option::Option<core::time::Duration>) -> sova_store::BoxFuture<'a, ()>
+impl sova_store::KvStore for sova_store::Namespace
+pub fn sova_store::Namespace::clear_prefix<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, u64>
+pub fn sova_store::Namespace::get<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, core::option::Option<bytes::bytes::Bytes>>
+pub fn sova_store::Namespace::incr<'a>(&'a self, &'a str, i64, core::option::Option<core::time::Duration>) -> sova_store::BoxFuture<'a, u64>
+pub fn sova_store::Namespace::remove<'a>(&'a self, &'a str) -> sova_store::BoxFuture<'a, ()>
+pub fn sova_store::Namespace::set<'a>(&'a self, &'a str, bytes::bytes::Bytes, core::option::Option<core::time::Duration>) -> sova_store::BoxFuture<'a, ()>
+pub fn sova_store::namespace(alloc::sync::Arc<dyn sova_store::KvStore>, &str) -> sova_store::Namespace
+pub type sova_store::BoxFuture<'a, T> = core::pin::Pin<alloc::boxed::Box<(dyn core::future::future::Future<Output = T> + core::marker::Send + 'a)>>

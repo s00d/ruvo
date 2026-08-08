@@ -5,15 +5,15 @@ editLink: false
 
 # `csrf`
 
-**Session double-submit CSRF (Laravel-style except/XSRF cookie)** · crate `ruvo-csrf` · id `csrf`
+**Session double-submit CSRF (Laravel-style except/XSRF cookie)** · crate `sova-csrf` · id `csrf`
 
 ```bash
-cargo add ruvo --features csrf
+cargo add sova --features csrf
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `csrf` | Session double-submit CSRF (`ruvo-csrf`; needs `session`). |
+| `csrf` | Session double-submit CSRF (`sova_csrf`; needs `session`). |
 
 CSRF protection via session double-submit (Laravel-style).
 
@@ -31,8 +31,8 @@ CSRF protection via session double-submit (Laravel-style).
 **`App::web()`** already installs CSRF after sessions. Use the token in forms / SPA bootstrap:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{CsrfExt, Html, Parser, Request, ServerArgs};
+use sova::prelude::*;
+use sova::{CsrfExt, Html, Parser, Request, ServerArgs};
 
 #[tokio::main]
 async fn main() -> Result<()> {

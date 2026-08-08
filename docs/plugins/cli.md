@@ -5,15 +5,16 @@ editLink: false
 
 # `cli`
 
-**CLI ServerArgs / listen_args for Ruvo (local dev)** · crate `ruvox` · id `cli`
+**CLI ServerArgs / listen_args for Sova (local dev)** · crate `sovax` · id `cli`
 
 ```bash
-cargo add ruvo --features cli
+cargo add sova --features cli
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `cli` | `ServerArgs` and log CLI flags (`ruvox`). |
+| `cli` | `ServerArgs` and log CLI flags (`sovax`). |
+
 
 Optional CLI helpers for local development (`--log-level`, file logging).
  This crate pulls in `clap` — enable only when you want argv parsing.
@@ -23,8 +24,8 @@ Optional CLI helpers for local development (`--log-level`, file logging).
 `ServerArgs` is the local-dev CLI surface used by presets:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Parser, ServerArgs};
+use sova::prelude::*;
+use sova::{Parser, ServerArgs};
 
 #[tokio::main]
 async fn main() -> Result<()> {

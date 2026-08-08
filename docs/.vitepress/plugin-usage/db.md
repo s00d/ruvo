@@ -1,12 +1,12 @@
-Install Db **on top of** a preset (or cabinet-style app). Migrations run through `app.run()` / `cargo ruvo db`.
+Install Db **on top of** a preset (or cabinet-style app). Migrations run through `app.run()` / `cargo sova db`.
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{
+use sova::prelude::*;
+use sova::{
     ActiveModelTrait, Db, DbExt, EntityTrait, Json, Parser, Request, ServerArgs, Set,
     ValidationExt,
 };
-use ruvo::vld;
+use sova::vld;
 
 mod entity;
 mod migrator;
@@ -52,7 +52,7 @@ async fn create(mut req: Request) -> Result<(u16, Json<Model>)> {
 ```
 
 ```bash
-DATABASE_URL=postgres://postgres@localhost/ruvo cargo run -p crud -- migrate
+DATABASE_URL=postgres://postgres@localhost/sova cargo run -p crud -- migrate
 cargo run -p crud
 ```
 

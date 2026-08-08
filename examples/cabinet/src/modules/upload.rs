@@ -1,4 +1,4 @@
-use ruvo::{
+use sova::{
     set_avatar, CsrfExt, CurrentUser, DbExt, Redirect, Request, Response, Result, Router,
     StorageExt, UploadRules, ValidateHook,
 };
@@ -17,7 +17,7 @@ async fn upload_avatar(mut req: Request) -> Result<Response> {
         let avatar = data
             .file("avatar")
             .cloned()
-            .ok_or_else(|| ruvo::Error::BadRequest("avatar required".into()))?;
+            .ok_or_else(|| sova::Error::BadRequest("avatar required".into()))?;
         (csrf_tok, avatar)
     };
 
@@ -40,4 +40,4 @@ async fn upload_avatar(mut req: Request) -> Result<Response> {
     Ok(Redirect::see_other("/cabinet/profile").into_response())
 }
 
-use ruvo::IntoResponse;
+use sova::IntoResponse;

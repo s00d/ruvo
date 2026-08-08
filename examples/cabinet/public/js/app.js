@@ -1,6 +1,6 @@
 /* Layout Vue islands only (nav + flash). Page logic lives in each HTML {% block scripts %}. */
 (function () {
-  const Auth = window.RuvoAuth || {};
+  const Auth = window.SovaAuth || {};
   if (!Auth.mount) return;
 
   document.querySelectorAll("[data-vue]").forEach((el) => {

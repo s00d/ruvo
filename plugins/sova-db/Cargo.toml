@@ -1,0 +1,36 @@
+[package]
+name = "sova-db"
+version = "0.1.0"
+edition = "2021"
+description = "SeaORM database plugin for Sova (postgres / sqlite / mysql)"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-db"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[features]
+default = ["postgres"]
+postgres = ["sea-orm/sqlx-postgres", "sea-orm-migration/sqlx-postgres"]
+sqlite = ["sea-orm/sqlx-sqlite", "sea-orm-migration/sqlx-sqlite"]
+mysql = ["sea-orm/sqlx-mysql", "sea-orm-migration/sqlx-mysql"]
+
+[dependencies]
+sova-core = { workspace = true }
+sea-orm = { workspace = true, features = ["macros"] }
+sea-orm-migration = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }
+tracing = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http = { workspace = true }
+tempfile = { workspace = true }
+sova-core = { workspace = true, features = ["testing"] }
+
+[[test]]
+name = "sqlite"
+required-features = ["sqlite"]

@@ -1,0 +1,179 @@
+pub mod sova
+pub use sova::AppStore
+pub use sova::BackgroundService
+pub use sova::Cell
+pub use sova::ClientAddr
+pub use sova::ConfigDoc
+pub use sova::EnvError
+pub use sova::Error
+pub use sova::FormData
+pub use sova::Html
+pub use sova::Http
+pub use sova::IntoResponse
+pub use sova::Json
+pub use sova::KvStore
+pub use sova::LogConfig
+pub use sova::LogRotate
+pub use sova::Namespace
+pub use sova::Next
+pub use sova::NoContent
+pub use sova::OnUpgrade
+pub use sova::PLUGIN_SDK_VERSION
+pub use sova::Plugin
+pub use sova::PluginMeta
+pub use sova::PluginSdkVersion
+pub use sova::Redirect
+pub use sova::Request
+pub use sova::Response
+pub use sova::Router
+pub use sova::Server
+pub use sova::Shutdown
+pub use sova::Slot
+pub use sova::Static
+pub use sova::TestClient
+pub use sova::Text
+pub use sova::Tls
+pub use sova::Upload
+pub use sova::env_require
+pub use sova::logger
+pub use sova::namespace
+pub use sova::sova_env
+pub use sova::with_state
+pub mod sova::extend
+pub use sova::extend::<<sova_core::extend::*>>
+pub mod sova::prelude
+pub use sova::prelude::Error
+pub use sova::prelude::Html
+pub use sova::prelude::IntoResponse
+pub use sova::prelude::Json
+pub use sova::prelude::Next
+pub use sova::prelude::NoContent
+pub use sova::prelude::Plugin
+pub use sova::prelude::Redirect
+pub use sova::prelude::Request
+pub use sova::prelude::Response
+pub use sova::prelude::Router
+pub use sova::prelude::Text
+pub use sova::prelude::logger
+pub struct sova::prelude::App(_)
+impl sova::App
+pub fn sova::App::bind(self, impl core::convert::Into<sova_core::app::bind::Bind>) -> sova::BoundApp
+pub async fn sova::App::listen(self, u16) -> sova::Result<()>
+pub fn sova::App::new() -> Self
+pub async fn sova::App::run(self) -> sova::Result<()>
+impl core::convert::From<sova::App> for sova_core::app::App
+pub fn sova_core::app::App::from(sova::App) -> Self
+impl core::convert::From<sova_core::app::App> for sova::App
+pub fn sova::App::from(sova_core::app::App) -> Self
+impl core::default::Default for sova::App
+pub fn sova::App::default() -> Self
+impl core::ops::deref::Deref for sova::App
+pub type sova::App::Target = sova_core::app::App
+pub fn sova::App::deref(&self) -> &Self::Target
+impl core::ops::deref::DerefMut for sova::App
+pub fn sova::App::deref_mut(&mut self) -> &mut Self::Target
+impl core::marker::Freeze for sova::App
+impl core::marker::Send for sova::App
+impl !core::marker::Sync for sova::App
+impl core::marker::Unpin for sova::App
+impl core::marker::UnsafeUnpin for sova::App
+impl !core::panic::unwind_safe::RefUnwindSafe for sova::App
+impl !core::panic::unwind_safe::UnwindSafe for sova::App
+pub type sova::prelude::Result<T> = core::result::Result<T, sova::AppError>
+pub mod sova::store
+pub use sova::store::AppKey
+pub use sova::store::AppStore
+pub use sova::store::Encrypted
+pub use sova::store::KvStore
+pub use sova::store::Memory
+pub use sova::store::Namespace
+pub use sova::store::encrypted
+pub use sova::store::encrypted_ns
+pub use sova::store::namespace
+pub struct sova::store::SharedStore(pub sova_store::AppStore)
+impl sova::SharedStore
+pub fn sova::SharedStore::memory() -> Self
+pub fn sova::SharedStore::new(alloc::sync::Arc<dyn sova_store::KvStore>) -> Self
+impl sova_core::plugin::Plugin for sova::SharedStore
+pub fn sova::SharedStore::id(&self) -> &'static str
+pub fn sova::SharedStore::install(self, &mut sova_core::app::App)
+pub fn sova::SharedStore::meta(&self) -> sova_core::plugin::PluginMeta
+impl core::marker::Freeze for sova::SharedStore
+impl core::marker::Send for sova::SharedStore
+impl core::marker::Sync for sova::SharedStore
+impl core::marker::Unpin for sova::SharedStore
+impl core::marker::UnsafeUnpin for sova::SharedStore
+impl !core::panic::unwind_safe::RefUnwindSafe for sova::SharedStore
+impl !core::panic::unwind_safe::UnwindSafe for sova::SharedStore
+pub enum sova::AppError
+pub sova::AppError::Core(sova_core::error::Error)
+impl core::convert::From<sova_core::error::Error> for sova::AppError
+pub fn sova::AppError::from(sova_core::error::Error) -> Self
+impl core::fmt::Debug for sova::AppError
+pub fn sova::AppError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl sova_core::error::IntoResponse for sova::AppError
+pub fn sova::AppError::into_response(self) -> sova_core::response::Response
+impl sova_core::handler::ErrorResponse for sova::AppError
+impl core::marker::Freeze for sova::AppError
+impl core::marker::Send for sova::AppError
+impl core::marker::Sync for sova::AppError
+impl core::marker::Unpin for sova::AppError
+impl core::marker::UnsafeUnpin for sova::AppError
+impl !core::panic::unwind_safe::RefUnwindSafe for sova::AppError
+impl !core::panic::unwind_safe::UnwindSafe for sova::AppError
+pub struct sova::App(_)
+impl sova::App
+pub fn sova::App::bind(self, impl core::convert::Into<sova_core::app::bind::Bind>) -> sova::BoundApp
+pub async fn sova::App::listen(self, u16) -> sova::Result<()>
+pub fn sova::App::new() -> Self
+pub async fn sova::App::run(self) -> sova::Result<()>
+impl core::convert::From<sova::App> for sova_core::app::App
+pub fn sova_core::app::App::from(sova::App) -> Self
+impl core::convert::From<sova_core::app::App> for sova::App
+pub fn sova::App::from(sova_core::app::App) -> Self
+impl core::default::Default for sova::App
+pub fn sova::App::default() -> Self
+impl core::ops::deref::Deref for sova::App
+pub type sova::App::Target = sova_core::app::App
+pub fn sova::App::deref(&self) -> &Self::Target
+impl core::ops::deref::DerefMut for sova::App
+pub fn sova::App::deref_mut(&mut self) -> &mut Self::Target
+impl core::marker::Freeze for sova::App
+impl core::marker::Send for sova::App
+impl !core::marker::Sync for sova::App
+impl core::marker::Unpin for sova::App
+impl core::marker::UnsafeUnpin for sova::App
+impl !core::panic::unwind_safe::RefUnwindSafe for sova::App
+impl !core::panic::unwind_safe::UnwindSafe for sova::App
+pub struct sova::BoundApp(_)
+impl sova::BoundApp
+pub fn sova::BoundApp::http(self, sova_core::app::bind::Http) -> Self
+pub fn sova::BoundApp::reuseport(self, bool) -> Self
+pub async fn sova::BoundApp::run(self) -> sova::Result<()>
+pub async fn sova::BoundApp::serve(self) -> sova::Result<()>
+pub fn sova::BoundApp::shutdown<F>(self, F) -> Self where F: core::future::future::Future<Output = ()> + core::marker::Send + 'static
+pub fn sova::BoundApp::tls(self, sova_core::tls::Tls) -> sova::Result<Self>
+impl core::marker::Freeze for sova::BoundApp
+impl core::marker::Send for sova::BoundApp
+impl !core::marker::Sync for sova::BoundApp
+impl core::marker::Unpin for sova::BoundApp
+impl core::marker::UnsafeUnpin for sova::BoundApp
+impl !core::panic::unwind_safe::RefUnwindSafe for sova::BoundApp
+impl !core::panic::unwind_safe::UnwindSafe for sova::BoundApp
+pub struct sova::SharedStore(pub sova_store::AppStore)
+impl sova::SharedStore
+pub fn sova::SharedStore::memory() -> Self
+pub fn sova::SharedStore::new(alloc::sync::Arc<dyn sova_store::KvStore>) -> Self
+impl sova_core::plugin::Plugin for sova::SharedStore
+pub fn sova::SharedStore::id(&self) -> &'static str
+pub fn sova::SharedStore::install(self, &mut sova_core::app::App)
+pub fn sova::SharedStore::meta(&self) -> sova_core::plugin::PluginMeta
+impl core::marker::Freeze for sova::SharedStore
+impl core::marker::Send for sova::SharedStore
+impl core::marker::Sync for sova::SharedStore
+impl core::marker::Unpin for sova::SharedStore
+impl core::marker::UnsafeUnpin for sova::SharedStore
+impl !core::panic::unwind_safe::RefUnwindSafe for sova::SharedStore
+impl !core::panic::unwind_safe::UnwindSafe for sova::SharedStore
+pub fn sova::init_tracing()
+pub type sova::Result<T> = core::result::Result<T, sova::AppError>

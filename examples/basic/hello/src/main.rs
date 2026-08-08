@@ -1,5 +1,5 @@
-use ruvo::prelude::*;
-use ruvo::{Cors, Static};
+use sova::prelude::*;
+use sova::{Cors, Static};
 
 mod modules;
 
@@ -11,7 +11,7 @@ struct AppConfig {
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
-            app_name: "ruvo".into(),
+            app_name: "sova".into(),
         }
     }
 }
@@ -28,7 +28,7 @@ fn render(template: &str, vars: &[(&str, &str)]) -> String {
 async fn main() -> Result<()> {
     let mut app = App::new();
     app.state(AppConfig {
-        app_name: "ruvo-hello".into(),
+        app_name: "sova-hello".into(),
     });
     app.use_middleware(logger());
     app.install(Cors::new().origin("*"));

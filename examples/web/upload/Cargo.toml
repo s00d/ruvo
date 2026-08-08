@@ -9,6 +9,6 @@ name = "upload"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["multipart"] }
+sova = { workspace = true, features = ["multipart"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }

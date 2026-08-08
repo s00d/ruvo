@@ -4,8 +4,8 @@
 //! cargo run -p api_preset
 //! ```
 
-use ruvo::vld;
-use ruvo::{doc_schema, App, Doc, DocVldExt, Json, OpenApiDocExt, Request, Result, ValidationError, ValidationExt};
+use sova::vld;
+use sova::{doc_schema, App, Doc, DocVldExt, Json, OpenApiDocExt, Request, Result, ValidationError, ValidationExt};
 
 vld::schema! {
     #[derive(Debug, Clone, serde::Serialize)]

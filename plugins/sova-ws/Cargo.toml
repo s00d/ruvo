@@ -1,0 +1,30 @@
+[package]
+name = "sova-ws"
+version = "0.1.0"
+edition = "2021"
+description = "WebSocket plugin for Sova"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-ws"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[dependencies]
+sova-core = { workspace = true }
+ hyper = { workspace = true, features = ["server", "client", "http2"] }
+ hyper-util = { workspace = true, features = ["tokio", "client-legacy", "http2"] }
+tokio-tungstenite = { workspace = true, default-features = false, features = ["connect"] }
+futures-util = { workspace = true, features = ["sink"] }
+http = { workspace = true }
+tracing = { workspace = true }
+bytes = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }
+
+[dev-dependencies]
+sova-core = { workspace = true, features = ["testing"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "net", "time", "io-util"] }
+tokio-tungstenite = { workspace = true, default-features = false, features = ["connect"] }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+http = { workspace = true }
+http-body-util = { workspace = true }

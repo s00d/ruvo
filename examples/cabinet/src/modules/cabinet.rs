@@ -1,4 +1,4 @@
-use ruvo::{
+use sova::{
     CsrfExt, CurrentUser, DbExt, Meta, RenderExt, Request, Response, Result, Router,
 };
 use serde_json::json;

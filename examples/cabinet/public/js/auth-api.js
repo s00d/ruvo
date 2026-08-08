@@ -58,7 +58,7 @@
     return data;
   }
 
-  /** Mount a Vue island: RuvoAuth.mount('#id', { data, methods, ... }). */
+  /** Mount a Vue island: SovaAuth.mount('#id', { data, methods, ... }). */
   function mount(selectorOrEl, options) {
     const { createApp } = global.Vue || {};
     if (!createApp) return null;
@@ -70,7 +70,7 @@
     return createApp(options).mount(el);
   }
 
-  global.RuvoAuth = {
+  global.SovaAuth = {
     api: api,
     csrfMeta: csrfMeta,
     errorMessage: errorMessage,

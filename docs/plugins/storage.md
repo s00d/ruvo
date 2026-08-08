@@ -5,21 +5,21 @@ editLink: false
 
 # `storage`
 
-**Object storage (local / memory / S3 / GCS / Azure)** · crate `ruvo-storage` · id `storage`
+**Object storage (local / memory / S3 / GCS / Azure)** · crate `sova-storage` · id `storage`
 
 ```bash
-cargo add ruvo --features storage,storage-azure,storage-gcs,storage-memory,storage-s3
+cargo add sova --features storage,storage-azure,storage-gcs,storage-memory,storage-s3
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `storage` | Object storage (`ruvo-storage`). |
+| `storage` | Object storage (`sova_storage`). |
 | `storage-azure` | Azure Blob backend. |
 | `storage-gcs` | Google Cloud Storage backend. |
 | `storage-memory` | In-memory blob store (tests). |
 | `storage-s3` | S3 / R2 / MinIO backend. |
 
-Object storage for Ruvo — local disk, memory, S3/R2/MinIO, GCS, Azure.
+Object storage for Sova — local disk, memory, S3/R2/MinIO, GCS, Azure.
 
  Upload pipeline:
 ```rust
@@ -33,8 +33,8 @@ Object storage for Ruvo — local disk, memory, S3/R2/MinIO, GCS, Azure.
 Object storage for uploads. Add on the **web preset** (multipart feature for files):
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Parser, Redirect, Request, ServerArgs, Storage, UploadRules};
+use sova::prelude::*;
+use sova::{Parser, Redirect, Request, ServerArgs, Storage, UploadRules};
 
 #[tokio::main]
 async fn main() -> Result<()> {

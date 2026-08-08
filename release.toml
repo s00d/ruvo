@@ -7,16 +7,16 @@
 #
 # === First-time publish order (foundations → leaves → dependents → facade) ===
 #
-#   cargo publish -p ruvo-core
+#   cargo publish -p sova-core
 #   # wait for index
-#   cargo publish -p ruvo-cookies
-#   cargo publish -p ruvo-cors
-#   cargo publish -p ruvo-shield
-#   cargo publish -p ruvo-compress
+#   cargo publish -p sova_cookies
+#   cargo publish -p sova_cors
+#   cargo publish -p sova_shield
+#   cargo publish -p sova-compress
 #   # …then session/csrf/db/… then facade
 #
-# NOTE: facade crate name `ruvo` and old `ruvo-cli` are taken on crates.io.
-# Console helpers ship as `ruvox`. Rename the facade before publishing it.
+# NOTE: facade crate name `sova` and old `sova-cli` are taken on crates.io.
+# Console helpers ship as `sovax`. Rename the facade before publishing it.
 #
 # After all crates exist:
 #   cargo release patch --workspace --execute

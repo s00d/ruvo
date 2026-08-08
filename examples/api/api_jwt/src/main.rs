@@ -1,10 +1,10 @@
 //! Full JWT auth + personal access tokens via `JwtAuth` + `AuthMigrator`.
 //!
 //! ```bash
-//! export DATABASE_URL=postgres://postgres@localhost/ruvo
+//! export DATABASE_URL=postgres://postgres@localhost/sova
 //! export JWT_SECRET=dev-secret-change-me
 //! cargo run -p api_jwt -- migrate
-//! # or: cargo ruvo db migrate -p api_jwt
+//! # or: cargo sova db migrate -p api_jwt
 //! cargo run -p api_jwt
 //!
 //! # register / login → JWT
@@ -18,10 +18,10 @@
 //!   -H "authorization: Bearer <access_token>" \
 //!   -H 'content-type: application/json' \
 //!   -d '{"name":"ci","abilities":[]}'
-//! curl -s http://127.0.0.1:3000/api/me -H "authorization: Bearer <rvpat_…>"
+//! curl -s http://127.0.0.1:3000/api/me -H "authorization: Bearer <svpat_…>"
 //! ```
 
-use ruvo::{
+use sova::{
     App, AuthMigrator, Db, JwtAuth, JwtAuthExt, Json, Request, Result, Router,
 };
 
@@ -34,7 +34,7 @@ fn build_app() -> App {
     let mut api = Router::new();
     api.use_middleware(JwtAuth::guard());
     api.get("/me", |req: Request| async move {
-        Ok::<_, ruvo::Error>(Json(req.require_auth_user()?.clone()))
+        Ok::<_, sova::Error>(Json(req.require_auth_user()?.clone()))
     });
     app.mount("/api", api);
 
@@ -43,7 +43,7 @@ fn build_app() -> App {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let _ = ruvo::ruvo_env::load();
+    let _ = sova::sova_env::load();
     let app = build_app();
     tracing::info!("API http://127.0.0.1:3000  /auth/*  /auth/tokens  /api/me");
     app.run().await

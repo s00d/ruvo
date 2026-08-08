@@ -1,5 +1,5 @@
 //! MiniJinja templates loaded from files.
-use ruvo::{App, Request, Response, Result, RenderExt, Templates};
+use sova::{App, Request, Response, Result, RenderExt, Templates};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -21,7 +21,7 @@ async fn home(req: Request) -> Response {
     req.render(
         "home.html",
         Page {
-            title: "Ruvo templates".into(),
+            title: "Sova templates".into(),
         },
     )
     .unwrap_or_else(|e| e.into_response())

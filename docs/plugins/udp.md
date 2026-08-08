@@ -5,15 +5,15 @@ editLink: false
 
 # `udp`
 
-**UDP BackgroundService helpers for Ruvo** · crate `ruvo-udp` · id `udp`
+**UDP BackgroundService helpers for Sova** · crate `sova-udp` · id `udp`
 
 ```bash
-cargo add ruvo --features udp
+cargo add sova --features udp
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `udp` | UDP `BackgroundService` (`ruvo-udp`). |
+| `udp` | UDP `BackgroundService` (`sova_udp`). |
 
 UDP listeners as `BackgroundService`.
 

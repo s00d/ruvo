@@ -30,7 +30,7 @@
 {% endblock %}
 {% block scripts %}
 <script>
-RuvoAuth.mount("#vue-auth", {
+SovaAuth.mount("#vue-auth", {
   data() {
     return { error: "", busy: false };
   },
@@ -40,14 +40,14 @@ RuvoAuth.mount("#vue-auth", {
       this.busy = true;
       this.error = "";
       try {
-        const { data } = await RuvoAuth.api.post("/login", RuvoAuth.formFields(e.target));
+        const { data } = await SovaAuth.api.post("/login", SovaAuth.formFields(e.target));
         if (data && data.two_factor) {
           location.href = "/two-factor-challenge";
           return;
         }
         location.href = "/cabinet";
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
         this.busy = false;
       }
     },

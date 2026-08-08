@@ -9,7 +9,7 @@ name = "api_validated"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["vld-openapi"] }
+sova = { workspace = true, features = ["vld-openapi"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }
 serde = { workspace = true, features = ["derive"] }

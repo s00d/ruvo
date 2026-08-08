@@ -1,0 +1,36 @@
+[package]
+name = "sova-quic"
+version = "0.1.0"
+edition = "2021"
+description = "QUIC datagrams BackgroundService helpers for Sova"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-quic"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[features]
+dev-tls = ["sova-core/dev-tls"]
+
+[dependencies]
+sova-core = { workspace = true, features = ["tls"] }
+tokio = { workspace = true, features = ["net", "sync", "rt", "macros", "time"] }
+tracing = { workspace = true }
+
+bytes = { workspace = true }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+
+quinn = { workspace = true, features = ["rustls"] }
+rustls = { workspace = true, default-features = false, features = ["ring", "std", "tls12", "logging"] }
+h3 = { workspace = true }
+h3-quinn = { workspace = true }
+http = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "net", "time", "io-util"] }
+tempfile = { workspace = true }
+rcgen = { workspace = true }
+rustls-pemfile = { workspace = true }
+sova-core = { workspace = true, features = ["testing"] }
+

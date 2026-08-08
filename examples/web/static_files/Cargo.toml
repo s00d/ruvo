@@ -9,6 +9,6 @@ name = "static_files"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["static-files"] }
+sova = { workspace = true, features = ["static-files"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }

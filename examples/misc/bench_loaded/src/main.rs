@@ -1,7 +1,7 @@
 //! Loaded scale profile: logger + cors + cookies + session + rate-limit.
 //! Used by `bench/scale.sh` — not a product demo.
 
-use ruvo::{logger, App, Cors, RateLimit, Request, Response, Result, SessionExt};
+use sova::{logger, App, Cors, RateLimit, Request, Response, Result, SessionExt};
 use std::time::Duration;
 
 #[tokio::main]
@@ -10,7 +10,7 @@ async fn main() -> Result<()> {
     let mut app = App::new();
     app.use_middleware(logger());
     app.install(Cors::new().origin("*"));
-    app.install(ruvo::memory_sessions());
+    app.install(sova::memory_sessions());
     // Cap far above load-test RPS so we measure lock cost, not 429s.
     app.install(RateLimit::new(10_000_000, Duration::from_secs(60)));
 

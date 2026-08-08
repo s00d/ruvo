@@ -1,6 +1,6 @@
 //! JSON REST skeleton (`Cell` for in-memory store).
-use ruvo::prelude::*;
-use ruvo::Cell;
+use sova::prelude::*;
+use sova::Cell;
 
 #[derive(Clone)]
 struct Db {

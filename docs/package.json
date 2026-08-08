@@ -1,9 +1,9 @@
 {
-  "name": "ruvo-docs",
+  "name": "sova-docs",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "VitePress documentation for Ruvo",
+  "description": "VitePress documentation for Sova",
   "scripts": {
     "dev": "vitepress dev .",
     "build": "vitepress build .",

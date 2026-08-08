@@ -102,7 +102,7 @@
 {% endblock %}
 {% block scripts %}
 <script>
-RuvoAuth.mount("#admin-rbac", {
+SovaAuth.mount("#admin-rbac", {
   data() {
     return {
       error: "",
@@ -125,8 +125,8 @@ RuvoAuth.mount("#admin-rbac", {
       this.error = "";
       try {
         const [r, p] = await Promise.all([
-          RuvoAuth.api.get("/roles"),
-          RuvoAuth.api.get("/permissions"),
+          SovaAuth.api.get("/roles"),
+          SovaAuth.api.get("/permissions"),
         ]);
         this.roles = r.data.roles || [];
         this.permissions = p.data.permissions || [];
@@ -135,16 +135,16 @@ RuvoAuth.mount("#admin-rbac", {
           await this.loadRolePerms();
         }
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
       }
     },
     async loadRolePerms() {
       if (!this.selectedRoleId) return;
       try {
-        const { data } = await RuvoAuth.api.get("/roles/" + this.selectedRoleId);
+        const { data } = await SovaAuth.api.get("/roles/" + this.selectedRoleId);
         this.rolePermIds = data.permission_ids || [];
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
       }
     },
     async onRoleChange() {
@@ -154,11 +154,11 @@ RuvoAuth.mount("#admin-rbac", {
       this.busy = true;
       this.error = "";
       try {
-        await RuvoAuth.api.post("/roles", this.newRole);
+        await SovaAuth.api.post("/roles", this.newRole);
         this.newRole = { name: "", slug: "" };
         await this.load();
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
       } finally {
         this.busy = false;
       }
@@ -167,11 +167,11 @@ RuvoAuth.mount("#admin-rbac", {
       this.busy = true;
       this.error = "";
       try {
-        await RuvoAuth.api.post("/permissions", this.newPerm);
+        await SovaAuth.api.post("/permissions", this.newPerm);
         this.newPerm = { name: "", slug: "" };
         await this.load();
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
       } finally {
         this.busy = false;
       }
@@ -179,31 +179,31 @@ RuvoAuth.mount("#admin-rbac", {
     async deleteRole(id) {
       this.error = "";
       try {
-        await RuvoAuth.api.delete("/roles/" + id);
+        await SovaAuth.api.delete("/roles/" + id);
         if (this.selectedRoleId === id) this.selectedRoleId = null;
         await this.load();
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
       }
     },
     async deletePerm(id) {
       this.error = "";
       try {
-        await RuvoAuth.api.delete("/permissions/" + id);
+        await SovaAuth.api.delete("/permissions/" + id);
         await this.load();
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
       }
     },
     async syncRolePerms() {
       this.busy = true;
       this.error = "";
       try {
-        await RuvoAuth.api.put("/roles/" + this.selectedRoleId + "/permissions", {
+        await SovaAuth.api.put("/roles/" + this.selectedRoleId + "/permissions", {
           permission_ids: this.rolePermIds,
         });
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
       } finally {
         this.busy = false;
       }
@@ -212,11 +212,11 @@ RuvoAuth.mount("#admin-rbac", {
       this.busy = true;
       this.error = "";
       try {
-        await RuvoAuth.api.put("/users/" + this.userId + "/roles", {
+        await SovaAuth.api.put("/users/" + this.userId + "/roles", {
           role_ids: this.userRoleIds,
         });
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
       } finally {
         this.busy = false;
       }

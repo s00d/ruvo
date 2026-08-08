@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Line coverage for Ruvo libraries (plugins + core/facade). Fail if < 80%.
+# Line coverage for Sova libraries (plugins + core/facade). Fail if < 80%.
 #
 # Requires: cargo install cargo-llvm-cov
 #           rustup component add llvm-tools-preview
@@ -19,9 +19,9 @@ FAIL_UNDER="${FAIL_UNDER:-80}"
 OUT_DIR="${OUT_DIR:-target/llvm-cov}"
 mkdir -p "$OUT_DIR"
 
-# Example binaries and cargo-ruvo are out of the coverage gate.
+# Example binaries and cargo-sova are out of the coverage gate.
 EXCLUDES=(
-  --exclude cargo-ruvo
+  --exclude cargo-sova
   --exclude cabinet
   --exclude api_auth
   --exclude api_jwt
@@ -57,7 +57,7 @@ EXCLUDES=(
 # Optional backends that need live Redis / S3 / OAuth IdP are compiled under
 # --all-features but skipped at runtime without credentials. Exclude them from
 # the line gate so the threshold measures testable library code.
-IGNORE_RE='(^|/)(redis(_store)?|opendal_store|messaging|elasticsearch|otel|reqwest_transport)\.rs$|/oauth/|plugins/ruvo-notifications/src/ws\.rs$'
+IGNORE_RE='(^|/)(redis(_store)?|opendal_store|messaging|elasticsearch|otel|reqwest_transport)\.rs$|/oauth/|plugins/sova-notifications/src/ws\.rs$'
 
 
 echo "==> cargo llvm-cov (fail-under-lines=${FAIL_UNDER})"

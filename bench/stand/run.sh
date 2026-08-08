@@ -39,7 +39,7 @@ cd "$ROOT"
 
 echo "==> building stand binaries"
 TOKIO_WORKER_THREADS="$TOKIO_WORKER_THREADS" cargo build --release -q \
-  -p stand_ruvo -p stand_axum -p stand_actix
+  -p stand_sova -p stand_axum -p stand_actix
 
 PIDS=()
 cleanup() {
@@ -67,7 +67,7 @@ start_one() {
   exit 1
 }
 
-start_one ruvo 9101 stand_ruvo
+start_one sova 9101 stand_sova
 start_one axum 9102 stand_axum
 start_one actix 9103 stand_actix
 
@@ -79,7 +79,7 @@ python3 - "$VERIFY_JSON" <<'PY'
 import hashlib, json, sys, urllib.request
 
 out_path = sys.argv[1]
-ports = {"ruvo": 9101, "axum": 9102, "actix": 9103}
+ports = {"sova": 9101, "axum": 9102, "actix": 9103}
 paths = ["/", "/about", "/blog", "/blog/hello", "/contact", "/api/health"]
 
 def fetch(port, path):
@@ -119,7 +119,7 @@ with open(out_path, "w") as f:
 if not report["ok"]:
     print("BODY MISMATCH", json.dumps(report, indent=2))
     sys.exit(1)
-print("bodies match for all paths across ruvo/axum/actix")
+print("bodies match for all paths across sova/axum/actix")
 PY
 
 oha_one() {
@@ -145,7 +145,7 @@ LOAD_TSV="$RESULTS/load.tsv"
   echo -e "framework\tpath\trps\tp50\tp99\tsuccess"
   for path in "${PATHS[@]}"; do
     echo "  load / path=$path" >&2
-    oha_one ruvo 9101 "$path"
+    oha_one sova 9101 "$path"
     oha_one axum 9102 "$path"
     oha_one actix 9103 "$path"
   done
@@ -235,11 +235,11 @@ md_lines.append("# Performance")
 md_lines.append("")
 md_lines.append("![Performance](/banners/performance.svg)")
 md_lines.append("")
-md_lines.append("Ruvo vs Axum vs Actix-web on an **identical multi-page fixture site** (same HTML/JSON bodies, verified SHA-256).")
+md_lines.append("Sova vs Axum vs Actix-web on an **identical multi-page fixture site** (same HTML/JSON bodies, verified SHA-256).")
 md_lines.append("")
 md_lines.append("## Methodology")
 md_lines.append("")
-md_lines.append("- Stand: `bench/stand/` — shared fixtures in `fixtures/`, three minimal servers (`stand_ruvo`, `stand_axum`, `stand_actix`).")
+md_lines.append("- Stand: `bench/stand/` — shared fixtures in `fixtures/`, three minimal servers (`stand_sova`, `stand_axum`, `stand_actix`).")
 md_lines.append("- Bodies must match **byte-for-byte** across frameworks before load runs (`run.sh` aborts on mismatch).")
 md_lines.append("- Load tool: [oha](https://github.com/hatoo/oha).")
 md_lines.append(f"- This capture: duration `{duration}`, concurrency `{concurrency}`, `TOKIO_WORKER_THREADS={workers}`.")
@@ -251,7 +251,7 @@ md_lines.append("## Latest results — `GET /`")
 md_lines.append("")
 md_lines.append("| Framework | Req/s | p50 (ms) | p99 (ms) |")
 md_lines.append("|-----------|-------|----------|----------|")
-for fw in ("ruvo", "axum", "actix"):
+for fw in ("sova", "axum", "actix"):
     f = summary["frameworks"][fw]
     md_lines.append(
         f"| {fw} | {f['home_rps']:.0f} | {f['home_p50_ms']:.3f} | {f['home_p99_ms']:.3f} |"
@@ -261,7 +261,7 @@ md_lines.append("## Latest results — mean across all paths")
 md_lines.append("")
 md_lines.append("| Framework | Mean Req/s | Mean p99 (ms) |")
 md_lines.append("|-----------|------------|---------------|")
-for fw in ("ruvo", "axum", "actix"):
+for fw in ("sova", "axum", "actix"):
     f = summary["frameworks"][fw]
     md_lines.append(f"| {fw} | {f['mean_rps']:.0f} | {f['mean_p99_ms']:.3f} |")
 md_lines.append("")

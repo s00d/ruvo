@@ -5,7 +5,7 @@
 //! curl -H 'x-api-key: demo' http://127.0.0.1:3000/me
 //! ```
 
-use ruvo::{App, Auth, Json, Passport, PassportExt, Request, Result};
+use sova::{App, Auth, Json, Passport, PassportExt, Request, Result};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -47,7 +47,7 @@ fn build_app() -> App {
     app.with_probes();
 
     app.get("/me", |req: Request| async move {
-        Ok::<_, ruvo::Error>(Json(req.require_user::<User>()?.clone()))
+        Ok::<_, sova::Error>(Json(req.require_user::<User>()?.clone()))
     });
 
     app

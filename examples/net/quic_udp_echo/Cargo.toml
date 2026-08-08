@@ -9,8 +9,8 @@ name = "quic_udp_echo"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["quic-udp", "tls"] }
-ruvo-quic = { path = "../../../plugins/ruvo-quic" }
+sova = { workspace = true, features = ["quic-udp", "tls"] }
+sova-quic = { path = "../../../plugins/sova-quic" }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }
 bytes = { workspace = true }

@@ -5,15 +5,15 @@ editLink: false
 
 # `cookies`
 
-**Parse Cookie header into request-local Cookies** · crate `ruvo-cookies` · id `cookies`
+**Parse Cookie header into request-local Cookies** · crate `sova-cookies` · id `cookies`
 
 ```bash
-cargo add ruvo --features cookies
+cargo add sova --features cookies
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `cookies` | Cookie jar helpers (`ruvo-cookies`). |
+| `cookies` | Cookie jar helpers (`sova_cookies`). |
 
 Cookie parsing middleware and `Response::cookie` extension.
 

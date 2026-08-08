@@ -1,7 +1,7 @@
 //! OAuth2 login (GitHub / Google / optional Apple) + JWT API guard.
 //!
 //! ```bash
-//! export DATABASE_URL=postgres://postgres@localhost/ruvo
+//! export DATABASE_URL=postgres://postgres@localhost/sova
 //! export JWT_SECRET=dev-secret
 //! export GITHUB_CLIENT_ID=...
 //! export GITHUB_CLIENT_SECRET=...
@@ -18,7 +18,7 @@
 //! # open http://127.0.0.1:3000/oauth/github  or /oauth/google
 //! ```
 
-use ruvo::{
+use sova::{
     App, Apple, AuthMigrator, Db, Driver, Github, Google, JwtAuth, JwtAuthExt, Json, Oauth,
     Request, Result, Router,
 };
@@ -42,7 +42,7 @@ fn build_app() -> App {
     let mut api = Router::new();
     api.use_middleware(JwtAuth::guard());
     api.get("/me", |req: Request| async move {
-        Ok::<_, ruvo::Error>(Json(req.require_auth_user()?.clone()))
+        Ok::<_, sova::Error>(Json(req.require_auth_user()?.clone()))
     });
     app.mount("/api", api);
 
@@ -51,7 +51,7 @@ fn build_app() -> App {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let _ = ruvo::ruvo_env::load();
+    let _ = sova::sova_env::load();
     tracing::info!("API http://127.0.0.1:3000  /oauth/github|/google  /api/me");
     build_app().run().await
 }

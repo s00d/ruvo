@@ -8,8 +8,8 @@
 //! # POST /_tasks/enqueue with Authorization: Bearer secret
 //! ```
 
-use ruvo::prelude::*;
-use ruvo::{
+use sova::prelude::*;
+use sova::{
     ask, bearer_guard, confirm, info, is_interactive, priority, table, Job, Tasks,
 };
 use std::sync::Arc;
@@ -18,9 +18,9 @@ use std::time::Duration;
 #[tokio::main]
 async fn main() -> Result<()> {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let store = Arc::new(ruvo::tasks::Memory::new());
+    let store = Arc::new(sova::tasks::Memory::new());
     let mut app = App::new();
-    let _ = app.configure_from_path(root.join("ruvo.toml"));
+    let _ = app.configure_from_path(root.join("sova.toml"));
     app.install(
         Tasks::new(store)
             .queues(["critical", "default", "mailer"])
@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
                     tracing::info!("ping handled");
                     Ok(())
                 })
-                // Overridden by `[schedule.ping]` in ruvo.toml when present.
+                // Overridden by `[schedule.ping]` in sova.toml when present.
                 .every(Duration::from_secs(10)),
             )
             .job(

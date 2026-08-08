@@ -4,8 +4,8 @@
 //! cargo run -p api_validated
 //! ```
 
-use ruvo::vld;
-use ruvo::{
+use sova::vld;
+use sova::{
     doc_schema, App, Cell, Doc, DocVldExt, IntoResponse, Json, OpenApi, OpenApiDocExt, Request,
     Response, Result, ValidationError, ValidationExt,
 };
@@ -119,7 +119,7 @@ async fn show(req: Request) -> Response {
 mod tests {
     use super::*;
     use http::Method;
-    use ruvo::undocumented;
+    use sova::undocumented;
 
     #[test]
     fn every_route_documented() {

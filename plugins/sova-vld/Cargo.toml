@@ -1,0 +1,53 @@
+[package]
+name = "sova-vld"
+version = "0.1.0"
+edition = "2021"
+description = "vld validation integration for Sova"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-vld"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[features]
+default = []
+openapi = ["dep:sova-openapi", "vld/openapi"]
+flash = ["dep:sova-session"]
+flash-templates = ["flash", "dep:sova-templates", "dep:minijinja"]
+form = ["sova-core/multipart"]
+i18n = ["dep:sova-i18n"]
+
+[dependencies]
+sova-core = { workspace = true }
+sova-openapi = { workspace = true, optional = true }
+sova-session = { workspace = true, optional = true }
+sova-i18n = { workspace = true, optional = true }
+sova-templates = { workspace = true, optional = true }
+minijinja = { workspace = true, optional = true }
+vld = { workspace = true, features = ["serialize"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde_qs = { workspace = true }
+bytes = { workspace = true }
+http = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http = { workspace = true }
+bytes = { workspace = true }
+sova-openapi = { workspace = true }
+sova-core = { workspace = true, features = ["testing", "multipart"] }
+sova-session = { workspace = true }
+sova-templates = { workspace = true }
+tempfile = { workspace = true }
+vld = { workspace = true, features = ["serialize", "openapi"] }
+minijinja = { workspace = true }
+
+[[test]]
+name = "validate"
+required-features = ["openapi", "form", "flash"]
+
+[[test]]
+name = "flash_templates"
+required-features = ["flash-templates"]

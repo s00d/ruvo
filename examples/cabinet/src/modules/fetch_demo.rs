@@ -1,5 +1,5 @@
-use ruvo::vld;
-use ruvo::{
+use sova::vld;
+use sova::{
     doc_schema, CsrfExt, CurrentUser, HttpExt, Meta, RenderExt, Request, Response, Result, Router,
     ValidExt, ValidateRouteExt,
 };

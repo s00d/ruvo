@@ -1,6 +1,6 @@
 //! SSE feed with channel + Last-Event-ID + keep-alive.
 
-use ruvo::{sse_response, App, Request, Result, SseChannel, SseEvent};
+use sova::{sse_response, App, Request, Result, SseChannel, SseEvent};
 use std::time::Duration;
 
 #[tokio::main]
@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
         sse_response(&req, &ch, Duration::from_secs(15))
     });
     app.get("/", |_| async {
-        ruvo::Response::html(
+        sova::Response::html(
             r#"<!doctype html><pre id=o></pre>
 <script>
 const o=document.getElementById('o');

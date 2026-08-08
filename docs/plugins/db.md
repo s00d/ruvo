@@ -5,19 +5,19 @@ editLink: false
 
 # `db`
 
-**SeaORM pool, migrate CLI, optional seed CLI** · crate `ruvo-db` · id `db`
+**SeaORM pool, migrate CLI, optional seed CLI** · crate `sova-db` · id `db`
 
 ```bash
-cargo add ruvo --features db,db-mysql,db-sqlite
+cargo add sova --features db,db-mysql,db-sqlite
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `db` | SeaORM pool (`ruvo-db`; postgres by default). |
-| `db-mysql` | MySQL backend for `ruvo-db`. |
-| `db-sqlite` | SQLite backend for `ruvo-db`. |
+| `db` | SeaORM pool (`sova-db`; postgres by default). |
+| `db-mysql` | MySQL backend for `sova-db`. |
+| `db-sqlite` | SQLite backend for `sova-db`. |
 
-SeaORM database plugin for Ruvo (postgres / sqlite / mysql via Cargo features).
+SeaORM database plugin for Sova (postgres / sqlite / mysql via Cargo features).
 
 ```rust
  app.install(Db::from_env().migrations::<Migrator>());
@@ -26,15 +26,15 @@ SeaORM database plugin for Ruvo (postgres / sqlite / mysql via Cargo features).
 
 ## Usage
 
-Install Db **on top of** a preset (or cabinet-style app). Migrations run through `app.run()` / `cargo ruvo db`.
+Install Db **on top of** a preset (or cabinet-style app). Migrations run through `app.run()` / `cargo sova db`.
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{
+use sova::prelude::*;
+use sova::{
     ActiveModelTrait, Db, DbExt, EntityTrait, Json, Parser, Request, ServerArgs, Set,
     ValidationExt,
 };
-use ruvo::vld;
+use sova::vld;
 
 mod entity;
 mod migrator;
@@ -80,7 +80,7 @@ async fn create(mut req: Request) -> Result<(u16, Json<Model>)> {
 ```
 
 ```bash
-DATABASE_URL=postgres://postgres@localhost/ruvo cargo run -p crud -- migrate
+DATABASE_URL=postgres://postgres@localhost/sova cargo run -p crud -- migrate
 cargo run -p crud
 ```
 

@@ -1,8 +1,8 @@
 **`App::web()`** installs Meta + Sitemap + Robots. Set site / public URL on the preset, page tags on routes:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Html, Meta, Parser, ServerArgs};
+use sova::prelude::*;
+use sova::{Html, Meta, Parser, ServerArgs};
 
 #[tokio::main]
 async fn main() -> Result<()> {

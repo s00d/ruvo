@@ -61,7 +61,7 @@
 {% endblock %}
 {% block scripts %}
 <script>
-RuvoAuth.mount("#vue-two-factor", {
+SovaAuth.mount("#vue-two-factor", {
   data() {
     return {
       enabled: {% if user.two_factor_enabled %}true{% else %}false{% endif %},
@@ -80,13 +80,13 @@ RuvoAuth.mount("#vue-two-factor", {
       this.busy = true;
       this.error = "";
       try {
-        const { data } = await RuvoAuth.api.post("/two-factor", {});
+        const { data } = await SovaAuth.api.post("/two-factor", {});
         this.setup = true;
         this.secret = data.secret || "";
         this.otpauthUrl = data.otpauth_url || "";
         this.recoveryCodes = data.recovery_codes || [];
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
       } finally {
         this.busy = false;
       }
@@ -95,10 +95,10 @@ RuvoAuth.mount("#vue-two-factor", {
       this.busy = true;
       this.error = "";
       try {
-        await RuvoAuth.api.post("/two-factor/confirm", { code: this.code });
+        await SovaAuth.api.post("/two-factor/confirm", { code: this.code });
         location.reload();
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
         this.busy = false;
       }
     },
@@ -106,10 +106,10 @@ RuvoAuth.mount("#vue-two-factor", {
       this.busy = true;
       this.error = "";
       try {
-        await RuvoAuth.api.post("/two-factor/disable", { password: this.password });
+        await SovaAuth.api.post("/two-factor/disable", { password: this.password });
         location.reload();
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
         this.busy = false;
       }
     },

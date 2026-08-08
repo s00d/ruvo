@@ -1,0 +1,19 @@
+[package]
+name = "sova-env"
+version = "0.1.0"
+edition = "2021"
+description = "Cascade .env loading for Sova apps (dotenvy)"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-env"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[dependencies]
+dotenvy = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

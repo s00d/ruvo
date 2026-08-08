@@ -2,11 +2,11 @@
 
 ![Performance](/banners/performance.svg)
 
-Ruvo vs Axum vs Actix-web on an **identical multi-page fixture site** (same HTML/JSON bodies, verified SHA-256).
+Sova vs Axum vs Actix-web on an **identical multi-page fixture site** (same HTML/JSON bodies, verified SHA-256).
 
 ## Methodology
 
-- Stand: `bench/stand/` — shared fixtures in `fixtures/`, three minimal servers (`stand_ruvo`, `stand_axum`, `stand_actix`).
+- Stand: `bench/stand/` — shared fixtures in `fixtures/`, three minimal servers (`stand_sova`, `stand_axum`, `stand_actix`).
 - Bodies must match **byte-for-byte** across frameworks before load runs (`run.sh` aborts on mismatch).
 - Load tool: [oha](https://github.com/hatoo/oha).
 - This capture: duration `10s`, concurrency `50`, `TOKIO_WORKER_THREADS=4`.
@@ -18,7 +18,7 @@ Pages: `/`, `/about`, `/blog`, `/blog/hello`, `/contact`, `/api/health`.
 
 | Framework | Req/s | p50 (ms) | p99 (ms) |
 |-----------|-------|----------|----------|
-| ruvo | 101685 | 0.415 | 1.725 |
+| sova | 101685 | 0.415 | 1.725 |
 | axum | 120476 | 0.403 | 0.820 |
 | actix | 85351 | 0.509 | 2.347 |
 
@@ -26,7 +26,7 @@ Pages: `/`, `/about`, `/blog`, `/blog/hello`, `/contact`, `/api/health`.
 
 | Framework | Mean Req/s | Mean p99 (ms) |
 |-----------|------------|---------------|
-| ruvo | 103094 | 1.705 |
+| sova | 103094 | 1.705 |
 | axum | 117216 | 1.006 |
 | actix | 92173 | 1.899 |
 
@@ -34,22 +34,22 @@ Pages: `/`, `/about`, `/blog`, `/blog/hello`, `/contact`, `/api/health`.
 
 | Framework | Path | Req/s | p50 (ms) | p99 (ms) |
 |-----------|------|-------|----------|----------|
-| ruvo | `/` | 101685 | 0.415 | 1.725 |
+| sova | `/` | 101685 | 0.415 | 1.725 |
 | axum | `/` | 120476 | 0.403 | 0.820 |
 | actix | `/` | 85351 | 0.509 | 2.347 |
-| ruvo | `/about` | 112790 | 0.411 | 1.181 |
+| sova | `/about` | 112790 | 0.411 | 1.181 |
 | axum | `/about` | 118332 | 0.405 | 0.880 |
 | actix | `/about` | 94307 | 0.510 | 1.659 |
-| ruvo | `/blog` | 100645 | 0.414 | 1.671 |
+| sova | `/blog` | 100645 | 0.414 | 1.671 |
 | axum | `/blog` | 116968 | 0.404 | 1.046 |
 | actix | `/blog` | 91560 | 0.504 | 2.260 |
-| ruvo | `/blog/hello` | 103288 | 0.412 | 1.624 |
+| sova | `/blog/hello` | 103288 | 0.412 | 1.624 |
 | axum | `/blog/hello` | 117281 | 0.408 | 0.944 |
 | actix | `/blog/hello` | 94716 | 0.512 | 1.631 |
-| ruvo | `/contact` | 96406 | 0.418 | 2.243 |
+| sova | `/contact` | 96406 | 0.418 | 2.243 |
 | axum | `/contact` | 113758 | 0.407 | 1.146 |
 | actix | `/contact` | 93758 | 0.518 | 1.593 |
-| ruvo | `/api/health` | 103748 | 0.408 | 1.784 |
+| sova | `/api/health` | 103748 | 0.408 | 1.784 |
 | axum | `/api/health` | 116484 | 0.398 | 1.198 |
 | actix | `/api/health` | 93347 | 0.507 | 1.902 |
 

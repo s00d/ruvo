@@ -1,8 +1,8 @@
 Object storage for uploads. Add on the **web preset** (multipart feature for files):
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Parser, Redirect, Request, ServerArgs, Storage, UploadRules};
+use sova::prelude::*;
+use sova::{Parser, Redirect, Request, ServerArgs, Storage, UploadRules};
 
 #[tokio::main]
 async fn main() -> Result<()> {

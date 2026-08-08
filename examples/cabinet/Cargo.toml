@@ -3,14 +3,14 @@ name = "cabinet"
 version = "0.1.0"
 edition = "2021"
 publish = false
-description = "Ruvo kitchen-sink demo: Fortify auth, cabinet, Postgres notes + identity"
+description = "Sova kitchen-sink demo: Fortify auth, cabinet, Postgres notes + identity"
 
 [[bin]]
 name = "cabinet"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = [
+sova = { workspace = true, features = [
     "web",
     "store-sql",
     "session-sql",

@@ -1,0 +1,18 @@
+[package]
+name = "sova-shield"
+version = "0.1.0"
+edition = "2021"
+description = "Security headers middleware for Sova"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-shield"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[dependencies]
+sova-core = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http = { workspace = true }

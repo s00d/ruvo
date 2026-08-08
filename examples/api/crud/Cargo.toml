@@ -9,8 +9,8 @@ name = "crud"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["db", "vld", "env"] }
-ruvo-env = { path = "../../../plugins/ruvo-env" }
+sova = { workspace = true, features = ["db", "vld", "env"] }
+sova-env = { path = "../../../plugins/sova-env" }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }
 serde = { workspace = true, features = ["derive"] }

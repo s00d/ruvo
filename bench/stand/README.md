@@ -1,6 +1,6 @@
 # Bench stand — identical multi-page site across frameworks
 
-Shared HTML/JSON fixtures; three minimal servers (Ruvo, Axum, Actix-web).
+Shared HTML/JSON fixtures; three minimal servers (Sova, Axum, Actix-web).
 Bodies are verified SHA-256 equal before load testing.
 
 ```bash

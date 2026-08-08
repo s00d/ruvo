@@ -1,5 +1,5 @@
 //! Modular blog via `routes() -> Router` + mount.
-use ruvo::prelude::*;
+use sova::prelude::*;
 
 fn render(template: &str, vars: &[(&str, &str)]) -> String {
     let mut out = template.to_string();

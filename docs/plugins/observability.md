@@ -5,10 +5,10 @@ editLink: false
 
 # `observability`
 
-**HTTP metrics, OpenTelemetry, Elasticsearch log shipping** · crate `ruvo-observability` · id `observability`
+**HTTP metrics, OpenTelemetry, Elasticsearch log shipping** · crate `sova-observability` · id `observability`
 
 ```bash
-cargo add ruvo --features observability,observability-elasticsearch,observability-otel
+cargo add sova --features observability,observability-elasticsearch,observability-otel
 ```
 
 | Feature | What you get |
@@ -17,7 +17,7 @@ cargo add ruvo --features observability,observability-elasticsearch,observabilit
 | `observability-elasticsearch` | Ship tracing logs to Elasticsearch. |
 | `observability-otel` | OpenTelemetry OTLP export. |
 
-HTTP RED metrics (Prometheus) + optional OpenTelemetry / Elasticsearch logs for Ruvo.
+HTTP RED metrics (Prometheus) + optional OpenTelemetry / Elasticsearch logs for Sova.
 
 ```rust
  app.use_middleware(request_id());
@@ -28,7 +28,7 @@ HTTP RED metrics (Prometheus) + optional OpenTelemetry / Elasticsearch logs for 
  app.use_middleware(logger());
  ```
 
- Declarative toggles also work via `[observability]` in `ruvo.toml`
+ Declarative toggles also work via `[observability]` in `sova.toml`
  (`metrics_path`, `otel`, `elasticsearch`) when not set on the builder.
 
 ## Usage

@@ -1,21 +1,21 @@
 //! Object storage via `Storage::from_env` (memory fallback / S3·MinIO).
 //!
 //! ```bash
-//! # memory (default when RUVO_STORAGE unset → local; here we prefer memory for demo)
-//! RUVO_STORAGE=memory cargo run -p storage_demo
+//! # memory (default when SOVA_STORAGE unset → local; here we prefer memory for demo)
+//! SOVA_STORAGE=memory cargo run -p storage_demo
 //!
 //! # MinIO — see README.md
-//! RUVO_STORAGE=s3 \
-//!   RUVO_STORAGE_BUCKET=ruvo \
-//!   RUVO_STORAGE_ENDPOINT=http://127.0.0.1:9000 \
+//! SOVA_STORAGE=s3 \
+//!   SOVA_STORAGE_BUCKET=sova \
+//!   SOVA_STORAGE_ENDPOINT=http://127.0.0.1:9000 \
 //!   AWS_ACCESS_KEY_ID=minioadmin \
 //!   AWS_SECRET_ACCESS_KEY=minioadmin \
 //!   cargo run -p storage_demo
 //! ```
 
 use bytes::Bytes;
-use ruvo::prelude::*;
-use ruvo::{PutOpts, Storage, StorageExt};
+use sova::prelude::*;
+use sova::{PutOpts, Storage, StorageExt};
 use serde::Deserialize;
 use serde_json::json;
 
@@ -30,11 +30,11 @@ struct PutBody {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let _ = ruvo::ruvo_env::load();
+    let _ = sova::sova_env::load();
 
     // Prefer explicit memory when unset so the demo runs without a disk tree.
-    if std::env::var("RUVO_STORAGE").is_err() {
-        std::env::set_var("RUVO_STORAGE", "memory");
+    if std::env::var("SOVA_STORAGE").is_err() {
+        std::env::set_var("SOVA_STORAGE", "memory");
     }
 
     let mut app = App::new();

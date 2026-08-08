@@ -5,25 +5,25 @@ editLink: false
 
 # `tasks`
 
-**Job worker, priorities, and optional cron/interval scheduler** · crate `ruvo-tasks` · id `tasks`
+**Job worker, priorities, and optional cron/interval scheduler** · crate `sova-tasks` · id `tasks`
 
 ```bash
-cargo add ruvo --features tasks
+cargo add sova --features tasks
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `tasks` | Job queue, worker, scheduler, Console CLI (`ruvo-tasks`). |
+| `tasks` | Job queue, worker, scheduler, Console CLI (`sova_tasks`). |
 
-Background task worker + optional scheduler + HTTP dispatch for Ruvo.
+Background task worker + optional scheduler + HTTP dispatch for Sova.
 
 ## Usage
 
 Tasks is its own runtime concern (queues, CLI `tasks …`, optional HTTP enqueue). Typical worker binary:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{ask, bearer_guard, info, Job, Parser, ServerArgs, Tasks};
+use sova::prelude::*;
+use sova::{ask, bearer_guard, info, Job, Parser, ServerArgs, Tasks};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -33,10 +33,10 @@ async fn main() -> Result<()> {
     args.init_tracing();
 
     let mut app = App::new();
-    let _ = app.configure_from_path("ruvo.toml");
+    let _ = app.configure_from_path("sova.toml");
 
     app.install(
-        Tasks::new(Arc::new(ruvo::tasks::Memory::new()))
+        Tasks::new(Arc::new(sova::tasks::Memory::new()))
             .queues(["critical", "default", "mailer"])
             .scheduler_tick(Duration::from_secs(1))
             .job(
@@ -65,7 +65,7 @@ async fn main() -> Result<()> {
 ```
 
 ```toml
-# ruvo.toml — overrides Job::every in code
+# sova.toml — overrides Job::every in code
 [schedule.ping]
 every = "15s"
 ```

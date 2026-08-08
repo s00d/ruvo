@@ -1,6 +1,6 @@
 use crate::entity::note;
 use chrono::{FixedOffset, Utc};
-use ruvo::{
+use sova::{
     ActiveModelTrait, ColumnTrait, DbHandle, EntityTrait, Error, Page, PageParams, PaginateExt,
     QueryFilter, QueryOrder, Result, Set,
 };
@@ -44,7 +44,7 @@ pub async fn paginate_notes(
     let page = note::Entity::find()
         .filter(note::Column::UserId.eq(user_id))
         .order_by_desc(note::Column::Id)
-        .paginate_ruvo(db, params)
+        .paginate_sova(db, params)
         .await
         .map_err(Error::from)?;
     Ok(Page {

@@ -1,9 +1,9 @@
 **`App::api()`** already mounts OpenAPI + Scalar at `/docs`. Your job is schemas + `.doc(...)` on routes — not `OpenApi::new(...)`.
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::vld;
-use ruvo::{
+use sova::prelude::*;
+use sova::vld;
+use sova::{
     doc_schema, Doc, DocVldExt, Json, OpenApiDocExt, Parser, Request, ServerArgs,
     ValidationError, ValidationExt,
 };
@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
 ```rust
 // modules/mod.rs
 use crate::CreateUser;
-use ruvo::{
+use sova::{
     App, Doc, DocVldExt, Json, OpenApiDocExt, Request, ValidationError, ValidationExt,
 };
 

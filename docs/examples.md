@@ -15,9 +15,9 @@ What you write yourself: schema, route, `.doc(...)`. OpenAPI UI comes from the p
 
 ```rust
 // main.rs
-use ruvo::prelude::*;
-use ruvo::vld;
-use ruvo::{
+use sova::prelude::*;
+use sova::vld;
+use sova::{
     doc_schema, Doc, DocVldExt, Json, OpenApiDocExt, Parser, Request, ServerArgs,
     ValidationError, ValidationExt,
 };
@@ -47,7 +47,7 @@ async fn main() -> Result<()> {
 ```rust
 // modules/mod.rs
 use crate::Ping;
-use ruvo::{
+use sova::{
     App, Doc, DocVldExt, Json, OpenApiDocExt, Request, ValidationError, ValidationExt,
 };
 
@@ -73,8 +73,8 @@ Larger CRUD with the same ideas: `api_validated` (still documents every route; i
 
 ```rust
 // main.rs
-use ruvo::prelude::*;
-use ruvo::{Html, Meta, Parser, ServerArgs};
+use sova::prelude::*;
+use sova::{Html, Meta, Parser, ServerArgs};
 
 mod modules;
 
@@ -101,7 +101,7 @@ async fn main() -> Result<()> {
 
 ```rust
 // modules/mod.rs
-use ruvo::{App, Html, Router};
+use sova::{App, Html, Router};
 
 pub fn register(app: &mut App) {
     let mut posts = Router::new();
@@ -118,16 +118,16 @@ async fn show() -> Html<&'static str> {
 }
 ```
 
-Same layout as `cargo ruvo new myapp --web`.
+Same layout as `cargo sova new myapp --web`.
 
 ## Custom middleware
 
 Onion on app or mount — timing header, auth gate, request-local state:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::extend::named;
-use ruvo::{Parser, ServerArgs};
+use sova::prelude::*;
+use sova::extend::named;
+use sova::{Parser, ServerArgs};
 use std::time::Instant;
 
 #[tokio::main]
@@ -171,7 +171,7 @@ See [Getting started → Custom middleware](/guide/getting-started#custom-middle
 If `views/` exists, `App::web()` already installs MiniJinja. Handlers only render:
 
 ```rust
-use ruvo::{Request, Response, Result, RenderExt};
+use sova::{Request, Response, Result, RenderExt};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -183,7 +183,7 @@ async fn home(req: Request) -> Response {
     req.render(
         "home.html",
         Page {
-            title: "Ruvo".into(),
+            title: "Sova".into(),
         },
     )
     .unwrap_or_else(|e| e.into_response())
@@ -197,7 +197,7 @@ Standalone demo (manual install for a minimal binary): `cargo run -p templates`.
 Auth plugins need a database. Preset still helps for Cors/docs if you want `App::api()`; JWT example composes explicitly:
 
 ```rust
-use ruvo::{
+use sova::{
     App, AuthMigrator, Db, JwtAuth, JwtAuthExt, Json, Request, Result, Router,
 };
 
@@ -210,7 +210,7 @@ fn build_app() -> App {
     let mut api = Router::new();
     api.use_middleware(JwtAuth::guard());
     api.get("/me", |req: Request| async move {
-        Ok::<_, ruvo::Error>(Json(req.require_auth_user()?.clone()))
+        Ok::<_, sova::Error>(Json(req.require_auth_user()?.clone()))
     });
     app.mount("/api", api);
     app
@@ -218,13 +218,13 @@ fn build_app() -> App {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let _ = ruvo::ruvo_env::load();
+    let _ = sova::sova_env::load();
     build_app().run().await
 }
 ```
 
 ```bash
-export DATABASE_URL=postgres://postgres@localhost/ruvo
+export DATABASE_URL=postgres://postgres@localhost/sova
 export JWT_SECRET=dev-secret-change-me
 cargo run -p api_jwt -- migrate
 cargo run -p api_jwt
@@ -235,8 +235,8 @@ Related: `api_oauth`, `api_auth`.
 ## Tasks (scheduler + CLI console)
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{ask, bearer_guard, info, Job, Parser, ServerArgs, Tasks};
+use sova::prelude::*;
+use sova::{ask, bearer_guard, info, Job, Parser, ServerArgs, Tasks};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -246,10 +246,10 @@ async fn main() -> Result<()> {
     args.init_tracing();
 
     let mut app = App::new();
-    let _ = app.configure_from_path("ruvo.toml");
+    let _ = app.configure_from_path("sova.toml");
 
     app.install(
-        Tasks::new(Arc::new(ruvo::tasks::Memory::new()))
+        Tasks::new(Arc::new(sova::tasks::Memory::new()))
             .queues(["critical", "default", "mailer"])
             .scheduler_tick(Duration::from_secs(1))
             .job(
@@ -278,7 +278,7 @@ async fn main() -> Result<()> {
 ```
 
 ```toml
-# ruvo.toml — overrides `.every()` in code
+# sova.toml — overrides `.every()` in code
 [schedule.ping]
 every = "15s"
 ```
@@ -292,8 +292,8 @@ cargo run -p tasks -- tasks run greet
 ## WebSocket room
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Html, Message, Parser, ServerArgs, Ws, WsRouteExt};
+use sova::prelude::*;
+use sova::{Html, Message, Parser, ServerArgs, Ws, WsRouteExt};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -331,12 +331,12 @@ Fortify, DB, mail, storage, tasks, notifications, OpenAPI, WS — modules + guar
 
 ```bash
 cp examples/cabinet/.env.example examples/cabinet/.env
-cargo ruvo db migrate -p cabinet
-cargo ruvo db seed -p cabinet
+cargo sova db migrate -p cabinet
+cargo sova db seed -p cabinet
 cargo run -p cabinet
 ```
 
-Seed: `demo@ruvo.local` / `demo1234`.
+Seed: `demo@sova.local` / `demo1234`.
 
 ## Package map
 

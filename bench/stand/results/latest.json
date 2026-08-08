@@ -13,7 +13,7 @@
     "/contact"
   ],
   "frameworks": {
-    "ruvo": {
+    "sova": {
       "home_rps": 101684.6462,
       "home_p50_ms": 0.4148,
       "home_p99_ms": 1.7252,
@@ -37,7 +37,7 @@
   },
   "rows": [
     {
-      "framework": "ruvo",
+      "framework": "sova",
       "path": "/",
       "rps": 101684.6462,
       "p50_ms": 0.4148,
@@ -61,7 +61,7 @@
       "success": "100.00%"
     },
     {
-      "framework": "ruvo",
+      "framework": "sova",
       "path": "/about",
       "rps": 112790.1589,
       "p50_ms": 0.4115,
@@ -85,7 +85,7 @@
       "success": "100.00%"
     },
     {
-      "framework": "ruvo",
+      "framework": "sova",
       "path": "/blog",
       "rps": 100645.0854,
       "p50_ms": 0.4142,
@@ -109,7 +109,7 @@
       "success": "100.00%"
     },
     {
-      "framework": "ruvo",
+      "framework": "sova",
       "path": "/blog/hello",
       "rps": 103288.2538,
       "p50_ms": 0.4123,
@@ -133,7 +133,7 @@
       "success": "100.00%"
     },
     {
-      "framework": "ruvo",
+      "framework": "sova",
       "path": "/contact",
       "rps": 96405.8716,
       "p50_ms": 0.4183,
@@ -157,7 +157,7 @@
       "success": "100.00%"
     },
     {
-      "framework": "ruvo",
+      "framework": "sova",
       "path": "/api/health",
       "rps": 103748.4031,
       "p50_ms": 0.4077,

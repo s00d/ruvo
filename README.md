@@ -1,19 +1,19 @@
-# Ruvo
+# Sova
 
 Express-like HTTP for Rust: `App`, `Router`, middleware, plugins — Hyper stays hidden.
 
-**Docs:** [https://s00d.github.io/ruvo/](https://s00d.github.io/ruvo/) (VitePress)
+**Docs:** [https://s00d.github.io/sova/](https://s00d.github.io/sova/) (VitePress)
 
 ## Install
 
 ```bash
-cargo add ruvo --features web
+cargo add sova --features web
 # or
-cargo add ruvo --features api
+cargo add sova --features api
 ```
 
 ```rust
-use ruvo::prelude::*;
+use sova::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -27,26 +27,26 @@ async fn main() -> Result<()> {
 
 ## Publish (crates.io)
 
-Workspace libs are publishable (`version` + `path` in `[workspace.dependencies]`). Order: **`ruvo-core` → leaf plugins → dependent plugins → `ruvo`**. `cargo-ruvo` / `ruvo-docs-gen` stay `publish = false`.
+Workspace libs are publishable (`version` + `path` in `[workspace.dependencies]`). Order: **`sova-core` → leaf plugins → dependent plugins → `sova`**. `cargo-sova` / `sova-docs-gen` stay `publish = false`.
 
 ```bash
-cargo publish -p ruvo-core
+cargo publish -p sova-core
 # …plugins…
-cargo publish -p ruvo
+cargo publish -p sova
 ```
 
 ## Local docs
 
 ```bash
-cargo run -p ruvo-docs-gen   # refresh plugins catalog + Plugin SDK markdown
+cargo run -p sova-docs-gen   # refresh plugins catalog + Plugin SDK markdown
 pnpm docs:dev                # VitePress (reads committed static files)
 ```
 
 ## Layout
 
-- `crates/ruvo` — facade (`prelude`, plugins behind features)
-- `crates/ruvo-core` — `App`, router, request/response, server
-- `crates/cargo-ruvo` — `cargo ruvo new` / `generate` / `dev` / `db`
+- `crates/sova` — facade (`prelude`, plugins behind features)
+- `crates/sova-core` — `App`, router, request/response, server
+- `crates/cargo-sova` — `cargo sova new` / `generate` / `dev` / `db`
 - `plugins/*` — optional crates
 - `docs/` — VitePress site
 - `examples/*` — demos (`cargo run -p hello`)
@@ -59,4 +59,4 @@ pnpm docs:dev                # VitePress (reads committed static files)
 
 ## Stability
 
-Pre-1.0: breaking changes without a major bump. `ruvo` **0.1** tracks `ruvo-core` **0.1**.
+Pre-1.0: breaking changes without a major bump. `sova` **0.1** tracks `sova-core` **0.1**.

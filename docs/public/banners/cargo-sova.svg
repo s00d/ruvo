@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0fdfa"/>
+      <stop offset="0.55" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ecfdf5"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="780" y1="40" x2="1120" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0d9488" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#0f766e" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="420" rx="28" fill="url(#bg)"/>
+  <rect width="1200" height="420" rx="28" fill="url(#glow)"/>
+  <rect x="1" y="1" width="1198" height="418" rx="27" stroke="#0f766e" stroke-opacity="0.12"/>
+  
+  <g transform="translate(56,56)">
+    <rect width="64" height="64" rx="14.08" fill="#0f766e"/>
+    <path d="M18 22c0-6 6.5-11 14-11s14 5 14 11v18c0 5.5-6.5 10-14 10s-14-4.5-14-10V22z" fill="#ecfdf5"/>
+    <path d="M20 18c-3-4-1.5-9 2-9 2 0 3.5 2 4.5 5M44 18c3-4 1.5-9-2-9-2 0-3.5 2-4.5 5" stroke="#ecfdf5" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="26.5" cy="30" r="5.2" fill="#0f766e"/>
+    <circle cx="37.5" cy="30" r="5.2" fill="#0f766e"/>
+    <circle cx="27.5" cy="29" r="1.8" fill="#ecfdf5"/>
+    <circle cx="38.5" cy="29" r="1.8" fill="#ecfdf5"/>
+    <path d="M32 34.5l3.2 5.2h-6.4L32 34.5z" fill="#0f766e"/>
+  </g>
+  <text x="140" y="98" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="700" letter-spacing="0.08em">SOVA</text>
+  <text x="56" y="190" fill="#134e4a" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="52" font-weight="750">cargo-sova</text>
+  <text x="56" y="242" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="500" opacity="0.85">Scaffold, generate, dev, db CLI</text>
+  <g transform="translate(720,70)" opacity="0.95">
+  <rect x="60" y="50" width="340" height="260" rx="18" fill="#0f172a"/>
+  <circle cx="90" cy="82" r="7" fill="#f87171"/>
+  <circle cx="112" cy="82" r="7" fill="#fbbf24"/>
+  <circle cx="134" cy="82" r="7" fill="#34d399"/>
+  <text x="90" y="140" fill="#ecfdf5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22">$ cargo sova new</text>
+  <text x="90" y="180" fill="#0d9488" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20">  app --web</text>
+  <text x="90" y="220" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18">created app/</text>
+</g>
+</svg>

@@ -9,6 +9,6 @@ name = "bench_loaded"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["cors", "cookies", "session", "rate-limit"] }
+sova = { workspace = true, features = ["cors", "cookies", "session", "rate-limit"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }

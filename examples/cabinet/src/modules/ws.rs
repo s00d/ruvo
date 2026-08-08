@@ -1,4 +1,4 @@
-use ruvo::{Message, Router, WsRouteExt};
+use sova::{Message, Router, WsRouteExt};
 
 pub fn mount(r: &mut Router) {
     r.ws("/ws", |mut session| async move {

@@ -5,19 +5,19 @@ editLink: false
 
 # `mail`
 
-**Outbound email via lettre (SMTP / fake / file)** · crate `ruvo-mail` · id `mail`
+**Outbound email via lettre (SMTP / fake / file)** · crate `sova-mail` · id `mail`
 
 ```bash
-cargo add ruvo --features mail,mail-markdown,mail-templates
+cargo add sova --features mail,mail-markdown,mail-templates
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `mail` | SMTP / fake / file mailer (`ruvo-mail`). |
+| `mail` | SMTP / fake / file mailer (`sova_mail`). |
 | `mail-markdown` | Markdown mail bodies. |
 | `mail-templates` | MiniJinja mail bodies / Mailable views. |
 
-Outbound email for Ruvo (Express/Nodemailer-simple API on [lettre](https://lettre.rs/)).
+Outbound email for Sova (Express/Nodemailer-simple API on [lettre](https://lettre.rs/)).
 
  With feature `templates`, render MiniJinja views into the body (Laravel-style):
 

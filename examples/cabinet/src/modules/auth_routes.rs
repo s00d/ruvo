@@ -1,12 +1,12 @@
 //! HTML auth pages (JSON API via axios + session cookie).
 
-use ruvo::{
+use sova::{
     mark_email_verified, parse_verify_token, AuthExt, CsrfExt, DbExt, IntoResponse, Meta, Redirect,
     RenderExt, Request, Response, Result,
 };
 use serde_json::json;
 
-pub fn register(app: &mut ruvo::App) {
+pub fn register(app: &mut sova::App) {
     app.get("/register", register_get).with(
         Meta::page()
             .title("Register")
@@ -90,7 +90,7 @@ async fn verify_get(req: Request) -> Result<Response> {
         }
     }
     let csrf = req.csrf_token();
-    let user = req.get::<ruvo::CurrentUser>().cloned();
+    let user = req.get::<sova::CurrentUser>().cloned();
     Ok(req.render(
         "auth/verify.html",
         json!({
@@ -119,9 +119,9 @@ async fn challenge_get(req: Request) -> Result<Response> {
 
 async fn confirm_password_get(req: Request) -> Result<Response> {
     let user = req
-        .get::<ruvo::CurrentUser>()
+        .get::<sova::CurrentUser>()
         .cloned()
-        .ok_or(ruvo::Error::Unauthorized)?;
+        .ok_or(sova::Error::Unauthorized)?;
     let csrf = req.csrf_token();
     Ok(req.render(
         "auth/confirm_password.html",
@@ -134,9 +134,9 @@ async fn confirm_password_get(req: Request) -> Result<Response> {
 
 async fn two_factor_get(req: Request) -> Result<Response> {
     let user = req
-        .get::<ruvo::CurrentUser>()
+        .get::<sova::CurrentUser>()
         .cloned()
-        .ok_or(ruvo::Error::Unauthorized)?;
+        .ok_or(sova::Error::Unauthorized)?;
     let csrf = req.csrf_token();
     Ok(req.render(
         "auth/two_factor.html",

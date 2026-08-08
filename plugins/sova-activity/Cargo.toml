@@ -1,0 +1,32 @@
+[package]
+name = "sova-activity"
+version = "0.1.0"
+edition = "2021"
+description = "Laravel-style activity / audit log for Sova"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-activity"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[dependencies]
+sova-core = { workspace = true }
+sova-db = { workspace = true }
+sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls"] }
+async-trait = { workspace = true }
+chrono = { workspace = true, default-features = false, features = ["clock", "std", "serde"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+http = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+sova-core = { workspace = true, features = ["testing"] }
+sova-db = { workspace = true, features = ["sqlite"] }
+sova-testing = { workspace = true, features = ["sqlite"] }
+sea-orm = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite", "macros", "with-chrono"] }
+sea-orm-migration = { workspace = true, default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite"] }
+serde_json = { workspace = true }

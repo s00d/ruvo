@@ -5,17 +5,17 @@ editLink: false
 
 # `env`
 
-**Cascade .env loading for Ruvo apps (dotenvy)** · crate `ruvo-env` · id `env`
+**Cascade .env loading for Sova apps (dotenvy)** · crate `sova-env` · id `env`
 
 ```bash
-cargo add ruvo --features env
+cargo add sova --features env
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `env` | Cascade `.env*` loader (`ruvo-env`). |
+| `env` | Cascade `.env*` loader (`sova-env`). |
 
-Explicit `.env` cascade for Ruvo applications.
+Explicit `.env` cascade for Sova applications.
 
  Call [`load`] at the top of `main` before reading configuration.
  Real process environment variables always win over file values.
@@ -28,7 +28,7 @@ Explicit `.env` cascade for Ruvo applications.
 
 ## Usage
 
-**`App::web()` / `App::api()`** load env via the `env` feature when the preset starts. Prefer `ServerArgs` + `configure()` / `ruvo.toml` over ad-hoc dotenv calls.
+**`App::web()` / `App::api()`** load env via the `env` feature when the preset starts. Prefer `ServerArgs` + `configure()` / `sova.toml` over ad-hoc dotenv calls.
 
 ```rust
 let args = ServerArgs::parse();
@@ -39,7 +39,7 @@ let mut app = App::web()
     .public_url("https://example.com");
 // configure() already ran inside the preset; override path if needed:
 // let mut app = App::web()....into_app();
-// let _ = app.configure_from_path("ruvo.toml");
+// let _ = app.configure_from_path("sova.toml");
 
 app.run().await
 ```

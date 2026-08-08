@@ -1,15 +1,15 @@
 import { defineConfig } from 'vitepress'
 import { pluginsNav, pluginsSidebar } from './plugins-nav.generated'
 
-// Local: `/`. GitHub Pages: set RUVO_DOCS_BASE=/ruvo/ in CI.
-const docsBase = process.env.RUVO_DOCS_BASE || '/'
-const ogImage = 'https://s00d.github.io/ruvo/og.png'
+// Local: `/`. GitHub Pages: set SOVA_DOCS_BASE=/sova/ in CI.
+const docsBase = process.env.SOVA_DOCS_BASE || '/'
+const ogImage = 'https://s00d.github.io/sova/og.png'
 
 export default defineConfig({
-  title: 'Ruvo',
+  title: 'Sova',
   description: 'Express-like HTTP framework for Rust',
   base: docsBase,
-  ignoreDeadLinks: [/^ruvo_/],
+  ignoreDeadLinks: [/^sova_/],
   lastUpdated: true,
   head: [
     ['link', { rel: 'icon', href: `${docsBase}favicon.svg`, type: 'image/svg+xml' }],
@@ -17,7 +17,7 @@ export default defineConfig({
     ['link', { rel: 'apple-touch-icon', href: `${docsBase}apple-touch-icon.png` }],
     ['meta', { name: 'theme-color', content: '#0f766e' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:title', content: 'Ruvo' }],
+    ['meta', { property: 'og:title', content: 'Sova' }],
     [
       'meta',
       {
@@ -30,15 +30,15 @@ export default defineConfig({
     ['meta', { name: 'twitter:image', content: ogImage }],
   ],
   themeConfig: {
-    logo: { src: '/logo.svg', alt: 'Ruvo' },
-    siteTitle: 'Ruvo',
+    logo: { src: '/logo.svg', alt: 'Sova' },
+    siteTitle: 'Sova',
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Plugins', items: [...pluginsNav] },
       { text: 'Plugin SDK', link: '/api/plugin-sdk' },
       { text: 'Examples', link: '/examples' },
       { text: 'Performance', link: '/guide/performance' },
-      { text: 'GitHub', link: 'https://github.com/s00d/ruvo' },
+      { text: 'GitHub', link: 'https://github.com/s00d/sova' },
     ],
     sidebar: {
       '/guide/': [
@@ -48,7 +48,7 @@ export default defineConfig({
             { text: 'Getting started', link: '/guide/getting-started' },
             { text: 'Concepts', link: '/guide/concepts' },
             { text: 'Configuration', link: '/guide/configuration' },
-            { text: 'cargo-ruvo', link: '/guide/cargo-ruvo' },
+            { text: 'cargo-sova', link: '/guide/cargo-sova' },
             { text: 'Performance', link: '/guide/performance' },
           ],
         },
@@ -61,10 +61,10 @@ export default defineConfig({
         },
       ],
     },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/s00d/ruvo' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/s00d/sova' }],
     search: { provider: 'local' },
     editLink: {
-      pattern: 'https://github.com/s00d/ruvo/edit/master/docs/:path',
+      pattern: 'https://github.com/s00d/sova/edit/master/docs/:path',
     },
   },
 })

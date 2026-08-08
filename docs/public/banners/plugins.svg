@@ -16,11 +16,15 @@
   
   <g transform="translate(56,56)">
     <rect width="64" height="64" rx="14.08" fill="#0f766e"/>
-    <path transform="translate(17.92,16.0) scale(1.0)"
-      d="M0 0h16.5c7.2 0 12.5 4.6 12.5 11.2 0 5.2-3.1 9.2-8.1 10.6L30 32H20.2L12 22.4H8V32H0V0zm8 14.8h7.6c3.1 0 5-1.6 5-4.2s-1.9-4.2-5-4.2H8v8.4z"
-      fill="#ecfdf5"/>
+    <path d="M18 22c0-6 6.5-11 14-11s14 5 14 11v18c0 5.5-6.5 10-14 10s-14-4.5-14-10V22z" fill="#ecfdf5"/>
+    <path d="M20 18c-3-4-1.5-9 2-9 2 0 3.5 2 4.5 5M44 18c3-4 1.5-9-2-9-2 0-3.5 2-4.5 5" stroke="#ecfdf5" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="26.5" cy="30" r="5.2" fill="#0f766e"/>
+    <circle cx="37.5" cy="30" r="5.2" fill="#0f766e"/>
+    <circle cx="27.5" cy="29" r="1.8" fill="#ecfdf5"/>
+    <circle cx="38.5" cy="29" r="1.8" fill="#ecfdf5"/>
+    <path d="M32 34.5l3.2 5.2h-6.4L32 34.5z" fill="#0f766e"/>
   </g>
-  <text x="140" y="98" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="700" letter-spacing="0.08em">RUVO</text>
+  <text x="140" y="98" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="700" letter-spacing="0.08em">SOVA</text>
   <text x="56" y="190" fill="#134e4a" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="52" font-weight="750">Plugins</text>
   <text x="56" y="242" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="500" opacity="0.85">Opt-in crates behind Cargo features</text>
   <g transform="translate(720,70)" opacity="0.95">

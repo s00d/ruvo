@@ -1,18 +1,18 @@
 //! CRUD with `Db::from_env` + `req.db()` (SeaORM).
 //!
 //! ```bash
-//! DATABASE_URL=postgres://postgres@localhost/ruvo \
+//! DATABASE_URL=postgres://postgres@localhost/sova \
 //!   cargo run -p crud -- migrate
 //! cargo run -p crud
 //! ```
 
-use ruvo::vld;
+use sova::vld;
 mod entity;
 mod migrator;
 
 use entity::prelude::*;
 use migrator::Migrator;
-use ruvo::{
+use sova::{
     ActiveModelTrait, App, Db, DbExt, EntityTrait, Error, Json, Request, Result, Set,
     ValidationExt,
 };
@@ -27,7 +27,7 @@ vld::schema! {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let _ = ruvo_env::load();
+    let _ = sova_env::load();
     let mut app = App::new();
     app.install(Db::from_env().migrations::<Migrator>());
     app.get("/users", list)

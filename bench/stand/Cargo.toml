@@ -2,7 +2,7 @@
 resolver = "2"
 members = [
     "crates/stand_fixtures",
-    "crates/stand_ruvo",
+    "crates/stand_sova",
     "crates/stand_axum",
     "crates/stand_actix",
 ]
@@ -16,4 +16,4 @@ stand_fixtures = { path = "crates/stand_fixtures" }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal"] }
 axum = "0.8"
 actix-web = "4"
-ruvo = { path = "../../crates/ruvo", default-features = false, features = [] }
+sova = { path = "../../crates/sova", default-features = false, features = [] }

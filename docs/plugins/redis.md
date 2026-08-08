@@ -5,17 +5,17 @@ editLink: false
 
 # `redis`
 
-**Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues** · crate `ruvo-redis` · id `redis`
+**Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues** · crate `sova-redis` · id `redis`
 
 ```bash
-cargo add ruvo --features redis
+cargo add sova --features redis
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `redis` | Shared Redis/Valkey pool (`ruvo-redis`). |
+| `redis` | Shared Redis/Valkey pool (`sova_redis`). |
 
-Shared Redis / Valkey pool for Ruvo (`KvStore`, tasks, cache, pub/sub, list queues).
+Shared Redis / Valkey pool for Sova (`KvStore`, tasks, cache, pub/sub, list queues).
 
 ```rust
  app.install(Redis::from_env());

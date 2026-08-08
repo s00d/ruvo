@@ -5,15 +5,15 @@ editLink: false
 
 # `sse`
 
-**Server-Sent Events helpers for Ruvo (channels, Last-Event-ID, keep-alive)** · crate `ruvo-sse` · id `sse`
+**Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive)** · crate `sova-sse` · id `sse`
 
 ```bash
-cargo add ruvo --features sse-feed
+cargo add sova --features sse-feed
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `sse-feed` | SSE channel helpers (`ruvo-sse`). |
+| `sse-feed` | SSE channel helpers (`sova_sse`). |
 
 SSE channel helpers: fan-out, `Last-Event-ID`, keep-alive.
 

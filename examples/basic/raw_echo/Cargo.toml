@@ -9,7 +9,7 @@ name = "raw_echo"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true }
+sova = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }
 bytes = { workspace = true }

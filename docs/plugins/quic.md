@@ -5,15 +5,15 @@ editLink: false
 
 # `quic`
 
-**QUIC datagrams BackgroundService helpers for Ruvo** · crate `ruvo-quic` · id `quic`
+**QUIC datagrams BackgroundService helpers for Sova** · crate `sova-quic` · id `quic`
 
 ```bash
-cargo add ruvo --features quic-udp
+cargo add sova --features quic-udp
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `quic-udp` | QUIC datagrams (`ruvo-quic`). |
+| `quic-udp` | QUIC datagrams (`sova_quic`). |
 
 QUIC datagrams (QUIC + TLS 1.3). No DTLS and no HTTP/3 streams — only
  unreliable/unordered application datagrams.

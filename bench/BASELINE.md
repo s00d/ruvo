@@ -2,7 +2,7 @@
 
 Captured **before** `pub mod extend` / test split (2026-08-04).
 
-## Criterion (`cargo bench -p ruvo-core --bench dispatch -- --quick`)
+## Criterion (`cargo bench -p sova-core --bench dispatch -- --quick`)
 
 | Bench | Median |
 |-------|--------|
@@ -27,7 +27,7 @@ Target: `hello` example on `http://127.0.0.1:3000/`
 # Re-run
 cargo run -p hello &
 DURATION=10s CONCURRENCY=50 ./bench/load.sh http://127.0.0.1:3000/
-cargo bench -p ruvo-core --bench dispatch -- --quick
+cargo bench -p sova-core --bench dispatch -- --quick
 ```
 
 ## SCALE (`bench/scale.sh`)

@@ -1,12 +1,12 @@
 ---
 layout: home
 hero:
-  name: Ruvo
+  name: Sova
   text: Express-like HTTP for Rust
   tagline: App, Router, middleware, plugins — Hyper stays hidden.
   image:
     src: /logo.png
-    alt: Ruvo
+    alt: Sova
   actions:
     - theme: brand
       text: Get started
@@ -16,7 +16,7 @@ hero:
       link: /plugins/
     - theme: alt
       text: GitHub
-      link: https://github.com/s00d/ruvo
+      link: https://github.com/s00d/sova
 features:
   - icon:
       src: /icons/dx.svg

@@ -2,8 +2,8 @@ Fortify sits **on the web preset** (sessions, csrf, templates already there). Ad
 
 ```rust
 // main.rs
-use ruvo::prelude::*;
-use ruvo::{
+use sova::prelude::*;
+use sova::{
     AuthFeature, AuthMigrator, Db, Fortify, Mail, Parser, ServerArgs,
 };
 
@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
 
 ```rust
 // modules/mod.rs
-use ruvo::{App, Fortify, Html, Router};
+use sova::{App, Fortify, Html, Router};
 
 pub fn register(app: &mut App) {
     let mut cabinet = Router::new();

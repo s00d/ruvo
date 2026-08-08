@@ -2,21 +2,21 @@
 
 ![Getting started](/banners/getting-started.svg)
 
-Ruvo’s idea is simple: **start from a preset**, put routes in **modules**, call **`app.run()`**.  
+Sova’s idea is simple: **start from a preset**, put routes in **modules**, call **`app.run()`**.  
 Do not hand-roll Cors + Session + logger + probes on every app — that is what `App::web()` / `App::api()` are for.
 
 ```bash
-cargo add ruvo --features web
+cargo add sova --features web
 # or
-cargo add ruvo --features api
+cargo add sova --features api
 ```
 
 Scaffold (same shape as the docs below):
 
 ```bash
-cargo install --path crates/cargo-ruvo   # from this repo
-cargo ruvo new blog --web
-cargo ruvo new ping-api --api
+cargo install --path crates/cargo-sova   # from this repo
+cargo sova new blog --web
+cargo sova new ping-api --api
 ```
 
 ## Web app
@@ -25,8 +25,8 @@ cargo ruvo new ping-api --api
 
 ```rust
 // src/main.rs
-use ruvo::prelude::*;
-use ruvo::{Html, Meta, Parser, ServerArgs};
+use sova::prelude::*;
+use sova::{Html, Meta, Parser, ServerArgs};
 
 mod modules;
 
@@ -56,7 +56,7 @@ async fn home() -> Html<&'static str> {
 
 ```rust
 // src/modules/mod.rs
-use ruvo::{App, Html, Meta, Router};
+use sova::{App, Html, Meta, Router};
 
 pub fn register(app: &mut App) {
     let mut blog = Router::new();
@@ -84,9 +84,9 @@ Prefer **`app.run().await`** (CLI + `HOST`/`PORT`) over bare `listen` in real ap
 
 ```rust
 // src/main.rs
-use ruvo::prelude::*;
-use ruvo::vld;
-use ruvo::{
+use sova::prelude::*;
+use sova::vld;
+use sova::{
     doc_schema, Doc, DocVldExt, Json, OpenApiDocExt, Parser, Request, ServerArgs,
     ValidationError, ValidationExt,
 };
@@ -116,7 +116,7 @@ async fn main() -> Result<()> {
 ```rust
 // src/modules/mod.rs
 use crate::Ping;
-use ruvo::{
+use sova::{
     App, Doc, DocVldExt, Json, OpenApiDocExt, Request, ValidationError, ValidationExt,
 };
 
@@ -164,9 +164,9 @@ This is the Express onion: `(Request, Next) -> Response`. Call `next(req).await`
 ### Timing + response header (app-wide)
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::extend::named;
-use ruvo::{Parser, ServerArgs};
+use sova::prelude::*;
+use sova::extend::named;
+use sova::{Parser, ServerArgs};
 use std::time::Instant;
 
 #[tokio::main]
@@ -196,7 +196,7 @@ async fn main() -> Result<()> {
 
 ```rust
 // modules/admin.rs
-use ruvo::{Error, Html, IntoResponse, Next, Request, Response, Router};
+use sova::{Error, Html, IntoResponse, Next, Request, Response, Router};
 
 pub fn routes() -> Router {
     let mut admin = Router::new();
@@ -254,7 +254,7 @@ cabinet.use_middleware(|mut req: Request, next: Next| async move {
 Prefer one `Arc` (or process-lifetime leak) instead of cloning many captures into every future:
 
 ```rust
-use ruvo::{with_state, Next, Request, Response};
+use sova::{with_state, Next, Request, Response};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 struct Hits(AtomicU64);
@@ -267,7 +267,7 @@ app.use_middleware(with_state(Hits(AtomicU64::new(0)), |hits, req, next| async m
 }));
 ```
 
-Plugin authors often use `ruvo::extend::with_leaked` for immutable config (see [Plugin SDK](/api/plugin-sdk)). Label layers for `routes` / explain: `ruvo::extend::named("my-mw", …)`.
+Plugin authors often use `sova::extend::with_leaked` for immutable config (see [Plugin SDK](/api/plugin-sdk)). Label layers for `routes` / explain: `sova::extend::named("my-mw", …)`.
 
 Order is onion: first `use_middleware` is outermost. Root stack runs **before** mount/route middleware.
 
@@ -309,7 +309,7 @@ Use a bare app only when you are **not** shipping a web/API product stack (tiny 
 
 ## Testing
 
-Dev-dependency `ruvo-testing`. Build with the same preset helpers you use in `main`:
+Dev-dependency `sova-testing`. Build with the same preset helpers you use in `main`:
 
 ```rust
 fn app() -> App {
@@ -322,7 +322,7 @@ fn app() -> App {
 ## Next
 
 - [Concepts](./concepts) — request path and lifecycle  
-- [Configuration](./configuration) — `ruvo.toml` / `.env`  
+- [Configuration](./configuration) — `sova.toml` / `.env`  
 - [Plugins](/plugins/) — how each plugin extends the preset  
 - [Examples](/examples) — full runnable patterns  
-- [Performance](./performance) — Ruvo vs Axum vs Actix stand  
+- [Performance](./performance) — Sova vs Axum vs Actix stand  

@@ -1,0 +1,20 @@
+[package]
+name = "sova-cookies"
+version = "0.1.0"
+edition = "2021"
+description = "Cookie parsing plugin for Sova"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-cookies"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[dependencies]
+sova-core = { workspace = true }
+cookie = { workspace = true, features = ["percent-encode"] }
+http = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }
+cookie = { workspace = true, features = ["percent-encode"] }

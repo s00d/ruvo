@@ -1,0 +1,26 @@
+[package]
+name = "sova-csrf"
+version = "0.1.0"
+edition = "2021"
+description = "CSRF protection plugin for Sova (session double-submit)"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-csrf"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[dependencies]
+sova-core = { workspace = true }
+sova-session = { workspace = true }
+sova-cookies = { workspace = true }
+getrandom = { workspace = true }
+http = { workspace = true }
+serde_urlencoded = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http = { workspace = true }
+sova-cookies = { workspace = true }
+sova-store = { workspace = true }
+sova-session = { workspace = true }

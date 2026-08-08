@@ -1,4 +1,4 @@
-use ruvo::{Html, Json, Request, Router};
+use sova::{Html, Json, Request, Router};
 use serde::Deserialize;
 
 pub fn routes() -> Router {

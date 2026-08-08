@@ -1,5 +1,5 @@
 //! Static files with ETag / Range.
-use ruvo::{App, Response, Result, Static};
+use sova::{App, Response, Result, Static};
 
 #[tokio::main]
 async fn main() -> Result<()> {

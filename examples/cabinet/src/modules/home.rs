@@ -1,14 +1,14 @@
-use ruvo::{CsrfExt, CurrentUser, Meta, RenderExt, Request, Result};
+use sova::{CsrfExt, CurrentUser, Meta, RenderExt, Request, Result};
 
-pub fn register(app: &mut ruvo::App) {
+pub fn register(app: &mut sova::App) {
     app.get("/", home).with(
         Meta::page()
             .title("Cabinet")
-            .description("Ruvo kitchen-sink demo with Fortify auth"),
+            .description("Sova kitchen-sink demo with Fortify auth"),
     );
 }
 
-async fn home(req: Request) -> Result<ruvo::Response> {
+async fn home(req: Request) -> Result<sova::Response> {
     let user = req.get::<CurrentUser>().cloned();
     let csrf = req.csrf_token();
     Ok(req.render(

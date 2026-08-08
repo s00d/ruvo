@@ -4,17 +4,17 @@
     "/": {
       "ok": true,
       "sha256": {
-        "ruvo": "f9bb45fe9c6379c1a0960634b1af633e20f014974e40f6e6e6f08d8ab9e41cd9",
+        "sova": "f9bb45fe9c6379c1a0960634b1af633e20f014974e40f6e6e6f08d8ab9e41cd9",
         "axum": "f9bb45fe9c6379c1a0960634b1af633e20f014974e40f6e6e6f08d8ab9e41cd9",
         "actix": "f9bb45fe9c6379c1a0960634b1af633e20f014974e40f6e6e6f08d8ab9e41cd9"
       },
       "bytes": {
-        "ruvo": 1301,
+        "sova": 1301,
         "axum": 1301,
         "actix": 1301
       },
       "content_type": {
-        "ruvo": "text/html; charset=utf-8",
+        "sova": "text/html; charset=utf-8",
         "axum": "text/html; charset=utf-8",
         "actix": "text/html; charset=utf-8"
       }
@@ -22,17 +22,17 @@
     "/about": {
       "ok": true,
       "sha256": {
-        "ruvo": "c4976426222038a536861042fc81e94487978c31f61ca357bd38a6cf342095f7",
+        "sova": "c4976426222038a536861042fc81e94487978c31f61ca357bd38a6cf342095f7",
         "axum": "c4976426222038a536861042fc81e94487978c31f61ca357bd38a6cf342095f7",
         "actix": "c4976426222038a536861042fc81e94487978c31f61ca357bd38a6cf342095f7"
       },
       "bytes": {
-        "ruvo": 1284,
+        "sova": 1284,
         "axum": 1284,
         "actix": 1284
       },
       "content_type": {
-        "ruvo": "text/html; charset=utf-8",
+        "sova": "text/html; charset=utf-8",
         "axum": "text/html; charset=utf-8",
         "actix": "text/html; charset=utf-8"
       }
@@ -40,17 +40,17 @@
     "/blog": {
       "ok": true,
       "sha256": {
-        "ruvo": "bd83cf67d832f62e09aa3787efd5dfb11598ffc51819e5bacc64e0a70bd9c5e7",
+        "sova": "bd83cf67d832f62e09aa3787efd5dfb11598ffc51819e5bacc64e0a70bd9c5e7",
         "axum": "bd83cf67d832f62e09aa3787efd5dfb11598ffc51819e5bacc64e0a70bd9c5e7",
         "actix": "bd83cf67d832f62e09aa3787efd5dfb11598ffc51819e5bacc64e0a70bd9c5e7"
       },
       "bytes": {
-        "ruvo": 1253,
+        "sova": 1253,
         "axum": 1253,
         "actix": 1253
       },
       "content_type": {
-        "ruvo": "text/html; charset=utf-8",
+        "sova": "text/html; charset=utf-8",
         "axum": "text/html; charset=utf-8",
         "actix": "text/html; charset=utf-8"
       }
@@ -58,17 +58,17 @@
     "/blog/hello": {
       "ok": true,
       "sha256": {
-        "ruvo": "5308158a2d8d10317a199ba7a60eece17feee849f35e425f5bf7ee2301725ce6",
+        "sova": "5308158a2d8d10317a199ba7a60eece17feee849f35e425f5bf7ee2301725ce6",
         "axum": "5308158a2d8d10317a199ba7a60eece17feee849f35e425f5bf7ee2301725ce6",
         "actix": "5308158a2d8d10317a199ba7a60eece17feee849f35e425f5bf7ee2301725ce6"
       },
       "bytes": {
-        "ruvo": 1300,
+        "sova": 1300,
         "axum": 1300,
         "actix": 1300
       },
       "content_type": {
-        "ruvo": "text/html; charset=utf-8",
+        "sova": "text/html; charset=utf-8",
         "axum": "text/html; charset=utf-8",
         "actix": "text/html; charset=utf-8"
       }
@@ -76,17 +76,17 @@
     "/contact": {
       "ok": true,
       "sha256": {
-        "ruvo": "9effda97a9dfa81c32b4e3a4702d0cc59de5b4f5a15dd2ee74b140fbb4f5a850",
+        "sova": "9effda97a9dfa81c32b4e3a4702d0cc59de5b4f5a15dd2ee74b140fbb4f5a850",
         "axum": "9effda97a9dfa81c32b4e3a4702d0cc59de5b4f5a15dd2ee74b140fbb4f5a850",
         "actix": "9effda97a9dfa81c32b4e3a4702d0cc59de5b4f5a15dd2ee74b140fbb4f5a850"
       },
       "bytes": {
-        "ruvo": 1213,
+        "sova": 1213,
         "axum": 1213,
         "actix": 1213
       },
       "content_type": {
-        "ruvo": "text/html; charset=utf-8",
+        "sova": "text/html; charset=utf-8",
         "axum": "text/html; charset=utf-8",
         "actix": "text/html; charset=utf-8"
       }
@@ -94,17 +94,17 @@
     "/api/health": {
       "ok": true,
       "sha256": {
-        "ruvo": "d25872e7295e03a2381ce583b80731cd12a92f70307647f13a1e2bdbbeb92348",
+        "sova": "d25872e7295e03a2381ce583b80731cd12a92f70307647f13a1e2bdbbeb92348",
         "axum": "d25872e7295e03a2381ce583b80731cd12a92f70307647f13a1e2bdbbeb92348",
         "actix": "d25872e7295e03a2381ce583b80731cd12a92f70307647f13a1e2bdbbeb92348"
       },
       "bytes": {
-        "ruvo": 63,
+        "sova": 63,
         "axum": 63,
         "actix": 63
       },
       "content_type": {
-        "ruvo": "application/json",
+        "sova": "application/json",
         "axum": "application/json",
         "actix": "application/json"
       }

@@ -5,15 +5,15 @@ editLink: false
 
 # `static`
 
-**Serve files from a directory under a mount path** · crate `ruvo-static` · id `static`
+**Serve files from a directory under a mount path** · crate `sova-static` · id `static`
 
 ```bash
-cargo add ruvo --features static-files
+cargo add sova --features static-files
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `static-files` | Serve static assets via `ruvo-static`. |
+| `static-files` | Serve static assets via `sova_static`. |
 
 Static file routes as a regular [`Plugin`] — public `Router::get` + conditional headers.
 

@@ -1,0 +1,1228 @@
+pub mod sova_core
+pub mod sova_core::extend
+pub enum sova_core::extend::Bind
+pub sova_core::extend::Bind::Addr(core::net::socket_addr::SocketAddr)
+pub sova_core::extend::Bind::Env
+pub sova_core::extend::Bind::Env::default_port: u16
+pub sova_core::extend::Bind::Listener(std::net::tcp::TcpListener)
+pub sova_core::extend::Bind::Port(u16)
+pub sova_core::extend::Bind::Str(alloc::string::String)
+pub sova_core::extend::Bind::Uds(std::path::PathBuf)
+impl sova_core::extend::Bind
+pub fn sova_core::extend::Bind::str(impl core::convert::Into<alloc::string::String>) -> Self
+impl core::convert::From<&str> for sova_core::extend::Bind
+pub fn sova_core::extend::Bind::from(&str) -> Self
+impl core::convert::From<alloc::string::String> for sova_core::extend::Bind
+pub fn sova_core::extend::Bind::from(alloc::string::String) -> Self
+impl core::convert::From<core::net::socket_addr::SocketAddr> for sova_core::extend::Bind
+pub fn sova_core::extend::Bind::from(core::net::socket_addr::SocketAddr) -> Self
+impl core::convert::From<u16> for sova_core::extend::Bind
+pub fn sova_core::extend::Bind::from(u16) -> Self
+impl core::marker::Freeze for sova_core::extend::Bind
+impl core::marker::Send for sova_core::extend::Bind
+impl core::marker::Sync for sova_core::extend::Bind
+impl core::marker::Unpin for sova_core::extend::Bind
+impl core::marker::UnsafeUnpin for sova_core::extend::Bind
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::Bind
+impl core::panic::unwind_safe::UnwindSafe for sova_core::extend::Bind
+pub enum sova_core::extend::Body
+pub sova_core::extend::Body::Bytes(bytes::bytes::Bytes)
+pub sova_core::extend::Body::Stream(sova_core::extend::ResponseBody)
+impl sova_core::extend::Body
+pub async fn sova_core::extend::Body::collect(self) -> core::result::Result<bytes::bytes::Bytes, sova_core::extend::BoxError>
+impl core::convert::From<&'static [u8]> for sova_core::extend::Body
+pub fn sova_core::extend::Body::from(&'static [u8]) -> Self
+impl core::convert::From<alloc::string::String> for sova_core::extend::Body
+pub fn sova_core::extend::Body::from(alloc::string::String) -> Self
+impl core::convert::From<alloc::vec::Vec<u8>> for sova_core::extend::Body
+pub fn sova_core::extend::Body::from(alloc::vec::Vec<u8>) -> Self
+impl core::convert::From<bytes::bytes::Bytes> for sova_core::extend::Body
+pub fn sova_core::extend::Body::from(bytes::bytes::Bytes) -> Self
+impl !core::marker::Freeze for sova_core::extend::Body
+impl core::marker::Send for sova_core::extend::Body
+impl core::marker::Sync for sova_core::extend::Body
+impl core::marker::Unpin for sova_core::extend::Body
+impl core::marker::UnsafeUnpin for sova_core::extend::Body
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::Body
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::extend::Body
+pub enum sova_core::extend::LogRotate
+pub sova_core::extend::LogRotate::Daily
+pub sova_core::extend::LogRotate::Daily::keep: usize
+pub sova_core::extend::LogRotate::Never
+pub sova_core::extend::LogRotate::Size
+pub sova_core::extend::LogRotate::Size::keep: usize
+pub sova_core::extend::LogRotate::Size::max_bytes: usize
+impl core::clone::Clone for sova_core::LogRotate
+pub fn sova_core::LogRotate::clone(&self) -> sova_core::LogRotate
+impl core::cmp::Eq for sova_core::LogRotate
+impl core::cmp::PartialEq for sova_core::LogRotate
+pub fn sova_core::LogRotate::eq(&self, &sova_core::LogRotate) -> bool
+impl core::default::Default for sova_core::LogRotate
+pub fn sova_core::LogRotate::default() -> Self
+impl core::fmt::Debug for sova_core::LogRotate
+pub fn sova_core::LogRotate::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for sova_core::LogRotate
+impl core::marker::Freeze for sova_core::LogRotate
+impl core::marker::Send for sova_core::LogRotate
+impl core::marker::Sync for sova_core::LogRotate
+impl core::marker::Unpin for sova_core::LogRotate
+impl core::marker::UnsafeUnpin for sova_core::LogRotate
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::LogRotate
+impl core::panic::unwind_safe::UnwindSafe for sova_core::LogRotate
+pub enum sova_core::extend::RouteEntry
+pub sova_core::extend::RouteEntry::Http
+pub sova_core::extend::RouteEntry::Http::meta: sova_core::extend::MetaMap
+pub sova_core::extend::RouteEntry::Http::method: http::method::Method
+pub sova_core::extend::RouteEntry::Http::path: alloc::string::String
+pub sova_core::extend::RouteEntry::Raw
+pub sova_core::extend::RouteEntry::Raw::path: alloc::string::String
+impl core::clone::Clone for sova_core::extend::RouteEntry
+pub fn sova_core::extend::RouteEntry::clone(&self) -> sova_core::extend::RouteEntry
+impl core::marker::Freeze for sova_core::extend::RouteEntry
+impl core::marker::Send for sova_core::extend::RouteEntry
+impl core::marker::Sync for sova_core::extend::RouteEntry
+impl core::marker::Unpin for sova_core::extend::RouteEntry
+impl core::marker::UnsafeUnpin for sova_core::extend::RouteEntry
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::RouteEntry
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::extend::RouteEntry
+pub enum sova_core::extend::SdkCompat
+pub sova_core::extend::SdkCompat::Error(alloc::string::String)
+pub sova_core::extend::SdkCompat::Ok
+pub sova_core::extend::SdkCompat::Warn
+pub sova_core::extend::SdkCompat::Warn::core: sova_core::PluginSdkVersion
+pub sova_core::extend::SdkCompat::Warn::plugin: sova_core::PluginSdkVersion
+impl core::clone::Clone for sova_core::SdkCompat
+pub fn sova_core::SdkCompat::clone(&self) -> sova_core::SdkCompat
+impl core::cmp::Eq for sova_core::SdkCompat
+impl core::cmp::PartialEq for sova_core::SdkCompat
+pub fn sova_core::SdkCompat::eq(&self, &sova_core::SdkCompat) -> bool
+impl core::fmt::Debug for sova_core::SdkCompat
+pub fn sova_core::SdkCompat::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for sova_core::SdkCompat
+impl core::marker::Freeze for sova_core::SdkCompat
+impl core::marker::Send for sova_core::SdkCompat
+impl core::marker::Sync for sova_core::SdkCompat
+impl core::marker::Unpin for sova_core::SdkCompat
+impl core::marker::UnsafeUnpin for sova_core::SdkCompat
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::SdkCompat
+impl core::panic::unwind_safe::UnwindSafe for sova_core::SdkCompat
+pub struct sova_core::extend::BuildCtx<'a>
+pub sova_core::extend::BuildCtx::installed_plugins: &'a std::collections::hash::set::HashSet<&'static str>
+pub sova_core::extend::BuildCtx::route_method: core::option::Option<&'a http::method::Method>
+pub sova_core::extend::BuildCtx::route_path: &'a str
+pub sova_core::extend::BuildCtx::state: &'a sova_core::extend::StateMap
+impl<'a> core::marker::Freeze for sova_core::extend::BuildCtx<'a>
+impl<'a> core::marker::Send for sova_core::extend::BuildCtx<'a>
+impl<'a> core::marker::Sync for sova_core::extend::BuildCtx<'a>
+impl<'a> core::marker::Unpin for sova_core::extend::BuildCtx<'a>
+impl<'a> core::marker::UnsafeUnpin for sova_core::extend::BuildCtx<'a>
+impl<'a> !core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::BuildCtx<'a>
+impl<'a> !core::panic::unwind_safe::UnwindSafe for sova_core::extend::BuildCtx<'a>
+pub struct sova_core::extend::Cell<T: core::clone::Clone>
+impl<T: core::clone::Clone> sova_core::Cell<T>
+pub async fn sova_core::Cell<T>::changed(&self) -> T
+pub fn sova_core::Cell<T>::get(&self) -> T
+pub fn sova_core::Cell<T>::new(T) -> Self
+pub fn sova_core::Cell<T>::set(&self, T)
+pub fn sova_core::Cell<T>::update(&self, impl core::ops::function::FnOnce(&T) -> T)
+impl<T: core::clone::Clone> core::clone::Clone for sova_core::Cell<T>
+pub fn sova_core::Cell<T>::clone(&self) -> Self
+impl<T> core::marker::Freeze for sova_core::Cell<T>
+impl<T> core::marker::Send for sova_core::Cell<T> where T: core::marker::Send + core::marker::Sync
+impl<T> core::marker::Sync for sova_core::Cell<T> where T: core::marker::Send + core::marker::Sync
+impl<T> core::marker::Unpin for sova_core::Cell<T>
+impl<T> core::marker::UnsafeUnpin for sova_core::Cell<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for sova_core::Cell<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for sova_core::Cell<T>
+pub struct sova_core::extend::Deadline(pub std::time::Instant)
+impl sova_core::extend::Deadline
+pub fn sova_core::extend::Deadline::after(core::time::Duration) -> Self
+pub fn sova_core::extend::Deadline::at(std::time::Instant) -> Self
+pub fn sova_core::extend::Deadline::remaining(&self) -> core::time::Duration
+impl core::clone::Clone for sova_core::extend::Deadline
+pub fn sova_core::extend::Deadline::clone(&self) -> sova_core::extend::Deadline
+impl core::fmt::Debug for sova_core::extend::Deadline
+pub fn sova_core::extend::Deadline::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for sova_core::extend::Deadline
+impl core::marker::Freeze for sova_core::extend::Deadline
+impl core::marker::Send for sova_core::extend::Deadline
+impl core::marker::Sync for sova_core::extend::Deadline
+impl core::marker::Unpin for sova_core::extend::Deadline
+impl core::marker::UnsafeUnpin for sova_core::extend::Deadline
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::Deadline
+impl core::panic::unwind_safe::UnwindSafe for sova_core::extend::Deadline
+pub struct sova_core::extend::Extensions
+impl sova_core::extend::Extensions
+pub fn sova_core::extend::Extensions::get<T: core::marker::Send + core::marker::Sync + 'static>(&self) -> core::option::Option<&T>
+pub fn sova_core::extend::Extensions::get_mut<T: core::marker::Send + core::marker::Sync + 'static>(&mut self) -> core::option::Option<&mut T>
+pub fn sova_core::extend::Extensions::insert<T: core::marker::Send + core::marker::Sync + 'static>(&mut self, T)
+pub fn sova_core::extend::Extensions::new() -> Self
+pub fn sova_core::extend::Extensions::remove<T: core::marker::Send + core::marker::Sync + 'static>(&mut self) -> core::option::Option<T>
+impl core::default::Default for sova_core::extend::Extensions
+pub fn sova_core::extend::Extensions::default() -> sova_core::extend::Extensions
+impl core::marker::Freeze for sova_core::extend::Extensions
+impl core::marker::Send for sova_core::extend::Extensions
+impl core::marker::Sync for sova_core::extend::Extensions
+impl core::marker::Unpin for sova_core::extend::Extensions
+impl core::marker::UnsafeUnpin for sova_core::extend::Extensions
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::Extensions
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::extend::Extensions
+pub struct sova_core::extend::FormData
+impl sova_core::FormData
+pub fn sova_core::FormData::file(&self, &str) -> core::option::Option<&sova_core::Upload>
+pub fn sova_core::FormData::file_map(&self) -> &std::collections::hash::map::HashMap<alloc::string::String, alloc::vec::Vec<sova_core::Upload>>
+pub fn sova_core::FormData::files(&self, &str) -> &[sova_core::Upload]
+pub fn sova_core::FormData::get(&self, &str) -> core::option::Option<&str>
+pub fn sova_core::FormData::get_all(&self, &str) -> &[alloc::string::String]
+pub fn sova_core::FormData::text_map(&self) -> &std::collections::hash::map::HashMap<alloc::string::String, alloc::vec::Vec<alloc::string::String>>
+impl core::clone::Clone for sova_core::FormData
+pub fn sova_core::FormData::clone(&self) -> sova_core::FormData
+impl core::default::Default for sova_core::FormData
+pub fn sova_core::FormData::default() -> sova_core::FormData
+impl core::fmt::Debug for sova_core::FormData
+pub fn sova_core::FormData::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for sova_core::FormData
+impl core::marker::Send for sova_core::FormData
+impl core::marker::Sync for sova_core::FormData
+impl core::marker::Unpin for sova_core::FormData
+impl core::marker::UnsafeUnpin for sova_core::FormData
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::FormData
+impl core::panic::unwind_safe::UnwindSafe for sova_core::FormData
+pub struct sova_core::extend::InstalledPlugin
+pub sova_core::extend::InstalledPlugin::id: &'static str
+pub sova_core::extend::InstalledPlugin::meta: sova_core::PluginMeta
+impl core::clone::Clone for sova_core::InstalledPlugin
+pub fn sova_core::InstalledPlugin::clone(&self) -> sova_core::InstalledPlugin
+impl core::fmt::Debug for sova_core::InstalledPlugin
+pub fn sova_core::InstalledPlugin::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for sova_core::InstalledPlugin
+impl core::marker::Send for sova_core::InstalledPlugin
+impl core::marker::Sync for sova_core::InstalledPlugin
+impl core::marker::Unpin for sova_core::InstalledPlugin
+impl core::marker::UnsafeUnpin for sova_core::InstalledPlugin
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::InstalledPlugin
+impl core::panic::unwind_safe::UnwindSafe for sova_core::InstalledPlugin
+pub struct sova_core::extend::LogConfig
+pub sova_core::extend::LogConfig::file: core::option::Option<std::path::PathBuf>
+pub sova_core::extend::LogConfig::filter: alloc::string::String
+pub sova_core::extend::LogConfig::rotate: sova_core::LogRotate
+pub sova_core::extend::LogConfig::stdout: bool
+impl sova_core::LogConfig
+pub fn sova_core::LogConfig::from_env() -> Self
+pub fn sova_core::LogConfig::install(&self)
+pub fn sova_core::LogConfig::try_install(&self) -> core::result::Result<(), alloc::string::String>
+impl core::clone::Clone for sova_core::LogConfig
+pub fn sova_core::LogConfig::clone(&self) -> sova_core::LogConfig
+impl core::default::Default for sova_core::LogConfig
+pub fn sova_core::LogConfig::default() -> Self
+impl core::fmt::Debug for sova_core::LogConfig
+pub fn sova_core::LogConfig::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for sova_core::LogConfig
+impl core::marker::Send for sova_core::LogConfig
+impl core::marker::Sync for sova_core::LogConfig
+impl core::marker::Unpin for sova_core::LogConfig
+impl core::marker::UnsafeUnpin for sova_core::LogConfig
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::LogConfig
+impl core::panic::unwind_safe::UnwindSafe for sova_core::LogConfig
+pub struct sova_core::extend::MatchedMeta(pub sova_core::extend::MetaMap)
+impl core::clone::Clone for sova_core::extend::MatchedMeta
+pub fn sova_core::extend::MatchedMeta::clone(&self) -> sova_core::extend::MatchedMeta
+impl core::marker::Freeze for sova_core::extend::MatchedMeta
+impl core::marker::Send for sova_core::extend::MatchedMeta
+impl core::marker::Sync for sova_core::extend::MatchedMeta
+impl core::marker::Unpin for sova_core::extend::MatchedMeta
+impl core::marker::UnsafeUnpin for sova_core::extend::MatchedMeta
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::MatchedMeta
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::extend::MatchedMeta
+pub struct sova_core::extend::MatchedMetaCapture
+impl sova_core::extend::MatchedMetaCapture
+pub fn sova_core::extend::MatchedMetaCapture::get(&self) -> core::option::Option<sova_core::extend::MetaMap>
+pub fn sova_core::extend::MatchedMetaCapture::new() -> Self
+pub fn sova_core::extend::MatchedMetaCapture::set(&self, sova_core::extend::MetaMap)
+impl core::clone::Clone for sova_core::extend::MatchedMetaCapture
+pub fn sova_core::extend::MatchedMetaCapture::clone(&self) -> sova_core::extend::MatchedMetaCapture
+impl core::default::Default for sova_core::extend::MatchedMetaCapture
+pub fn sova_core::extend::MatchedMetaCapture::default() -> sova_core::extend::MatchedMetaCapture
+impl core::marker::Freeze for sova_core::extend::MatchedMetaCapture
+impl core::marker::Send for sova_core::extend::MatchedMetaCapture
+impl core::marker::Sync for sova_core::extend::MatchedMetaCapture
+impl core::marker::Unpin for sova_core::extend::MatchedMetaCapture
+impl core::marker::UnsafeUnpin for sova_core::extend::MatchedMetaCapture
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::MatchedMetaCapture
+impl core::panic::unwind_safe::UnwindSafe for sova_core::extend::MatchedMetaCapture
+pub struct sova_core::extend::MaxBody(pub usize)
+impl sova_core::extend::MaxBody
+pub fn sova_core::extend::MaxBody::bytes(usize) -> Self
+pub fn sova_core::extend::MaxBody::kib(usize) -> Self
+pub fn sova_core::extend::MaxBody::mib(usize) -> Self
+pub fn sova_core::extend::MaxBody::parse(&str) -> core::result::Result<Self, alloc::string::String>
+impl core::clone::Clone for sova_core::extend::MaxBody
+pub fn sova_core::extend::MaxBody::clone(&self) -> sova_core::extend::MaxBody
+impl core::fmt::Debug for sova_core::extend::MaxBody
+pub fn sova_core::extend::MaxBody::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for sova_core::extend::MaxBody
+impl sova_core::extend::RouteValue for sova_core::extend::MaxBody
+pub fn sova_core::extend::MaxBody::check(&self, &sova_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn sova_core::extend::MaxBody::label(&self) -> alloc::borrow::Cow<'static, str>
+impl core::marker::Freeze for sova_core::extend::MaxBody
+impl core::marker::Send for sova_core::extend::MaxBody
+impl core::marker::Sync for sova_core::extend::MaxBody
+impl core::marker::Unpin for sova_core::extend::MaxBody
+impl core::marker::UnsafeUnpin for sova_core::extend::MaxBody
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::MaxBody
+impl core::panic::unwind_safe::UnwindSafe for sova_core::extend::MaxBody
+pub struct sova_core::extend::MetaMap
+impl sova_core::extend::MetaMap
+pub fn sova_core::extend::MetaMap::check_all(&self, &sova_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn sova_core::extend::MetaMap::extend(&mut self, sova_core::extend::MetaMap)
+pub fn sova_core::extend::MetaMap::get<T: sova_core::extend::RouteValue>(&self) -> core::option::Option<alloc::sync::Arc<T>>
+pub fn sova_core::extend::MetaMap::insert<T: sova_core::extend::RouteValue>(&mut self, T)
+pub fn sova_core::extend::MetaMap::is_empty(&self) -> bool
+pub fn sova_core::extend::MetaMap::labels(&self) -> alloc::vec::Vec<&str>
+pub fn sova_core::extend::MetaMap::new() -> Self
+impl core::clone::Clone for sova_core::extend::MetaMap
+pub fn sova_core::extend::MetaMap::clone(&self) -> sova_core::extend::MetaMap
+impl core::default::Default for sova_core::extend::MetaMap
+pub fn sova_core::extend::MetaMap::default() -> sova_core::extend::MetaMap
+impl core::marker::Freeze for sova_core::extend::MetaMap
+impl core::marker::Send for sova_core::extend::MetaMap
+impl core::marker::Sync for sova_core::extend::MetaMap
+impl core::marker::Unpin for sova_core::extend::MetaMap
+impl core::marker::UnsafeUnpin for sova_core::extend::MetaMap
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::MetaMap
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::extend::MetaMap
+pub struct sova_core::extend::MwEntry
+pub sova_core::extend::MwEntry::mw: sova_core::extend::Middleware
+pub sova_core::extend::MwEntry::name: alloc::string::String
+impl core::clone::Clone for sova_core::extend::MwEntry
+pub fn sova_core::extend::MwEntry::clone(&self) -> sova_core::extend::MwEntry
+impl sova_core::extend::IntoMwEntry for sova_core::extend::MwEntry
+pub fn sova_core::extend::MwEntry::into_mw_entry(self) -> sova_core::extend::MwEntry
+impl core::marker::Freeze for sova_core::extend::MwEntry
+impl core::marker::Send for sova_core::extend::MwEntry
+impl core::marker::Sync for sova_core::extend::MwEntry
+impl core::marker::Unpin for sova_core::extend::MwEntry
+impl core::marker::UnsafeUnpin for sova_core::extend::MwEntry
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::MwEntry
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::extend::MwEntry
+pub struct sova_core::extend::Needs<T>(_)
+impl<T: core::marker::Send + core::marker::Sync + 'static> sova_core::extend::Needs<T>
+pub fn sova_core::extend::Needs<T>::new() -> Self
+impl<T: core::marker::Send + core::marker::Sync + 'static> core::default::Default for sova_core::extend::Needs<T>
+pub fn sova_core::extend::Needs<T>::default() -> Self
+impl<T: core::marker::Send + core::marker::Sync + 'static> sova_core::extend::RouteValue for sova_core::extend::Needs<T>
+pub fn sova_core::extend::Needs<T>::check(&self, &sova_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn sova_core::extend::Needs<T>::label(&self) -> alloc::borrow::Cow<'static, str>
+impl<T> core::marker::Freeze for sova_core::extend::Needs<T>
+impl<T> core::marker::Send for sova_core::extend::Needs<T>
+impl<T> core::marker::Sync for sova_core::extend::Needs<T>
+impl<T> core::marker::Unpin for sova_core::extend::Needs<T>
+impl<T> core::marker::UnsafeUnpin for sova_core::extend::Needs<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::Needs<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for sova_core::extend::Needs<T>
+pub struct sova_core::extend::PluginMeta
+pub sova_core::extend::PluginMeta::author: &'static str
+pub sova_core::extend::PluginMeta::description: &'static str
+pub sova_core::extend::PluginMeta::name: &'static str
+pub sova_core::extend::PluginMeta::sdk: sova_core::PluginSdkVersion
+pub sova_core::extend::PluginMeta::version: &'static str
+impl sova_core::PluginMeta
+pub fn sova_core::PluginMeta::author(self, &'static str) -> Self
+pub fn sova_core::PluginMeta::description(self, &'static str) -> Self
+pub fn sova_core::PluginMeta::for_id(&'static str) -> Self
+pub fn sova_core::PluginMeta::new(&'static str) -> Self
+pub fn sova_core::PluginMeta::sdk(self, sova_core::PluginSdkVersion) -> Self
+pub fn sova_core::PluginMeta::version(self, &'static str) -> Self
+impl core::clone::Clone for sova_core::PluginMeta
+pub fn sova_core::PluginMeta::clone(&self) -> sova_core::PluginMeta
+impl core::fmt::Debug for sova_core::PluginMeta
+pub fn sova_core::PluginMeta::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for sova_core::PluginMeta
+impl core::marker::Send for sova_core::PluginMeta
+impl core::marker::Sync for sova_core::PluginMeta
+impl core::marker::Unpin for sova_core::PluginMeta
+impl core::marker::UnsafeUnpin for sova_core::PluginMeta
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::PluginMeta
+impl core::panic::unwind_safe::UnwindSafe for sova_core::PluginMeta
+pub struct sova_core::extend::PluginSdkVersion
+pub sova_core::extend::PluginSdkVersion::major: u32
+pub sova_core::extend::PluginSdkVersion::minor: u32
+pub sova_core::extend::PluginSdkVersion::patch: u32
+impl sova_core::PluginSdkVersion
+pub const fn sova_core::PluginSdkVersion::new(u32, u32, u32) -> Self
+pub fn sova_core::PluginSdkVersion::parse(&str) -> core::option::Option<Self>
+impl core::clone::Clone for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::clone(&self) -> sova_core::PluginSdkVersion
+impl core::cmp::Eq for sova_core::PluginSdkVersion
+impl core::cmp::Ord for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::cmp(&self, &sova_core::PluginSdkVersion) -> core::cmp::Ordering
+impl core::cmp::PartialEq for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::eq(&self, &sova_core::PluginSdkVersion) -> bool
+impl core::cmp::PartialOrd for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::partial_cmp(&self, &sova_core::PluginSdkVersion) -> core::option::Option<core::cmp::Ordering>
+impl core::fmt::Debug for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for sova_core::PluginSdkVersion
+impl core::marker::StructuralPartialEq for sova_core::PluginSdkVersion
+impl core::marker::Freeze for sova_core::PluginSdkVersion
+impl core::marker::Send for sova_core::PluginSdkVersion
+impl core::marker::Sync for sova_core::PluginSdkVersion
+impl core::marker::Unpin for sova_core::PluginSdkVersion
+impl core::marker::UnsafeUnpin for sova_core::PluginSdkVersion
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::PluginSdkVersion
+impl core::panic::unwind_safe::UnwindSafe for sova_core::PluginSdkVersion
+pub struct sova_core::extend::RequestBuilder
+impl sova_core::extend::RequestBuilder
+pub fn sova_core::extend::RequestBuilder::body(self, impl core::convert::Into<bytes::bytes::Bytes>) -> Self
+pub fn sova_core::extend::RequestBuilder::body_limit(self, usize) -> Self
+pub fn sova_core::extend::RequestBuilder::build(self) -> sova_core::Request
+pub fn sova_core::extend::RequestBuilder::header(self, impl core::convert::AsRef<str>, impl core::convert::AsRef<str>) -> Self
+pub fn sova_core::extend::RequestBuilder::host(self, impl core::convert::Into<alloc::string::String>) -> Self
+pub fn sova_core::extend::RequestBuilder::method(self, http::method::Method) -> Self
+pub fn sova_core::extend::RequestBuilder::path(self, impl core::convert::Into<alloc::string::String>) -> Self
+pub fn sova_core::extend::RequestBuilder::query_param(self, impl core::convert::Into<alloc::string::String>, impl core::convert::Into<alloc::string::String>) -> Self
+pub fn sova_core::extend::RequestBuilder::scheme(self, impl core::convert::Into<alloc::string::String>) -> Self
+impl !core::marker::Freeze for sova_core::extend::RequestBuilder
+impl core::marker::Send for sova_core::extend::RequestBuilder
+impl core::marker::Sync for sova_core::extend::RequestBuilder
+impl core::marker::Unpin for sova_core::extend::RequestBuilder
+impl core::marker::UnsafeUnpin for sova_core::extend::RequestBuilder
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::RequestBuilder
+impl core::panic::unwind_safe::UnwindSafe for sova_core::extend::RequestBuilder
+pub struct sova_core::extend::RequestTimeout(pub core::time::Duration)
+impl sova_core::extend::RequestTimeout
+pub fn sova_core::extend::RequestTimeout::from_secs(u64) -> Self
+pub fn sova_core::extend::RequestTimeout::parse(&str) -> core::result::Result<Self, alloc::string::String>
+impl core::clone::Clone for sova_core::extend::RequestTimeout
+pub fn sova_core::extend::RequestTimeout::clone(&self) -> sova_core::extend::RequestTimeout
+impl core::fmt::Debug for sova_core::extend::RequestTimeout
+pub fn sova_core::extend::RequestTimeout::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for sova_core::extend::RequestTimeout
+impl sova_core::extend::RouteValue for sova_core::extend::RequestTimeout
+pub fn sova_core::extend::RequestTimeout::check(&self, &sova_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn sova_core::extend::RequestTimeout::label(&self) -> alloc::borrow::Cow<'static, str>
+impl core::marker::Freeze for sova_core::extend::RequestTimeout
+impl core::marker::Send for sova_core::extend::RequestTimeout
+impl core::marker::Sync for sova_core::extend::RequestTimeout
+impl core::marker::Unpin for sova_core::extend::RequestTimeout
+impl core::marker::UnsafeUnpin for sova_core::extend::RequestTimeout
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::RequestTimeout
+impl core::panic::unwind_safe::UnwindSafe for sova_core::extend::RequestTimeout
+pub struct sova_core::extend::RouteTable(pub alloc::vec::Vec<sova_core::extend::RouteEntry>)
+impl core::clone::Clone for sova_core::extend::RouteTable
+pub fn sova_core::extend::RouteTable::clone(&self) -> sova_core::extend::RouteTable
+impl core::marker::Freeze for sova_core::extend::RouteTable
+impl core::marker::Send for sova_core::extend::RouteTable
+impl core::marker::Sync for sova_core::extend::RouteTable
+impl core::marker::Unpin for sova_core::extend::RouteTable
+impl core::marker::UnsafeUnpin for sova_core::extend::RouteTable
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::RouteTable
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::extend::RouteTable
+pub struct sova_core::extend::Slot<T>
+impl<T> sova_core::Slot<T>
+pub fn sova_core::Slot<T>::new() -> Self
+pub fn sova_core::Slot<T>::put(&self, T)
+pub async fn sova_core::Slot<T>::take(&self) -> T
+pub fn sova_core::Slot<T>::try_take(&self) -> core::option::Option<T>
+impl<T> core::clone::Clone for sova_core::Slot<T>
+pub fn sova_core::Slot<T>::clone(&self) -> Self
+impl<T> core::default::Default for sova_core::Slot<T>
+pub fn sova_core::Slot<T>::default() -> Self
+impl<T> core::marker::Freeze for sova_core::Slot<T>
+impl<T> core::marker::Send for sova_core::Slot<T> where T: core::marker::Send
+impl<T> core::marker::Sync for sova_core::Slot<T> where T: core::marker::Send
+impl<T> core::marker::Unpin for sova_core::Slot<T>
+impl<T> core::marker::UnsafeUnpin for sova_core::Slot<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for sova_core::Slot<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for sova_core::Slot<T>
+pub struct sova_core::extend::TypeMap
+impl sova_core::extend::TypeMap
+pub fn sova_core::extend::TypeMap::extend(&mut self, sova_core::extend::TypeMap)
+pub fn sova_core::extend::TypeMap::get<T>(&self) -> core::option::Option<alloc::sync::Arc<T>> where T: core::marker::Send + core::marker::Sync + 'static
+pub fn sova_core::extend::TypeMap::insert<T>(&mut self, T) where T: core::marker::Send + core::marker::Sync + 'static
+pub fn sova_core::extend::TypeMap::is_empty(&self) -> bool
+pub fn sova_core::extend::TypeMap::new() -> Self
+impl core::clone::Clone for sova_core::extend::TypeMap
+pub fn sova_core::extend::TypeMap::clone(&self) -> sova_core::extend::TypeMap
+impl core::default::Default for sova_core::extend::TypeMap
+pub fn sova_core::extend::TypeMap::default() -> sova_core::extend::TypeMap
+impl core::marker::Freeze for sova_core::extend::TypeMap
+impl core::marker::Send for sova_core::extend::TypeMap
+impl core::marker::Sync for sova_core::extend::TypeMap
+impl core::marker::Unpin for sova_core::extend::TypeMap
+impl core::marker::UnsafeUnpin for sova_core::extend::TypeMap
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::extend::TypeMap
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::extend::TypeMap
+pub struct sova_core::extend::Upload
+pub sova_core::extend::Upload::content_type: core::option::Option<alloc::string::String>
+pub sova_core::extend::Upload::data: bytes::bytes::Bytes
+pub sova_core::extend::Upload::field: alloc::string::String
+pub sova_core::extend::Upload::filename: core::option::Option<alloc::string::String>
+impl sova_core::Upload
+pub async fn sova_core::Upload::save(&self, impl core::convert::AsRef<std::path::Path>) -> sova_core::Result<()>
+pub async fn sova_core::Upload::save_in(&self, impl core::convert::AsRef<std::path::Path>, &str) -> sova_core::Result<std::path::PathBuf>
+pub fn sova_core::Upload::suggested_name(&self) -> &str
+impl core::clone::Clone for sova_core::Upload
+pub fn sova_core::Upload::clone(&self) -> sova_core::Upload
+impl core::fmt::Debug for sova_core::Upload
+pub fn sova_core::Upload::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl !core::marker::Freeze for sova_core::Upload
+impl core::marker::Send for sova_core::Upload
+impl core::marker::Sync for sova_core::Upload
+impl core::marker::Unpin for sova_core::Upload
+impl core::marker::UnsafeUnpin for sova_core::Upload
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::Upload
+impl core::panic::unwind_safe::UnwindSafe for sova_core::Upload
+pub const sova_core::extend::PLUGIN_SDK_VERSION: sova_core::PluginSdkVersion
+pub trait sova_core::extend::ErrorResponse: sova_core::IntoResponse
+pub trait sova_core::extend::IntoHandler<T>
+pub fn sova_core::extend::IntoHandler::into_handler(self) -> sova_core::extend::FallibleHandler
+impl sova_core::extend::IntoHandler<()> for sova_core::extend::FallibleHandler
+pub fn sova_core::extend::FallibleHandler::into_handler(self) -> sova_core::extend::FallibleHandler
+impl<F, Fut, R, E> sova_core::extend::IntoHandler<(sova_core::handler::FallibleResponseMarker, E)> for F where F: core::ops::function::Fn(sova_core::Request) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = core::result::Result<R, E>> + core::marker::Send + 'static, R: sova_core::IntoResponse, E: sova_core::extend::ErrorResponse + 'static
+pub fn F::into_handler(self) -> sova_core::extend::FallibleHandler
+impl<F, Fut, R> sova_core::extend::IntoHandler<(sova_core::handler::NoArgResponseMarker)> for F where F: core::ops::function::Fn() -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = R> + core::marker::Send + 'static, R: sova_core::IntoResponse
+pub fn F::into_handler(self) -> sova_core::extend::FallibleHandler
+impl<F, Fut, R> sova_core::extend::IntoHandler<(sova_core::handler::ResponseMarker)> for F where F: core::ops::function::Fn(sova_core::Request) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = R> + core::marker::Send + 'static, R: sova_core::IntoResponse
+pub fn F::into_handler(self) -> sova_core::extend::FallibleHandler
+impl<F, Fut, R> sova_core::extend::IntoHandler<(sova_core::handler::ResultMarker)> for F where F: core::ops::function::Fn(sova_core::Request) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = sova_core::Result<R>> + core::marker::Send + 'static, R: sova_core::IntoResponse
+pub fn F::into_handler(self) -> sova_core::extend::FallibleHandler
+pub trait sova_core::extend::IntoMiddleware
+pub fn sova_core::extend::IntoMiddleware::into_middleware(self) -> sova_core::extend::Middleware
+impl sova_core::extend::IntoMiddleware for sova_core::extend::Middleware
+pub fn sova_core::extend::Middleware::into_middleware(self) -> sova_core::extend::Middleware
+impl<F, Fut> sova_core::extend::IntoMiddleware for F where F: core::ops::function::Fn(sova_core::Request, sova_core::Next) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = sova_core::Response> + core::marker::Send + 'static
+pub fn F::into_middleware(self) -> sova_core::extend::Middleware
+pub trait sova_core::extend::IntoMwEntry
+pub fn sova_core::extend::IntoMwEntry::into_mw_entry(self) -> sova_core::extend::MwEntry
+impl sova_core::extend::IntoMwEntry for sova_core::extend::Middleware
+pub fn sova_core::extend::Middleware::into_mw_entry(self) -> sova_core::extend::MwEntry
+impl sova_core::extend::IntoMwEntry for sova_core::extend::MwEntry
+pub fn sova_core::extend::MwEntry::into_mw_entry(self) -> sova_core::extend::MwEntry
+impl<F, Fut> sova_core::extend::IntoMwEntry for F where F: core::ops::function::Fn(sova_core::Request, sova_core::Next) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = sova_core::Response> + core::marker::Send + 'static
+pub fn F::into_mw_entry(self) -> sova_core::extend::MwEntry
+pub trait sova_core::extend::IntoRawHandler
+pub fn sova_core::extend::IntoRawHandler::into_raw_handler(self) -> sova_core::extend::RawHandler
+impl sova_core::extend::IntoRawHandler for sova_core::extend::RawHandler
+pub fn sova_core::extend::RawHandler::into_raw_handler(self) -> sova_core::extend::RawHandler
+impl<F, Fut> sova_core::extend::IntoRawHandler for F where F: core::ops::function::Fn(http::request::Request<hyper::body::incoming::Incoming>) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = http::response::Response<sova_core::extend::ResponseBody>> + core::marker::Send + 'static
+pub fn F::into_raw_handler(self) -> sova_core::extend::RawHandler
+pub trait sova_core::extend::RouteValue: core::any::Any + core::marker::Send + core::marker::Sync + 'static
+pub fn sova_core::extend::RouteValue::check(&self, &sova_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn sova_core::extend::RouteValue::label(&self) -> alloc::borrow::Cow<'static, str>
+impl sova_core::extend::RouteValue for sova_core::extend::MaxBody
+pub fn sova_core::extend::MaxBody::check(&self, &sova_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn sova_core::extend::MaxBody::label(&self) -> alloc::borrow::Cow<'static, str>
+impl sova_core::extend::RouteValue for sova_core::extend::RequestTimeout
+pub fn sova_core::extend::RequestTimeout::check(&self, &sova_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn sova_core::extend::RequestTimeout::label(&self) -> alloc::borrow::Cow<'static, str>
+impl<T: core::marker::Send + core::marker::Sync + 'static> sova_core::extend::RouteValue for sova_core::extend::Needs<T>
+pub fn sova_core::extend::Needs<T>::check(&self, &sova_core::extend::BuildCtx<'_>) -> core::result::Result<(), alloc::string::String>
+pub fn sova_core::extend::Needs<T>::label(&self) -> alloc::borrow::Cow<'static, str>
+pub fn sova_core::extend::check_plugin_sdk(sova_core::PluginSdkVersion, sova_core::PluginSdkVersion) -> sova_core::SdkCompat
+pub fn sova_core::extend::ensure_tracing()
+pub fn sova_core::extend::join_paths(&str, &str) -> alloc::string::String
+pub fn sova_core::extend::named(impl core::convert::Into<alloc::string::String>, impl sova_core::extend::IntoMiddleware) -> sova_core::extend::MwEntry
+pub fn sova_core::extend::normalize_path(&str) -> alloc::string::String
+pub fn sova_core::extend::parse_bytes(&str) -> core::result::Result<usize, alloc::string::String>
+pub fn sova_core::extend::parse_duration(&str) -> core::result::Result<core::time::Duration, alloc::string::String>
+pub fn sova_core::extend::parse_log_rotate(&str, core::option::Option<&str>, core::option::Option<usize>) -> core::result::Result<sova_core::LogRotate, alloc::string::String>
+pub fn sova_core::extend::tighten_deadline(&mut sova_core::Request, std::time::Instant)
+pub fn sova_core::extend::to_brace_path(&str) -> core::option::Option<alloc::string::String>
+pub async fn sova_core::extend::wait_shutdown(sova_core::Shutdown)
+pub fn sova_core::extend::with_leaked<S, F, Fut>(S, F) -> sova_core::extend::Middleware where S: core::marker::Send + core::marker::Sync + 'static, F: core::ops::function::Fn(&'static S, sova_core::Request, sova_core::Next) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = sova_core::Response> + core::marker::Send + 'static
+pub type sova_core::extend::BoxError = alloc::boxed::Box<(dyn core::error::Error + core::marker::Send + core::marker::Sync)>
+pub type sova_core::extend::BoxFuture<T> = core::pin::Pin<alloc::boxed::Box<(dyn core::future::future::Future<Output = T> + core::marker::Send)>>
+pub type sova_core::extend::FallibleHandler = alloc::sync::Arc<(dyn core::ops::function::Fn(sova_core::Request) -> sova_core::extend::BoxFuture<sova_core::Result<sova_core::Response>> + core::marker::Send + core::marker::Sync)>
+pub type sova_core::extend::Handler = alloc::sync::Arc<(dyn core::ops::function::Fn(sova_core::Request) -> sova_core::extend::BoxFuture<sova_core::Response> + core::marker::Send + core::marker::Sync)>
+pub type sova_core::extend::HttpBody = http_body_util::combinators::box_body::BoxBody<bytes::bytes::Bytes, sova_core::extend::BoxError>
+pub type sova_core::extend::Middleware = alloc::sync::Arc<(dyn core::ops::function::Fn(sova_core::Request, sova_core::Next) -> sova_core::extend::BoxFuture<sova_core::Response> + core::marker::Send + core::marker::Sync)>
+pub type sova_core::extend::RawHandler = alloc::sync::Arc<(dyn core::ops::function::Fn(http::request::Request<hyper::body::incoming::Incoming>) -> sova_core::extend::BoxFuture<http::response::Response<sova_core::extend::ResponseBody>> + core::marker::Send + core::marker::Sync)>
+pub type sova_core::extend::ResponseBody = sova_core::extend::HttpBody
+pub type sova_core::extend::StateMap = sova_core::extend::TypeMap
+pub enum sova_core::Error
+pub sova_core::Error::BadRequest(alloc::string::String)
+pub sova_core::Error::Internal(alloc::string::String)
+pub sova_core::Error::Io(core::io::error::Error)
+pub sova_core::Error::Json(serde_json::error::Error)
+pub sova_core::Error::MethodNotAllowed
+pub sova_core::Error::NotFound
+pub sova_core::Error::PayloadTooLarge
+pub sova_core::Error::Response(alloc::boxed::Box<sova_core::Response>)
+pub sova_core::Error::Unauthorized
+impl sova_core::Error
+pub fn sova_core::Error::custom(u16, impl sova_core::IntoResponse) -> Self
+pub fn sova_core::Error::into_response(self) -> sova_core::Response
+impl core::convert::From<core::io::error::Error> for sova_core::Error
+pub fn sova_core::Error::from(core::io::error::Error) -> Self
+impl core::convert::From<serde_json::error::Error> for sova_core::Error
+pub fn sova_core::Error::from(serde_json::error::Error) -> Self
+impl core::error::Error for sova_core::Error
+pub fn sova_core::Error::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for sova_core::Error
+pub fn sova_core::Error::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for sova_core::Error
+pub fn sova_core::Error::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl sova_core::IntoResponse for sova_core::Error
+pub fn sova_core::Error::into_response(self) -> sova_core::Response
+impl core::marker::Freeze for sova_core::Error
+impl core::marker::Send for sova_core::Error
+impl core::marker::Sync for sova_core::Error
+impl core::marker::Unpin for sova_core::Error
+impl core::marker::UnsafeUnpin for sova_core::Error
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::Error
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::Error
+pub enum sova_core::Http
+pub sova_core::Http::All
+pub sova_core::Http::H1
+pub sova_core::Http::H1H2
+impl sova_core::Http
+pub const fn sova_core::Http::all() -> Self
+pub const fn sova_core::Http::h1() -> Self
+pub const fn sova_core::Http::h1_h2() -> Self
+impl core::clone::Clone for sova_core::Http
+pub fn sova_core::Http::clone(&self) -> sova_core::Http
+impl core::cmp::Eq for sova_core::Http
+impl core::cmp::PartialEq for sova_core::Http
+pub fn sova_core::Http::eq(&self, &sova_core::Http) -> bool
+impl core::fmt::Debug for sova_core::Http
+pub fn sova_core::Http::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for sova_core::Http
+impl core::marker::StructuralPartialEq for sova_core::Http
+impl core::marker::Freeze for sova_core::Http
+impl core::marker::Send for sova_core::Http
+impl core::marker::Sync for sova_core::Http
+impl core::marker::Unpin for sova_core::Http
+impl core::marker::UnsafeUnpin for sova_core::Http
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::Http
+impl core::panic::unwind_safe::UnwindSafe for sova_core::Http
+pub enum sova_core::LogRotate
+pub sova_core::LogRotate::Daily
+pub sova_core::LogRotate::Daily::keep: usize
+pub sova_core::LogRotate::Never
+pub sova_core::LogRotate::Size
+pub sova_core::LogRotate::Size::keep: usize
+pub sova_core::LogRotate::Size::max_bytes: usize
+impl core::clone::Clone for sova_core::LogRotate
+pub fn sova_core::LogRotate::clone(&self) -> sova_core::LogRotate
+impl core::cmp::Eq for sova_core::LogRotate
+impl core::cmp::PartialEq for sova_core::LogRotate
+pub fn sova_core::LogRotate::eq(&self, &sova_core::LogRotate) -> bool
+impl core::default::Default for sova_core::LogRotate
+pub fn sova_core::LogRotate::default() -> Self
+impl core::fmt::Debug for sova_core::LogRotate
+pub fn sova_core::LogRotate::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for sova_core::LogRotate
+impl core::marker::Freeze for sova_core::LogRotate
+impl core::marker::Send for sova_core::LogRotate
+impl core::marker::Sync for sova_core::LogRotate
+impl core::marker::Unpin for sova_core::LogRotate
+impl core::marker::UnsafeUnpin for sova_core::LogRotate
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::LogRotate
+impl core::panic::unwind_safe::UnwindSafe for sova_core::LogRotate
+pub enum sova_core::SdkCompat
+pub sova_core::SdkCompat::Error(alloc::string::String)
+pub sova_core::SdkCompat::Ok
+pub sova_core::SdkCompat::Warn
+pub sova_core::SdkCompat::Warn::core: sova_core::PluginSdkVersion
+pub sova_core::SdkCompat::Warn::plugin: sova_core::PluginSdkVersion
+impl core::clone::Clone for sova_core::SdkCompat
+pub fn sova_core::SdkCompat::clone(&self) -> sova_core::SdkCompat
+impl core::cmp::Eq for sova_core::SdkCompat
+impl core::cmp::PartialEq for sova_core::SdkCompat
+pub fn sova_core::SdkCompat::eq(&self, &sova_core::SdkCompat) -> bool
+impl core::fmt::Debug for sova_core::SdkCompat
+pub fn sova_core::SdkCompat::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for sova_core::SdkCompat
+impl core::marker::Freeze for sova_core::SdkCompat
+impl core::marker::Send for sova_core::SdkCompat
+impl core::marker::Sync for sova_core::SdkCompat
+impl core::marker::Unpin for sova_core::SdkCompat
+impl core::marker::UnsafeUnpin for sova_core::SdkCompat
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::SdkCompat
+impl core::panic::unwind_safe::UnwindSafe for sova_core::SdkCompat
+pub struct sova_core::App
+impl sova_core::App
+pub fn sova_core::App::bind(self, impl core::convert::Into<sova_core::extend::Bind>) -> sova_core::BoundApp
+pub async fn sova_core::App::listen(self, u16) -> sova_core::Result<()>
+impl sova_core::App
+pub fn sova_core::App::build(&self) -> sova_core::Result<sova_core::Server>
+impl sova_core::App
+pub fn sova_core::App::cli_mode(&mut self, bool) -> &mut Self
+pub fn sova_core::App::drain_timeout(&mut self, core::time::Duration) -> &mut Self
+pub fn sova_core::App::explain(&self) -> alloc::string::String
+pub async fn sova_core::App::handle(&self, sova_core::Request) -> sova_core::Response
+pub async fn sova_core::App::handle_request(&self, http::method::Method, &str, &str) -> sova_core::Response
+pub fn sova_core::App::has_plugin(&self, &str) -> bool
+pub fn sova_core::App::header_read_timeout(&mut self, core::time::Duration) -> &mut Self
+pub fn sova_core::App::idle_timeout(&mut self, core::time::Duration) -> &mut Self
+pub fn sova_core::App::install<P: sova_core::Plugin>(&mut self, P) -> &mut Self
+pub fn sova_core::App::installed_plugin_meta(&self) -> &[sova_core::InstalledPlugin]
+pub fn sova_core::App::keep_alive(&mut self, bool) -> &mut Self
+pub fn sova_core::App::max_body_size(&mut self, usize) -> &mut Self
+pub fn sova_core::App::max_buf_size(&mut self, usize) -> &mut Self
+pub fn sova_core::App::max_concurrent_streams(&mut self, usize) -> &mut Self
+pub fn sova_core::App::max_connections(&mut self, usize) -> &mut Self
+pub fn sova_core::App::max_headers(&mut self, usize) -> &mut Self
+pub fn sova_core::App::max_upgraded_connections(&mut self, usize) -> &mut Self
+pub fn sova_core::App::new() -> Self
+pub fn sova_core::App::on_shutdown<F, Fut>(&mut self, F) -> &mut Self where F: core::ops::function::Fn() -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = ()> + core::marker::Send + 'static
+pub fn sova_core::App::on_startup<F, Fut>(&mut self, F) -> &mut Self where F: core::ops::function::Fn(alloc::sync::Arc<sova_core::extend::StateMap>) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = sova_core::Result<()>> + core::marker::Send + 'static
+pub fn sova_core::App::register_check<F, Fut>(&mut self, &'static str, F) -> &mut Self where F: core::ops::function::Fn(alloc::sync::Arc<sova_core::extend::StateMap>) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = sova_core::Result<()>> + core::marker::Send + 'static
+pub fn sova_core::App::register_cli<F, Fut>(&mut self, &'static str, F) -> &mut Self where F: core::ops::function::Fn(alloc::sync::Arc<sova_core::extend::StateMap>, alloc::vec::Vec<alloc::string::String>) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = sova_core::Result<()>> + core::marker::Send + 'static
+pub fn sova_core::App::request_timeout(&mut self, core::option::Option<core::time::Duration>) -> &mut Self
+pub async fn sova_core::App::run(self) -> sova_core::Result<()>
+pub fn sova_core::App::service<S: sova_core::BackgroundService + 'static>(&mut self, S) -> &mut Self
+pub fn sova_core::App::service_in_cli(&mut self, bool) -> &mut Self
+pub fn sova_core::App::trust_proxy(&mut self, bool) -> &mut Self
+impl sova_core::App
+pub fn sova_core::App::config_doc(&self) -> core::option::Option<alloc::sync::Arc<sova_core::ConfigDoc>>
+pub fn sova_core::App::configure(&mut self) -> sova_core::Result<&mut Self>
+pub fn sova_core::App::configure_from_path(&mut self, impl core::convert::AsRef<std::path::Path>) -> sova_core::Result<&mut Self>
+pub fn sova_core::App::configure_from_str(&mut self, &str) -> sova_core::Result<&mut Self>
+pub fn sova_core::App::from_toml(impl core::convert::AsRef<std::path::Path>) -> sova_core::Result<Self>
+impl core::default::Default for sova_core::App
+pub fn sova_core::App::default() -> Self
+impl core::ops::deref::Deref for sova_core::App
+pub type sova_core::App::Target = sova_core::Router
+pub fn sova_core::App::deref(&self) -> &sova_core::Router
+impl core::ops::deref::DerefMut for sova_core::App
+pub fn sova_core::App::deref_mut(&mut self) -> &mut sova_core::Router
+impl core::marker::Freeze for sova_core::App
+impl core::marker::Send for sova_core::App
+impl !core::marker::Sync for sova_core::App
+impl core::marker::Unpin for sova_core::App
+impl core::marker::UnsafeUnpin for sova_core::App
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::App
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::App
+pub struct sova_core::BoundApp
+impl sova_core::BoundApp
+pub fn sova_core::BoundApp::http(self, sova_core::Http) -> Self
+pub fn sova_core::BoundApp::reuseport(self, bool) -> Self
+pub async fn sova_core::BoundApp::run(self) -> sova_core::Result<()>
+pub async fn sova_core::BoundApp::serve(self) -> sova_core::Result<()>
+pub fn sova_core::BoundApp::shutdown<F>(self, F) -> Self where F: core::future::future::Future<Output = ()> + core::marker::Send + 'static
+pub fn sova_core::BoundApp::tls(self, sova_core::Tls) -> sova_core::Result<Self>
+impl core::marker::Freeze for sova_core::BoundApp
+impl core::marker::Send for sova_core::BoundApp
+impl !core::marker::Sync for sova_core::BoundApp
+impl core::marker::Unpin for sova_core::BoundApp
+impl core::marker::UnsafeUnpin for sova_core::BoundApp
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::BoundApp
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::BoundApp
+pub struct sova_core::Cell<T: core::clone::Clone>
+impl<T: core::clone::Clone> sova_core::Cell<T>
+pub async fn sova_core::Cell<T>::changed(&self) -> T
+pub fn sova_core::Cell<T>::get(&self) -> T
+pub fn sova_core::Cell<T>::new(T) -> Self
+pub fn sova_core::Cell<T>::set(&self, T)
+pub fn sova_core::Cell<T>::update(&self, impl core::ops::function::FnOnce(&T) -> T)
+impl<T: core::clone::Clone> core::clone::Clone for sova_core::Cell<T>
+pub fn sova_core::Cell<T>::clone(&self) -> Self
+impl<T> core::marker::Freeze for sova_core::Cell<T>
+impl<T> core::marker::Send for sova_core::Cell<T> where T: core::marker::Send + core::marker::Sync
+impl<T> core::marker::Sync for sova_core::Cell<T> where T: core::marker::Send + core::marker::Sync
+impl<T> core::marker::Unpin for sova_core::Cell<T>
+impl<T> core::marker::UnsafeUnpin for sova_core::Cell<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for sova_core::Cell<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for sova_core::Cell<T>
+pub struct sova_core::ClientAddr(pub core::net::socket_addr::SocketAddr)
+impl core::clone::Clone for sova_core::ClientAddr
+pub fn sova_core::ClientAddr::clone(&self) -> sova_core::ClientAddr
+impl core::fmt::Debug for sova_core::ClientAddr
+pub fn sova_core::ClientAddr::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for sova_core::ClientAddr
+impl core::marker::Freeze for sova_core::ClientAddr
+impl core::marker::Send for sova_core::ClientAddr
+impl core::marker::Sync for sova_core::ClientAddr
+impl core::marker::Unpin for sova_core::ClientAddr
+impl core::marker::UnsafeUnpin for sova_core::ClientAddr
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::ClientAddr
+impl core::panic::unwind_safe::UnwindSafe for sova_core::ClientAddr
+pub struct sova_core::ClientRequest<'a>
+impl<'a> sova_core::ClientRequest<'a>
+pub fn sova_core::ClientRequest<'a>::body(self, impl core::convert::Into<bytes::bytes::Bytes>) -> Self
+pub fn sova_core::ClientRequest<'a>::form(self, &[(&str, &str)]) -> Self
+pub fn sova_core::ClientRequest<'a>::header(self, impl core::convert::AsRef<str>, impl core::convert::AsRef<str>) -> Self
+pub fn sova_core::ClientRequest<'a>::json<T: serde_core::ser::Serialize>(self, &T) -> Self
+impl<'a> core::future::into_future::IntoFuture for sova_core::ClientRequest<'a>
+pub type sova_core::ClientRequest<'a>::IntoFuture = core::pin::Pin<alloc::boxed::Box<(dyn core::future::future::Future<Output = sova_core::Response> + core::marker::Send + 'a)>>
+pub type sova_core::ClientRequest<'a>::Output = sova_core::Response
+pub fn sova_core::ClientRequest<'a>::into_future(self) -> Self::IntoFuture
+impl<'a> !core::marker::Freeze for sova_core::ClientRequest<'a>
+impl<'a> core::marker::Send for sova_core::ClientRequest<'a>
+impl<'a> core::marker::Sync for sova_core::ClientRequest<'a>
+impl<'a> core::marker::Unpin for sova_core::ClientRequest<'a>
+impl<'a> core::marker::UnsafeUnpin for sova_core::ClientRequest<'a>
+impl<'a> !core::panic::unwind_safe::RefUnwindSafe for sova_core::ClientRequest<'a>
+impl<'a> !core::panic::unwind_safe::UnwindSafe for sova_core::ClientRequest<'a>
+pub struct sova_core::ConfigDoc
+pub sova_core::ConfigDoc::profile: alloc::string::String
+pub sova_core::ConfigDoc::root: toml::value::Value
+impl sova_core::ConfigDoc
+pub fn sova_core::ConfigDoc::http_clients(&self) -> std::collections::hash::map::HashMap<alloc::string::String, toml::map::Map<alloc::string::String, toml::value::Value>>
+pub fn sova_core::ConfigDoc::section(&self, &str) -> core::option::Option<toml::map::Map<alloc::string::String, toml::value::Value>>
+impl core::clone::Clone for sova_core::ConfigDoc
+pub fn sova_core::ConfigDoc::clone(&self) -> sova_core::ConfigDoc
+impl core::fmt::Debug for sova_core::ConfigDoc
+pub fn sova_core::ConfigDoc::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for sova_core::ConfigDoc
+impl core::marker::Send for sova_core::ConfigDoc
+impl core::marker::Sync for sova_core::ConfigDoc
+impl core::marker::Unpin for sova_core::ConfigDoc
+impl core::marker::UnsafeUnpin for sova_core::ConfigDoc
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::ConfigDoc
+impl core::panic::unwind_safe::UnwindSafe for sova_core::ConfigDoc
+pub struct sova_core::FormData
+impl sova_core::FormData
+pub fn sova_core::FormData::file(&self, &str) -> core::option::Option<&sova_core::Upload>
+pub fn sova_core::FormData::file_map(&self) -> &std::collections::hash::map::HashMap<alloc::string::String, alloc::vec::Vec<sova_core::Upload>>
+pub fn sova_core::FormData::files(&self, &str) -> &[sova_core::Upload]
+pub fn sova_core::FormData::get(&self, &str) -> core::option::Option<&str>
+pub fn sova_core::FormData::get_all(&self, &str) -> &[alloc::string::String]
+pub fn sova_core::FormData::text_map(&self) -> &std::collections::hash::map::HashMap<alloc::string::String, alloc::vec::Vec<alloc::string::String>>
+impl core::clone::Clone for sova_core::FormData
+pub fn sova_core::FormData::clone(&self) -> sova_core::FormData
+impl core::default::Default for sova_core::FormData
+pub fn sova_core::FormData::default() -> sova_core::FormData
+impl core::fmt::Debug for sova_core::FormData
+pub fn sova_core::FormData::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for sova_core::FormData
+impl core::marker::Send for sova_core::FormData
+impl core::marker::Sync for sova_core::FormData
+impl core::marker::Unpin for sova_core::FormData
+impl core::marker::UnsafeUnpin for sova_core::FormData
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::FormData
+impl core::panic::unwind_safe::UnwindSafe for sova_core::FormData
+pub struct sova_core::Html<T>(pub T)
+impl<T: core::convert::Into<alloc::string::String>> sova_core::IntoResponse for sova_core::Html<T>
+pub fn sova_core::Html<T>::into_response(self) -> sova_core::Response
+impl<T> core::marker::Freeze for sova_core::Html<T> where T: core::marker::Freeze
+impl<T> core::marker::Send for sova_core::Html<T> where T: core::marker::Send
+impl<T> core::marker::Sync for sova_core::Html<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for sova_core::Html<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for sova_core::Html<T> where T: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for sova_core::Html<T> where T: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for sova_core::Html<T> where T: core::panic::unwind_safe::UnwindSafe
+pub struct sova_core::InstalledPlugin
+pub sova_core::InstalledPlugin::id: &'static str
+pub sova_core::InstalledPlugin::meta: sova_core::PluginMeta
+impl core::clone::Clone for sova_core::InstalledPlugin
+pub fn sova_core::InstalledPlugin::clone(&self) -> sova_core::InstalledPlugin
+impl core::fmt::Debug for sova_core::InstalledPlugin
+pub fn sova_core::InstalledPlugin::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for sova_core::InstalledPlugin
+impl core::marker::Send for sova_core::InstalledPlugin
+impl core::marker::Sync for sova_core::InstalledPlugin
+impl core::marker::Unpin for sova_core::InstalledPlugin
+impl core::marker::UnsafeUnpin for sova_core::InstalledPlugin
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::InstalledPlugin
+impl core::panic::unwind_safe::UnwindSafe for sova_core::InstalledPlugin
+pub struct sova_core::Json<T>(pub T)
+impl<T: serde_core::ser::Serialize> sova_core::IntoResponse for sova_core::Json<T>
+pub fn sova_core::Json<T>::into_response(self) -> sova_core::Response
+impl<T> core::marker::Freeze for sova_core::Json<T> where T: core::marker::Freeze
+impl<T> core::marker::Send for sova_core::Json<T> where T: core::marker::Send
+impl<T> core::marker::Sync for sova_core::Json<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for sova_core::Json<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for sova_core::Json<T> where T: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for sova_core::Json<T> where T: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for sova_core::Json<T> where T: core::panic::unwind_safe::UnwindSafe
+pub struct sova_core::LogConfig
+pub sova_core::LogConfig::file: core::option::Option<std::path::PathBuf>
+pub sova_core::LogConfig::filter: alloc::string::String
+pub sova_core::LogConfig::rotate: sova_core::LogRotate
+pub sova_core::LogConfig::stdout: bool
+impl sova_core::LogConfig
+pub fn sova_core::LogConfig::from_env() -> Self
+pub fn sova_core::LogConfig::install(&self)
+pub fn sova_core::LogConfig::try_install(&self) -> core::result::Result<(), alloc::string::String>
+impl core::clone::Clone for sova_core::LogConfig
+pub fn sova_core::LogConfig::clone(&self) -> sova_core::LogConfig
+impl core::default::Default for sova_core::LogConfig
+pub fn sova_core::LogConfig::default() -> Self
+impl core::fmt::Debug for sova_core::LogConfig
+pub fn sova_core::LogConfig::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for sova_core::LogConfig
+impl core::marker::Send for sova_core::LogConfig
+impl core::marker::Sync for sova_core::LogConfig
+impl core::marker::Unpin for sova_core::LogConfig
+impl core::marker::UnsafeUnpin for sova_core::LogConfig
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::LogConfig
+impl core::panic::unwind_safe::UnwindSafe for sova_core::LogConfig
+pub struct sova_core::NoContent
+impl sova_core::IntoResponse for sova_core::NoContent
+pub fn sova_core::NoContent::into_response(self) -> sova_core::Response
+impl core::marker::Freeze for sova_core::NoContent
+impl core::marker::Send for sova_core::NoContent
+impl core::marker::Sync for sova_core::NoContent
+impl core::marker::Unpin for sova_core::NoContent
+impl core::marker::UnsafeUnpin for sova_core::NoContent
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::NoContent
+impl core::panic::unwind_safe::UnwindSafe for sova_core::NoContent
+pub struct sova_core::OnUpgrade
+impl sova_core::OnUpgrade
+pub async fn sova_core::OnUpgrade::upgrade(self) -> core::result::Result<(hyper::upgrade::Upgraded, sova_core::UpgradePermit), hyper::error::Error>
+impl core::marker::Freeze for sova_core::OnUpgrade
+impl core::marker::Send for sova_core::OnUpgrade
+impl core::marker::Sync for sova_core::OnUpgrade
+impl core::marker::Unpin for sova_core::OnUpgrade
+impl core::marker::UnsafeUnpin for sova_core::OnUpgrade
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::OnUpgrade
+impl core::panic::unwind_safe::UnwindSafe for sova_core::OnUpgrade
+pub struct sova_core::PluginMeta
+pub sova_core::PluginMeta::author: &'static str
+pub sova_core::PluginMeta::description: &'static str
+pub sova_core::PluginMeta::name: &'static str
+pub sova_core::PluginMeta::sdk: sova_core::PluginSdkVersion
+pub sova_core::PluginMeta::version: &'static str
+impl sova_core::PluginMeta
+pub fn sova_core::PluginMeta::author(self, &'static str) -> Self
+pub fn sova_core::PluginMeta::description(self, &'static str) -> Self
+pub fn sova_core::PluginMeta::for_id(&'static str) -> Self
+pub fn sova_core::PluginMeta::new(&'static str) -> Self
+pub fn sova_core::PluginMeta::sdk(self, sova_core::PluginSdkVersion) -> Self
+pub fn sova_core::PluginMeta::version(self, &'static str) -> Self
+impl core::clone::Clone for sova_core::PluginMeta
+pub fn sova_core::PluginMeta::clone(&self) -> sova_core::PluginMeta
+impl core::fmt::Debug for sova_core::PluginMeta
+pub fn sova_core::PluginMeta::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for sova_core::PluginMeta
+impl core::marker::Send for sova_core::PluginMeta
+impl core::marker::Sync for sova_core::PluginMeta
+impl core::marker::Unpin for sova_core::PluginMeta
+impl core::marker::UnsafeUnpin for sova_core::PluginMeta
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::PluginMeta
+impl core::panic::unwind_safe::UnwindSafe for sova_core::PluginMeta
+pub struct sova_core::PluginSdkVersion
+pub sova_core::PluginSdkVersion::major: u32
+pub sova_core::PluginSdkVersion::minor: u32
+pub sova_core::PluginSdkVersion::patch: u32
+impl sova_core::PluginSdkVersion
+pub const fn sova_core::PluginSdkVersion::new(u32, u32, u32) -> Self
+pub fn sova_core::PluginSdkVersion::parse(&str) -> core::option::Option<Self>
+impl core::clone::Clone for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::clone(&self) -> sova_core::PluginSdkVersion
+impl core::cmp::Eq for sova_core::PluginSdkVersion
+impl core::cmp::Ord for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::cmp(&self, &sova_core::PluginSdkVersion) -> core::cmp::Ordering
+impl core::cmp::PartialEq for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::eq(&self, &sova_core::PluginSdkVersion) -> bool
+impl core::cmp::PartialOrd for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::partial_cmp(&self, &sova_core::PluginSdkVersion) -> core::option::Option<core::cmp::Ordering>
+impl core::fmt::Debug for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for sova_core::PluginSdkVersion
+pub fn sova_core::PluginSdkVersion::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for sova_core::PluginSdkVersion
+impl core::marker::StructuralPartialEq for sova_core::PluginSdkVersion
+impl core::marker::Freeze for sova_core::PluginSdkVersion
+impl core::marker::Send for sova_core::PluginSdkVersion
+impl core::marker::Sync for sova_core::PluginSdkVersion
+impl core::marker::Unpin for sova_core::PluginSdkVersion
+impl core::marker::UnsafeUnpin for sova_core::PluginSdkVersion
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::PluginSdkVersion
+impl core::panic::unwind_safe::UnwindSafe for sova_core::PluginSdkVersion
+pub struct sova_core::Redirect
+impl sova_core::Redirect
+pub fn sova_core::Redirect::permanent(impl core::convert::Into<alloc::string::String>) -> Self
+pub fn sova_core::Redirect::see_other(impl core::convert::Into<alloc::string::String>) -> Self
+pub fn sova_core::Redirect::to(impl core::convert::Into<alloc::string::String>) -> Self
+pub fn sova_core::Redirect::with(u16, impl core::convert::Into<alloc::string::String>) -> Self
+impl sova_core::IntoResponse for sova_core::Redirect
+pub fn sova_core::Redirect::into_response(self) -> sova_core::Response
+impl core::marker::Freeze for sova_core::Redirect
+impl core::marker::Send for sova_core::Redirect
+impl core::marker::Sync for sova_core::Redirect
+impl core::marker::Unpin for sova_core::Redirect
+impl core::marker::UnsafeUnpin for sova_core::Redirect
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::Redirect
+impl core::panic::unwind_safe::UnwindSafe for sova_core::Redirect
+pub struct sova_core::Request
+pub sova_core::Request::headers: http::header::map::HeaderMap
+pub sova_core::Request::method: http::method::Method
+pub sova_core::Request::params: std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String>
+pub sova_core::Request::path: alloc::string::String
+pub sova_core::Request::query: std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String>
+impl sova_core::Request
+pub async fn sova_core::Request::body(&mut self) -> sova_core::Result<bytes::bytes::Bytes>
+pub fn sova_core::Request::body_limit(&self) -> usize
+pub fn sova_core::Request::builder() -> sova_core::extend::RequestBuilder
+pub fn sova_core::Request::content_type(&self) -> core::option::Option<&str>
+pub fn sova_core::Request::deadline_remaining(&self) -> core::option::Option<core::time::Duration>
+pub fn sova_core::Request::get<T: core::marker::Send + core::marker::Sync + 'static>(&self) -> core::option::Option<&T>
+pub fn sova_core::Request::get_mut<T: core::marker::Send + core::marker::Sync + 'static>(&mut self) -> core::option::Option<&mut T>
+pub fn sova_core::Request::header(&self, &str) -> core::option::Option<&str>
+pub fn sova_core::Request::host(&self) -> &str
+pub fn sova_core::Request::into_body_stream(&mut self) -> sova_core::Result<sova_core::extend::HttpBody>
+pub fn sova_core::Request::into_body_stream_as(&mut self, &'static str) -> sova_core::Result<sova_core::extend::HttpBody>
+pub fn sova_core::Request::is_secure(&self) -> bool
+pub async fn sova_core::Request::json<T: serde_core::de::DeserializeOwned>(&mut self) -> sova_core::Result<T>
+pub fn sova_core::Request::new(http::method::Method, impl core::convert::Into<alloc::string::String>) -> Self
+pub fn sova_core::Request::on_upgrade(&mut self) -> core::option::Option<core::result::Result<sova_core::OnUpgrade, sova_core::Response>>
+pub fn sova_core::Request::param(&self, &str) -> core::option::Option<&str>
+pub fn sova_core::Request::param_as<T: core::str::traits::FromStr>(&self, &str) -> sova_core::Result<T> where <T as core::str::traits::FromStr>::Err: core::fmt::Display
+pub fn sova_core::Request::query(&self, &str) -> core::option::Option<&str>
+pub fn sova_core::Request::query_as<T: serde_core::de::DeserializeOwned>(&self) -> sova_core::Result<T>
+pub fn sova_core::Request::raw_query(&self) -> &str
+pub fn sova_core::Request::route_meta<T>(&self) -> core::option::Option<alloc::sync::Arc<T>> where T: sova_core::extend::RouteValue
+pub fn sova_core::Request::scheme(&self) -> &str
+pub fn sova_core::Request::set<T: core::marker::Send + core::marker::Sync + 'static>(&mut self, T)
+pub fn sova_core::Request::state<T>(&self) -> alloc::sync::Arc<T> where T: core::marker::Send + core::marker::Sync + 'static
+pub fn sova_core::Request::state_or_default<T>(&self) -> alloc::sync::Arc<T> where T: core::default::Default + core::marker::Send + core::marker::Sync + 'static
+pub fn sova_core::Request::take<T: core::marker::Send + core::marker::Sync + 'static>(&mut self) -> core::option::Option<T>
+pub async fn sova_core::Request::text(&mut self) -> sova_core::Result<alloc::string::String>
+pub fn sova_core::Request::try_state<T>(&self) -> core::option::Option<alloc::sync::Arc<T>> where T: core::marker::Send + core::marker::Sync + 'static
+pub fn sova_core::Request::url(&self) -> alloc::string::String
+impl sova_core::Request
+pub async fn sova_core::Request::form<T: serde_core::de::DeserializeOwned>(&mut self) -> sova_core::Result<T>
+pub async fn sova_core::Request::input(&mut self) -> sova_core::Result<&sova_core::FormData>
+impl !core::marker::Freeze for sova_core::Request
+impl core::marker::Send for sova_core::Request
+impl core::marker::Sync for sova_core::Request
+impl core::marker::Unpin for sova_core::Request
+impl core::marker::UnsafeUnpin for sova_core::Request
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::Request
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::Request
+pub struct sova_core::Response
+impl sova_core::Response
+pub fn sova_core::Response::attachment(self, &str) -> Self
+pub fn sova_core::Response::body_bytes(&self) -> core::option::Option<&[u8]>
+pub fn sova_core::Response::bytes(impl core::convert::Into<bytes::bytes::Bytes>, &str) -> Self
+pub async fn sova_core::Response::download(impl core::convert::AsRef<std::path::Path>) -> Self
+pub async fn sova_core::Response::download_in(impl core::convert::AsRef<std::path::Path>, impl core::convert::AsRef<std::path::Path>) -> Self
+pub fn sova_core::Response::empty() -> Self
+pub async fn sova_core::Response::file(impl core::convert::AsRef<std::path::Path>) -> Self
+pub async fn sova_core::Response::file_in(impl core::convert::AsRef<std::path::Path>, impl core::convert::AsRef<std::path::Path>) -> Self
+pub fn sova_core::Response::from_reader_stream<S>(S) -> Self where S: futures_core::stream::Stream<Item = core::result::Result<bytes::bytes::Bytes, core::io::error::Error>> + core::marker::Send + core::marker::Sync + 'static
+pub fn sova_core::Response::header(self, impl core::convert::AsRef<str>, impl core::convert::AsRef<str>) -> Self
+pub fn sova_core::Response::headers(&self) -> &http::header::map::HeaderMap
+pub fn sova_core::Response::headers_mut(&mut self) -> &mut http::header::map::HeaderMap
+pub fn sova_core::Response::html(impl core::convert::Into<alloc::string::String>) -> Self
+pub fn sova_core::Response::json<T: serde_core::ser::Serialize>(&T) -> Self
+pub fn sova_core::Response::redirect(impl core::convert::AsRef<str>) -> Self
+pub fn sova_core::Response::set_body(&mut self, impl core::convert::Into<sova_core::extend::Body>)
+pub fn sova_core::Response::sse<S, E>(S) -> Self where S: futures_core::stream::Stream<Item = core::result::Result<alloc::string::String, E>> + core::marker::Send + core::marker::Sync + 'static, E: core::convert::Into<sova_core::extend::BoxError> + core::marker::Send + 'static
+pub fn sova_core::Response::status(self, u16) -> Self
+pub fn sova_core::Response::status_code(&self) -> http::status::StatusCode
+pub fn sova_core::Response::stream(sova_core::extend::ResponseBody) -> Self
+pub fn sova_core::Response::take_body(&mut self) -> sova_core::extend::Body
+pub fn sova_core::Response::text(impl core::convert::Into<alloc::string::String>) -> Self
+impl core::default::Default for sova_core::Response
+pub fn sova_core::Response::default() -> Self
+impl core::fmt::Debug for sova_core::Response
+pub fn sova_core::Response::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl sova_core::IntoResponse for sova_core::Response
+pub fn sova_core::Response::into_response(self) -> sova_core::Response
+impl !core::marker::Freeze for sova_core::Response
+impl core::marker::Send for sova_core::Response
+impl core::marker::Sync for sova_core::Response
+impl core::marker::Unpin for sova_core::Response
+impl core::marker::UnsafeUnpin for sova_core::Response
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::Response
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::Response
+pub struct sova_core::Router
+impl sova_core::Router
+pub fn sova_core::Router::catch<H, T>(&mut self, u16, H) -> &mut Self where H: sova_core::extend::IntoHandler<T>
+pub fn sova_core::Router::delete<H, T>(&mut self, &str, H) -> &mut Self where H: sova_core::extend::IntoHandler<T>
+pub fn sova_core::Router::error_handler<F, Fut>(&mut self, F) -> &mut Self where F: core::ops::function::Fn(sova_core::Error) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = sova_core::Response> + core::marker::Send + 'static
+pub fn sova_core::Router::explain(&self) -> alloc::string::String
+pub fn sova_core::Router::get<H, T>(&mut self, &str, H) -> &mut Self where H: sova_core::extend::IntoHandler<T>
+pub fn sova_core::Router::group<F>(&mut self, &str, F) -> &mut Self where F: core::ops::function::FnOnce(&mut sova_core::Router)
+pub fn sova_core::Router::mount(&mut self, &str, sova_core::Router) -> &mut Self
+pub fn sova_core::Router::new() -> Self
+pub fn sova_core::Router::not_found<H, T>(&mut self, H) -> &mut Self where H: sova_core::extend::IntoHandler<T>
+pub fn sova_core::Router::patch<H, T>(&mut self, &str, H) -> &mut Self where H: sova_core::extend::IntoHandler<T>
+pub fn sova_core::Router::post<H, T>(&mut self, &str, H) -> &mut Self where H: sova_core::extend::IntoHandler<T>
+pub fn sova_core::Router::put<H, T>(&mut self, &str, H) -> &mut Self where H: sova_core::extend::IntoHandler<T>
+pub fn sova_core::Router::raw<H>(&mut self, &str, H) -> &mut Self where H: sova_core::extend::IntoRawHandler
+pub fn sova_core::Router::route_entries(&self) -> alloc::vec::Vec<sova_core::extend::RouteEntry>
+pub fn sova_core::Router::route_meta<T: sova_core::extend::RouteValue>(&mut self, T) -> &mut Self
+pub fn sova_core::Router::route_middleware<M>(&mut self, M) -> &mut Self where M: sova_core::extend::IntoMwEntry
+pub fn sova_core::Router::state<T>(&mut self, T) -> &mut Self where T: core::marker::Send + core::marker::Sync + 'static
+pub fn sova_core::Router::try_state<T>(&self) -> core::option::Option<alloc::sync::Arc<T>> where T: core::marker::Send + core::marker::Sync + 'static
+pub fn sova_core::Router::use_middleware<M>(&mut self, M) -> &mut Self where M: sova_core::extend::IntoMwEntry
+pub fn sova_core::Router::with<T: sova_core::extend::RouteValue>(&mut self, T) -> &mut Self
+pub fn sova_core::Router::with_update<T, F>(&mut self, F) -> &mut Self where T: sova_core::extend::RouteValue + core::clone::Clone + core::default::Default, F: core::ops::function::FnOnce(&mut T)
+impl core::default::Default for sova_core::Router
+pub fn sova_core::Router::default() -> Self
+impl core::marker::Freeze for sova_core::Router
+impl core::marker::Send for sova_core::Router
+impl core::marker::Sync for sova_core::Router
+impl core::marker::Unpin for sova_core::Router
+impl core::marker::UnsafeUnpin for sova_core::Router
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::Router
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::Router
+pub struct sova_core::Server
+impl sova_core::Server
+pub async fn sova_core::Server::handle(&self, sova_core::Request) -> sova_core::Response
+pub async fn sova_core::Server::handle_request(&self, http::method::Method, &str, &str) -> sova_core::Response
+pub fn sova_core::Server::state(&self) -> alloc::sync::Arc<sova_core::extend::StateMap>
+impl core::clone::Clone for sova_core::Server
+pub fn sova_core::Server::clone(&self) -> sova_core::Server
+impl core::marker::Freeze for sova_core::Server
+impl core::marker::Send for sova_core::Server
+impl core::marker::Sync for sova_core::Server
+impl core::marker::Unpin for sova_core::Server
+impl core::marker::UnsafeUnpin for sova_core::Server
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::Server
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::Server
+pub struct sova_core::Shutdown
+impl sova_core::Shutdown
+pub fn sova_core::Shutdown::is_triggered(&self) -> bool
+pub async fn sova_core::Shutdown::recv(&mut self)
+impl core::clone::Clone for sova_core::Shutdown
+pub fn sova_core::Shutdown::clone(&self) -> sova_core::Shutdown
+impl core::fmt::Debug for sova_core::Shutdown
+pub fn sova_core::Shutdown::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for sova_core::Shutdown
+impl core::marker::Send for sova_core::Shutdown
+impl core::marker::Sync for sova_core::Shutdown
+impl core::marker::Unpin for sova_core::Shutdown
+impl core::marker::UnsafeUnpin for sova_core::Shutdown
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::Shutdown
+impl core::panic::unwind_safe::UnwindSafe for sova_core::Shutdown
+pub struct sova_core::Slot<T>
+impl<T> sova_core::Slot<T>
+pub fn sova_core::Slot<T>::new() -> Self
+pub fn sova_core::Slot<T>::put(&self, T)
+pub async fn sova_core::Slot<T>::take(&self) -> T
+pub fn sova_core::Slot<T>::try_take(&self) -> core::option::Option<T>
+impl<T> core::clone::Clone for sova_core::Slot<T>
+pub fn sova_core::Slot<T>::clone(&self) -> Self
+impl<T> core::default::Default for sova_core::Slot<T>
+pub fn sova_core::Slot<T>::default() -> Self
+impl<T> core::marker::Freeze for sova_core::Slot<T>
+impl<T> core::marker::Send for sova_core::Slot<T> where T: core::marker::Send
+impl<T> core::marker::Sync for sova_core::Slot<T> where T: core::marker::Send
+impl<T> core::marker::Unpin for sova_core::Slot<T>
+impl<T> core::marker::UnsafeUnpin for sova_core::Slot<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for sova_core::Slot<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for sova_core::Slot<T>
+pub struct sova_core::TestClient
+impl sova_core::TestClient
+pub fn sova_core::TestClient::delete(&self, impl core::convert::Into<alloc::string::String>) -> sova_core::ClientRequest<'_>
+pub fn sova_core::TestClient::get(&self, impl core::convert::Into<alloc::string::String>) -> sova_core::ClientRequest<'_>
+pub fn sova_core::TestClient::new(sova_core::App) -> sova_core::Result<Self>
+pub fn sova_core::TestClient::patch(&self, impl core::convert::Into<alloc::string::String>) -> sova_core::ClientRequest<'_>
+pub fn sova_core::TestClient::post(&self, impl core::convert::Into<alloc::string::String>) -> sova_core::ClientRequest<'_>
+pub fn sova_core::TestClient::put(&self, impl core::convert::Into<alloc::string::String>) -> sova_core::ClientRequest<'_>
+pub fn sova_core::TestClient::server(&self) -> &sova_core::Server
+pub fn sova_core::TestClient::tracked(sova_core::App) -> sova_core::Result<Self>
+impl !core::marker::Freeze for sova_core::TestClient
+impl core::marker::Send for sova_core::TestClient
+impl core::marker::Sync for sova_core::TestClient
+impl core::marker::Unpin for sova_core::TestClient
+impl core::marker::UnsafeUnpin for sova_core::TestClient
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::TestClient
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::TestClient
+pub struct sova_core::Text<T>(pub T)
+impl<T: core::convert::Into<alloc::string::String>> sova_core::IntoResponse for sova_core::Text<T>
+pub fn sova_core::Text<T>::into_response(self) -> sova_core::Response
+impl<T> core::marker::Freeze for sova_core::Text<T> where T: core::marker::Freeze
+impl<T> core::marker::Send for sova_core::Text<T> where T: core::marker::Send
+impl<T> core::marker::Sync for sova_core::Text<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for sova_core::Text<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for sova_core::Text<T> where T: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for sova_core::Text<T> where T: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for sova_core::Text<T> where T: core::panic::unwind_safe::UnwindSafe
+pub struct sova_core::Tls
+impl sova_core::Tls
+pub fn sova_core::Tls::build_https_server_config(&self, alloc::vec::Vec<alloc::vec::Vec<u8>>) -> rustls::server::server_conn::ServerConfig
+pub fn sova_core::Tls::build_quic_server_config(&self, alloc::vec::Vec<alloc::vec::Vec<u8>>) -> rustls::server::server_conn::ServerConfig
+pub fn sova_core::Tls::from_pem(impl core::convert::AsRef<std::path::Path>, impl core::convert::AsRef<std::path::Path>) -> sova_core::Result<Self>
+pub fn sova_core::Tls::handshake_timeout(self, core::time::Duration) -> Self
+pub fn sova_core::Tls::hsts(self, bool) -> Self
+pub fn sova_core::Tls::redirect_http(self, u16) -> Self
+pub fn sova_core::Tls::reload(&self) -> sova_core::Result<()>
+pub fn sova_core::Tls::resolver(&self) -> alloc::sync::Arc<dyn rustls::server::server_conn::ResolvesServerCert>
+pub fn sova_core::Tls::self_signed(&[&str]) -> sova_core::Result<Self>
+impl core::clone::Clone for sova_core::Tls
+pub fn sova_core::Tls::clone(&self) -> sova_core::Tls
+impl core::marker::Freeze for sova_core::Tls
+impl core::marker::Send for sova_core::Tls
+impl core::marker::Sync for sova_core::Tls
+impl core::marker::Unpin for sova_core::Tls
+impl core::marker::UnsafeUnpin for sova_core::Tls
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_core::Tls
+impl !core::panic::unwind_safe::UnwindSafe for sova_core::Tls
+pub struct sova_core::UpgradePermit(_)
+impl core::marker::Freeze for sova_core::UpgradePermit
+impl core::marker::Send for sova_core::UpgradePermit
+impl core::marker::Sync for sova_core::UpgradePermit
+impl core::marker::Unpin for sova_core::UpgradePermit
+impl core::marker::UnsafeUnpin for sova_core::UpgradePermit
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::UpgradePermit
+impl core::panic::unwind_safe::UnwindSafe for sova_core::UpgradePermit
+pub struct sova_core::Upload
+pub sova_core::Upload::content_type: core::option::Option<alloc::string::String>
+pub sova_core::Upload::data: bytes::bytes::Bytes
+pub sova_core::Upload::field: alloc::string::String
+pub sova_core::Upload::filename: core::option::Option<alloc::string::String>
+impl sova_core::Upload
+pub async fn sova_core::Upload::save(&self, impl core::convert::AsRef<std::path::Path>) -> sova_core::Result<()>
+pub async fn sova_core::Upload::save_in(&self, impl core::convert::AsRef<std::path::Path>, &str) -> sova_core::Result<std::path::PathBuf>
+pub fn sova_core::Upload::suggested_name(&self) -> &str
+impl core::clone::Clone for sova_core::Upload
+pub fn sova_core::Upload::clone(&self) -> sova_core::Upload
+impl core::fmt::Debug for sova_core::Upload
+pub fn sova_core::Upload::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl !core::marker::Freeze for sova_core::Upload
+impl core::marker::Send for sova_core::Upload
+impl core::marker::Sync for sova_core::Upload
+impl core::marker::Unpin for sova_core::Upload
+impl core::marker::UnsafeUnpin for sova_core::Upload
+impl core::panic::unwind_safe::RefUnwindSafe for sova_core::Upload
+impl core::panic::unwind_safe::UnwindSafe for sova_core::Upload
+pub const sova_core::PLUGIN_SDK_VERSION: sova_core::PluginSdkVersion
+pub trait sova_core::BackgroundService: core::marker::Send
+pub fn sova_core::BackgroundService::name(&self) -> &str
+pub fn sova_core::BackgroundService::run(alloc::boxed::Box<Self>, alloc::sync::Arc<sova_core::extend::StateMap>, sova_core::Shutdown) -> sova_core::extend::BoxFuture<()>
+pub trait sova_core::IntoResponse
+pub fn sova_core::IntoResponse::into_response(self) -> sova_core::Response
+impl sova_core::IntoResponse for &str
+pub fn &str::into_response(self) -> sova_core::Response
+impl sova_core::IntoResponse for ()
+pub fn ()::into_response(self) -> sova_core::Response
+impl sova_core::IntoResponse for alloc::string::String
+pub fn alloc::string::String::into_response(self) -> sova_core::Response
+impl sova_core::IntoResponse for sova_core::Error
+pub fn sova_core::Error::into_response(self) -> sova_core::Response
+impl sova_core::IntoResponse for sova_core::NoContent
+pub fn sova_core::NoContent::into_response(self) -> sova_core::Response
+impl sova_core::IntoResponse for sova_core::Redirect
+pub fn sova_core::Redirect::into_response(self) -> sova_core::Response
+impl sova_core::IntoResponse for sova_core::Response
+pub fn sova_core::Response::into_response(self) -> sova_core::Response
+impl<T: core::convert::Into<alloc::string::String>> sova_core::IntoResponse for sova_core::Html<T>
+pub fn sova_core::Html<T>::into_response(self) -> sova_core::Response
+impl<T: core::convert::Into<alloc::string::String>> sova_core::IntoResponse for sova_core::Text<T>
+pub fn sova_core::Text<T>::into_response(self) -> sova_core::Response
+impl<T: sova_core::IntoResponse> sova_core::IntoResponse for (u16, T)
+pub fn (u16, T)::into_response(self) -> sova_core::Response
+impl<T: sova_core::IntoResponse> sova_core::IntoResponse for core::option::Option<T>
+pub fn core::option::Option<T>::into_response(self) -> sova_core::Response
+impl<T: serde_core::ser::Serialize> sova_core::IntoResponse for sova_core::Json<T>
+pub fn sova_core::Json<T>::into_response(self) -> sova_core::Response
+pub trait sova_core::Plugin
+pub fn sova_core::Plugin::id(&self) -> &'static str
+pub fn sova_core::Plugin::install(self, &mut sova_core::App)
+pub fn sova_core::Plugin::meta(&self) -> sova_core::PluginMeta
+pub fn sova_core::Plugin::requires(&self) -> &'static [&'static str]
+impl<F> sova_core::Plugin for F where F: core::ops::function::FnOnce(&mut sova_core::App)
+pub fn F::id(&self) -> &'static str
+pub fn F::install(self, &mut sova_core::App)
+pub fn F::meta(&self) -> sova_core::PluginMeta
+pub fn F::requires(&self) -> &'static [&'static str]
+pub fn sova_core::check_plugin_sdk(sova_core::PluginSdkVersion, sova_core::PluginSdkVersion) -> sova_core::SdkCompat
+pub fn sova_core::logger() -> sova_core::extend::Middleware
+pub fn sova_core::parse_log_rotate(&str, core::option::Option<&str>, core::option::Option<usize>) -> core::result::Result<sova_core::LogRotate, alloc::string::String>
+pub fn sova_core::with_state<S, F, Fut>(S, F) -> sova_core::extend::Middleware where S: core::marker::Send + core::marker::Sync + 'static, F: core::ops::function::Fn(alloc::sync::Arc<S>, sova_core::Request, sova_core::Next) -> Fut + core::marker::Send + core::marker::Sync + 'static, Fut: core::future::future::Future<Output = sova_core::Response> + core::marker::Send + 'static
+pub type sova_core::Next = alloc::boxed::Box<(dyn core::ops::function::FnOnce(sova_core::Request) -> sova_core::extend::BoxFuture<sova_core::Response> + core::marker::Send)>
+pub type sova_core::Result<T> = core::result::Result<T, sova_core::Error>

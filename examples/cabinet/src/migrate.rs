@@ -1,6 +1,6 @@
 //! Cabinet migrator: Fortify auth + activity + notifications + notes.
 
-use ruvo::{
+use sova::{
     ActivityMigrator, AuthMigrator, MigrationTrait, MigratorTrait, NotificationsMigrator,
 };
 

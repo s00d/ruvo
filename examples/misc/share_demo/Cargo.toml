@@ -9,7 +9,7 @@ name = "share_demo"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true }
+sova = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "net", "io-util"] }
 serde_json = { workspace = true }
 tracing = { workspace = true }

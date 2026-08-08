@@ -5,15 +5,15 @@ editLink: false
 
 # `openapi`
 
-**OpenAPI 3.1 document + Scalar UI at mount path** · crate `ruvo-openapi` · id `openapi`
+**OpenAPI 3.1 document + Scalar UI at mount path** · crate `sova-openapi` · id `openapi`
 
 ```bash
-cargo add ruvo --features openapi
+cargo add sova --features openapi
 ```
 
 | Feature | What you get |
 |---------|-------------|
-| `openapi` | OpenAPI 3.1 + Scalar UI (`ruvo-openapi`). |
+| `openapi` | OpenAPI 3.1 + Scalar UI (`sova-openapi`). |
 
 OpenAPI 3.1 document building and Scalar docs UI.
 
@@ -24,9 +24,9 @@ OpenAPI 3.1 document building and Scalar docs UI.
 **`App::api()`** already mounts OpenAPI + Scalar at `/docs`. Your job is schemas + `.doc(...)` on routes — not `OpenApi::new(...)`.
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::vld;
-use ruvo::{
+use sova::prelude::*;
+use sova::vld;
+use sova::{
     doc_schema, Doc, DocVldExt, Json, OpenApiDocExt, Parser, Request, ServerArgs,
     ValidationError, ValidationExt,
 };
@@ -57,7 +57,7 @@ async fn main() -> Result<()> {
 ```rust
 // modules/mod.rs
 use crate::CreateUser;
-use ruvo::{
+use sova::{
     App, Doc, DocVldExt, Json, OpenApiDocExt, Request, ValidationError, ValidationExt,
 };
 

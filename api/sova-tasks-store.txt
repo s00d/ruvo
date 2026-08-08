@@ -1,0 +1,112 @@
+pub mod sova_tasks_store
+pub mod sova_tasks_store::conformance
+pub async fn sova_tasks_store::conformance::run(alloc::sync::Arc<dyn sova_tasks_store::TaskStore>)
+pub enum sova_tasks_store::TaskError
+pub sova_tasks_store::TaskError::Duplicate
+pub sova_tasks_store::TaskError::Msg(alloc::string::String)
+pub sova_tasks_store::TaskError::NotFound
+impl core::error::Error for sova_tasks_store::TaskError
+impl core::fmt::Debug for sova_tasks_store::TaskError
+pub fn sova_tasks_store::TaskError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for sova_tasks_store::TaskError
+pub fn sova_tasks_store::TaskError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for sova_tasks_store::TaskError
+impl core::marker::Send for sova_tasks_store::TaskError
+impl core::marker::Sync for sova_tasks_store::TaskError
+impl core::marker::Unpin for sova_tasks_store::TaskError
+impl core::marker::UnsafeUnpin for sova_tasks_store::TaskError
+impl core::panic::unwind_safe::RefUnwindSafe for sova_tasks_store::TaskError
+impl core::panic::unwind_safe::UnwindSafe for sova_tasks_store::TaskError
+pub enum sova_tasks_store::TaskStatus
+pub sova_tasks_store::TaskStatus::Done
+pub sova_tasks_store::TaskStatus::Failed
+pub sova_tasks_store::TaskStatus::Pending
+pub sova_tasks_store::TaskStatus::Running
+impl core::clone::Clone for sova_tasks_store::TaskStatus
+pub fn sova_tasks_store::TaskStatus::clone(&self) -> sova_tasks_store::TaskStatus
+impl core::cmp::Eq for sova_tasks_store::TaskStatus
+impl core::cmp::PartialEq for sova_tasks_store::TaskStatus
+pub fn sova_tasks_store::TaskStatus::eq(&self, &sova_tasks_store::TaskStatus) -> bool
+impl core::fmt::Debug for sova_tasks_store::TaskStatus
+pub fn sova_tasks_store::TaskStatus::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for sova_tasks_store::TaskStatus
+impl core::marker::StructuralPartialEq for sova_tasks_store::TaskStatus
+impl core::marker::Freeze for sova_tasks_store::TaskStatus
+impl core::marker::Send for sova_tasks_store::TaskStatus
+impl core::marker::Sync for sova_tasks_store::TaskStatus
+impl core::marker::Unpin for sova_tasks_store::TaskStatus
+impl core::marker::UnsafeUnpin for sova_tasks_store::TaskStatus
+impl core::panic::unwind_safe::RefUnwindSafe for sova_tasks_store::TaskStatus
+impl core::panic::unwind_safe::UnwindSafe for sova_tasks_store::TaskStatus
+pub struct sova_tasks_store::EnqueueOpts
+pub sova_tasks_store::EnqueueOpts::dedup_key: core::option::Option<alloc::string::String>
+pub sova_tasks_store::EnqueueOpts::payload: bytes::bytes::Bytes
+pub sova_tasks_store::EnqueueOpts::queue: alloc::string::String
+pub sova_tasks_store::EnqueueOpts::run_at: core::option::Option<std::time::SystemTime>
+impl !core::marker::Freeze for sova_tasks_store::EnqueueOpts
+impl core::marker::Send for sova_tasks_store::EnqueueOpts
+impl core::marker::Sync for sova_tasks_store::EnqueueOpts
+impl core::marker::Unpin for sova_tasks_store::EnqueueOpts
+impl core::marker::UnsafeUnpin for sova_tasks_store::EnqueueOpts
+impl core::panic::unwind_safe::RefUnwindSafe for sova_tasks_store::EnqueueOpts
+impl core::panic::unwind_safe::UnwindSafe for sova_tasks_store::EnqueueOpts
+pub struct sova_tasks_store::MemoryStore
+impl sova_tasks_store::MemoryStore
+pub fn sova_tasks_store::MemoryStore::new() -> Self
+impl core::clone::Clone for sova_tasks_store::MemoryStore
+pub fn sova_tasks_store::MemoryStore::clone(&self) -> sova_tasks_store::MemoryStore
+impl core::default::Default for sova_tasks_store::MemoryStore
+pub fn sova_tasks_store::MemoryStore::default() -> sova_tasks_store::MemoryStore
+impl sova_tasks_store::TaskStore for sova_tasks_store::MemoryStore
+pub fn sova_tasks_store::MemoryStore::claim<'a>(&'a self, &'a str, &'a str, core::time::Duration, usize) -> sova_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<sova_tasks_store::Task>, sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::complete<'a>(&'a self, &'a str) -> sova_tasks_store::BoxFuture<'a, core::result::Result<(), sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::enqueue<'a>(&'a self, sova_tasks_store::EnqueueOpts) -> sova_tasks_store::BoxFuture<'a, core::result::Result<alloc::string::String, sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::fail<'a>(&'a self, &'a str, core::option::Option<std::time::SystemTime>) -> sova_tasks_store::BoxFuture<'a, core::result::Result<(), sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::heartbeat<'a>(&'a self, &'a str, core::time::Duration) -> sova_tasks_store::BoxFuture<'a, core::result::Result<(), sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::list<'a>(&'a self, &'a str, usize) -> sova_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<sova_tasks_store::Task>, sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::reap<'a>(&'a self, std::time::SystemTime) -> sova_tasks_store::BoxFuture<'a, core::result::Result<u64, sova_tasks_store::TaskError>>
+impl core::marker::Freeze for sova_tasks_store::MemoryStore
+impl core::marker::Send for sova_tasks_store::MemoryStore
+impl core::marker::Sync for sova_tasks_store::MemoryStore
+impl core::marker::Unpin for sova_tasks_store::MemoryStore
+impl core::marker::UnsafeUnpin for sova_tasks_store::MemoryStore
+impl !core::panic::unwind_safe::RefUnwindSafe for sova_tasks_store::MemoryStore
+impl !core::panic::unwind_safe::UnwindSafe for sova_tasks_store::MemoryStore
+pub struct sova_tasks_store::Task
+pub sova_tasks_store::Task::attempts: u32
+pub sova_tasks_store::Task::dedup_key: core::option::Option<alloc::string::String>
+pub sova_tasks_store::Task::id: alloc::string::String
+pub sova_tasks_store::Task::lease_until: core::option::Option<std::time::SystemTime>
+pub sova_tasks_store::Task::payload: bytes::bytes::Bytes
+pub sova_tasks_store::Task::queue: alloc::string::String
+pub sova_tasks_store::Task::run_at: std::time::SystemTime
+pub sova_tasks_store::Task::status: sova_tasks_store::TaskStatus
+pub sova_tasks_store::Task::worker: core::option::Option<alloc::string::String>
+impl core::clone::Clone for sova_tasks_store::Task
+pub fn sova_tasks_store::Task::clone(&self) -> sova_tasks_store::Task
+impl core::fmt::Debug for sova_tasks_store::Task
+pub fn sova_tasks_store::Task::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl !core::marker::Freeze for sova_tasks_store::Task
+impl core::marker::Send for sova_tasks_store::Task
+impl core::marker::Sync for sova_tasks_store::Task
+impl core::marker::Unpin for sova_tasks_store::Task
+impl core::marker::UnsafeUnpin for sova_tasks_store::Task
+impl core::panic::unwind_safe::RefUnwindSafe for sova_tasks_store::Task
+impl core::panic::unwind_safe::UnwindSafe for sova_tasks_store::Task
+pub trait sova_tasks_store::TaskStore: core::marker::Send + core::marker::Sync + 'static
+pub fn sova_tasks_store::TaskStore::claim<'a>(&'a self, &'a str, &'a str, core::time::Duration, usize) -> sova_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<sova_tasks_store::Task>, sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::TaskStore::complete<'a>(&'a self, &'a str) -> sova_tasks_store::BoxFuture<'a, core::result::Result<(), sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::TaskStore::enqueue<'a>(&'a self, sova_tasks_store::EnqueueOpts) -> sova_tasks_store::BoxFuture<'a, core::result::Result<alloc::string::String, sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::TaskStore::fail<'a>(&'a self, &'a str, core::option::Option<std::time::SystemTime>) -> sova_tasks_store::BoxFuture<'a, core::result::Result<(), sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::TaskStore::heartbeat<'a>(&'a self, &'a str, core::time::Duration) -> sova_tasks_store::BoxFuture<'a, core::result::Result<(), sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::TaskStore::list<'a>(&'a self, &'a str, usize) -> sova_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<sova_tasks_store::Task>, sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::TaskStore::reap<'a>(&'a self, std::time::SystemTime) -> sova_tasks_store::BoxFuture<'a, core::result::Result<u64, sova_tasks_store::TaskError>>
+impl sova_tasks_store::TaskStore for sova_tasks_store::MemoryStore
+pub fn sova_tasks_store::MemoryStore::claim<'a>(&'a self, &'a str, &'a str, core::time::Duration, usize) -> sova_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<sova_tasks_store::Task>, sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::complete<'a>(&'a self, &'a str) -> sova_tasks_store::BoxFuture<'a, core::result::Result<(), sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::enqueue<'a>(&'a self, sova_tasks_store::EnqueueOpts) -> sova_tasks_store::BoxFuture<'a, core::result::Result<alloc::string::String, sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::fail<'a>(&'a self, &'a str, core::option::Option<std::time::SystemTime>) -> sova_tasks_store::BoxFuture<'a, core::result::Result<(), sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::heartbeat<'a>(&'a self, &'a str, core::time::Duration) -> sova_tasks_store::BoxFuture<'a, core::result::Result<(), sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::list<'a>(&'a self, &'a str, usize) -> sova_tasks_store::BoxFuture<'a, core::result::Result<alloc::vec::Vec<sova_tasks_store::Task>, sova_tasks_store::TaskError>>
+pub fn sova_tasks_store::MemoryStore::reap<'a>(&'a self, std::time::SystemTime) -> sova_tasks_store::BoxFuture<'a, core::result::Result<u64, sova_tasks_store::TaskError>>
+pub type sova_tasks_store::BoxFuture<'a, T> = core::pin::Pin<alloc::boxed::Box<(dyn core::future::future::Future<Output = T> + core::marker::Send + 'a)>>

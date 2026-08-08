@@ -1,5 +1,5 @@
 {
-  "nav.brand": "Ruvo Cabinet",
+  "nav.brand": "Sova Cabinet",
   "nav.home": "Home",
   "nav.cabinet": "Cabinet",
   "nav.notes": "Notes",
@@ -9,11 +9,11 @@
   "nav.login": "Log in",
   "nav.register": "Register",
   "nav.logout": "Log out",
-  "footer.plugins": "Demo of Ruvo web plugins — Fortify auth, session, Postgres identity + shared SQL store…",
+  "footer.plugins": "Demo of Sova web plugins — Fortify auth, session, Postgres identity + shared SQL store…",
   "home.title": "Your stack, one cabinet",
   "home.lead": "Fortify auth, notes, uploads, background jobs, and API docs.",
   "home.hello": "Signed in as",
-  "home.demo": "Try demo@ruvo.local / demo1234",
+  "home.demo": "Try demo@sova.local / demo1234",
   "auth.login": "Log in",
   "auth.register": "Create account",
   "auth.email": "Email",
@@ -75,6 +75,6 @@
   "live.help": "WebSocket echo room for this cabinet.",
   "live.send": "Send",
   "fetch.title": "Outbound HTTP",
-  "fetch.help": "Uses ruvo-http with SSRF guards — try https://example.com",
+  "fetch.help": "Uses sova_http with SSRF guards — try https://example.com",
   "fetch.go": "Fetch"
 }

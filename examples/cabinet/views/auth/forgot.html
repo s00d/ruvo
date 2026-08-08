@@ -19,7 +19,7 @@
 {% endblock %}
 {% block scripts %}
 <script>
-RuvoAuth.mount("#vue-auth", {
+SovaAuth.mount("#vue-auth", {
   data() {
     return { error: "", busy: false };
   },
@@ -29,10 +29,10 @@ RuvoAuth.mount("#vue-auth", {
       this.busy = true;
       this.error = "";
       try {
-        await RuvoAuth.api.post("/forgot-password", RuvoAuth.formFields(e.target));
+        await SovaAuth.api.post("/forgot-password", SovaAuth.formFields(e.target));
         location.href = "/forgot-password?sent=1";
       } catch (err) {
-        this.error = RuvoAuth.errorMessage(err);
+        this.error = SovaAuth.errorMessage(err);
         this.busy = false;
       }
     },

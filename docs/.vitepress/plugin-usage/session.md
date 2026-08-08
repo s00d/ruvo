@@ -1,8 +1,8 @@
 Cookie sessions are part of **`App::web()`** and **`App::api()`** (`memory_sessions`). Read/write in handlers — do not reinstall the layer unless you need SQL/Redis:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Html, Parser, Redirect, Request, ServerArgs, SessionExt};
+use sova::prelude::*;
+use sova::{Html, Parser, Redirect, Request, ServerArgs, SessionExt};
 
 #[tokio::main]
 async fn main() -> Result<()> {

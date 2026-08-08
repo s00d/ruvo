@@ -1,14 +1,14 @@
-//! Ruvo kitchen-sink demo: Fortify auth, cabinet, notes, most web plugins.
+//! Sova kitchen-sink demo: Fortify auth, cabinet, notes, most web plugins.
 //!
 //! ```bash
-//! export DATABASE_URL=postgres://postgres@localhost/ruvo
+//! export DATABASE_URL=postgres://postgres@localhost/sova
 //! cargo run -p cabinet -- migrate
 //! cargo run -p cabinet -- seed
 //! cargo run -p cabinet
-//! # http://127.0.0.1:3000  demo@ruvo.local / demo1234
+//! # http://127.0.0.1:3000  demo@sova.local / demo1234
 //! ```
 //!
-//! Or via tooling: `cargo ruvo db migrate -p cabinet` / `cargo ruvo db seed -p cabinet`.
+//! Or via tooling: `cargo sova db migrate -p cabinet` / `cargo sova db seed -p cabinet`.
 
 mod db;
 mod entity;
@@ -18,7 +18,7 @@ mod seed;
 mod state;
 
 use migrate::CabinetMigrator;
-use ruvo::{
+use sova::{
     bearer_guard, logger, namespace, priority, store, tasks, with_flash, Activity, App,
     AuthFeature, Channel, Compress, Cors, Csrf, Db, DbPool, Dispatch, Fortify, I18n, Job,
     Locale, Mail, Meta, Notifications, OpenApi, OutboundHttp, Parser, RateLimit,
@@ -31,7 +31,7 @@ use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let _ = ruvo::ruvo_env::load();
+    let _ = sova::sova_env::load();
     let args = ServerArgs::parse();
     args.init_tracing();
 
@@ -42,8 +42,8 @@ async fn main() -> Result<()> {
         std::env::var("TASKS_BEARER").unwrap_or_else(|_| "cabinet-dev-secret".into());
 
     let mut app = App::new();
-    // Kitchen-sink lives under examples/cabinet — load its ruvo.toml explicitly.
-    let _ = app.configure_from_path(root.join("ruvo.toml"));
+    // Kitchen-sink lives under examples/cabinet — load its sova.toml explicitly.
+    let _ = app.configure_from_path(root.join("sova.toml"));
     app.use_middleware(request_id());
     app.install(Observability::new());
     app.use_middleware(logger());
@@ -64,15 +64,15 @@ async fn main() -> Result<()> {
     app.install(Cors::new());
     app.install(Shield::new());
     app.install(Compress::new());
-    app.install(SharedStore::new(Arc::clone(&kv) as Arc<dyn ruvo::KvStore>));
-    app.install(SessionLayer::from_store(Arc::new(ruvo::SqlSessionStore::from_db_pool(
+    app.install(SharedStore::new(Arc::clone(&kv) as Arc<dyn sova::KvStore>));
+    app.install(SessionLayer::from_store(Arc::new(sova::SqlSessionStore::from_db_pool(
         &db_pool,
     ))));
     // Session cookie auth: CSRF on forms + /api/auth; except tasks API.
     app.install(Csrf::new().except("/_tasks/*"));
     app.install(
         RateLimit::fixed_window(
-            Arc::new(namespace(Arc::clone(&kv) as Arc<dyn ruvo::KvStore>, "rl")),
+            Arc::new(namespace(Arc::clone(&kv) as Arc<dyn sova::KvStore>, "rl")),
             120,
             Duration::from_secs(60),
         )
@@ -80,7 +80,7 @@ async fn main() -> Result<()> {
     );
 
     app.install(Static::new("/assets", root.join("public")));
-    // path/public_url also in ruvo.toml [storage]; local root stays code (absolute).
+    // path/public_url also in sova.toml [storage]; local root stays code (absolute).
     app.install(Storage::local(root.join("public").join("uploads")));
 
     let locales = root.join("locales");
@@ -100,11 +100,11 @@ async fn main() -> Result<()> {
 
     let views = root.join("views");
     let templates = with_flash(
-        Templates::minijinja(&views).per_request("t", ruvo::template_fn),
+        Templates::minijinja(&views).per_request("t", sova::template_fn),
     );
     app.install(templates);
 
-    // site_name / title_template / public_url from [meta] in ruvo.toml (unset-fill).
+    // site_name / title_template / public_url from [meta] in sova.toml (unset-fill).
     app.install(Meta::new().public_url(&public_url));
     app.install(
         Sitemap::new()
@@ -185,13 +185,13 @@ async fn main() -> Result<()> {
         Fortify::new()
             .features(AuthFeature::all().iter().copied())
             .public_url(&public_url)
-            .app_name("Ruvo Cabinet")
+            .app_name("Sova Cabinet")
             .home("/cabinet")
             .login_redirect("/login")
             .profile_path("/cabinet/profile")
             .api_mount("/api/auth")
             .after_register(|user, req| async move {
-                if let Some(tasks) = req.try_state::<ruvo::TaskBackend>() {
+                if let Some(tasks) = req.try_state::<sova::TaskBackend>() {
                     let _ = tasks
                         .dispatch(
                             Dispatch::new("welcome_email")
@@ -224,6 +224,6 @@ async fn main() -> Result<()> {
     modules::register(&mut app);
     app.with_probes();
 
-    tracing::info!("cabinet demo — open {public_url} (after migrate+seed: demo@ruvo.local / demo1234)");
+    tracing::info!("cabinet demo — open {public_url} (after migrate+seed: demo@sova.local / demo1234)");
     app.run().await
 }

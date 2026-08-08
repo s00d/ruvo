@@ -1,8 +1,8 @@
 Install Ws on the **web preset**, keep modules/static/meta from the stack:
 
 ```rust
-use ruvo::prelude::*;
-use ruvo::{Html, Message, Parser, ServerArgs, Ws, WsRouteExt};
+use sova::prelude::*;
+use sova::{Html, Message, Parser, ServerArgs, Ws, WsRouteExt};
 
 #[tokio::main]
 async fn main() -> Result<()> {

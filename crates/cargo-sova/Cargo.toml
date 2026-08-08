@@ -1,0 +1,17 @@
+[package]
+name = "cargo-sova"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "cargo-sova"
+path = "src/main.rs"
+
+[dependencies]
+clap = { workspace = true, features = ["derive"] }
+include_dir = { workspace = true }
+notify = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+toml = { workspace = true }
+ctrlc = { workspace = true }

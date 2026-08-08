@@ -2,14 +2,14 @@
 
 ![Concepts](/banners/concepts.svg)
 
-Ruvo is a small Express-like HTTP framework: `ruvo-core` owns the request path; plugins add optional middleware and helpers.
+Sova is a small Express-like HTTP framework: `sova-core` owns the request path; plugins add optional middleware and helpers.
 
 ## Request path
 
 ```text
 accept
   → server/conn (semaphore, JoinSet, hyper auto HTTP/1.1+HTTP/2 + with_upgrades)
-  → to_ruvo_request (+ optional OnUpgrade)
+  → to_sova_request (+ optional OnUpgrade)
   → CompiledRouter::dispatch
   → root middleware (onion)  // request_id → Observability → logger → …
   → matchit route match (+ MatchedRoute / MatchedRouteCapture)
@@ -39,7 +39,7 @@ app.use_middleware(|req: Request, next: Next| async move {
 |-------|-----|
 | Whole app | `app.use_middleware(...)` |
 | Mount / group | `router.use_middleware(...)` then `app.mount("/x", router)` |
-| Explain label | `ruvo::extend::named("auth", mw)` |
+| Explain label | `sova::extend::named("auth", mw)` |
 | Shared state | `with_state(S, …)` / `extend::with_leaked` |
 
 Short-circuit by **not** calling `next` (return `401` / redirect). Pass data to handlers with `req.set(T)` / `req.get::<T>()`.
@@ -89,7 +89,7 @@ App-author patterns (routes, validate, auth): [Getting started](/guide/getting-s
 
 ## Ownership
 
-- **ruvo-core** — App/Router/Server, dispatch, listen/drain
+- **sova-core** — App/Router/Server, dispatch, listen/drain
 - **plugins** — optional features; core does not depend on plugins
 - **KvStore** is not in core — wire via `app.state(...)`
 
@@ -106,12 +106,12 @@ See `examples/misc/share_demo`.
 
 | Control | Default |
 |---------|---------|
-| `RUST_LOG` | `ruvo=info` |
-| `RUVO_LOG=off` | skip install |
-| `RUVO_LOG_STDOUT` | `1` |
-| `RUVO_LOG_FILE` | unset |
-| `RUVO_LOG_ROTATE` | `size` |
+| `RUST_LOG` | `sova=info` |
+| `SOVA_LOG=off` | skip install |
+| `SOVA_LOG_STDOUT` | `1` |
+| `SOVA_LOG_FILE` | unset |
+| `SOVA_LOG_ROTATE` | `size` |
 
 ## Stability
 
-Pre-1.0: breaking changes without a major bump. `ruvo` **0.1** tracks `ruvo-core` **0.1**.
+Pre-1.0: breaking changes without a major bump. `sova` **0.1** tracks `sova-core` **0.1**.

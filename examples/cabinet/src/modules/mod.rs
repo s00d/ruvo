@@ -7,7 +7,7 @@ mod notes;
 mod upload;
 mod ws;
 
-use ruvo::{preload_unread, App, Fortify, Next, Request, Router};
+use sova::{preload_unread, App, Fortify, Next, Request, Router};
 
 pub fn register(app: &mut App) {
     home::register(app);

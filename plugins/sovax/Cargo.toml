@@ -1,0 +1,19 @@
+[package]
+name = "sovax"
+version = "0.1.0"
+edition = "2021"
+description = "CLI ServerArgs / listen_args for Sova (local dev)"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sovax"
+keywords = ["http", "web", "framework", "async", "cli"]
+categories = ["web-programming::http-server", "command-line-interface"]
+
+[dependencies]
+sova-core = { workspace = true }
+clap = { workspace = true, features = ["derive", "env"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+clap = { workspace = true, features = ["derive", "env"] }

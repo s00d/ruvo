@@ -9,7 +9,7 @@ name = "api_auth"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["passport"] }
+sova = { workspace = true, features = ["passport"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde = { workspace = true, features = ["derive"] }
 tracing = { workspace = true }

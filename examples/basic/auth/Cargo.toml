@@ -9,6 +9,6 @@ name = "auth"
 path = "src/main.rs"
 
 [dependencies]
-ruvo = { workspace = true, features = ["session", "cookies"] }
+sova = { workspace = true, features = ["session", "cookies"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }

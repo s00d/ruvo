@@ -1,0 +1,169 @@
+[package]
+name = "sova"
+version = "0.1.0"
+edition = "2021"
+description = "Express-like HTTP framework for Rust"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova"
+readme = "../../README.md"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[features]
+default = ["static-files"]
+static-files = ["dep:sova-static"]
+cors = ["dep:sova-cors"]
+csrf = ["session", "dep:sova-csrf"]
+shield = ["dep:sova-shield"]
+cookies = ["dep:sova-cookies"]
+compress = ["dep:sova-compress"]
+rate-limit = ["dep:sova-rate-limit"]
+session = ["cookies", "dep:sova-session"]
+session-sql = ["session", "store-sql", "sova-session/sql"]
+session-redis = ["session", "redis", "sova-session/redis"]
+templates = ["dep:sova-templates", "sova-i18n?/templates"]
+multipart = ["sova-core/multipart"]
+cli = ["dep:sovax"]
+vld = ["dep:sova-vld", "dep:vld"]
+openapi = ["dep:sova-openapi"]
+i18n = ["dep:sova-i18n"]
+i18n-cookie = ["i18n", "cookies", "sova-i18n/cookie"]
+ws = ["dep:sova-ws"]
+store = ["dep:sova-store"]
+store-file = ["store", "sova-store/file"]
+store-sql = ["store", "db", "sova-store/sql"]
+store-redis = ["store", "redis", "sova-store/redis"]
+tasks-store = ["dep:sova-tasks-store"]
+tasks-file = ["tasks-store", "sova-tasks-store/file"]
+tasks-sql = ["tasks-store", "db", "sova-tasks-store/sql"]
+tasks-redis = ["tasks-store", "redis", "sova-tasks-store/redis"]
+tasks = ["tasks-store", "dep:sova-tasks"]
+udp = ["dep:sova-udp"]
+quic-udp = ["dep:sova-quic"]
+sse-feed = ["dep:sova-sse"]
+env = ["dep:sova-env"]
+tls = ["sova-core/tls"]
+dev-tls = ["tls", "sova-core/dev-tls"]
+store-crypto = ["store", "sova-store/store-crypto"]
+# vld + DocVldExt sugar (needs both plugins + vld openapi schemas)
+vld-openapi = ["vld", "openapi", "sova-vld/openapi", "vld/openapi"]
+vld-flash = ["vld", "session", "sova-vld/flash"]
+vld-flash-templates = ["vld-flash", "templates", "sova-vld/flash-templates"]
+vld-form = ["vld", "multipart", "sova-vld/form"]
+vld-i18n = ["vld", "i18n", "sova-vld/i18n"]
+http-client = ["dep:sova-http"]
+mail = ["dep:sova-mail"]
+mail-templates = ["mail", "templates", "sova-mail/templates"]
+mail-markdown = ["mail", "sova-mail/markdown"]
+storage = ["dep:sova-storage"]
+storage-s3 = ["storage", "sova-storage/s3"]
+storage-gcs = ["storage", "sova-storage/gcs"]
+storage-azure = ["storage", "sova-storage/azure"]
+storage-memory = ["storage", "sova-storage/memory"]
+passport = ["dep:sova-passport"]
+passport-session = ["passport", "session", "sova-passport/session"]
+passport-jwt = ["passport", "db", "sova-passport/jwt"]
+passport-oauth = ["passport-jwt", "sova-passport/oauth"]
+auth = ["passport-session", "passport-jwt", "mail-templates", "db", "dep:sova-auth", "sova-auth/templates"]
+auth-vld = ["auth", "vld", "vld-flash", "vld-form", "sova-auth/vld"]
+activity = ["db", "dep:sova-activity"]
+auth-activity = ["auth", "activity", "sova-auth/activity"]
+notifications = ["db", "dep:sova-notifications"]
+notifications-ws = ["notifications", "ws", "sova-notifications/ws"]
+notifications-mail = ["notifications", "mail", "sova-notifications/mail"]
+notifications-auth = ["notifications", "auth", "sova-notifications/auth"]
+notifications-templates = ["notifications", "templates", "sova-notifications/templates"]
+meta = ["dep:sova-meta"]
+meta-templates = ["meta", "templates", "sova-meta/templates"]
+meta-i18n = ["meta", "i18n", "sova-meta/i18n"]
+meta-store = ["meta", "store", "sova-meta/store"]
+web = [
+    "cli",
+    "env",
+    "cors",
+    "cookies",
+    "session",
+    "csrf",
+    "static-files",
+    "templates",
+    "meta",
+    "meta-templates",
+    "shield",
+    "listen-reuseport",
+]
+api = [
+    "cli",
+    "env",
+    "cors",
+    "cookies",
+    "session",
+    "openapi",
+    "vld",
+    "vld-openapi",
+    "listen-reuseport",
+]
+db = ["dep:sova-db", "dep:sea-orm"]
+db-sqlite = ["db", "sova-db/sqlite"]
+db-mysql = ["db", "sova-db/mysql"]
+observability = ["dep:sova-observability", "sova-observability/prometheus"]
+observability-otel = ["observability", "sova-observability/otel"]
+observability-elasticsearch = ["observability", "sova-observability/elasticsearch"]
+redis = ["dep:sova-redis"]
+testing = ["sova-core/testing"]
+listen-reuseport = ["sova-core/listen-reuseport"]
+
+[dependencies]
+sova-core = { workspace = true }
+sea-orm = { workspace = true, optional = true }
+sova-static = { workspace = true, optional = true }
+sova-cors = { workspace = true, optional = true }
+sova-csrf = { workspace = true, optional = true }
+sova-shield = { workspace = true, optional = true }
+sova-cookies = { workspace = true, optional = true }
+sova-session = { workspace = true, optional = true }
+sova-compress = { workspace = true, optional = true }
+sova-rate-limit = { workspace = true, optional = true }
+sova-templates = { workspace = true, optional = true }
+sovax = { workspace = true, optional = true }
+sova-vld = { workspace = true, optional = true }
+sova-openapi = { workspace = true, optional = true }
+sova-i18n = { workspace = true, optional = true }
+sova-ws = { workspace = true, optional = true }
+sova-store = { workspace = true, optional = true }
+sova-tasks-store = { workspace = true, optional = true }
+sova-tasks = { workspace = true, optional = true }
+sova-udp = { workspace = true, optional = true }
+sova-quic = { workspace = true, optional = true }
+sova-sse = { workspace = true, optional = true }
+sova-env = { workspace = true, optional = true }
+sova-db = { workspace = true, optional = true }
+sova-redis = { workspace = true, optional = true }
+sova-http = { workspace = true, optional = true }
+sova-mail = { workspace = true, optional = true }
+sova-storage = { workspace = true, optional = true }
+sova-passport = { workspace = true, optional = true }
+sova-auth = { workspace = true, optional = true }
+sova-activity = { workspace = true, optional = true }
+sova-notifications = { workspace = true, optional = true }
+sova-meta = { workspace = true, optional = true }
+sova-observability = { workspace = true, optional = true }
+vld = { workspace = true, optional = true, default-features = true, features = ["serialize"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "test-util", "time"] }
+tokio-util = { workspace = true, features = ["io"] }
+tempfile = { workspace = true }
+http-body-util = { workspace = true }
+bytes = { workspace = true }
+hyper = { workspace = true, features = ["server", "http1"] }
+http = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+tracing = { workspace = true }
+

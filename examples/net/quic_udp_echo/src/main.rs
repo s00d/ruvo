@@ -3,8 +3,8 @@
 //! One [`Tls`] is cloned into QUIC and HTTPS so `reload()` updates both.
 
 use bytes::Bytes;
-use ruvo::prelude::*;
-use ruvo::{QuicDatagramService, Tls};
+use sova::prelude::*;
+use sova::{QuicDatagramService, Tls};
 use std::net::SocketAddr;
 use std::sync::Arc;
 
@@ -17,9 +17,9 @@ async fn main() -> Result<()> {
     let tls = Tls::from_pem("cert.pem", "key.pem")?;
 
     let quic_bind: SocketAddr = "127.0.0.1:9999".parse().unwrap();
-    let alpn = vec![b"ruvo-quic-udp".to_vec()];
+    let alpn = vec![b"sova_quic-udp".to_vec()];
 
-    let handler: ruvo_quic::QuicDatagramHandler = Arc::new(|_peer, data: Vec<u8>, conn| {
+    let handler: sova_quic::QuicDatagramHandler = Arc::new(|_peer, data: Vec<u8>, conn| {
         Box::pin(async move {
             let _ = conn.send_datagram(Bytes::from(data));
         })

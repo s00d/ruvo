@@ -1,0 +1,75 @@
+# Sova cabinet demo — declarative config.
+# Profile: SOVA_ENV / SOVA_PROFILE → development | production (aliases: debug|release).
+# Secrets: prefer `.env` / process env (`DATABASE_URL`, `SMTP_URL`, …) over committing them here.
+
+[server]
+max_body = "10mb"
+request_timeout = "60s"
+trust_proxy = false
+
+[frontend]
+# Auto-detect Vite; force off even if package.json exists:
+# enabled = false
+# dir = "frontend"
+# out = "public/build"
+
+[mail]
+from = "Cabinet <noreply@sova.local>"
+
+[storage]
+driver = "local"
+path = "public/uploads"
+public_url = "/assets/uploads"
+
+[db]
+# Overridden when DATABASE_URL is set (non-empty).
+url = "postgres://postgres@localhost/sova"
+
+# Optional: schedule already-registered jobs (toml overrides code .cron/.every).
+# [schedule.welcome_email]
+# every = "1h"
+
+[observability]
+metrics_path = "/metrics"
+otel = false
+elasticsearch = false
+
+[meta]
+site_name = "Sova Cabinet"
+title_template = "{} — Sova Cabinet"
+public_url = "http://127.0.0.1:3000"
+check = "soft"
+
+[cors]
+origin = "*"
+
+[session]
+cookie = "sova_sid"
+ttl = "24h"
+same_site = "lax"
+
+[templates]
+autoreload = true
+
+[static]
+max_age = "1h"
+
+[openapi]
+mount = "/docs"
+
+[development.server]
+max_connections = 64
+
+[development.observability]
+# metrics only in dev by default
+
+[production.server]
+trust_proxy = true
+request_timeout = "30s"
+
+[production.templates]
+autoreload = false
+
+[production.meta]
+# set PUBLIC_URL in env for Fortify; keep meta.public_url in sync for SEO
+# public_url = "https://cabinet.example.com"

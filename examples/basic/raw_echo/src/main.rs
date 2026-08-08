@@ -3,8 +3,8 @@ use bytes::Bytes;
 use http_body_util::{BodyExt, Full};
 use hyper::body::Incoming;
 use hyper::{Request as HyperRequest, Response as HyperResponse};
-use ruvo::extend::{BoxError, ResponseBody};
-use ruvo::{App, Response, Result};
+use sova::extend::{BoxError, ResponseBody};
+use sova::{App, Response, Result};
 use std::convert::Infallible;
 
 #[tokio::main]

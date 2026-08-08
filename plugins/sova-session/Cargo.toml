@@ -1,0 +1,39 @@
+[package]
+name = "sova-session"
+version = "0.1.0"
+edition = "2021"
+description = "Session plugin for Sova"
+license = "MIT"
+repository = "https://github.com/s00d/sova"
+homepage = "https://s00d.github.io/sova/"
+documentation = "https://docs.rs/sova-session"
+keywords = ["http", "web", "framework", "async"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[features]
+default = []
+sql = ["dep:sova-db", "dep:chrono", "dep:sea-orm", "sova-store/sql"]
+redis = ["dep:sova-redis", "dep:redis"]
+
+[dependencies]
+sova-core = { workspace = true }
+sova-cookies = { workspace = true }
+sova-store = { workspace = true }
+sova-db = { workspace = true, optional = true, default-features = false }
+sova-redis = { workspace = true, optional = true }
+chrono = { workspace = true, optional = true }
+sea-orm = { workspace = true, optional = true }
+redis = { workspace = true, optional = true }
+cookie = { workspace = true, features = ["percent-encode"] }
+getrandom = { workspace = true }
+bytes = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http = { workspace = true }
+sova-db = { workspace = true, default-features = false, features = ["sqlite"] }
+sova-redis = { workspace = true }
+sea-orm = { workspace = true }
+chrono = { workspace = true }
+redis = { workspace = true }
