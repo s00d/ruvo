@@ -28,7 +28,11 @@ There is already a solid pack of ready plugins for common server work — see th
 cargo add sova --features web
 # or
 cargo add sova --features api
+# or both (then pick App::web() or App::api() and install the rest)
+cargo add sova --features "web,api"
 ```
+
+Scaffold: `cargo install cargo-sovax`, then `cargo sovax new myapp --web` / `--api`.
 
 ## Example
 

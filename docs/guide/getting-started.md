@@ -9,12 +9,16 @@ Do not hand-roll Cors + Session + logger + probes on every app — that is what 
 cargo add sova --features web
 # or
 cargo add sova --features api
+# or both feature sets (deps only — still pick one preset below)
+cargo add sova --features "web,api"
 ```
 
-Scaffold (same shape as the docs below):
+`web` and `api` can be enabled together. There is no combined preset: start from `App::web()` or `App::api()`, then `install(...)` whatever else you need (OpenAPI on a site, templates on an API, …).
+
+Scaffold:
 
 ```bash
-cargo install --path crates/cargo-sovax   # from this repo
+cargo install cargo-sovax
 cargo sovax new blog --web
 cargo sovax new ping-api --api
 ```

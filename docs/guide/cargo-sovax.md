@@ -5,6 +5,10 @@
 Install as `cargo-sovax`, run as **`cargo sovax …`** (Cargo subcommand).  
 Scaffolding, watch, build, and DB helpers for Sova apps.
 
+```bash
+cargo install cargo-sovax
+```
+
 In-app argv helpers (`ServerArgs`, `--log-level`) are the separate crate [`sovax`](/plugins/cli) via `sova` feature `cli` — not this binary.
 
 ## Generate
