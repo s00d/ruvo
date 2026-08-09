@@ -23,3 +23,13 @@ cabinet.use_middleware(Fortify::guard());
 ### Notes
 - Needs **db + session**
 - Add **mail** only for email-backed features (`auth-mail`)
+
+### Config
+
+```bash
+FORTIFY_SECRET=…     # or APP_KEY — token signing
+PUBLIC_URL=https://… # links in verify/reset mail
+APP_NAME=MyApp
+```
+
+No `[auth]` TOML section — features/paths are builder (`Fortify::new().features([...]).home(...)`).

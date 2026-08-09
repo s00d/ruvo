@@ -57,3 +57,10 @@ cargo run -p crud
 ```
 
 Compose migrators in one `MigratorTrait` (see cabinet). Features: `db-sqlite`, `db-mysql`.
+
+```toml
+[db]
+url = "postgres://postgres@localhost/sova"
+```
+
+`DATABASE_URL` wins over `[db] url` when set.

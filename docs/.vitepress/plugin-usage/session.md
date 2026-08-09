@@ -39,3 +39,13 @@ app.install(SessionLayer::from_store(Arc::new(
 ```
 
 Features: `session-sql`, `session-redis`.
+
+```toml
+[session]
+cookie = "sova_sid"
+ttl = "7d"
+same_site = "lax"
+# secure = true
+```
+
+`SOVA_ENV=production` → Secure cookies; override with `SESSION_SECURE=true|false`.

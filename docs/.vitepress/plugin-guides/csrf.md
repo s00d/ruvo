@@ -13,3 +13,14 @@ app.install(Csrf::new().except(["/webhooks/*"]));
 
 ### Notes
 - Needs session middleware
+
+### Config
+
+```toml
+[csrf]
+field = "csrf"
+header = "x-csrf-token"
+auto = true
+```
+
+Secure `XSRF-TOKEN` cookie follows session Secure rules (`SOVA_ENV` / `SESSION_SECURE`). Builder: `.except([...])`, `.only([...])`, `.xsrf_cookie(false)`.

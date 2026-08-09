@@ -45,6 +45,22 @@ app.install(Storage::from_env()?);
 req.storage().put("avatars/1.png", bytes, PutOpts::default()).await?;
 ```
 
+### Config
+
+```toml
+[storage]
+driver = "local"          # local | memory | s3 | gcs | azure
+path = "./storage"        # local
+public_url = "https://cdn.example.com"
+bucket = "my-bucket"      # s3/gcs/azure
+region = "auto"
+endpoint = "https://…"    # MinIO / R2
+root = "uploads/"
+force_path_style = true
+```
+
+Env (wins / fills): `SOVA_STORAGE`, `SOVA_STORAGE_PATH`, `SOVA_STORAGE_PUBLIC_URL`, `SOVA_STORAGE_BUCKET` (+ `AWS_BUCKET`), `SOVA_STORAGE_REGION` (+ `AWS_REGION`), `SOVA_STORAGE_ENDPOINT`, `SOVA_STORAGE_ROOT`, `SOVA_STORAGE_FORCE_PATH_STYLE`, `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, GCS/Azure vars as in crate docs.
+
 ## Quick start
 
 Object storage for uploads. Add on the **web preset** (multipart feature for files):
@@ -88,6 +104,21 @@ async fn avatar(mut req: Request) -> Result<Redirect> {
 ```bash
 cargo run -p upload
 cargo run -p storage_demo
+```
+
+Or from env/toml (`Storage::from_env()?`):
+
+```toml
+[storage]
+driver = "local"
+path = "public/uploads"
+public_url = "/uploads"
+```
+
+```bash
+SOVA_STORAGE=local
+SOVA_STORAGE_PATH=./storage
+# s3: SOVA_STORAGE=s3 SOVA_STORAGE_BUCKET=… AWS_ACCESS_KEY_ID=… AWS_SECRET_ACCESS_KEY=…
 ```
 
 ## Examples

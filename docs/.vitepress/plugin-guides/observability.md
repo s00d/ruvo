@@ -11,6 +11,10 @@
 app.install(Observability::new().with_elasticsearch());
 ```
 
+
+### Notes
+- Typical order: `request_id` → Observability → `logger`
+
 ### Config
 
 ```toml
@@ -20,5 +24,4 @@ otel = true
 elasticsearch = true
 ```
 
-### Notes
-- Typical order: `request_id` → Observability → `logger`
+Env: `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_SERVICE_NAME` / `SOVA_SERVICE_NAME`, `ELASTICSEARCH_URL`, `ELASTICSEARCH_USERNAME` / `PASSWORD` / `API_KEY`, `ELASTICSEARCH_INDEX`, `ELASTICSEARCH_BATCH`, `ELASTICSEARCH_FLUSH_MS`.

@@ -15,6 +15,13 @@ let u = User::find_by_id(id).one(req.db()).await?;
 
 ### Config
 
-```bash
-DATABASE_URL=postgres://postgres@localhost/sova
+```toml
+[db]
+url = "postgres://postgres@localhost/sova"
 ```
+
+```bash
+DATABASE_URL=postgres://postgres@localhost/sova   # wins over [db] url when set
+```
+
+Builder `.url(...)` pins the URL (env/toml unset-fill only when not set). Features: `db` (postgres), `db-sqlite`, `db-mysql`.

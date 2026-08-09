@@ -40,3 +40,18 @@ async fn avatar(mut req: Request) -> Result<Redirect> {
 cargo run -p upload
 cargo run -p storage_demo
 ```
+
+Or from env/toml (`Storage::from_env()?`):
+
+```toml
+[storage]
+driver = "local"
+path = "public/uploads"
+public_url = "/uploads"
+```
+
+```bash
+SOVA_STORAGE=local
+SOVA_STORAGE_PATH=./storage
+# s3: SOVA_STORAGE=s3 SOVA_STORAGE_BUCKET=… AWS_ACCESS_KEY_ID=… AWS_SECRET_ACCESS_KEY=…
+```

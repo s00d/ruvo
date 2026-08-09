@@ -44,6 +44,18 @@ app.install(SessionLayer::from_store(store));
 app.install(memory_sessions());
 ```
 
+### Config
+
+```toml
+[session]
+cookie = "sova_sid"
+ttl = "7d"            # duration string
+same_site = "lax"     # lax | strict | none
+secure = true         # optional bool
+```
+
+Env: `SOVA_ENV=production` enables Secure cookies unless overridden; `SESSION_SECURE=true|false` forces the flag.
+
 ## Quick start
 
 Cookie sessions are part of **`App::web()`** and **`App::api()`** (`memory_sessions`). Read/write in handlers — do **not** install a second `SessionLayer` on top of a preset (duplicate `session` id fails at `build`):
@@ -87,6 +99,16 @@ app.install(SessionLayer::from_store(Arc::new(
 ```
 
 Features: `session-sql`, `session-redis`.
+
+```toml
+[session]
+cookie = "sova_sid"
+ttl = "7d"
+same_site = "lax"
+# secure = true
+```
+
+`SOVA_ENV=production` → Secure cookies; override with `SESSION_SECURE=true|false`.
 
 ## Examples
 

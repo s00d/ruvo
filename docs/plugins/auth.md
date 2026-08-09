@@ -56,6 +56,16 @@ cabinet.use_middleware(Fortify::guard());
 - Needs **db + session**
 - Add **mail** only for email-backed features (`auth-mail`)
 
+### Config
+
+```bash
+FORTIFY_SECRET=…     # or APP_KEY — token signing
+PUBLIC_URL=https://… # links in verify/reset mail
+APP_NAME=MyApp
+```
+
+No `[auth]` TOML section — features/paths are builder (`Fortify::new().features([...]).home(...)`).
+
 ## Quick start
 
 Fortify sits **on the web preset** (sessions, csrf, templates already there). Add Db + Fortify; add **Mail only** when enabling `EmailVerification` or `ResetPasswords`.

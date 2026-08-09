@@ -1,4 +1,4 @@
-Tasks is its own runtime concern (queues, CLI `tasks …`, optional HTTP enqueue). Typical worker binary:
+Worker + schedule + CLI (see [Overview](#overview) for TOML keys). Minimal wiring:
 
 ```rust
 use sova::prelude::*;
@@ -35,24 +35,39 @@ async fn main() -> Result<()> {
             .guard(bearer_guard("secret")),
     );
 
-    app.get("/", || async {
-        "Use CLI: tasks list | tasks schedule | tasks run greet"
-    });
-
     app.run().await
 }
 ```
 
 ```toml
-# sova.toml — overrides Job::every in code
+# sova.toml — overrides Job::every / Job::cron for named jobs
 [schedule.ping]
 every = "15s"
+
+[schedule.mail_digest]
+cron = "0 */5 * * * *"
+queue = "mailer"
+priority = -100
 ```
 
 ```bash
 cargo run -p tasks
 cargo run -p tasks -- tasks list
+cargo run -p tasks -- tasks schedule
 cargo run -p tasks -- tasks run greet
 ```
 
-From a web/API app after install: `req.dispatch("welcome_email", json!({…})).await`. SQL/Redis: `tasks-sql` / `tasks-redis` (cabinet wires `tasks::Sql::from_db_pool`).
+Dispatch from a web/API handler after install:
+
+```rust
+use sova::{Dispatch, TaskBackend};
+use serde_json::json;
+
+if let Some(tasks) = req.try_state::<TaskBackend>() {
+    tasks
+        .dispatch(Dispatch::new("welcome_email").data(json!({ "email": "a@b.c" })))
+        .await?;
+}
+```
+
+SQL/Redis stores: features `tasks-sql` / `tasks-redis` — see [tasks-store](/plugins/tasks-store). Cabinet wires `sova::tasks::Sql::from_db_pool`.

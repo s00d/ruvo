@@ -25,11 +25,34 @@ url = "postgres://postgres@localhost/sova"
 [redis]
 url = "redis://127.0.0.1:6379"
 
-# [schedule.digest]
-# cron = "0 8 * * *"
+# Recurring jobs (tasks plugin) — load toml before install(Tasks…)
+[schedule.ping]
+every = "15s"
+
+[schedule.digest]
+cron = "0 8 * * *"   # 5 fields → seconds padded; or 6-field cron
+queue = "mailer"
+# priority = 0
+# payload = { "mode" = "full" }
 
 [observability]
 metrics_path = "/metrics"
+
+[session]
+# cookie = "sova_sid"
+# ttl = "7d"
+# same_site = "lax"
+# secure = true
+
+[csrf]
+# field = "csrf"
+# header = "x-csrf-token"
+# auto = true
+
+[i18n]
+# default = "en"
+# cookie = "locale"
+# watch = true
 
 [meta]
 site_name = "My App"
@@ -65,6 +88,35 @@ built-in defaults → `[section]` → `[<profile>.section]` → env (`DATABASE_U
 |------|----------------------------------|
 | `[db] url` | `DATABASE_URL` |
 | `[redis] url` | `REDIS_URL` |
+
+## Schedules (`[schedule.<job>]`)
+
+Used by [tasks](/plugins/tasks). Each table is a **registered** job name. Set **either** `cron` **or** `every` (not both). Toml overrides code `.cron()` / `.every()`.
+
+| Key | Notes |
+|-----|--------|
+| `every` | Duration: `15s`, `2m`, `1h`, `500ms` |
+| `cron` | 5-field (secs padded with `0 `) or 6-field |
+| `queue` | optional |
+| `priority` | optional int (`LOW=-100`, `NORMAL=0`, `HIGH=100`) |
+| `payload` | optional TOML → JSON for scheduler enqueues |
+
+## Plugin toml sections
+
+| Section | Plugin |
+|---------|--------|
+| `[db]` | [db](/plugins/db) |
+| `[redis]` | [redis](/plugins/redis) |
+| `[mail]` | [mail](/plugins/mail) (`from`) |
+| `[storage]` | [storage](/plugins/storage) |
+| `[session]` | [session](/plugins/session) |
+| `[csrf]` | [csrf](/plugins/csrf) |
+| `[i18n]` | [i18n](/plugins/i18n) |
+| `[observability]` | [observability](/plugins/observability) |
+| `[schedule.*]` | [tasks](/plugins/tasks) |
+| `[ai]` | [ai](/plugins/ai) (`system`) |
+
+Per-plugin pages list env vars and builder knobs in **Config**.
 
 ## Env cascade (`sova-env`)
 

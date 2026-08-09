@@ -12,3 +12,10 @@ app.get("/pub", |req| async move {
 ```
 
 Env: `REDIS_URL` (or Valkey-compatible). Features that consume the pool: `store-redis`, `session-redis`, `tasks-redis`.
+
+```toml
+[redis]
+url = "redis://127.0.0.1:6379"
+```
+
+`REDIS_URL` wins over `[redis] url` when set.

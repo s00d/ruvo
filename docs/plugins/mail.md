@@ -49,28 +49,50 @@ req.mail()
 ### Notes
 - Install Mail **once**
 
+### Config
+
+```bash
+SOVA_MAIL=fake|smtp|file          # or SOVA_MAIL_MAILER
+SOVA_MAIL_URL=smtp://…            # or SMTP_URL (required for smtp)
+SOVA_MAIL_FROM="App <noreply@example.com>"
+SOVA_MAIL_PATH=./mail             # for file mailer
+```
+
+```toml
+[mail]
+from = "App <noreply@example.com>"   # unset-fill if builder/env did not set from
+```
+
+Default without URL: fake transport (dev).
+
 ## Quick start
 
-Outbound mail (facade features `mail` / `mail-templates`). `MailClient::send` takes [`Email`], not a Message type:
+Outbound mail (facade features `mail` / `mail-templates`). `MailClient::send` takes `Email`:
 
 ```rust
 use sova::{Email, Mail, MailExt};
 
-let mut app = App::web()
-    .site("App")
-    .public_url("https://example.com")
-    .into_app();
-
+let _ = app.configure_from_path("sova.toml"); // optional [mail] from=
 app.install(Mail::from_env());
 
-// in a handler / task:
 req.mail()
     .to("user@example.com")
     .send(Email::new().subject("Hi").text("Hello"))
     .await?;
 ```
 
-Install Mail **once** (duplicate `mail` id fails at build). Templates: feature `mail-templates`.
+```bash
+SOVA_MAIL=fake|smtp|file
+SOVA_MAIL_URL=smtp://user:pass@localhost:1025   # or SMTP_URL
+SOVA_MAIL_FROM="App <noreply@example.com>"
+```
+
+```toml
+[mail]
+from = "App <noreply@example.com>"
+```
+
+Install Mail **once**. Templates: `mail-templates` / markdown: `mail-markdown`.
 
 ## Examples
 

@@ -43,6 +43,17 @@ app.install(Csrf::new().except(["/webhooks/*"]));
 ### Notes
 - Needs session middleware
 
+### Config
+
+```toml
+[csrf]
+field = "csrf"
+header = "x-csrf-token"
+auto = true
+```
+
+Secure `XSRF-TOKEN` cookie follows session Secure rules (`SOVA_ENV` / `SESSION_SECURE`). Builder: `.except([...])`, `.only([...])`, `.xsrf_cookie(false)`.
+
 ## Quick start
 
 **`App::web()`** already installs CSRF after sessions. Use the token in forms / SPA bootstrap:
@@ -84,6 +95,13 @@ Exempt paths without a second CSRF layer: `App::web()` already installs CSRF —
 let mut app = App::new();
 app.install(memory_sessions());
 app.install(Csrf::new().except("/_tasks/*").except("/api/webhooks/*"));
+```
+
+```toml
+[csrf]
+field = "csrf"
+header = "x-csrf-token"
+auto = true
 ```
 
 ## Related

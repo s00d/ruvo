@@ -38,3 +38,10 @@ let mut app = App::new();
 app.install(memory_sessions());
 app.install(Csrf::new().except("/_tasks/*").except("/api/webhooks/*"));
 ```
+
+```toml
+[csrf]
+field = "csrf"
+header = "x-csrf-token"
+auto = true
+```

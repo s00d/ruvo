@@ -86,15 +86,20 @@ cabinet.use_middleware(Fortify::guard());
 
 ### Tasks
 
-Same handlers for Dispatch and CLI. After install: `tasks list` | `schedule` | `run NAME`.
+Same handlers for Dispatch, CLI, and HTTP enqueue. Load `sova.toml` **before** `install(Tasks…)` so `[schedule.*]` applies.
 
 ```toml
 [schedule.ping]
 every = "15s"
+
+[schedule.mail_digest]
+cron = "0 */5 * * * *"
+queue = "mailer"
+priority = -100
 ```
 
-Toml overrides `.cron()` / `.every()`. → `examples/misc/tasks`, [tasks](/plugins/tasks).
+Toml overrides code `.cron()` / `.every()` per job name (`cron` **or** `every`). CLI: `tasks list` | `schedule` | `run NAME [--json]`. Dispatch: `req.try_state::<TaskBackend>()` + `Dispatch::new(...)`. → `examples/misc/tasks`, [tasks](/plugins/tasks).
 
 ### Database
 
-`DATABASE_URL` or `[db] url`. CLI: `migrate` / `seed` (`cargo sovax db …`). SQL KV/queue backends reuse `DbPool`. → [db](/plugins/db).
+`DATABASE_URL` or `[db] url` (env wins when set). CLI: `migrate` / `seed` (`cargo sovax db …`). SQL KV/queue backends reuse `DbPool`. → [db](/plugins/db).

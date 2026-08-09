@@ -13,3 +13,12 @@ app.install(
 ```
 
 Features: `observability`, `observability-otel`, `observability-elasticsearch`.
+
+```toml
+[observability]
+metrics_path = "/metrics"
+otel = true
+elasticsearch = true
+```
+
+Env: `OTEL_EXPORTER_OTLP_ENDPOINT`, `ELASTICSEARCH_URL` (+ user/password/api key).
