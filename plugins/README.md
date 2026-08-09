@@ -17,6 +17,7 @@ Opt-in domain plugins for Sova. Prefer enabling them through facade features on 
 | [`sova-cors`](./sova-cors/) | `0.1.1` | CORS plugin for Sova | [guide](https://s00d.github.io/sova/plugins/cors) |
 | [`sova-csrf`](./sova-csrf/) | `0.1.2` | CSRF protection plugin for Sova (session double-submit) | [guide](https://s00d.github.io/sova/plugins/csrf) |
 | [`sova-db`](./sova-db/) | `0.1.3` | SeaORM database plugin for Sova (postgres / sqlite / mysql) | [guide](https://s00d.github.io/sova/plugins/db) |
+| [`sova-devtools`](./sova-devtools/) | `0.1.0` | In-app DevTools bar (HTML inject, SSE timeline) | [guide](https://s00d.github.io/sova/plugins/devtools) |
 | [`sova-env`](./sova-env/) | `0.1.1` | Cascade .env loading for Sova apps (dotenvy) | [guide](https://s00d.github.io/sova/plugins/env) |
 | [`sova-http`](./sova-http/) | `0.1.1` | Outbound HTTP client bound to request deadline and tracing | [guide](https://s00d.github.io/sova/plugins/http) |
 | [`sova-i18n`](./sova-i18n/) | `0.1.2` | Two-level i18n store and locale resolution for Sova | [guide](https://s00d.github.io/sova/plugins/i18n) |

@@ -16,11 +16,12 @@ pub use preset::WebApp;
 #[cfg(feature = "api")]
 pub use preset::ApiApp;
 pub use sova_core::{
-    ensure_request_id, logger, request_id, with_state, BackgroundService, Cell, CheckKind,
-    CheckResult, ClientAddr, ConfigDoc, Error, FormData, Html, Http, IntoResponse, Json, LogConfig,
-    LogRotate, MatchedRoute, MatchedRouteCapture, NoContent, Next, OnUpgrade, Plugin, PluginMeta,
-    PluginSdkVersion, RateLimitIdentity, Redirect, Request, RequestId, Response, Router, Server,
-    Shutdown, Slot, Text, Upload, UploadRules, PLUGIN_SDK_VERSION, referer_or,
+    ensure_request_id, logger, logger_skip_path, logger_skip_paths, request_id, with_state,
+    BackgroundService, Cell, CheckKind, CheckResult, ClientAddr, ConfigDoc, Error, FormData, Html,
+    Http, IntoResponse, Json, LogConfig, LogRotate, MatchedRoute, MatchedRouteCapture, NoContent,
+    Next, OnUpgrade, Plugin, PluginMeta, PluginSdkVersion, RateLimitIdentity, Redirect, Request,
+    RequestId, Response, Router, Server, Shutdown, Slot, Text, Upload, UploadRules,
+    PLUGIN_SDK_VERSION, referer_or,
 };
 #[cfg(feature = "testing")]
 pub use sova_core::{ResponseAssert, TestClient};
@@ -47,6 +48,9 @@ pub mod prelude {
 pub mod extend {
     pub use sova_core::extend::*;
 }
+
+#[cfg(feature = "devtools")]
+pub use sova_devtools::{DevTools, DevToolsBag, DevToolsHub};
 
 #[cfg(feature = "env")]
 pub use sova_env::{self, require as env_require, EnvError};

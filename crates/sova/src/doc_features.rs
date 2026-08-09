@@ -87,7 +87,7 @@
 /// Feature `observability`: Prometheus `/metrics` + HTTP RED middleware.
 /// Feature `observability-otel`: OpenTelemetry OTLP export.
 /// Feature `observability-elasticsearch`: Ship tracing logs to Elasticsearch.
-/// Feature `redis`: Shared Redis/Valkey pool (cache, pub/sub, queues).
+/// Feature `devtools`: In-app DevTools bar (HTML inject + SSE timeline).
 /// Feature `testing`: Expose `App::run_startup` / `run_shutdown` for tests.
 /// Feature `listen-reuseport`: `SO_REUSEPORT` for graceful `cargo sovax dev`.
 pub(crate) fn _doc_features_anchor() {}

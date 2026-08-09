@@ -6,7 +6,7 @@ use crate::inject::inject_head;
 use crate::overlay::MetaOverlay;
 use crate::page::MetaPage;
 use crate::resolve::resolve_parts;
-use sova_core::extend::{named, Body, MatchedMetaCapture};
+use sova_core::extend::{named, MatchedMetaCapture};
 use sova_core::{App, IntoResponse, Next, Redirect, Request};
 use std::collections::HashSet;
 use std::sync::Mutex;
@@ -58,12 +58,7 @@ pub fn install_headers_middleware(app: &mut App) {
             crate::i18n_meta::enrich_parts(state, &i18n.1, &path, &defaults, &mut resolved);
         }
 
-        let ct = res
-            .headers()
-            .get(http::header::CONTENT_TYPE)
-            .and_then(|v| v.to_str().ok())
-            .unwrap_or("");
-        let is_html = ct.contains("text/html");
+        let is_html = res.is_html();
 
         if resolved.noindex && !is_html {
             res = res.header("x-robots-tag", "noindex");
@@ -74,23 +69,9 @@ pub fn install_headers_middleware(app: &mut App) {
             }
         }
 
-        if is_html && !manual {
-            let body = res.take_body();
-            match body {
-                Body::Bytes(bytes) => {
-                    if let Ok(html) = std::str::from_utf8(&bytes) {
-                        let fragment = render_html(&resolved);
-                        if let Some(new_html) = inject_head(html, &fragment) {
-                            res.set_body(new_html);
-                        } else {
-                            res.set_body(bytes);
-                        }
-                    } else {
-                        res.set_body(bytes);
-                    }
-                }
-                other => res.set_body(other),
-            }
+        if !manual && res.is_html() {
+            let fragment = render_html(&resolved);
+            res.map_buffered_html(|html| inject_head(html, &fragment));
         }
 
         let status = res.status_code().as_u16();

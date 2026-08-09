@@ -18,6 +18,7 @@ mod app;
 mod config;
 mod error;
 mod handler;
+pub mod html;
 mod human;
 mod limits;
 mod middleware;
@@ -42,7 +43,9 @@ mod tls;
 pub use app::{App, BoundApp, CheckKind, CheckResult, Http, Server};
 pub use config::ConfigDoc;
 pub use error::{Error, IntoResponse, Result};
-pub use middleware::{logger, with_state, Next};
+pub use middleware::{
+    after, around, before, logger, logger_skip_path, logger_skip_paths, map_html, with_state, Next,
+};
 pub use plugin::{
     check_plugin_sdk, InstalledPlugin, Plugin, PluginMeta, PluginSdkVersion, SdkCompat,
     PLUGIN_SDK_VERSION,
@@ -56,13 +59,16 @@ pub use service::{BackgroundService, Shutdown};
 pub use share::{Cell, Slot};
 pub use state::{MatchedRoute, MatchedRouteCapture};
 pub use tracing_init::{
-    parse_log_rotate, set_log_event_hook, LogConfig, LogEventHook, LogRecord, LogRotate,
+    parse_log_rotate, set_log_event_hook, add_log_event_hook, LogConfig, LogEventHook, LogRecord, LogRotate,
 };
 #[cfg(any(test, feature = "testing"))]
 pub use service::{shutdown_channel, ShutdownSender};
-pub use upgrade::{OnUpgrade, UpgradePermit};
+#[cfg(any(test, feature = "testing"))]
+pub use middleware::logger_clear_skip_paths;
 #[cfg(any(test, feature = "testing"))]
 pub use test_client::{ClientRequest, RequestHook, ResponseAssert, TestClient};
+pub use upgrade::{OnUpgrade, UpgradePermit};
+
 #[cfg(feature = "tls")]
 pub use tls::Tls;
 
@@ -81,8 +87,13 @@ pub mod extend {
     pub use crate::handler::{
         BoxFuture, ErrorResponse, FallibleHandler, Handler, IntoHandler,
     };
+    pub use crate::html::{
+        find_ci, inject, inject_after_open_tag, inject_before, inject_body_end, inject_head,
+        replace_between, replace_once, HtmlAnchor, HtmlInject,
+    };
     pub use crate::middleware::{
-        named, with_leaked, IntoMiddleware, IntoMwEntry, Middleware, MwEntry,
+        after, around, before, logger_skip_path, logger_skip_paths, map_html, named, with_leaked,
+        IntoMiddleware, IntoMwEntry, Middleware, MwEntry,
     };
     pub use crate::raw::{IntoRawHandler, RawHandler};
     pub use crate::request::{FormData, RequestBuilder, Upload, UploadRules};
@@ -101,7 +112,7 @@ pub mod extend {
         TypeMap,
     };
     pub use crate::tracing_init::{
-        ensure_tracing, parse_log_rotate, set_log_event_hook, LogConfig, LogEventHook, LogRecord,
-        LogRotate,
+        add_log_event_hook, ensure_tracing, parse_log_rotate, set_log_event_hook, LogConfig,
+        LogEventHook, LogRecord, LogRotate,
     };
 }

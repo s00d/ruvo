@@ -3,6 +3,13 @@
 All notable changes to the Sova workspace are recorded here.
 Versions refer to the published crates on [crates.io](https://crates.io/crates/sova).
 
+## 0.1.14 — 2026-08-09
+
+- New plugin **`sova-devtools` 0.1.1**: in-app debug bar (HTML inject, SSE timeline, request snapshots)
+- `sova-core` **0.1.7**: `logger_skip_path` / `HtmlInject`; multi log-event hooks
+- Facade feature `devtools`; guide [/guide/devtools](docs/guide/devtools.md) with screenshots + tour GIF
+- Release builds hard-disable DevTools unless `SOVA_DEVTOOLS=1`
+
 ## 0.1.13 — 2026-08-09
 
 - `sova-core` **0.1.6**: release builds no longer warn on unread `AppInner::explain` (debug route map always available)

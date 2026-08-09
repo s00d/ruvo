@@ -120,6 +120,76 @@ where
     Arc::new(move |req, next| Box::pin(f(state, req, next)))
 }
 
+/// Run `f` on the request before the rest of the chain.
+pub fn before<F, Fut>(name: impl Into<String>, f: F) -> MwEntry
+where
+    F: Fn(Request) -> Fut + Send + Sync + 'static,
+    Fut: Future<Output = Request> + Send + 'static,
+{
+    let f = Arc::new(f);
+    named(name, move |req, next: Next| {
+        let f = Arc::clone(&f);
+        async move {
+            let req = f(req).await;
+            next(req).await
+        }
+    })
+}
+
+/// Run `f` on the response after the rest of the chain.
+pub fn after<F, Fut>(name: impl Into<String>, f: F) -> MwEntry
+where
+    F: Fn(Response) -> Fut + Send + Sync + 'static,
+    Fut: Future<Output = Response> + Send + 'static,
+{
+    let f = Arc::new(f);
+    named(name, move |req, next: Next| {
+        let f = Arc::clone(&f);
+        async move {
+            let res = next(req).await;
+            f(res).await
+        }
+    })
+}
+
+/// `before` then chain then `after` under one explain name.
+pub fn around<B, BF, A, AF>(name: impl Into<String>, before_fn: B, after_fn: A) -> MwEntry
+where
+    B: Fn(Request) -> BF + Send + Sync + 'static,
+    BF: Future<Output = Request> + Send + 'static,
+    A: Fn(Response) -> AF + Send + Sync + 'static,
+    AF: Future<Output = Response> + Send + 'static,
+{
+    let before_fn = Arc::new(before_fn);
+    let after_fn = Arc::new(after_fn);
+    named(name, move |req, next: Next| {
+        let before_fn = Arc::clone(&before_fn);
+        let after_fn = Arc::clone(&after_fn);
+        async move {
+            let req = before_fn(req).await;
+            let res = next(req).await;
+            after_fn(res).await
+        }
+    })
+}
+
+/// After the handler: map buffered `text/html` bodies with `transform`.
+///
+/// Non-HTML / streamed responses are unchanged.
+pub fn map_html<F>(name: impl Into<String>, transform: F) -> MwEntry
+where
+    F: Fn(&str) -> Option<String> + Send + Sync + 'static,
+{
+    let transform = Arc::new(transform);
+    after(name, move |mut res| {
+        let transform = Arc::clone(&transform);
+        async move {
+            res.map_buffered_html(|html| transform(html));
+            res
+        }
+    })
+}
+
 /// Build Express-style onion once; returns a reusable [`Handler`].
 pub fn build_chain(middleware: &[Middleware], handler: Handler) -> Handler {
     let mut next = handler;
@@ -149,6 +219,9 @@ pub(crate) fn chain_from_entries(entries: &[MwEntry], handler: Handler) -> Handl
 }
 
 /// Request logger (`method`, `path`, `status`, `latency_ms`, optional `request_id`).
+///
+/// Paths registered via [`logger_skip_path`] / [`logger_skip_paths`] are not logged
+/// (useful for health checks and `/_devtools/*`).
 pub fn logger() -> MwEntry {
     named("logger", |req: Request, next: Next| async move {
         let method = req.method.as_str().to_string();
@@ -159,6 +232,9 @@ pub fn logger() -> MwEntry {
             .unwrap_or_default();
         let start = std::time::Instant::now();
         let res = next(req).await;
+        if logger_should_skip(&path) {
+            return res;
+        }
         let status = res.status_code().as_u16();
         let latency_ms = start.elapsed().as_millis() as u64;
         if request_id.is_empty() {
@@ -181,6 +257,43 @@ pub fn logger() -> MwEntry {
         }
         res
     })
+}
+
+static LOGGER_SKIP_PREFIXES: std::sync::OnceLock<std::sync::Mutex<Vec<String>>> =
+    std::sync::OnceLock::new();
+
+fn logger_skip_list() -> &'static std::sync::Mutex<Vec<String>> {
+    LOGGER_SKIP_PREFIXES.get_or_init(|| std::sync::Mutex::new(Vec::new()))
+}
+
+/// Skip access-log lines for paths that equal or start with `prefix`
+/// (e.g. `"/_devtools"` matches `/_devtools/config`).
+pub fn logger_skip_path(prefix: impl Into<String>) {
+    let p = prefix.into();
+    if p.is_empty() {
+        return;
+    }
+    let mut g = logger_skip_list().lock().unwrap();
+    if !g.iter().any(|x| x == &p) {
+        g.push(p);
+    }
+}
+
+/// Register several skip prefixes (see [`logger_skip_path`]).
+pub fn logger_skip_paths(prefixes: impl IntoIterator<Item = impl Into<String>>) {
+    for p in prefixes {
+        logger_skip_path(p);
+    }
+}
+
+fn logger_should_skip(path: &str) -> bool {
+    let g = logger_skip_list().lock().unwrap();
+    g.iter().any(|p| path == p.as_str() || path.starts_with(&format!("{p}/")))
+}
+
+#[cfg(any(test, feature = "testing"))]
+pub fn logger_clear_skip_paths() {
+    logger_skip_list().lock().unwrap().clear();
 }
 
 #[cfg(test)]
@@ -227,6 +340,20 @@ mod tests {
             chain(Request::new(Method::GET, "/")).await.body_bytes(),
             Some(b"ok".as_slice())
         );
+    }
+
+    #[test]
+    fn logger_skip_matches_prefixes() {
+        logger_clear_skip_paths();
+        logger_skip_path("/_devtools");
+        logger_skip_path("/healthz");
+        assert!(logger_should_skip("/_devtools"));
+        assert!(logger_should_skip("/_devtools/config"));
+        assert!(logger_should_skip("/_devtools/requests/dt-1"));
+        assert!(logger_should_skip("/healthz"));
+        assert!(!logger_should_skip("/api/users"));
+        assert!(!logger_should_skip("/health"));
+        logger_clear_skip_paths();
     }
 
     #[test]

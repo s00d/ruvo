@@ -3,7 +3,7 @@ use crate::migrate_cli::run_migrate;
 use crate::tx::inject_conn;
 use sova_core::extend::StateMap;
 use sova_core::{App, Error, Plugin};
-use sea_orm::{Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use sea_orm_migration::MigratorTrait;
 use std::future::Future;
 use std::pin::Pin;
@@ -29,6 +29,8 @@ pub struct Db {
     url: String,
     /// When true, [`Self::url`] wins over `DATABASE_URL` / toml at install time.
     url_pinned: bool,
+    /// Emit sqlx query tracing events (for DevTools / RUST_LOG=sqlx=debug).
+    sqlx_logging: bool,
     migrate: Option<MigrateFn>,
     seed: Option<SeedFn>,
 }
@@ -39,6 +41,7 @@ impl Db {
         Self {
             url,
             url_pinned: false,
+            sqlx_logging: false,
             migrate: None,
             seed: None,
         }
@@ -48,6 +51,12 @@ impl Db {
     pub fn url(mut self, url: impl Into<String>) -> Self {
         self.url = url.into();
         self.url_pinned = true;
+        self
+    }
+
+    /// Enable sqlx statement logging via tracing (DevTools DB tab / `RUST_LOG=sqlx=debug`).
+    pub fn sqlx_logging(mut self, on: bool) -> Self {
+        self.sqlx_logging = on;
         self
     }
 
@@ -120,11 +129,14 @@ impl Plugin for Db {
 
         let url = self.url.clone();
         let pool_start = pool.clone();
+        let sqlx_logging = self.sqlx_logging;
         app.on_startup(move |_state| {
             let url = url.clone();
             let pool = pool_start.clone();
             async move {
-                let conn = Database::connect(&url)
+                let mut opt = ConnectOptions::new(url);
+                opt.sqlx_logging(sqlx_logging);
+                let conn = Database::connect(opt)
                     .await
                     .map_err(|e| Error::Internal(format!("db connect: {e}")))?;
                 conn.ping()

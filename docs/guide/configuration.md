@@ -54,6 +54,12 @@ metrics_path = "/metrics"
 # cookie = "locale"
 # watch = true
 
+[development.devtools]
+enabled = true
+
+[production.devtools]
+enabled = false
+
 [meta]
 site_name = "My App"
 public_url = "http://127.0.0.1:3000"
@@ -71,6 +77,10 @@ trust_proxy = true
 ## Profile
 
 `SOVA_PROFILE` → else `SOVA_ENV` → else `development` (debug) / `production` (release).
+
+Access-log noise: `sova::logger_skip_path("/healthz")` (or `logger_skip_paths`). DevTools registers `/_devtools` automatically.
+
+See also: [DevTools guide](/guide/devtools).
 Aliases: `debug`→`development`, `release`→`production`.
 `cargo sovax dev` sets `SOVA_ENV=development`; `serve` sets `production`.
 
@@ -115,6 +125,7 @@ Used by [tasks](/plugins/tasks). Each table is a **registered** job name. Set **
 | `[observability]` | [observability](/plugins/observability) |
 | `[schedule.*]` | [tasks](/plugins/tasks) |
 | `[ai]` | [ai](/plugins/ai) (`system`) |
+| `[devtools]` | [devtools](/plugins/devtools) (`enabled`) |
 
 Per-plugin pages list env vars and builder knobs in **Config**.
 

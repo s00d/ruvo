@@ -44,11 +44,23 @@ pub struct LogRecord {
 /// Callback invoked for every tracing event (after the local fmt layers).
 pub type LogEventHook = Arc<dyn Fn(LogRecord) + Send + Sync>;
 
-static LOG_EVENT_HOOK: OnceLock<LogEventHook> = OnceLock::new();
+static LOG_EVENT_HOOKS: OnceLock<Mutex<Vec<LogEventHook>>> = OnceLock::new();
 
-/// Register a global log sink hook (once). Used by `Observability::with_elasticsearch()`.
+fn hooks() -> &'static Mutex<Vec<LogEventHook>> {
+    LOG_EVENT_HOOKS.get_or_init(|| Mutex::new(Vec::new()))
+}
+
+/// Append a global log sink (DevTools, Elasticsearch, …). Multiple hooks are supported.
+pub fn add_log_event_hook(hook: LogEventHook) {
+    hooks().lock().unwrap().push(hook);
+}
+
+/// Register a global log sink hook. Prefer [`add_log_event_hook`] when multiple sinks
+/// may coexist. Returns `Err(hook)` only if an older single-hook API path reserved the
+/// slot — with the multi-hook registry this always succeeds via [`add_log_event_hook`].
 pub fn set_log_event_hook(hook: LogEventHook) -> Result<(), LogEventHook> {
-    LOG_EVENT_HOOK.set(hook)
+    add_log_event_hook(hook);
+    Ok(())
 }
 
 struct HookLayer;
@@ -58,18 +70,22 @@ where
     S: Subscriber,
 {
     fn on_event(&self, event: &Event<'_>, _ctx: Context<'_, S>) {
-        let Some(hook) = LOG_EVENT_HOOK.get() else {
+        let list = hooks().lock().unwrap();
+        if list.is_empty() {
             return;
-        };
+        }
         let mut visitor = FieldVisitor::default();
         event.record(&mut visitor);
         let meta = event.metadata();
-        hook(LogRecord {
+        let record = LogRecord {
             level: meta.level().to_string(),
             target: meta.target().to_string(),
             message: visitor.message.unwrap_or_default(),
             fields: visitor.fields,
-        });
+        };
+        for hook in list.iter() {
+            hook(record.clone());
+        }
     }
 }
 

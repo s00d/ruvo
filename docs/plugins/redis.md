@@ -23,7 +23,7 @@ cargo add sova --features redis
 
 | Feature | What you get |
 |---------|-------------|
-| `redis` | Shared Redis/Valkey pool (cache, pub/sub, queues). |
+| `redis` | — |
 
 ## Overview
 

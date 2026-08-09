@@ -1,4 +1,6 @@
-//! Inject SEO head fragment into HTML responses.
+//! Inject SEO head fragment into HTML responses (via `sova_core::html`).
+
+use sova_core::html::{inject, HtmlAnchor, HtmlInject};
 
 /// Comment marker — skip if already present (idempotent).
 pub const META_MARKER: &str = "<!-- sova_meta -->";
@@ -8,45 +10,23 @@ pub fn inject_head(body: &str, fragment: &str) -> Option<String> {
     if fragment.trim().is_empty() {
         return None;
     }
-    if body.contains(META_MARKER) || body.contains("data-sova_meta") {
-        return None;
-    }
 
     let has_title = contains_tag(body, "title");
-    let mut frag = String::new();
-    frag.push_str(META_MARKER);
-    frag.push('\n');
-    if has_title {
-        frag.push_str(&strip_title_tags(fragment));
+    let frag = if has_title {
+        strip_title_tags(fragment)
     } else {
-        frag.push_str(fragment);
-    }
-    if frag.trim() == META_MARKER {
+        fragment.to_string()
+    };
+    if frag.trim().is_empty() {
         return None;
     }
 
-    if let Some(idx) = find_ci(body, "</head>") {
-        let mut out = String::with_capacity(body.len() + frag.len());
-        out.push_str(&body[..idx]);
-        out.push_str(&frag);
-        out.push_str(&body[idx..]);
-        return Some(out);
-    }
-
-    if let Some(after) = after_html_open(body) {
-        let mut out = String::with_capacity(body.len() + frag.len() + 16);
-        out.push_str(&body[..after]);
-        out.push_str("<head>\n");
-        out.push_str(&frag);
-        out.push_str("</head>\n");
-        out.push_str(&body[after..]);
-        return Some(out);
-    }
-
-    // Bare fragment / no document shell.
-    Some(format!(
-        "<!doctype html>\n<html>\n<head>\n{frag}</head>\n<body>\n{body}\n</body>\n</html>\n"
-    ))
+    inject(
+        body,
+        &HtmlInject::new(HtmlAnchor::BeforeCloseHead, &frag)
+            .marker(META_MARKER)
+            .skip_if_contains(&["data-sova_meta"]),
+    )
 }
 
 fn contains_tag(hay: &str, tag: &str) -> bool {
@@ -63,9 +43,7 @@ fn strip_title_tags(fragment: &str) -> String {
         out.push_str(&rest[..start]);
         let after_open = &rest_l[start..];
         if let Some(end_rel) = after_open.find("</title>") {
-            let skip = start + end_rel + "</title>".len();
-            // also skip trailing newline if present
-            let mut skip = skip;
+            let mut skip = start + end_rel + "</title>".len();
             if rest[skip..].starts_with('\n') {
                 skip += 1;
             }
@@ -78,18 +56,6 @@ fn strip_title_tags(fragment: &str) -> String {
     }
     out.push_str(rest);
     out
-}
-
-fn find_ci(hay: &str, needle: &str) -> Option<usize> {
-    hay.to_ascii_lowercase().find(&needle.to_ascii_lowercase())
-}
-
-fn after_html_open(body: &str) -> Option<usize> {
-    let lower = body.to_ascii_lowercase();
-    let start = lower.find("<html")?;
-    let after_lt = &body[start..];
-    let gt = after_lt.find('>')?;
-    Some(start + gt + 1)
 }
 
 #[cfg(test)]
@@ -117,8 +83,11 @@ mod tests {
     #[test]
     fn skips_duplicate_title() {
         let body = "<html><head><title>Mine</title></head><body></body></html>";
-        let out = inject_head(body, "<title>Other</title>\n<meta name=\"description\" content=\"d\">\n")
-            .unwrap();
+        let out = inject_head(
+            body,
+            "<title>Other</title>\n<meta name=\"description\" content=\"d\">\n",
+        )
+        .unwrap();
         assert!(out.contains("<title>Mine</title>"));
         assert!(!out.contains("<title>Other</title>"));
         assert!(out.contains("description"));

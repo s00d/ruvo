@@ -1,0 +1,108 @@
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-sans/latin-700.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "tailwindcss";
+
+:root {
+  --dt-bg: #0b0d12;
+  --dt-surface: #141820;
+  --dt-surface-2: #1a1f2a;
+  --dt-surface-3: #222836;
+  --dt-border: #2c3340;
+  --dt-border-strong: #454d5e;
+  --dt-text: #eef0f4;
+  --dt-muted: #9aa3b2;
+  --dt-faint: #6b7382;
+  --dt-accent: #3dd68c;
+  --dt-accent-dim: color-mix(in srgb, #3dd68c 16%, transparent);
+  --dt-ok: #3dd68c;
+  --dt-warn: #e6b35a;
+  --dt-err: #f07178;
+  --dt-info: #6cb6ff;
+  --dt-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --dt-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --dt-radius: 6px;
+  --dt-bar-h: 36px;
+  --dt-z: 2147483001;
+  --dt-touch: 36px;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--dt-bg);
+  color: var(--dt-text);
+  font-family: var(--dt-sans);
+  font-size: 12.5px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+#sova-devtools {
+  height: 100%;
+  color: var(--dt-text);
+  font-family: var(--dt-sans);
+}
+
+#sova-devtools button {
+  font: inherit;
+}
+
+.dt-mono {
+  font-family: var(--dt-mono);
+}
+
+.dt-panel-enter {
+  animation: dt-rise 180ms ease-out;
+}
+
+@keyframes dt-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dt-spark {
+  from {
+    stroke-dashoffset: 120;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.dt-spark-path {
+  stroke-dasharray: 120;
+  animation: dt-spark 600ms ease-out forwards;
+}
+
+.dt-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--dt-border-strong) transparent;
+}
+.dt-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.dt-scroll::-webkit-scrollbar-thumb {
+  background: var(--dt-border-strong);
+  border-radius: 4px;
+}
+.dt-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (max-width: 639px) {
+  :root {
+    --dt-bar-h: 40px;
+  }
+}

@@ -413,7 +413,7 @@ fn plugin_category(slug: &str) -> &'static str {
         "db" | "redis" | "store" | "storage" | "tasks" | "tasks-store" => "Data",
         "templates" | "mail" | "i18n" | "meta" | "openapi" => "Content",
         "ws" | "sse" | "udp" | "quic" | "notifications" => "Realtime",
-        "observability" | "activity" => "Ops",
+        "observability" | "activity" | "devtools" => "Ops",
         "http" | "ai" => "Integrations",
         "cli" => "Tooling",
         _ => "Other",

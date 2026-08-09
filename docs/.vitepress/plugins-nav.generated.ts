@@ -58,6 +58,7 @@ export const pluginsNav = [
     text: 'Observability',
     items: [
     { text: 'activity', link: '/plugins/activity' },
+    { text: 'devtools', link: '/plugins/devtools' },
     { text: 'observability', link: '/plugins/observability' }
     ],
   },
@@ -141,6 +142,7 @@ export const pluginsSidebar = [
     collapsed: false,
     items: [
     { text: 'activity', link: '/plugins/activity' },
+    { text: 'devtools', link: '/plugins/devtools' },
     { text: 'observability', link: '/plugins/observability' }
     ],
   },

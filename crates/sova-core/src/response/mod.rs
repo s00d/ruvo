@@ -237,6 +237,39 @@ impl Response {
         self.body = body.into();
     }
 
+    /// `Content-Type` contains `text/html`.
+    pub fn is_html(&self) -> bool {
+        self.headers
+            .get(http::header::CONTENT_TYPE)
+            .and_then(|v| v.to_str().ok())
+            .is_some_and(|ct| ct.to_ascii_lowercase().contains("text/html"))
+    }
+
+    /// If this is buffered HTML, run `f` and replace the body when it returns `Some`.
+    /// Streams and non-HTML responses are left untouched. Returns whether the body changed.
+    pub fn map_buffered_html(&mut self, f: impl FnOnce(&str) -> Option<String>) -> bool {
+        if !self.is_html() {
+            return false;
+        }
+        let body = self.take_body();
+        match body {
+            Body::Bytes(bytes) => {
+                if let Ok(html) = std::str::from_utf8(&bytes) {
+                    if let Some(new_html) = f(html) {
+                        self.set_body(new_html);
+                        return true;
+                    }
+                }
+                self.set_body(bytes);
+                false
+            }
+            other => {
+                self.set_body(other);
+                false
+            }
+        }
+    }
+
     /// Body bytes when the response is buffered; `None` for streams.
     pub fn body_bytes(&self) -> Option<&[u8]> {
         match &self.body {
