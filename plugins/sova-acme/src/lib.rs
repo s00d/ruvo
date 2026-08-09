@@ -5,14 +5,16 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<()> {
-//!     let acme = Acme::lets_encrypt(["example.com"])
-//!         .email("ops@example.com")
-//!         .dir("./data/acme");
-//!     let tls = acme.tls()?;
 //!     let mut app = App::new();
 //!     app.get("/", || async { "hello https" });
-//!     app.install(acme.with_tls(tls.clone()));
-//!     app.bind("0.0.0.0:443").tls(tls.hsts(true))?.run().await
+//!     app.install(
+//!         Acme::lets_encrypt(["example.com"])
+//!             .email("ops@example.com")
+//!             .dir("./data/acme")
+//!             .hsts(true),
+//!     );
+//!     // HTTPS: plugin attached TLS via App::use_tls during install
+//!     app.listen(443).await
 //! }
 //! ```
 
@@ -46,6 +48,8 @@ pub struct Acme {
     redirect_https: bool,
     renew_days: u64,
     check_interval: Duration,
+    hsts: bool,
+    /// Optional override; when unset, [`Self::tls`] is built during `install`.
     tls: Option<Tls>,
 }
 
@@ -71,6 +75,7 @@ impl Acme {
             redirect_https: true,
             renew_days: 30,
             check_interval: Duration::from_secs(12 * 3600),
+            hsts: true,
             tls: None,
         }
     }
@@ -107,6 +112,12 @@ impl Acme {
         self
     }
 
+    /// Emit `Strict-Transport-Security` on HTTPS responses (default `true`).
+    pub fn hsts(mut self, enabled: bool) -> Self {
+        self.hsts = enabled;
+        self
+    }
+
     /// Renew when remaining lifetime ≤ this many days (default 30).
     pub fn renew_days(mut self, days: u64) -> Self {
         self.renew_days = days.max(1);
@@ -118,7 +129,9 @@ impl Acme {
         self
     }
 
-    /// Attach the [`Tls`] returned by [`Self::tls`] (required before `install`).
+    /// Advanced: supply a pre-built [`Tls`] (same handle used for hot-reload).
+    ///
+    /// Prefer the default path — `install` builds TLS and calls [`App::use_tls`].
     pub fn with_tls(mut self, tls: Tls) -> Self {
         self.tls = Some(tls);
         self
@@ -162,18 +175,23 @@ impl Plugin for Acme {
             .version(env!("CARGO_PKG_VERSION"))
     }
 
-    fn install(self, app: &mut App) {
-        let tls = match self.tls {
-            Some(t) => t,
-            None => {
-                tracing::error!("acme: call .with_tls(acme.tls()?) before install");
-                return;
-            }
-        };
+    fn install(mut self, app: &mut App) {
         if self.domains.is_empty() {
             tracing::error!("acme: no domains configured");
             return;
         }
+
+        let hsts = self.hsts;
+        let tls = match self.tls.take() {
+            Some(t) => t.hsts(hsts),
+            None => match self.tls() {
+                Ok(t) => t.hsts(hsts),
+                Err(e) => {
+                    tracing::error!("acme: prepare tls: {e}");
+                    return;
+                }
+            },
+        };
 
         let storage = AcmeStorage::new(&self.dir);
         let _ = storage.ensure_dir();
@@ -196,6 +214,8 @@ impl Plugin for Acme {
 
         let events = Some(app.events().clone());
         app.state(handle.clone());
+        // Wire HTTPS into the next listen/bind().run() without a manual .tls(...).
+        app.use_tls(tls.clone());
 
         let handle_cli = handle.clone();
         app.register_cli("acme", move |_state, args| {
@@ -243,7 +263,7 @@ impl Plugin for Acme {
             check_interval: self.check_interval,
         });
 
-        tracing::info!("acme: installed (HTTP-01 + renewer)");
+        tracing::info!("acme: installed (HTTP-01 + renewer; TLS attached to app)");
     }
 }
 

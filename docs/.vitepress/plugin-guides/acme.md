@@ -4,6 +4,7 @@
 - HTTP-01 challenges on port 80
 - Issues / renews certificates via ACME (`instant-acme`)
 - Hot-reloads PEM into the shared [`Tls`](https://docs.rs/sova-core) resolver (`reload_pem`)
+- Attaches TLS to the app on `install` (`App::use_tls`) — no separate `.tls(...)` on bind
 - Optional redirect of non-challenge HTTP → HTTPS
 - Events: `CertificateIssued` / `CertificateRenewed` / `AcmeFailed`
 - CLI: `acme status` / `acme renew`
@@ -11,12 +12,15 @@
 ### Example
 
 ```rust
-let acme = Acme::lets_encrypt(["example.com"])
-    .email("ops@example.com")
-    .dir("./data/acme");
-let tls = acme.tls()?;
-app.install(acme.with_tls(tls.clone()));
-app.bind("0.0.0.0:443").tls(tls.hsts(true))?.run().await?;
+app.install(
+    Acme::lets_encrypt(["example.com"])
+        .email("ops@example.com")
+        .dir("./data/acme")
+        .hsts(true),
+);
+app.listen(443).await?;
 ```
 
-Use `Acme::lets_encrypt_staging` (or `.staging(true)`) while testing. Port 80 must reach this process.
+`install` prepares the cert (or a temporary placeholder) and wires HTTPS into the next `listen` / `bind(...).run()`. Use `Acme::lets_encrypt_staging` (or `.staging(true)`) while testing. Port 80 must reach this process.
+
+Advanced: `acme.tls()?` + `.with_tls(tls)` + `bind(...).tls(tls)?` still work if you need a custom bind/`Tls` handle.

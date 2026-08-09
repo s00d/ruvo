@@ -97,9 +97,20 @@ impl App {
 
     /// Bind `0.0.0.0:port`, run CLI if present, otherwise serve.
     ///
-    /// Prefer this for the common case; use [`Self::bind`] for TLS, UDS, or custom addresses.
+    /// Prefer this for the common case; use [`Self::bind`] for custom addresses.
+    /// When a plugin attached TLS via [`Self::use_tls`] (e.g. Acme), this serves HTTPS.
     pub async fn listen(self, port: u16) -> Result<()> {
         self.bind(port).run().await
+    }
+
+    /// Attach TLS for the next [`Self::listen`] / [`BoundApp::run`].
+    ///
+    /// Plugins like Acme call this during `install` so apps do not need a separate
+    /// `.tls(...)` on [`BoundApp`]. An explicit [`BoundApp::tls`] still wins.
+    #[cfg(feature = "tls")]
+    pub fn use_tls(&mut self, tls: crate::Tls) -> &mut Self {
+        self.tls = Some(tls);
+        self
     }
 }
 
@@ -152,6 +163,8 @@ impl BoundApp {
     }
 
     /// Enable HTTPS (TCP binds only). Requires feature `tls`.
+    ///
+    /// Overrides TLS previously attached with [`App::use_tls`].
     #[cfg(feature = "tls")]
     pub fn tls(mut self, config: crate::Tls) -> Result<Self> {
         if matches!(self.bind, Bind::Uds(_)) {
@@ -159,6 +172,7 @@ impl BoundApp {
                 "TLS cannot be combined with Bind::Uds".into(),
             ));
         }
+        self.app.tls = None;
         self.tls = Some(config.into_runtime()?);
         self.app.hsts = self.tls.as_ref().map(|t| t.hsts).unwrap_or(false);
         Ok(self)
@@ -171,33 +185,52 @@ impl BoundApp {
     }
 
     #[cfg(feature = "tls")]
-    async fn serve_inner(self) -> Result<()> {
+    fn take_tls_runtime(&mut self) -> Result<Option<crate::tls::TlsRuntime>> {
+        if self.tls.is_some() {
+            return Ok(self.tls.take());
+        }
+        let Some(config) = self.app.tls.take() else {
+            return Ok(None);
+        };
+        if matches!(self.bind, Bind::Uds(_)) {
+            return Err(Error::Internal(
+                "TLS cannot be combined with Bind::Uds".into(),
+            ));
+        }
+        let runtime = config.into_runtime()?;
+        self.app.hsts = runtime.hsts;
+        Ok(Some(runtime))
+    }
+
+    #[cfg(feature = "tls")]
+    async fn serve_inner(mut self) -> Result<()> {
+        let tls = self.take_tls_runtime()?;
         let http = self.http;
         match self.bind {
             Bind::Port(port) => {
                 let app = Self::apply_http_mode(self.app, http, Some(port));
-                server::listen(app, Some(port), None, self.shutdown, self.tls).await
+                server::listen(app, Some(port), None, self.shutdown, tls).await
             }
             Bind::Addr(addr) => {
                 let app = Self::apply_http_mode(self.app, http, Some(addr.port()));
-                server::listen(app, None, Some(addr), self.shutdown, self.tls).await
+                server::listen(app, None, Some(addr), self.shutdown, tls).await
             }
             Bind::Str(s) => {
                 let addr: SocketAddr = s.parse().map_err(|e| {
                     Error::Internal(format!("bind str {s:?}: invalid address: {e}"))
                 })?;
                 let app = Self::apply_http_mode(self.app, http, Some(addr.port()));
-                server::listen(app, None, Some(addr), self.shutdown, self.tls).await
+                server::listen(app, None, Some(addr), self.shutdown, tls).await
             }
             Bind::Env { default_port } => {
                 let addr = super::addr_from_env(default_port)?;
                 let app = Self::apply_http_mode(self.app, http, Some(addr.port()));
-                server::listen(app, None, Some(addr), self.shutdown, self.tls).await
+                server::listen(app, None, Some(addr), self.shutdown, tls).await
             }
             Bind::Listener(listener) => {
                 let port = listener.local_addr().ok().map(|a| a.port());
                 let app = Self::apply_http_mode(self.app, http, port);
-                server::listen_with_listener(app, listener, self.shutdown, self.tls).await
+                server::listen_with_listener(app, listener, self.shutdown, tls).await
             }
             #[cfg(unix)]
             Bind::Uds(path) => {

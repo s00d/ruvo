@@ -1,6 +1,6 @@
 [package]
 name = "sova-acme"
-version = "0.1.0"
+version = "0.1.1"
 authors.workspace = true
 edition.workspace = true
 description = "Let's Encrypt ACME (HTTP-01) certificates for Sova with TLS hot-reload"

@@ -27,19 +27,16 @@ async fn main() -> Result<()> {
         .and_then(|s| s.parse().ok())
         .unwrap_or(80);
 
-    let acme = Acme::lets_encrypt_staging(domains)
-        .email(email)
-        .dir(dir)
-        .http_port(http_port)
-        .https_port(https_port);
-    let tls = acme.tls()?;
-
     let mut app = App::new();
     app.get("/", || async { "hello acme" });
-    app.install(acme.with_tls(tls.clone()));
+    app.install(
+        Acme::lets_encrypt_staging(domains)
+            .email(email)
+            .dir(dir)
+            .http_port(http_port)
+            .https_port(https_port)
+            .hsts(true),
+    );
 
-    app.bind(("0.0.0.0", https_port))
-        .tls(tls.hsts(true))?
-        .run()
-        .await
+    app.listen(https_port).await
 }

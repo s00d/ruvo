@@ -83,6 +83,9 @@ pub struct App {
     pub(crate) service_in_cli: bool,
     pub(crate) hsts: bool,
     pub(crate) alt_svc: Option<String>,
+    /// TLS attached by plugins (e.g. Acme) — used by [`BoundApp`] when `.tls()` was not called.
+    #[cfg(feature = "tls")]
+    pub(crate) tls: Option<crate::Tls>,
     pub(crate) installed_plugins: HashSet<&'static str>,
     pub(crate) installed_plugin_meta: Vec<InstalledPlugin>,
     pub(crate) missing_plugin_requires: Vec<(&'static str, &'static str)>,
@@ -117,6 +120,8 @@ impl App {
             service_in_cli: false,
             hsts: false,
             alt_svc: None,
+            #[cfg(feature = "tls")]
+            tls: None,
             installed_plugins: HashSet::new(),
             installed_plugin_meta: Vec::new(),
             missing_plugin_requires: Vec::new(),

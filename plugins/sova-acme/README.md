@@ -17,14 +17,16 @@ use sova::{Acme, App, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let acme = Acme::lets_encrypt(["example.com"])
-        .email("ops@example.com")
-        .dir("./data/acme");
-    let tls = acme.tls()?; // existing cert or temporary self-signed
     let mut app = App::new();
     app.get("/", || async { "hello https" });
-    app.install(acme.with_tls(tls.clone()));
-    app.bind("0.0.0.0:443").tls(tls.hsts(true))?.run().await
+    app.install(
+        Acme::lets_encrypt(["example.com"])
+            .email("ops@example.com")
+            .dir("./data/acme")
+            .hsts(true),
+    );
+    // install attached TLS to the app — just listen
+    app.listen(443).await
 }
 ```
 
