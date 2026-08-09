@@ -31,8 +31,18 @@ impl TestClient {
     }
 
     /// Same as [`Self::new`] (Rocket-style name).
+    ///
+    /// Does **not** run startup hooks — prefer [`Self::boot`] when the app installs
+    /// `Db` / other plugins that connect in `on_startup`.
     pub fn tracked(app: App) -> Result<Self> {
         Self::new(app)
+    }
+
+    /// [`Self::tracked`] plus [`Server::run_startup`] (connects Db pool, etc.).
+    pub async fn boot(app: App) -> Result<Self> {
+        let client = Self::new(app)?;
+        client.server.run_startup().await?;
+        Ok(client)
     }
 
     pub fn server(&self) -> &Server {

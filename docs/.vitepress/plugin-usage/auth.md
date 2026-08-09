@@ -1,7 +1,36 @@
-Fortify sits **on the web preset** (sessions, csrf, templates already there). Add Db + Mail + Fortify, guard private mounts in modules.
+Fortify sits **on the web preset** (sessions, csrf, templates already there). Add Db + Fortify; add **Mail only** when enabling `EmailVerification` or `ResetPasswords`.
 
 ```rust
-// main.rs
+// Registration-only — no Mail
+use sova::prelude::*;
+use sova::{AuthFeature, AuthMigrator, Db, Fortify, Parser, ServerArgs};
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let args = ServerArgs::parse();
+    args.init_tracing();
+
+    let mut app = App::web()
+        .site("News")
+        .public_url("http://127.0.0.1:3000")
+        .into_app();
+
+    app.install(Db::from_env().migrations::<AuthMigrator>());
+    app.install(
+        Fortify::new()
+            .features([AuthFeature::Registration])
+            .web_forms(true)
+            .no_api()
+            .home("/")
+            .login_redirect("/login"),
+    );
+
+    app.run().await
+}
+```
+
+```rust
+// With reset — Mail before Fortify
 use sova::prelude::*;
 use sova::{
     AuthFeature, AuthMigrator, Db, Fortify, Mail, Parser, ServerArgs,
@@ -51,4 +80,4 @@ pub fn register(app: &mut App) {
 
 Programmatic login (seed / impersonation): `req.login_user(cu)` / `req.logout_user()`.
 
-Full product reference: `cargo run -p cabinet`. JWT-only APIs → [passport](/plugins/passport).
+See `examples/web/hackernews` (Registration-only) and `examples/cabinet` (full stack).

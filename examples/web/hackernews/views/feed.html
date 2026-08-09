@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+{% if stories %}
+<ol class="stories" start="1">
+  {% for s in stories %}
+  <li class="story">
+    <div class="rank">{{ loop.index }}.</div>
+    <div class="body">
+      <div class="title-line">
+        {% if user %}
+        <form class="vote" method="post" action="/item/{{ s.id }}/vote">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button type="submit" title="upvote" aria-label="upvote">▲</button>
+        </form>
+        {% else %}
+        <span class="vote-spacer" aria-hidden="true"></span>
+        {% endif %}
+        {% if s.url %}
+        <a class="title" href="{{ s.url }}" rel="nofollow">{{ s.title }}</a>
+        <span class="host">({{ s.url }})</span>
+        {% else %}
+        <a class="title" href="/item/{{ s.id }}">{{ s.title }}</a>
+        {% endif %}
+      </div>
+      <div class="sub">
+        {{ s.points }} points by {{ s.author }}
+        | <a href="/item/{{ s.id }}">{{ s.comment_count }} comments</a>
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+</ol>
+{% else %}
+<p class="empty">No stories yet. <a href="/submit">Submit</a> the first one.</p>
+{% endif %}
+{% endblock %}

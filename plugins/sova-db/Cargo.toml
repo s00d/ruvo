@@ -1,6 +1,6 @@
 [package]
 name = "sova-db"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "SeaORM database plugin for Sova (postgres / sqlite / mysql)"
 license = "MIT"

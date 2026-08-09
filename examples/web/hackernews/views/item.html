@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block content %}
+<article class="item">
+  <div class="title-line">
+    {% if user %}
+    <form class="vote" method="post" action="/item/{{ story.id }}/vote">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button type="submit" title="upvote" aria-label="upvote">▲</button>
+    </form>
+    {% endif %}
+    {% if story.url %}
+    <a class="title" href="{{ story.url }}" rel="nofollow">{{ story.title }}</a>
+    {% else %}
+    <span class="title">{{ story.title }}</span>
+    {% endif %}
+  </div>
+  <div class="sub">
+    {{ story.points }} points by {{ story.author }}
+    | {{ story.comment_count }} comments
+  </div>
+  {% if story.text %}
+  <div class="text">{{ story.text }}</div>
+  {% endif %}
+</article>
+
+{% if user %}
+<form class="comment-form" method="post" action="/item/{{ story.id }}/comment">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <textarea name="body" rows="5" required maxlength="4000" placeholder="Add a comment"></textarea>
+  <button type="submit">add comment</button>
+</form>
+{% else %}
+<p class="hint"><a href="/login">Log in</a> to comment.</p>
+{% endif %}
+
+<section class="comments">
+  {% for c in comments %}
+  <div class="comment">
+    <div class="sub">{{ c.author }}</div>
+    <div class="body">{{ c.body }}</div>
+  </div>
+  {% else %}
+  <p class="empty">No comments yet.</p>
+  {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1 class="page-title">Submit</h1>
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+<form class="submit-form" method="post" action="/submit">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <label>
+    title
+    <input name="title" required maxlength="300" value="{{ title | default(value="") }}">
+  </label>
+  <label>
+    url
+    <input name="url" type="url" maxlength="2000" placeholder="https://…">
+  </label>
+  <label>
+    text
+    <textarea name="text" rows="6" maxlength="8000" placeholder="Or write a text post"></textarea>
+  </label>
+  <p class="hint">Provide a URL and/or text.</p>
+  <button type="submit">submit</button>
+</form>
+{% endblock %}

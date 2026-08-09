@@ -18,12 +18,12 @@ Open a plugin page from the table. Extra notes for heavier stacks are below.
 | Plugin | Version | Summary | Features |
 |--------|---------|---------|----------|
 | [`activity`](/plugins/activity) | `0.1.0` | Audit / activity log (who changed what) | `activity` |
-| [`auth`](/plugins/auth) | `0.1.0` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-vld` |
+| [`auth`](/plugins/auth) | `0.1.1` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-vld` |
 | [`compress`](/plugins/compress) | `0.1.0` | gzip / deflate / brotli response compression | `compress` |
 | [`cookies`](/plugins/cookies) | `0.1.0` | Parse Cookie header into request-local Cookies | `cookies` |
 | [`cors`](/plugins/cors) | `0.1.0` | Cross-Origin Resource Sharing headers | `cors` |
 | [`csrf`](/plugins/csrf) | `0.1.0` | Session double-submit CSRF (Laravel-style except/XSRF cookie) | `csrf` |
-| [`db`](/plugins/db) | `0.1.0` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
+| [`db`](/plugins/db) | `0.1.1` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
 | [`env`](/plugins/env) | `0.1.0` | Cascade .env loading for Sova apps (dotenvy) | `env` |
 | [`http`](/plugins/http) | `0.1.0` | Outbound HTTP client with SSRF guards and named configs | `http-client` |
 | [`i18n`](/plugins/i18n) | `0.1.0` | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |

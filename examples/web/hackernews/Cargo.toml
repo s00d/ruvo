@@ -1,0 +1,56 @@
+[package]
+name = "hackernews"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Hacker News–style demo: stories, votes, comments on App::web() + Fortify"
+
+[lib]
+name = "hackernews"
+path = "src/lib.rs"
+
+[[bin]]
+name = "hackernews"
+path = "src/main.rs"
+
+[dependencies]
+sova = { workspace = true, features = [
+    "web",
+    "db-sqlite",
+    "auth",
+    "auth-vld",
+    "vld-form",
+    "vld-flash",
+    "env",
+] }
+sea-orm = { workspace = true, default-features = false, features = [
+    "runtime-tokio-rustls",
+    "macros",
+    "sqlx-sqlite",
+    "with-chrono",
+] }
+sea-orm-migration = { workspace = true, default-features = false, features = [
+    "runtime-tokio-rustls",
+    "sqlx-sqlite",
+] }
+async-trait = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+chrono = { workspace = true, default-features = false, features = ["clock", "serde"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+
+[dev-dependencies]
+sova = { workspace = true, features = [
+    "web",
+    "db-sqlite",
+    "auth",
+    "auth-vld",
+    "vld-form",
+    "vld-flash",
+    "env",
+    "testing",
+] }
+sova-testing = { workspace = true, features = ["sqlite"] }
+tempfile = { workspace = true }
+http = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

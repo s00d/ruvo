@@ -320,15 +320,22 @@ Use a bare app only when you are **not** shipping a web/API product stack (tiny 
 
 ## Testing
 
-Dev-dependency `sova-testing`. Build with the same preset helpers you use in `main`:
+Enable facade feature `testing` (re-exports `TestClient`). For apps with `Db`, use **`TestClient::boot`** so `on_startup` connects the pool:
 
 ```rust
-fn app() -> App {
-    let mut app = App::api().title("Ping").version("1.0").into_app();
-    modules::register(&mut app);
-    app
+use sova::TestClient;
+
+#[tokio::test]
+async fn home_ok() {
+    let app = build_app().unwrap();
+    let c = TestClient::boot(app.into()).await.unwrap();
+    c.get("/").await.assert_status(200);
 }
 ```
+
+`TestClient::tracked` skips startup (fine for session-only apps). `sova-testing::TestApp` already runs startup before returning the app.
+
+Seed CLI callbacks must return `Result<(), sova::Error>` (core), not facade `AppError` — see `Db::seed` / `examples/web/hackernews/src/seed.rs`.
 
 ## Next
 

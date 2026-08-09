@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Sova News{% endblock %}</title>
+  <link rel="stylesheet" href="/assets/hn.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">SN</a>
+    <nav>
+      <a href="/">top</a>
+      <a href="/newest">new</a>
+      <a href="/submit">submit</a>
+    </nav>
+    <div class="user">
+      {% if user %}
+        <span>{{ user.name }}</span>
+        <form class="inline" method="post" action="/logout">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button type="submit">logout</button>
+        </form>
+      {% else %}
+        <a href="/login">login</a>
+        <a href="/register">register</a>
+      {% endif %}
+    </div>
+  </header>
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="wrap foot">
+    Sova News — demo of <a href="https://s00d.github.io/sova/">Sova</a>
+  </footer>
+</body>
+</html>

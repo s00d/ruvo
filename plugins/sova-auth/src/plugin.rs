@@ -1,6 +1,7 @@
 //! Fortify plugin: Passport session + JSON API (web forms opt-in).
 //!
-//! Install order (runtime `requires`): **`db` → `session` → `mail` → Fortify**.
+//! Install order (runtime `requires`): **`db` → `session` → Fortify**.
+//! Add **`mail`** before Fortify when enabling `EmailVerification` or `ResetPasswords`.
 //! Passport is installed inside Fortify. CSRF stays app-level (e.g. cabinet).
 
 use crate::actions;
@@ -215,7 +216,13 @@ impl Plugin for Fortify {
     }
 
     fn requires(&self) -> &'static [&'static str] {
-        &["db", "session", "mail"]
+        let needs_mail = self.features.contains(&Feature::EmailVerification)
+            || self.features.contains(&Feature::ResetPasswords);
+        if needs_mail {
+            &["db", "session", "mail"]
+        } else {
+            &["db", "session"]
+        }
     }
 
     fn meta(&self) -> sova_core::PluginMeta {

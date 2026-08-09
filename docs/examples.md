@@ -338,12 +338,30 @@ cargo run -p cabinet
 
 Seed: `demo@sova.local` / `demo1234`.
 
+## Hacker News–style (web + Fortify Registration-only)
+
+Structured demo under `examples/web/hackernews`: stories, upvotes, comments, SQLite, Fortify **Registration** only (no Mail / 2FA / reset).
+
+```bash
+export DATABASE_URL="sqlite:./hn.db?mode=rwc"
+export FORTIFY_SECRET="dev-hn-secret-change-me"
+cargo run -p hackernews -- migrate
+cargo run -p hackernews -- seed   # demo@sova.news / demo1234
+cargo run -p hackernews
+# http://127.0.0.1:3000
+cargo test -p hackernews
+./scripts/release-smoke-hn.sh          # workspace
+SOVA_SMOKE_CRATES=1 ./scripts/release-smoke-hn.sh  # crates.io consumer
+```
+
+Layout: `app.rs` (preset + Db + Fortify) → `modules/{feed,submit,item}` → `entity/` + `db.rs` helpers → `views/` + `public/hn.css`.
+
 ## Package map
 
 | Area | Packages | Notes |
 |------|----------|--------|
 | API | `api_preset`, `api_validated`, `crud`, `api_jwt`, `api_oauth`, `api_auth` | Prefer `api_preset` as the template |
-| Web | `templates`, `templates_i18n`, `upload`, `static_files`, `i18n`, `meta_blog` | Thin demos; new apps → `App::web()` |
+| Web | `hackernews`, `templates`, `templates_i18n`, `upload`, `static_files`, `i18n`, `meta_blog` | Prefer `hackernews` / `App::web()` |
 | Basic | `hello`, `blog`, `auth`, `rest_api` | Older `App::new()` style |
 | Realtime | `ws_chat`, `sse`, `sse_feed` | |
 | Jobs | `tasks` | |

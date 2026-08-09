@@ -1,6 +1,6 @@
 [package]
 name = "sova-core"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Core HTTP primitives for Sova (App, Router, Request, Response)"
 license = "MIT"

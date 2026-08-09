@@ -1,0 +1,166 @@
+:root {
+  --bg: #f6f6ef;
+  --bar: #ff6600;
+  --ink: #000;
+  --muted: #828282;
+  --line: #e2e2d8;
+  --link: #000;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 13px/1.45 Verdana, Geneva, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bar);
+  padding: 4px 8px;
+}
+
+.brand {
+  font-weight: 700;
+  border: 1px solid #fff;
+  color: #fff;
+  padding: 0 4px;
+  line-height: 18px;
+}
+
+.topbar nav a,
+.topbar .user,
+.topbar .user a,
+.topbar .user span,
+.topbar button {
+  color: #000;
+}
+
+.topbar nav {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inline { display: inline; margin: 0; }
+.inline button,
+.vote button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.vote button {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1;
+  vertical-align: top;
+}
+
+.vote-spacer {
+  display: inline-block;
+  width: 12px;
+}
+
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 10px 12px 24px;
+}
+
+.foot {
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  margin-top: 24px;
+  padding-top: 12px;
+  font-size: 12px;
+}
+
+.stories {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.story {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 6px;
+}
+
+.rank { color: var(--muted); min-width: 1.6em; text-align: right; }
+.title { font-size: 14px; }
+.host {
+  color: var(--muted);
+  font-size: 11px;
+  margin-left: 4px;
+  word-break: break-all;
+}
+.sub { color: var(--muted); font-size: 11px; }
+.sub a { color: var(--muted); }
+
+.title-line { display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
+
+.page-title { font-size: 16px; margin: 0 0 12px; }
+
+.submit-form,
+.comment-form {
+  display: grid;
+  gap: 10px;
+  max-width: 480px;
+}
+
+.submit-form label {
+  display: grid;
+  gap: 4px;
+}
+
+.submit-form input,
+.submit-form textarea,
+.comment-form textarea {
+  width: 100%;
+  font: inherit;
+  padding: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+
+button[type="submit"] {
+  justify-self: start;
+  font: inherit;
+  padding: 4px 10px;
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  cursor: pointer;
+}
+
+.hint, .empty, .error { color: var(--muted); }
+.error { color: #a00; }
+
+.item .text {
+  margin: 10px 0 16px;
+  white-space: pre-wrap;
+}
+
+.comments { margin-top: 20px; }
+.comment {
+  border-top: 1px solid var(--line);
+  padding: 10px 0;
+}
+.comment .body { white-space: pre-wrap; margin-top: 4px; }

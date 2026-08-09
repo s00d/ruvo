@@ -27,6 +27,8 @@ type SeedFn = Arc<
 /// SeaORM pool plugin (backend selected by URL + Cargo features).
 pub struct Db {
     url: String,
+    /// When true, [`Self::url`] wins over `DATABASE_URL` / toml at install time.
+    url_pinned: bool,
     migrate: Option<MigrateFn>,
     seed: Option<SeedFn>,
 }
@@ -36,13 +38,16 @@ impl Db {
         let url = std::env::var("DATABASE_URL").unwrap_or_default();
         Self {
             url,
+            url_pinned: false,
             migrate: None,
             seed: None,
         }
     }
 
+    /// Pin the connection URL (takes precedence over `DATABASE_URL` and `[db] url`).
     pub fn url(mut self, url: impl Into<String>) -> Self {
         self.url = url.into();
+        self.url_pinned = true;
         self
     }
 
@@ -77,19 +82,21 @@ impl Plugin for Db {
     }
 
     fn install(mut self, app: &mut App) {
-        // Env wins, then builder `.url()`, then `[db] url` in toml.
-        if let Ok(u) = std::env::var("DATABASE_URL") {
-            if !u.is_empty() {
-                self.url = u;
+        // Pinned `.url()` wins; else `DATABASE_URL`, then `[db] url` in toml.
+        if !self.url_pinned {
+            if let Ok(u) = std::env::var("DATABASE_URL") {
+                if !u.is_empty() {
+                    self.url = u;
+                }
             }
-        }
-        if self.url.is_empty() {
-            if let Some(u) = app
-                .config_doc()
-                .and_then(|d| d.section("db"))
-                .and_then(|s| s.get("url").and_then(|v| v.as_str()).map(str::to_string))
-            {
-                self.url = u;
+            if self.url.is_empty() {
+                if let Some(u) = app
+                    .config_doc()
+                    .and_then(|d| d.section("db"))
+                    .and_then(|s| s.get("url").and_then(|v| v.as_str()).map(str::to_string))
+                {
+                    self.url = u;
+                }
             }
         }
 
