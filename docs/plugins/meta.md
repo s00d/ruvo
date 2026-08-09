@@ -5,7 +5,7 @@ editLink: false
 
 # `meta`
 
-**Document meta, OG/Twitter, JSON-LD, and head inject** · crate `sova-meta` `0.1.2` · id `sitemap`
+**Document meta, OG/Twitter, JSON-LD, and head inject** · crate `sova-meta` `0.1.2` · id `meta`
 
 ```bash
 cargo add sova --features meta,meta-i18n,meta-openapi,meta-store,meta-templates

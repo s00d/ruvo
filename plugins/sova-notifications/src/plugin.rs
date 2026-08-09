@@ -77,6 +77,10 @@ impl Plugin for Notifications {
     }
 
     fn requires(&self) -> &'static [&'static str] {
+        #[cfg(feature = "ws")]
+        if self.ws_path.is_some() {
+            return &["db", "ws"];
+        }
         &["db"]
     }
 

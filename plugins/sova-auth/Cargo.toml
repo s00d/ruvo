@@ -1,6 +1,6 @@
 [package]
 name = "sova-auth"
-version = "0.1.4"
+version = "0.1.5"
 authors.workspace = true
 edition.workspace = true
 description = "Fortify-style authentication for Sova (register, 2FA, reset, roles)"

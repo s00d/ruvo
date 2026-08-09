@@ -165,7 +165,7 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
         };
 
         let mut meta_desc = String::new();
-        let mut plugin_id = slug.clone();
+        let mut plugin_ids: Vec<String> = Vec::new();
         for path in rust_sources(&crate_dir) {
             let src = fs::read_to_string(&path).map_err(|e| e.to_string())?;
             let Ok(file) = syn::parse_file(&src) else {
@@ -179,9 +179,18 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
                 }
             }
             if let Some(id) = v.plugin_id {
-                plugin_id = id;
+                if !plugin_ids.iter().any(|x| x == &id) {
+                    plugin_ids.push(id);
+                }
             }
         }
+        // Prefer id matching the docs slug (e.g. `meta` over `sitemap` in sova-meta).
+        let plugin_id = plugin_ids
+            .iter()
+            .find(|id| *id == &slug)
+            .cloned()
+            .or_else(|| plugin_ids.first().cloned())
+            .unwrap_or_else(|| slug.clone());
 
         let cargo_toml = fs::read_to_string(crate_dir.join("Cargo.toml")).unwrap_or_default();
         let pkg_desc = cargo_description(&cargo_toml).unwrap_or_default();

@@ -5,7 +5,7 @@ editLink: false
 
 # `auth`
 
-**Register/login, verify, reset, 2FA, profile, roles** · crate `sova-auth` `0.1.4` · id `fortify`
+**Register/login, verify, reset, 2FA, profile, roles** · crate `sova-auth` `0.1.5` · id `fortify`
 
 ```bash
 cargo add sova --features auth,auth-activity,auth-mail,auth-vld
@@ -24,7 +24,10 @@ Fortify-style authentication for Sova (register, verify, reset, 2FA, RBAC).
  (and install [`sova_mail::Mail`]) for email verification / password reset.
 
 ```rust
- app.install(Db::from_env().migrations::<sova_auth::AuthMigrator>());
+ use sova_auth::{AuthMigrator, Feature, Fortify};
+ // Facade re-exports the same enum as `AuthFeature`.
+
+ app.install(Db::from_env().migrations::<AuthMigrator>());
  app.install(memory_sessions());
  app.install(
    Fortify::new()

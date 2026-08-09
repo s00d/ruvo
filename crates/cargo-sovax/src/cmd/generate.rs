@@ -137,7 +137,7 @@ homepage = "https://s00d.github.io/sova/"
 keywords = ["sova", "plugin", "{name}"]
 
 [dependencies]
-sova-core = {{ version = "0.1.0", path = "../../crates/sova-core" }}
+sova-core = {{ version = "0.1" }}
 "#
         ),
     )

@@ -4,7 +4,10 @@
 //! (and install [`sova_mail::Mail`]) for email verification / password reset.
 //!
 //! ```ignore
-//! app.install(Db::from_env().migrations::<sova_auth::AuthMigrator>());
+//! use sova_auth::{AuthMigrator, Feature, Fortify};
+//! // Facade re-exports the same enum as `AuthFeature`.
+//!
+//! app.install(Db::from_env().migrations::<AuthMigrator>());
 //! app.install(memory_sessions());
 //! app.install(
 //!   Fortify::new()

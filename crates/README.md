@@ -9,8 +9,8 @@ Workspace library / tooling crates.
 
 | Crate | Version | Description |
 |-------|---------|-------------|
-| [`cargo-sovax`](./cargo-sovax/) | `0.1.5` | Cargo subcommand for scaffolding and running Sova apps |
-| [`sova`](./sova/) | `0.1.8` | Express-like HTTP framework for Rust |
+| [`cargo-sovax`](./cargo-sovax/) | `0.1.6` | Cargo subcommand for scaffolding and running Sova apps |
+| [`sova`](./sova/) | `0.1.9` | Express-like HTTP framework for Rust |
 | [`sova-core`](./sova-core/) | `0.1.3` | Core HTTP primitives for Sova (App, Router, Request, Response) |
 | [`sova-docs-gen`](./sova-docs-gen/) | `0.1.0` | Generate VitePress API markdown from Sova Rust sources · unpublished |
 | [`sova-testing`](./sova-testing/) | `0.1.2` | Framework-style test harness for Sova (sqlite, TestApp, snapshots) |
