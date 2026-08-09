@@ -1,19 +1,10 @@
-# Build context: repository root (`docker compose -f deploy/docker-compose.yml` from root,
-# or `docker compose` from `deploy/` with context `..`).
-
 target
-**/target
 .git
 .github
-docs
-node_modules
+.env
+**/.env
 **/node_modules
 frontend/node_modules
-**/.env
-**/.DS_Store
-ci-smoke-*
-.ci-gen
+docs
 *.md
-!README.md
-!plugins/*/README.md
-deploy/data
+.DS_Store

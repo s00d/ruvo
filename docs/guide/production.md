@@ -1,6 +1,7 @@
 # Production
 
-Release builds and Docker Compose for Sova apps.
+How to ship **your** Sova application — release binary and Docker Compose.  
+The [`deploy/`](https://github.com/s00d/sova/tree/master/deploy) folder is a **template for app repos**, not a container of the framework itself.
 
 ## Local release
 
@@ -21,84 +22,50 @@ Use `[production.*]` in `sova.toml` ([Configuration](/guide/configuration)). Sec
 
 ---
 
-## Docker Compose (recommended)
+## Docker Compose (app template)
 
-Reference stack lives in the repo under [`deploy/`](https://github.com/s00d/sova/tree/master/deploy).  
-**Compose is the entrypoint** — not a file dump.
-
-| File | Role |
-|------|------|
-| [`docker-compose.yml`](https://github.com/s00d/sova/tree/master/deploy/docker-compose.yml) | `app` service: image or local build, port `3000`, prod env |
-| [`Dockerfile`](https://github.com/s00d/sova/tree/master/deploy/Dockerfile) | multi-stage build of the demo binary |
-| [`sova.production.toml`](https://github.com/s00d/sova/tree/master/deploy/sova.production.toml) | mounted as `/app/sova.toml` |
-| [`.env.example`](https://github.com/s00d/sova/tree/master/deploy/.env.example) | copy to `.env` for secrets / overrides |
-
-### Option A — pull published image
-
-Demo image: [`ghcr.io/s00d/sova-hello`](https://github.com/s00d/sova/pkgs/container/sova-hello) (built from `examples/basic/hello`).
+Copy the template into **your application repository** (the crate that depends on `sova`), then build that app:
 
 ```bash
-git clone https://github.com/s00d/sova.git && cd sova/deploy
-cp .env.example .env   # optional
-docker compose pull
-docker compose up -d
-curl -sS http://127.0.0.1:3000/
-curl -sS http://127.0.0.1:3000/healthz
-docker compose logs -f --tail=50
-docker compose down
-```
+# from the Sova repo (or download the raw files)
+cp deploy/Dockerfile deploy/docker-compose.yml deploy/sova.toml \
+   deploy/.env.example deploy/.dockerignore /path/to/myapp/
 
-### Option B — build from this repo
-
-```bash
-cd deploy   # or: docker compose -f deploy/docker-compose.yml … from repo root
+cd /path/to/myapp
+mv .env.example .env
+# edit docker-compose.yml → build.args.APP_BIN = your binary name
 docker compose up --build -d
 curl -sS http://127.0.0.1:3000/
+docker compose logs --tail=50
 docker compose down
 ```
 
-Build another example binary:
+| File | In your app |
+|------|-------------|
+| [`Dockerfile`](https://github.com/s00d/sova/blob/master/deploy/Dockerfile) | multi-stage `cargo build --release` of **your** crate |
+| [`docker-compose.yml`](https://github.com/s00d/sova/blob/master/deploy/docker-compose.yml) | `app` service (+ optional Postgres, commented) |
+| [`sova.toml`](https://github.com/s00d/sova/blob/master/deploy/sova.toml) | mounted at `/app/sova.toml` |
+| [`.env.example`](https://github.com/s00d/sova/blob/master/deploy/.env.example) | copy to `.env` for secrets |
+| [`.dockerignore`](https://github.com/s00d/sova/blob/master/deploy/.dockerignore) | keeps `target/` out of the build context |
 
-```bash
-docker compose build --build-arg EXAMPLE_PKG=fs_demo --build-arg EXAMPLE_BIN=fs_demo
+### App checklist
+
+1. Binary crate with `Cargo.toml` + `src/` (what `cargo sovax new` scaffolds).
+2. `APP_BIN` in compose matches `[[bin]]` / package name.
+3. Load config in `main`:
+
+```rust
+let mut app = App::new();
+let _ = app.configure(); // reads ./sova.toml (in the image: /app/sova.toml)
+app.listen(3000).await?;
 ```
 
-### What the stack does
+Presets `App::web()` / `App::api()` already call `configure()`.
 
-1. Starts one `app` container on **`:3000`**
-2. Sets `SOVA_ENV=production`, `RUST_LOG=info`
-3. Mounts `sova.production.toml` → `/app/sova.toml` (hello calls `configure()` and picks it up)
-4. `restart: unless-stopped`
+4. Uncomment the `db` block in compose when you need Postgres; set `DATABASE_URL` in `.env`.
+5. Publish **your** image from **your** CI (`docker build` / GHCR) — Sova does not publish a framework runtime image for you to `FROM`.
 
-Health: hello enables probes — try `/healthz` / `/ready` (see [getting started](/guide/getting-started) probes).
+### Image layout (what the template builds)
 
-### Your own app
-
-1. Copy `deploy/Dockerfile`, `deploy/docker-compose.yml`, and `sova.production.toml` into your project
-2. Point compose `build.context` at your crate root; set `EXAMPLE_PKG` / `EXAMPLE_BIN` (or replace the `RUN cargo build` line)
-3. In `main`: `let _ = app.configure();` or `configure_from_path("sova.toml")` so the mounted toml applies
-4. Add Postgres/Redis next to `app` when you need them:
-
-```yaml
-services:
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_PASSWORD: sova
-      POSTGRES_DB: sova
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-  app:
-    environment:
-      DATABASE_URL: postgres://postgres:sova@db:5432/sova
-    depends_on:
-      db:
-        condition: service_healthy
-```
-
-Keep credentials in `.env`, not in the image.
+1. **builder** — `rust:*-bookworm`, `cargo build --release` in the app context  
+2. **runtime** — slim Debian, non-root user, binary + `sova.toml`, `EXPOSE 3000`

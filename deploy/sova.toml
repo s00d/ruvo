@@ -1,0 +1,17 @@
+# Production defaults for a Sova app container.
+# Copy to your app as `sova.toml` (or mount this file).
+# Secrets: process env / `.env` — do not commit real credentials.
+
+[server]
+max_body = "10mb"
+request_timeout = "60s"
+trust_proxy = true
+
+[production.server]
+request_timeout = "30s"
+
+[production.devtools]
+enabled = false
+
+# [db]
+# url = "postgres://sova:sova@db:5432/sova"

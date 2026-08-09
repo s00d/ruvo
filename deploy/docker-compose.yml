@@ -1,14 +1,22 @@
+# Template Compose for a Sova *application* repository.
+# Copy deploy/* into your app root (or keep them under ./deploy and set context).
+#
+# Default layout after copy-to-root:
+#   Dockerfile
+#   docker-compose.yml
+#   sova.toml
+#   .env
+#   Cargo.toml
+#   src/
+
 services:
   app:
-    # Published demo: https://github.com/s00d/sova/pkgs/container/sova-hello
-    # `compose pull` uses the image; `compose up --build` rebuilds from this repo.
-    image: ghcr.io/s00d/sova-hello:latest
     build:
-      context: ..
-      dockerfile: deploy/Dockerfile
+      context: .
+      dockerfile: Dockerfile
       args:
-        EXAMPLE_PKG: hello
-        EXAMPLE_BIN: hello
+        # Must match your Cargo [[bin]] / package name:
+        APP_BIN: myapp
     ports:
       - "3000:3000"
     env_file:
@@ -17,6 +25,31 @@ services:
     environment:
       SOVA_ENV: production
       RUST_LOG: info
+      # DATABASE_URL: postgres://sova:sova@db:5432/sova
     volumes:
-      - ./sova.production.toml:/app/sova.toml:ro
+      - ./sova.toml:/app/sova.toml:ro
     restart: unless-stopped
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
+
+  # Uncomment when the app needs Postgres:
+  # db:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     POSTGRES_USER: sova
+  #     POSTGRES_PASSWORD: sova
+  #     POSTGRES_DB: sova
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U sova -d sova"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+  #   restart: unless-stopped
+
+# volumes:
+#   pgdata:

@@ -1,10 +1,12 @@
 # syntax=docker/dockerfile:1
-
-# Build from repository root:
-#   docker build -f deploy/Dockerfile --build-arg EXAMPLE_PKG=hello --build-arg EXAMPLE_BIN=hello .
 #
-# Runtime listens on 0.0.0.0:3000 (app.listen).
-# Demo `hello` calls configure() and loads /app/sova.toml when present.
+# Template for YOUR Sova application (not the framework repo).
+# Copy this file to your app root (next to Cargo.toml), then:
+#   docker compose up --build
+#
+# Expects a normal Cargo binary crate:
+#   Cargo.toml / Cargo.lock / src/ …
+# Optional: views/, public/, migrations/ — uncomment COPY lines below.
 
 ARG RUST_IMAGE=rust:1-bookworm
 ARG RUNTIME_IMAGE=debian:bookworm-slim
@@ -12,30 +14,33 @@ ARG RUNTIME_IMAGE=debian:bookworm-slim
 FROM ${RUST_IMAGE} AS builder
 WORKDIR /src
 
-ARG EXAMPLE_PKG=hello
-ARG EXAMPLE_BIN=hello
+# Binary name from [[bin]] / package name (override: --build-arg APP_BIN=…).
+ARG APP_BIN=myapp
 
-# Cache dependency crates when manifests change less often than sources.
 COPY Cargo.toml Cargo.lock ./
-COPY crates ./crates
-COPY plugins ./plugins
-COPY examples ./examples
+COPY src ./src
+# COPY views ./views
+# COPY public ./public
+# COPY migrations ./migrations
+# COPY templates ./templates
 
-RUN cargo build --release -p "${EXAMPLE_PKG}" \
-    && cp "target/release/${EXAMPLE_BIN}" /src/app
+RUN cargo build --release \
+    && cp "target/release/${APP_BIN}" /src/app-bin
 
 FROM ${RUNTIME_IMAGE} AS runtime
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --system --uid 10001 --home /app --shell /usr/sbin/nologin sova
 
 WORKDIR /app
-COPY --from=builder /src/app /app/app
-COPY deploy/sova.production.toml /app/sova.toml
+COPY --from=builder /src/app-bin /app/app
+# Bake a default config; compose can still mount over it.
+COPY sova.toml /app/sova.toml
 
 ENV SOVA_ENV=production \
     RUST_LOG=info
 
 EXPOSE 3000
-USER nobody
+USER sova
 CMD ["/app/app"]
