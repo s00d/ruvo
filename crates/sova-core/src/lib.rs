@@ -33,6 +33,7 @@ mod share;
 mod state;
 mod tracing_init;
 mod upgrade;
+#[cfg(any(test, feature = "testing"))]
 mod test_client;
 #[cfg(feature = "tls")]
 mod tls;
