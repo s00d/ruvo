@@ -46,10 +46,8 @@ impl SqliteTestDb {
     }
 }
 
-/// Run each migration's `up` without sea-orm's version tracker.
-///
-/// Sova packs several migrations per `migration.rs`; `DeriveMigrationName` uses
-/// `file!()` stem, so `MigratorTrait::up` would collide on `seaql_migrations.version`.
+/// Run each migration's `up` (for tests). Prefer unique [`MigrationName`]s so
+/// `MigratorTrait::up` / `migrate` CLI also work on composed migrators.
 pub async fn apply_migrations<M: MigratorTrait>(url: &str) {
     use sea_orm_migration::SchemaManager;
     let conn = Database::connect(url).await.expect("sqlite connect");

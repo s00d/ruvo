@@ -80,7 +80,7 @@ async fn guard_accepts_pat_and_jwt() {
     .await
     .unwrap();
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
 
     c.get("/api/me")
         .header("authorization", format!("Bearer {}", pat.token))

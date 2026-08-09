@@ -27,6 +27,7 @@ sova = { workspace = true, features = [
     "http-client",
     "mail-templates",
     "storage",
+    "auth-mail",
     "auth-vld",
     "auth-activity",
     "notifications-auth",

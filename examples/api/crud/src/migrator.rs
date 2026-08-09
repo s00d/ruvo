@@ -12,8 +12,13 @@ impl MigratorTrait for Migrator {
 mod m20260101_000001_create_users {
     use sea_orm_migration::prelude::*;
 
-    #[derive(DeriveMigrationName)]
     pub struct Migration;
+
+    impl MigrationName for Migration {
+        fn name(&self) -> &str {
+            "m20260101_000001_create_users"
+        }
+    }
 
     #[async_trait::async_trait]
     impl MigrationTrait for Migration {

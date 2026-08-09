@@ -1,6 +1,6 @@
 [package]
 name = "sova-activity"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Laravel-style activity / audit log for Sova"
 license = "MIT"

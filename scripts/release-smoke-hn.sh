@@ -130,7 +130,7 @@ async fn registration_only_without_mail() {
     app.mount("/me", r);
     app.get("/", || async { Html("<a href=/me>me</a>".to_string()) });
 
-    let c = TestClient::boot(app.into()).await.unwrap();
+    let c = TestClient::boot(app).await.unwrap();
     assert_eq!(c.get("/me").await.status_code().as_u16(), 303);
 
     let reg = c.get("/register").await;

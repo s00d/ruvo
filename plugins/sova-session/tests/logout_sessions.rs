@@ -30,8 +30,8 @@ fn app_with_store(store: Arc<dyn sova_store::KvStore>) -> App {
 #[tokio::test]
 async fn logout_other_sessions_keeps_current() {
     let store = Arc::new(namespace(Arc::new(MemoryStore::new()), "sess"));
-    let a = TestClient::tracked(app_with_store(Arc::clone(&store) as _)).unwrap();
-    let b = TestClient::tracked(app_with_store(store)).unwrap();
+    let a = TestClient::tracked(app_with_store(Arc::clone(&store).await as _)).unwrap();
+    let b = TestClient::tracked(app_with_store(store).await).unwrap();
 
     a.get("/login").await;
     b.get("/login").await;
@@ -48,8 +48,8 @@ async fn logout_other_sessions_keeps_current() {
 #[tokio::test]
 async fn logout_all_sessions_clears_current_too() {
     let store = Arc::new(namespace(Arc::new(MemoryStore::new()), "sess"));
-    let a = TestClient::tracked(app_with_store(Arc::clone(&store) as _)).unwrap();
-    let b = TestClient::tracked(app_with_store(store)).unwrap();
+    let a = TestClient::tracked(app_with_store(Arc::clone(&store).await as _)).unwrap();
+    let b = TestClient::tracked(app_with_store(store).await).unwrap();
 
     a.get("/login").await;
     b.get("/login").await;
@@ -69,7 +69,7 @@ async fn memory_sessions_exports_store_handle() {
         assert!(req.try_state::<SessionStoreHandle>().is_some());
         Html("ok".to_string())
     });
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     assert_eq!(c.get("/").await.status_code().as_u16(), 200);
 }
 
@@ -114,8 +114,8 @@ mod sql_logout {
     #[tokio::test]
     async fn sql_logout_other_sessions() {
         let store = shared_sql().await;
-        let a = TestClient::tracked(app_sql(Arc::clone(&store))).unwrap();
-        let b = TestClient::tracked(app_sql(store)).unwrap();
+        let a = TestClient::tracked(app_sql(Arc::clone(&store).await)).unwrap();
+        let b = TestClient::tracked(app_sql(store).await).unwrap();
 
         a.get("/login").await;
         b.get("/login").await;
@@ -128,8 +128,8 @@ mod sql_logout {
     #[tokio::test]
     async fn sql_logout_all_sessions() {
         let store = shared_sql().await;
-        let a = TestClient::tracked(app_sql(Arc::clone(&store))).unwrap();
-        let b = TestClient::tracked(app_sql(store)).unwrap();
+        let a = TestClient::tracked(app_sql(Arc::clone(&store).await)).unwrap();
+        let b = TestClient::tracked(app_sql(store).await).unwrap();
 
         a.get("/login").await;
         b.get("/login").await;
@@ -190,8 +190,8 @@ mod redis_logout {
             eprintln!("skip redis_logout_other_sessions: set REDIS_URL");
             return;
         };
-        let a = TestClient::tracked(app_redis(Arc::clone(&store))).unwrap();
-        let b = TestClient::tracked(app_redis(store)).unwrap();
+        let a = TestClient::tracked(app_redis(Arc::clone(&store).await)).unwrap();
+        let b = TestClient::tracked(app_redis(store).await).unwrap();
 
         a.get("/login").await;
         b.get("/login").await;
@@ -207,8 +207,8 @@ mod redis_logout {
             eprintln!("skip redis_logout_all_sessions: set REDIS_URL");
             return;
         };
-        let a = TestClient::tracked(app_redis(Arc::clone(&store))).unwrap();
-        let b = TestClient::tracked(app_redis(store)).unwrap();
+        let a = TestClient::tracked(app_redis(Arc::clone(&store).await)).unwrap();
+        let b = TestClient::tracked(app_redis(store).await).unwrap();
 
         a.get("/login").await;
         b.get("/login").await;

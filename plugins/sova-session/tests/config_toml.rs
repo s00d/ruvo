@@ -19,7 +19,7 @@ cookie = "my_sid"
         Html("ok".to_string())
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/").await;
     assert_eq!(res.status_code().as_u16(), 200);
     let set_cookie = res

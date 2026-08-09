@@ -29,7 +29,7 @@ async fn build() -> (SqliteTestDb, TestClient) {
         )
         .build()
         .await;
-    let c = TestClient::tracked(app).expect("test client");
+    let c = TestClient::tracked(app).await.expect("test client");
     (_db, c)
 }
 

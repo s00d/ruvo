@@ -45,7 +45,7 @@ async fn login_preset_keys_by_email() {
     r.route_middleware(RateLimit::login().middleware());
     app.mount("/login", r);
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
 
     for _ in 0..5 {
         let res = c

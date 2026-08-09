@@ -73,7 +73,7 @@ async fn mount_list_and_req_helper() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
 
     c.post("/note").await.assert_status(200);
 

@@ -13,7 +13,7 @@ async fn metrics_endpoint_and_labels() {
         Html(format!("hi {name}"))
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/hello/world").await;
     assert_eq!(res.status_code().as_u16(), 200);
     assert!(res.headers().get("x-request-id").is_some());

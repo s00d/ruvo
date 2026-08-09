@@ -363,7 +363,7 @@ async fn passport_login_logout_session() {
         Response::text("bye")
     });
 
-    let c = sova_core::TestClient::tracked(app).unwrap();
+    let c = sova_core::TestClient::tracked(app).await.unwrap();
     c.get("/login").await;
     let me = c.get("/me").await;
     assert_eq!(me.status_code().as_u16(), 200);

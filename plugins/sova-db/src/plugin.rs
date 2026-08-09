@@ -60,12 +60,18 @@ impl Db {
     }
 
     /// Register `myapp seed` CLI (runs after DB startup; not on every server start).
-    pub fn seed<F, Fut>(mut self, f: F) -> Self
+    ///
+    /// Accepts `Result<(), E>` where `E: Into<Error>` so facade `AppError` works with `?`.
+    pub fn seed<F, Fut, E>(mut self, f: F) -> Self
     where
         F: Fn(Arc<StateMap>) -> Fut + Send + Sync + 'static,
-        Fut: Future<Output = Result<(), Error>> + Send + 'static,
+        Fut: Future<Output = Result<(), E>> + Send + 'static,
+        E: Into<Error> + Send + 'static,
     {
-        self.seed = Some(Arc::new(move |state| Box::pin(f(state))));
+        self.seed = Some(Arc::new(move |state| {
+            let fut = f(state);
+            Box::pin(async move { fut.await.map_err(Into::into) })
+        }));
         self
     }
 }

@@ -32,6 +32,7 @@ serde_json = { workspace = true }
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 http = { workspace = true }
+sova-core = { workspace = true, features = ["testing"] }
 sova-db = { workspace = true, default-features = false, features = ["sqlite"] }
 sova-redis = { workspace = true }
 sea-orm = { workspace = true }

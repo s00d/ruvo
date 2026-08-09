@@ -320,7 +320,7 @@ Use a bare app only when you are **not** shipping a web/API product stack (tiny 
 
 ## Testing
 
-Enable facade feature `testing` (re-exports `TestClient`). For apps with `Db`, use **`TestClient::boot`** so `on_startup` connects the pool:
+Enable facade feature `testing` (re-exports `TestClient`). Prefer **`TestClient::boot` / `tracked`** — both run `on_startup` (Db connect, etc.):
 
 ```rust
 use sova::TestClient;
@@ -328,14 +328,14 @@ use sova::TestClient;
 #[tokio::test]
 async fn home_ok() {
     let app = build_app().unwrap();
-    let c = TestClient::boot(app.into()).await.unwrap();
+    let c = TestClient::boot(app).await.unwrap();
     c.get("/").await.assert_status(200);
 }
 ```
 
-`TestClient::tracked` skips startup (fine for session-only apps). `sova-testing::TestApp` already runs startup before returning the app.
+`sova-testing::TestApp` also runs startup before returning the app.
 
-Seed CLI callbacks must return `Result<(), sova::Error>` (core), not facade `AppError` — see `Db::seed` / `examples/web/hackernews/src/seed.rs`.
+Seed CLI accepts `Result<(), E: Into<Error>>` — facade `Result` / `AppError` works with `?`.
 
 ## Next
 

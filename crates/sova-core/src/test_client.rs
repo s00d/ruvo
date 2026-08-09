@@ -22,27 +22,25 @@ pub struct TestClient {
 }
 
 impl TestClient {
-    pub fn new(app: App) -> Result<Self> {
+    /// Compile the app without running startup hooks.
+    pub fn new(app: impl Into<App>) -> Result<Self> {
         Ok(Self {
-            server: app.build()?,
+            server: app.into().build()?,
             jar: Mutex::new(HashMap::new()),
             request_hooks: Mutex::new(Vec::new()),
         })
     }
 
-    /// Same as [`Self::new`] (Rocket-style name).
-    ///
-    /// Does **not** run startup hooks — prefer [`Self::boot`] when the app installs
-    /// `Db` / other plugins that connect in `on_startup`.
-    pub fn tracked(app: App) -> Result<Self> {
-        Self::new(app)
-    }
-
-    /// [`Self::tracked`] plus [`Server::run_startup`] (connects Db pool, etc.).
-    pub async fn boot(app: App) -> Result<Self> {
+    /// Preferred entry: compile + [`Server::run_startup`] (Db connect, etc.).
+    pub async fn boot(app: impl Into<App>) -> Result<Self> {
         let client = Self::new(app)?;
         client.server.run_startup().await?;
         Ok(client)
+    }
+
+    /// Alias of [`Self::boot`] (Rocket-style name).
+    pub async fn tracked(app: impl Into<App>) -> Result<Self> {
+        Self::boot(app).await
     }
 
     pub fn server(&self) -> &Server {

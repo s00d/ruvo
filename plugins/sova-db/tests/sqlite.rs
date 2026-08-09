@@ -16,7 +16,7 @@ async fn sqlite_memory_install_startup_and_pool() {
     let conn = pool.get().await.expect("connected");
     conn.ping().await.expect("ping");
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let ready = c.get("/ready").await;
     assert_eq!(ready.status_code().as_u16(), 200);
     let body = String::from_utf8_lossy(ready.body_bytes().unwrap_or(b""));

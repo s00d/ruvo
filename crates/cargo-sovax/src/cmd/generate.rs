@@ -268,7 +268,7 @@ fn write_model(name: &str, specs: &[FieldSpec]) -> Result<(), String> {
     let mig_mod = format!("m{stamp}_create_{name}");
     let mig_path = PathBuf::from("src/migrations").join(format!("{mig_mod}.rs"));
     fs::create_dir_all("src/migrations").map_err(io_err)?;
-    fs::write(&mig_path, render_migration(name, specs)).map_err(io_err)?;
+    fs::write(&mig_path, render_migration(&mig_mod, name, specs)).map_err(io_err)?;
     append_migration_mod(&mig_mod)?;
 
     println!("generated model `{name}` + migration `{mig_mod}`");
@@ -344,9 +344,9 @@ fn generate_migration(name: &str, fields: Option<&str>) -> Result<(), String> {
             .strip_prefix("create_")
             .unwrap_or(snake.as_str());
         validate_ident(table)?;
-        render_migration(table, &specs)
+        render_migration(&mig_mod, table, &specs)
     } else {
-        render_blank_migration()
+        render_blank_migration(&mig_mod)
     };
     fs::write(&mig_path, body).map_err(io_err)?;
     append_migration_mod(&mig_mod)?;

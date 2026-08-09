@@ -1,6 +1,6 @@
 [package]
 name = "sova-auth"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "Fortify-style authentication for Sova (register, 2FA, reset, roles)"
 license = "MIT"
@@ -11,16 +11,18 @@ keywords = ["http", "web", "framework", "async"]
 categories = ["web-programming::http-server", "network-programming"]
 
 [features]
-default = []
+# Direct `sova-auth` users get mail helpers; facade `auth` disables defaults.
+default = ["mail", "templates"]
 vld = ["dep:sova-vld", "dep:vld", "sova-vld/form", "sova-vld/flash", "sova-vld/openapi", "vld/openapi"]
 activity = ["dep:sova-activity"]
-templates = ["sova-mail/templates", "dep:sova-templates"]
+mail = ["dep:sova-mail"]
+templates = ["mail", "sova-mail/templates", "dep:sova-templates"]
 
 [dependencies]
 sova-core = { workspace = true, features = ["multipart"] }
 sova-db = { workspace = true }
 sova-passport = { workspace = true, features = ["jwt", "session"] }
-sova-mail = { workspace = true }
+sova-mail = { workspace = true, optional = true }
 sova-templates = { workspace = true, optional = true }
 sova-session = { workspace = true }
 sova-rate-limit = { workspace = true }
@@ -58,3 +60,6 @@ serde_json = { workspace = true }
 http = { workspace = true }
 async-trait = { workspace = true }
 totp-rs = { workspace = true, features = ["gen_secret", "otpauth"] }
+
+[package.metadata.docs.rs]
+features = ["mail", "templates", "vld", "activity"]

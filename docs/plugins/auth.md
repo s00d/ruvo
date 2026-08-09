@@ -5,10 +5,11 @@ editLink: false
 
 # `auth`
 
-**Register/login, verify, reset, 2FA, profile, roles** · crate `sova-auth` `0.1.2` · id `fortify`
+**Register/login, verify, reset, 2FA, profile, roles** · crate `sova-auth` `0.1.3` · id `fortify`
 
 ```bash
-cargo add sova --features auth,auth-activity,auth-vld
+cargo add sova --features auth,auth-vld          # Registration-only, no mail
+cargo add sova --features auth-mail,auth-vld     # + verify/reset templates
 ```
 
 | Feature | What you get |

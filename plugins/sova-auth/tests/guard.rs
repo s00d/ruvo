@@ -109,7 +109,7 @@ async fn build_with_guards() -> (sova_testing::SqliteTestDb, TestClient) {
         })
         .build()
         .await;
-    let c = TestClient::tracked(app).expect("test client");
+    let c = TestClient::tracked(app).await.expect("test client");
     (db, c)
 }
 

@@ -206,7 +206,7 @@ async fn install_health_check_and_req_storage_ext() {
         sova_core::Response::text("ok")
     });
 
-    let c = sova_core::TestClient::tracked(app).unwrap();
+    let c = sova_core::TestClient::tracked(app).await.unwrap();
     assert_eq!(c.get("/ping").await.status_code().as_u16(), 200);
     let health = c.get("/ready").await;
     assert_eq!(health.status_code().as_u16(), 200);

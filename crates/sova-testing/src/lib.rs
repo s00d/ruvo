@@ -13,7 +13,7 @@
 //!     .install(Notifications::new().mount("/notifications"))
 //!     .build()
 //!     .await;
-//! let c = TestClient::tracked(app).unwrap();
+//! let c = TestClient::tracked(app).await.unwrap();
 //! c.acting_as_id(1);
 //! let res = c.get("/notifications").await;
 //! res.assert_status(200);

@@ -1,10 +1,10 @@
 //! Fortify-style authentication for Sova (register, verify, reset, 2FA, RBAC).
 //!
-//! Builds on [`sova_passport`] (session login) + [`sova_mail`] + [`sova_db`].
+//! Builds on [`sova_passport`] (session login) + [`sova_db`]. Enable feature `mail`
+//! (and install [`sova_mail::Mail`]) for email verification / password reset.
 //!
 //! ```ignore
 //! app.install(Db::from_env().migrations::<sova_auth::AuthMigrator>());
-//! app.install(Mail::from_env());
 //! app.install(memory_sessions());
 //! app.install(
 //!   Fortify::new()
@@ -13,6 +13,8 @@
 //!     .login_redirect("/login")
 //!     .home("/cabinet"),
 //! );
+//! // Mail only when ResetPasswords / EmailVerification:
+//! // app.install(Mail::from_env());
 //! cabinet.use_middleware(Fortify::guard());
 //!
 //! // Programmatic login (impersonation / seed / admin switch):
@@ -25,6 +27,7 @@ mod actions;
 mod feature;
 mod forms;
 mod guard;
+#[cfg(feature = "mail")]
 mod mail;
 mod migration;
 mod paths;
@@ -39,7 +42,8 @@ mod activity_log;
 
 pub mod entity;
 
-pub use mail::{ResetPasswordMail, VerifyEmailMail, send_reset, send_verify};
+#[cfg(feature = "mail")]
+pub use mail::{send_reset, send_verify, ResetPasswordMail, VerifyEmailMail};
 pub use feature::Feature;
 pub use guard::AuthExt;
 pub use migration::AuthMigrator;

@@ -16,7 +16,7 @@ metrics_path = "/custom-metrics"
     app.install(Observability::new());
     app.get("/ping", |_r: Request| async { Html("pong") });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let _ = c.get("/ping").await;
     let metrics = c.get("/custom-metrics").await;
     assert_eq!(metrics.status_code().as_u16(), 200);
@@ -37,7 +37,7 @@ metrics_path = "/from-toml"
     app.install(Observability::new().metrics_path("/from-builder"));
     app.get("/ping", |_r: Request| async { Html("pong") });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let _ = c.get("/ping").await;
 
     let builder = c.get("/from-builder").await;
@@ -66,7 +66,7 @@ otel = true
     .unwrap();
     app.install(Observability::new());
     app.get("/ping", |_r: Request| async { Html("pong") });
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     assert_eq!(c.get("/ping").await.status_code().as_u16(), 200);
 }
 
@@ -85,6 +85,6 @@ elasticsearch = true
     .unwrap();
     app.install(Observability::new());
     app.get("/ping", |_r: Request| async { Html("pong") });
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     assert_eq!(c.get("/ping").await.status_code().as_u16(), 200);
 }

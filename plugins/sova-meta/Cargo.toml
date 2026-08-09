@@ -1,6 +1,6 @@
 [package]
 name = "sova-meta"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Document meta, OG/Twitter, JSON-LD, sitemap and robots for Sova"
 license = "MIT"
@@ -11,7 +11,7 @@ keywords = ["http", "web", "framework", "async"]
 categories = ["web-programming::http-server", "network-programming"]
 
 [features]
-default = ["openapi"]
+default = []
 templates = ["dep:sova-templates", "dep:minijinja"]
 i18n = ["dep:sova-i18n"]
 store = ["dep:sova-store"]

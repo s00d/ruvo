@@ -1,6 +1,6 @@
 [package]
 name = "sova"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 description = "Express-like HTTP framework for Rust"
 license = "MIT"
@@ -66,7 +66,9 @@ passport = ["dep:sova-passport"]
 passport-session = ["passport", "session", "sova-passport/session"]
 passport-jwt = ["passport", "db", "sova-passport/jwt"]
 passport-oauth = ["passport-jwt", "sova-passport/oauth"]
-auth = ["passport-session", "passport-jwt", "mail-templates", "db", "dep:sova-auth", "sova-auth/templates"]
+auth = ["passport-session", "passport-jwt", "db", "dep:sova-auth"]
+# Email verify/reset templates — opt-in (Registration-only apps skip mail)
+auth-mail = ["auth", "mail-templates", "sova-auth/templates"]
 auth-vld = ["auth", "vld", "vld-flash", "vld-form", "sova-auth/vld"]
 activity = ["db", "dep:sova-activity"]
 auth-activity = ["auth", "activity", "sova-auth/activity"]
@@ -76,6 +78,7 @@ notifications-mail = ["notifications", "mail", "sova-notifications/mail"]
 notifications-auth = ["notifications", "auth", "sova-notifications/auth"]
 notifications-templates = ["notifications", "templates", "sova-notifications/templates"]
 meta = ["dep:sova-meta"]
+meta-openapi = ["meta", "sova-meta/openapi", "openapi"]
 meta-templates = ["meta", "templates", "sova-meta/templates"]
 meta-i18n = ["meta", "i18n", "sova-meta/i18n"]
 meta-store = ["meta", "store", "sova-meta/store"]

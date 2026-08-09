@@ -234,7 +234,7 @@ pub use sova_passport::{
 };
 
 #[cfg(all(feature = "passport", not(feature = "auth")))]
-pub use sova_passport::AuthExt;
+pub use sova_passport::PassportExt;
 
 #[cfg(feature = "passport-jwt")]
 pub use sova_passport::{
@@ -259,8 +259,11 @@ pub use sova_auth::{
     mark_email_verified, parse_verify_token, register_user, revoke_role, set_avatar, set_user_roles,
     sync_role_permissions, update_permission, update_role, user_ids_with_permission,
     user_ids_with_role, AuthExt, AuthMigrator, CurrentUser, Feature as AuthFeature, Fortify,
-    FortifyPaths, ResetPasswordMail, VerifyEmailMail,
+    FortifyPaths,
 };
+
+#[cfg(feature = "auth-mail")]
+pub use sova_auth::{send_reset, send_verify, ResetPasswordMail, VerifyEmailMail};
 
 #[cfg(feature = "activity")]
 pub use sova_activity::{

@@ -58,7 +58,7 @@ async fn notify_to_body_and_unknown_channel() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.post("/send").await.assert_status(200);
     #[cfg(feature = "mail")]
     {
@@ -136,7 +136,7 @@ async fn notify_to_role_and_permission() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let reg = c
         .post("/api/auth/register")
         .header("accept", "application/json")

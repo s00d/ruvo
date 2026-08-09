@@ -2,6 +2,7 @@
 
 use crate::feature::Feature;
 use crate::guard::{self, AuthExt};
+#[cfg(feature = "mail")]
 use crate::mail::{send_reset, send_verify};
 use crate::state::{
     read_creds, require_feature, wants_json, CredsForm, FortifyState, PENDING_2FA_KEY,
@@ -286,7 +287,10 @@ pub async fn register(mut req: Request) -> Result<Response> {
             state.verify_path,
             urlencoding::encode(&token)
         );
+        #[cfg(feature = "mail")]
         let _ = send_verify(&req, &cu.email, &link).await;
+        #[cfg(not(feature = "mail"))]
+        let _ = (token, link);
     }
 
     let mut req = req;
@@ -384,7 +388,10 @@ pub async fn forgot_password(mut req: Request) -> Result<Response> {
             urlencoding::encode(&u.email),
             urlencoding::encode(&raw)
         );
+        #[cfg(feature = "mail")]
         let _ = send_reset(&req, &u.email, &link).await;
+        #[cfg(not(feature = "mail"))]
+        let _ = link;
     }
     if wants_json(&req) {
         return Ok(json_ok(json!({ "ok": true })));
@@ -489,7 +496,10 @@ pub async fn resend_verification(req: Request) -> Result<Response> {
         state.verify_path,
         urlencoding::encode(&token)
     );
+    #[cfg(feature = "mail")]
     let _ = send_verify(&req, &user.email, &link).await;
+    #[cfg(not(feature = "mail"))]
+    let _ = link;
     if wants_json(&req) {
         return Ok(json_ok(json!({ "ok": true })));
     }

@@ -35,7 +35,7 @@ async fn user_factory_and_acting_as() {
         .await;
     assert!(user.roles.iter().any(|r| r == "editor"));
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.acting_as(user);
     let res = c.get("/me").await;
     res.assert_status(200);

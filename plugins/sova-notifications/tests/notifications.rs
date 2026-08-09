@@ -30,7 +30,7 @@ async fn insert_list_mark_and_to_many() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
 
     let res = c.post("/send").await;
     res.assert_status(200);
@@ -90,7 +90,7 @@ async fn mark_all_read_clears_unread() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.post("/send").await.assert_status(200);
 
     c.acting_as_id(1);
@@ -116,6 +116,6 @@ async fn http_list_requires_user() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.get("/notifications").await.assert_status(401);
 }

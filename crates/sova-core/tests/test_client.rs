@@ -14,7 +14,7 @@ async fn cookie_jar_round_trip() {
         Response::text(c)
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let _ = c.get("/set").await;
     let res = c.get("/echo").await;
     assert_eq!(res.body_bytes(), Some(b"sid=abc123".as_slice()));
@@ -31,7 +31,7 @@ async fn on_request_hook_injects_extension() {
         Response::json(&serde_json::json!({ "n": n }))
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.on_request(|req| {
         req.set(Marker(42));
     });

@@ -17,6 +17,14 @@ impl From<Error> for AppError {
     }
 }
 
+impl From<AppError> for Error {
+    fn from(err: AppError) -> Self {
+        match err {
+            AppError::Core(e) => e,
+        }
+    }
+}
+
 #[cfg(feature = "db")]
 impl From<sea_orm::DbErr> for AppError {
     fn from(err: sea_orm::DbErr) -> Self {

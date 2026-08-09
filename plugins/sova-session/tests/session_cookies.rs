@@ -18,7 +18,7 @@ async fn session_sets_cookie_with_cookie_layer() {
         Html(v)
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/").await;
     assert_eq!(res.status_code().as_u16(), 200);
     let set_cookie = res
@@ -46,7 +46,7 @@ async fn production_env_enables_secure_cookie() {
         req.session().set("k", "v");
         Html("ok".to_string())
     });
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/").await;
     let cookie = res
         .headers()
@@ -83,7 +83,7 @@ async fn session_auto_installs_cookie_layer() {
         Html(v)
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/").await;
     assert_eq!(res.status_code().as_u16(), 200);
     let read = c.get("/read").await;
@@ -96,7 +96,7 @@ async fn save_uninitialized_false_skips_cookie() {
     app.install(memory_sessions());
     app.get("/", |_req: Request| async move { Html("ok".to_string()) });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/").await;
     let set_cookie = res
         .headers()
@@ -128,7 +128,7 @@ async fn destroy_clears_session() {
         Html(req.session().get("k").unwrap_or_else(|| "none".into()))
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.get("/in").await;
     assert_eq!(c.get("/read").await.body_bytes(), Some(b"v".as_slice()));
     c.get("/out").await;
@@ -166,7 +166,7 @@ async fn hook_hydrates_request() {
         Html(name)
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     assert_eq!(c.get("/me").await.body_bytes(), Some(b"anon".as_slice()));
     c.get("/login").await;
     assert_eq!(c.get("/me").await.body_bytes(), Some(b"ada".as_slice()));

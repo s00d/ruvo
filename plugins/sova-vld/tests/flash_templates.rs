@@ -35,7 +35,7 @@ async fn with_flash_exposes_errors_old_status() {
 
     let _ = with_validation_flash(Templates::minijinja(dir.path()).autoreload(false));
 
-    let c = sova_core::TestClient::tracked(app).unwrap();
+    let c = sova_core::TestClient::tracked(app).await.unwrap();
     c.get("/seed").await;
     let res = c.get("/page").await;
     assert_eq!(res.status_code().as_u16(), 200);

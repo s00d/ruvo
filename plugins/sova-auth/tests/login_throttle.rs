@@ -27,7 +27,7 @@ async fn login_throttle_returns_429() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
 
     for i in 0..5 {
         let res = c

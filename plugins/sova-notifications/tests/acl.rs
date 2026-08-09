@@ -47,7 +47,7 @@ async fn broadcast_denied_without_publish_permission() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.acting_as(CurrentUser {
         id: 99,
         email: "u@example.com".into(),

@@ -29,7 +29,7 @@ async fn regenerate_rotates_sid_keeps_data() {
         Html(req.session().get("k").unwrap_or_else(|| "none".into()))
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let first = c.get("/in").await;
     let sid1 = String::from_utf8(first.body_bytes().unwrap().to_vec()).unwrap();
     let regen = c.get("/regen").await;
@@ -52,7 +52,7 @@ async fn rolling_refreshes_cookie_without_dirty() {
     );
     app.get("/", |_req: Request| async move { Html("ok".to_string()) });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let first = c.get("/").await;
     assert!(first
         .headers()
@@ -105,7 +105,7 @@ async fn flash_helpers_and_session_mutations() {
         Html(req.session().take("k"))
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.get("/set").await;
     assert_eq!(c.get("/take").await.body_bytes(), Some(b"y".as_slice()));
     assert_eq!(c.get("/ext").await.body_bytes(), Some(b"v".as_slice()));
@@ -136,7 +136,7 @@ secure = true
         Html("ok".to_string())
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/").await;
     let cookie = res
         .headers()
@@ -171,7 +171,7 @@ cookie = "s"
         req.session().set("k", "v");
         Html("ok".to_string())
     });
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/").await;
     let cookie = res
         .headers()
@@ -194,7 +194,7 @@ async fn empty_session_without_layer_is_local_only() {
         assert!(s.user_id().is_none());
         Html("ok".to_string())
     });
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     assert_eq!(c.get("/").await.status_code().as_u16(), 200);
 }
 
@@ -206,7 +206,7 @@ async fn logout_without_bound_user_is_bad_request() {
         let err = req.logout_other_sessions().await.unwrap_err();
         Html(err.to_string())
     });
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/x").await;
     let body = String::from_utf8(res.body_bytes().unwrap().to_vec()).unwrap();
     assert!(body.contains("no bound"), "{body}");

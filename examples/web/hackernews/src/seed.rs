@@ -1,24 +1,16 @@
 //! Optional demo data: `cargo run -p hackernews -- seed`
-//!
-//! Seed CLI expects [`sova::Error`] (core), not facade [`sova::AppError`].
 
 use crate::db;
 use sea_orm::{EntityTrait, PaginatorTrait};
 use sova::extend::StateMap;
-use sova::{find_user_by_email, register_user, DbError, DbHandle, DbPool, Error};
+use sova::{find_user_by_email, register_user, DbError, DbHandle, DbPool, Result};
 use std::sync::Arc;
 
-fn core(err: sova::AppError) -> Error {
-    match err {
-        sova::AppError::Core(c) => c,
-    }
-}
-
-pub async fn run(state: Arc<StateMap>) -> Result<(), Error> {
+pub async fn run(state: Arc<StateMap>) -> Result<()> {
     let pool = state
         .get::<DbPool>()
-        .ok_or_else(|| Error::Internal("DbPool missing for seed".into()))?;
-    let conn = pool.get().await.map_err(Error::from)?;
+        .ok_or_else(|| sova::Error::Internal("DbPool missing for seed".into()))?;
+    let conn = pool.get().await?;
     let db = DbHandle::Conn(conn);
 
     let n = crate::entity::story::Entity::find()
@@ -38,8 +30,7 @@ pub async fn run(state: Arc<StateMap>) -> Result<(), Error> {
         Some("https://s00d.github.io/sova/".into()),
         None,
     )
-    .await
-    .map_err(core)?;
+    .await?;
     db::create_story(
         &db,
         user_id,
@@ -47,12 +38,11 @@ pub async fn run(state: Arc<StateMap>) -> Result<(), Error> {
         None,
         Some("Drop ideas in the comments.".into()),
     )
-    .await
-    .map_err(core)?;
+    .await?;
     Ok(())
 }
 
-async fn ensure_demo_user(db: &DbHandle) -> Result<i64, Error> {
+async fn ensure_demo_user(db: &DbHandle) -> Result<i64> {
     if let Some(u) = find_user_by_email(db, "demo@sova.news").await? {
         return Ok(u.id);
     }

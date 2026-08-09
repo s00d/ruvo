@@ -144,18 +144,22 @@ pub fn render_entity(name: &str, fields: &[FieldSpec]) -> String {
     out
 }
 
-pub fn render_migration(name: &str, fields: &[FieldSpec]) -> String {
+pub fn render_migration(mig_id: &str, table: &str, fields: &[FieldSpec]) -> String {
     let mut out = String::new();
     out.push_str("use sea_orm_migration::{prelude::*, schema::*};\n\n");
-    out.push_str("#[derive(DeriveMigrationName)]\n");
     out.push_str("pub struct Migration;\n\n");
+    out.push_str("impl MigrationName for Migration {\n");
+    out.push_str(&format!(
+        "    fn name(&self) -> &str {{\n        \"{mig_id}\"\n    }}\n"
+    ));
+    out.push_str("}\n\n");
     out.push_str("#[async_trait::async_trait]\n");
     out.push_str("impl MigrationTrait for Migration {\n");
     out.push_str("    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {\n");
     out.push_str("        manager\n");
     out.push_str("            .create_table(\n");
     out.push_str("                Table::create()\n");
-    out.push_str(&format!("                    .table(\"{name}\")\n"));
+    out.push_str(&format!("                    .table(\"{table}\")\n"));
     out.push_str("                    .if_not_exists()\n");
     out.push_str("                    .col(pk_auto(\"id\"))\n");
     for f in fields {
@@ -168,7 +172,7 @@ pub fn render_migration(name: &str, fields: &[FieldSpec]) -> String {
     out.push_str("    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {\n");
     out.push_str("        manager\n");
     out.push_str(&format!(
-        "            .drop_table(Table::drop().table(\"{name}\").to_owned())\n"
+        "            .drop_table(Table::drop().table(\"{table}\").to_owned())\n"
     ));
     out.push_str("            .await\n");
     out.push_str("    }\n");
@@ -176,26 +180,32 @@ pub fn render_migration(name: &str, fields: &[FieldSpec]) -> String {
     out
 }
 
-pub fn render_blank_migration() -> String {
-    r#"use sea_orm_migration::prelude::*;
+pub fn render_blank_migration(mig_id: &str) -> String {
+    format!(
+        r#"use sea_orm_migration::prelude::*;
 
-#[derive(DeriveMigrationName)]
 pub struct Migration;
 
-#[async_trait::async_trait]
-impl MigrationTrait for Migration {
-    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        let _ = manager;
-        Ok(())
-    }
+impl MigrationName for Migration {{
+    fn name(&self) -> &str {{
+        "{mig_id}"
+    }}
+}}
 
-    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+#[async_trait::async_trait]
+impl MigrationTrait for Migration {{
+    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {{
         let _ = manager;
         Ok(())
-    }
-}
+    }}
+
+    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {{
+        let _ = manager;
+        Ok(())
+    }}
+}}
 "#
-    .to_string()
+    )
 }
 
 pub fn render_seed(snake: &str) -> String {
@@ -987,7 +997,7 @@ pub fn render_resource_test(name: &str, plural: &str, api: bool) -> String {
 //! #[ignore = "requires app factory + migrations"]
 //! async fn {name}_{kind}_smoke() {{
 //!     let app = /* build App */;
-//!     let c = sova::TestClient::tracked(app).unwrap();
+//!     let c = sova::TestClient::tracked(app).await.unwrap();
 //!     let res = c.get("{path}").await;
 //!     res.assert_status(200);
 //! }}

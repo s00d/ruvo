@@ -8,7 +8,7 @@ async fn healthz_always_ok_without_checks() {
         Err(Error::Internal("should not run".into()))
     });
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/healthz").await;
     assert_eq!(res.status_code().as_u16(), 200);
     let body = String::from_utf8_lossy(res.body_bytes().unwrap_or(b""));
@@ -24,7 +24,7 @@ async fn ready_503_when_ready_check_fails() {
     app.register_audit("openapi", |_s| async { Ok(()) });
     app.with_probes();
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/ready").await;
     assert_eq!(res.status_code().as_u16(), 503);
     let body = String::from_utf8_lossy(res.body_bytes().unwrap_or(b""));
@@ -42,7 +42,7 @@ async fn ready_ignores_audit_failures() {
     });
     app.with_probes();
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/ready").await;
     assert_eq!(res.status_code().as_u16(), 200);
     let body = String::from_utf8_lossy(res.body_bytes().unwrap_or(b""));
@@ -73,7 +73,7 @@ async fn ready_exposes_instance_header() {
     std::env::set_var("SOVA_INSTANCE_ID", "test-instance-1");
     let mut app = App::new();
     app.with_probes();
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let res = c.get("/ready").await;
     assert_eq!(res.status_code().as_u16(), 200);
     assert_eq!(
@@ -89,7 +89,7 @@ async fn route_redirect_helper() {
     app.redirect("/old", "/new", 302);
     app.redirect("/gone", "https://example.com/", 301);
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
 
     let res = c.get("/old").await;
     assert_eq!(res.status_code().as_u16(), 302);

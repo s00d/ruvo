@@ -43,7 +43,7 @@ async fn profile_update_writes_activity() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
 
     let reg = c
         .post("/api/auth/register")

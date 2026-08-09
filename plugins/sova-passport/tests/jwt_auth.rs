@@ -19,7 +19,7 @@ async fn register_login_refresh_logout_roundtrip() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
 
     let reg = c
         .post("/auth/register")
@@ -89,7 +89,7 @@ async fn guard_rejects_missing_and_bad_bearer() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.get("/api/me").await.assert_status(401);
     c.get("/api/me")
         .header("authorization", "Bearer not-a-jwt")
@@ -132,7 +132,7 @@ async fn guard_rejects_jwt_for_unknown_user_sub() {
     )
     .unwrap();
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.get("/api/me")
         .header("authorization", format!("Bearer {token}"))
         .await
@@ -164,7 +164,7 @@ async fn pat_crud_via_http_and_api_token_ext() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.post("/auth/register")
         .header("content-type", "application/json")
         .body(r#"{"email":"pat@example.com","password":"secret123"}"#)
@@ -230,7 +230,7 @@ async fn tokens_disabled_skips_pat_routes() {
         .build()
         .await;
 
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.get("/auth/tokens").await.assert_status(404);
 }
 
@@ -245,7 +245,7 @@ async fn from_env_reads_ttl_and_empty_secret_fails_startup() {
         .install(auth)
         .build()
         .await;
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     c.post("/jwt/register")
         .header("content-type", "application/json")
         .body(r#"{"email":"env@example.com","password":"secret123"}"#)
@@ -270,7 +270,7 @@ async fn duplicate_register_is_conflict() {
         .install(JwtAuth::hs256("test-secret-at-least-32-bytes!!"))
         .build()
         .await;
-    let c = TestClient::tracked(app).unwrap();
+    let c = TestClient::tracked(app).await.unwrap();
     let body = r#"{"email":"dup@example.com","password":"secret123"}"#;
     c.post("/auth/register")
         .header("content-type", "application/json")

@@ -17,19 +17,19 @@ Open a plugin page from the table. Extra notes for heavier stacks are below.
 <!-- generated:plugins-table -->
 | Plugin | Version | Summary | Features |
 |--------|---------|---------|----------|
-| [`activity`](/plugins/activity) | `0.1.0` | Audit / activity log (who changed what) | `activity` |
-| [`auth`](/plugins/auth) | `0.1.2` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-vld` |
+| [`activity`](/plugins/activity) | `0.1.1` | Audit / activity log (who changed what) | `activity` |
+| [`auth`](/plugins/auth) | `0.1.3` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-mail`, `auth-activity`, `auth-vld` |
 | [`compress`](/plugins/compress) | `0.1.0` | gzip / deflate / brotli response compression | `compress` |
 | [`cookies`](/plugins/cookies) | `0.1.0` | Parse Cookie header into request-local Cookies | `cookies` |
 | [`cors`](/plugins/cors) | `0.1.0` | Cross-Origin Resource Sharing headers | `cors` |
 | [`csrf`](/plugins/csrf) | `0.1.0` | Session double-submit CSRF (Laravel-style except/XSRF cookie) | `csrf` |
-| [`db`](/plugins/db) | `0.1.1` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
+| [`db`](/plugins/db) | `0.1.2` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
 | [`env`](/plugins/env) | `0.1.0` | Cascade .env loading for Sova apps (dotenvy) | `env` |
 | [`http`](/plugins/http) | `0.1.0` | Outbound HTTP client with SSRF guards and named configs | `http-client` |
 | [`i18n`](/plugins/i18n) | `0.1.0` | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |
 | [`mail`](/plugins/mail) | `0.1.0` | Outbound email via lettre (SMTP / fake / file) | `mail`, `mail-markdown`, `mail-templates` |
-| [`meta`](/plugins/meta) | `0.1.0` | Document meta, OG/Twitter, JSON-LD, and head inject | `meta`, `meta-i18n`, `meta-store`, `meta-templates` |
-| [`notifications`](/plugins/notifications) | `0.1.0` | DB inbox, channels with ACL, optional WS/mail | `notifications`, `notifications-auth`, `notifications-mail`, `notifications-templates`, `notifications-ws` |
+| [`meta`](/plugins/meta) | `0.1.1` | Document meta, OG/Twitter, JSON-LD, and head inject | `meta`, `meta-openapi`, `meta-i18n`, `meta-store`, `meta-templates` |
+| [`notifications`](/plugins/notifications) | `0.1.1` | DB inbox, channels with ACL, optional WS/mail | `notifications`, `notifications-auth`, `notifications-mail`, `notifications-templates`, `notifications-ws` |
 | [`observability`](/plugins/observability) | `0.1.0` | HTTP metrics, OpenTelemetry, Elasticsearch log shipping | `observability`, `observability-elasticsearch`, `observability-otel` |
 | [`openapi`](/plugins/openapi) | `0.1.0` | OpenAPI 3.1 document + Scalar UI at mount path | `openapi` |
 | [`passport`](/plugins/passport) | `0.1.1` | Users + access/refresh JWT + personal access tokens | `passport`, `passport-jwt`, `passport-oauth`, `passport-session` |
@@ -55,12 +55,12 @@ Open a plugin page from the table. Extra notes for heavier stacks are below.
 
 ### Auth (Fortify)
 
-Needs db + mail + session. Example:
+Needs **db + session**. Add **mail** only for `EmailVerification` / `ResetPasswords` (facade feature `auth-mail`).
 
 ```rust
-app.install(Db::from_env().migrations::<sova_auth::AuthMigrator>());
-app.install(Mail::from_env());
-app.install(SessionLayer::memory());
+app.install(Db::from_env().migrations::<AuthMigrator>());
+app.install(memory_sessions()); // or SessionLayer::from_store(...)
+// app.install(Mail::from_env()); // only if verify/reset
 app.install(
   Fortify::new()
     .features([AuthFeature::Registration, AuthFeature::ResetPasswords])

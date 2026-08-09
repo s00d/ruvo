@@ -36,6 +36,11 @@ pub enum Error {
 pub type Result<T> = std::result::Result<T, Error>;
 
 impl Error {
+    /// Convenience for [`Error::BadRequest`].
+    pub fn bad_request(msg: impl Into<String>) -> Self {
+        Self::BadRequest(msg.into())
+    }
+
     /// Build [`Error::Response`] from a status and any [`IntoResponse`] body.
     pub fn custom(status: u16, body: impl IntoResponse) -> Self {
         Error::Response(Box::new(body.into_response().status(status)))

@@ -25,7 +25,7 @@ async fn client() -> (SqliteTestDb, TestClient) {
     std::env::set_var("PUBLIC_URL", "http://127.0.0.1:3000");
     std::env::set_var("SOVA_LOG", "off");
     let app = build_app_with_db(Some(db.url())).expect("build_app");
-    let c = TestClient::boot(app.into()).await.expect("client");
+    let c = TestClient::boot(app).await.expect("client");
     (db, c)
 }
 
