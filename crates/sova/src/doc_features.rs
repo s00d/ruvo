@@ -42,6 +42,7 @@
 /// Feature `env`: Cascade `.env*` loader.
 /// Feature `tls`: TLS terminate + optional HSTS/redirect.
 /// Feature `dev-tls`: Self-signed local TLS via `rcgen`.
+/// Feature `acme`: Let's Encrypt HTTP-01 + TLS hot-reload (`Acme`).
 /// Feature `vld-openapi`: Validation ↔ OpenAPI schema sugar.
 /// Feature `vld-flash`: Validation errors into session flash.
 /// Feature `vld-flash-templates`: Flash helpers in MiniJinja.

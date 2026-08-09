@@ -649,7 +649,7 @@ fn preferred_install_feature(slug: &str, feats: &[String]) -> Option<String> {
 fn plugin_category(slug: &str) -> &'static str {
     match slug {
         "shield" | "cors" | "csrf" | "compress" | "cookies" | "rate-limit" | "idempotency"
-        | "response-cache" | "static" | "env" => {
+        | "response-cache" | "static" | "env" | "acme" => {
             "HTTP"
         }
         "auth" | "passport" | "session" | "vld" => "Auth",
@@ -737,6 +737,7 @@ fn plugin_examples(slug: &str) -> Option<&'static [&'static str]> {
         "ws" => &["examples/realtime/ws_chat"],
         "quic" => &["examples/net/quic_udp_echo"],
         "udp" => &["examples/net/udp_echo"],
+        "acme" => &["examples/net/acme_hello"],
         "i18n" => &["examples/web/i18n", "examples/web/templates_i18n"],
         "meta" => &["examples/web/meta_blog"],
         "static" => &["examples/web/static_files"],
@@ -777,7 +778,8 @@ fn plugin_related(slug: &str) -> Option<&'static [&'static str]> {
         "ws" => &["sse", "notifications"],
         "sse" => &["ws"],
         "udp" => &["quic"],
-        "quic" => &["udp"],
+        "quic" => &["udp", "acme"],
+        "acme" => &["quic"],
         "http" => &["ai"],
         "ai" => &["http", "sse"],
         "observability" => &["activity"],

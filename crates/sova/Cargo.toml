@@ -1,6 +1,6 @@
 [package]
 name = "sova"
-version = "0.1.18"
+version = "0.1.19"
 authors.workspace = true
 edition.workspace = true
 description = "Express-like HTTP framework for Rust"
@@ -67,9 +67,12 @@ devtools-i18n = ["devtools", "i18n", "sova-devtools/i18n"]
 devtools-csrf = ["devtools", "csrf", "sova-devtools/csrf"]
 devtools-passport = ["devtools", "passport", "sova-devtools/passport"]
 devtools-rate-limit = ["devtools", "rate-limit", "sova-devtools/rate-limit"]
+devtools-notifications = ["devtools", "notifications", "sova-devtools/notifications"]
+devtools-acme = ["devtools", "acme", "sova-devtools/acme"]
 env = ["dep:sova-env"]
 tls = ["sova-core/tls"]
 dev-tls = ["tls", "sova-core/dev-tls"]
+acme = ["tls", "dep:sova-acme"]
 store-crypto = ["store", "sova-store/store-crypto"]
 # vld + DocVldExt sugar (needs both plugins + vld openapi schemas)
 vld-openapi = ["vld", "openapi", "sova-vld/openapi", "vld/openapi"]
@@ -173,6 +176,7 @@ sova-udp = { workspace = true, optional = true }
 sova-quic = { workspace = true, optional = true }
 sova-sse = { workspace = true, optional = true }
 sova-devtools = { workspace = true, optional = true }
+sova-acme = { workspace = true, optional = true }
 sova-env = { workspace = true, optional = true }
 sova-db = { workspace = true, optional = true }
 sova-redis = { workspace = true, optional = true }

@@ -1,0 +1,13 @@
+[package]
+name = "acme_hello"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "acme_hello"
+path = "src/main.rs"
+
+[dependencies]
+sova = { workspace = true, features = ["tls", "acme", "cors"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

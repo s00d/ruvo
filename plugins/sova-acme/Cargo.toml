@@ -1,0 +1,29 @@
+[package]
+name = "sova-acme"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+description = "Let's Encrypt ACME (HTTP-01) certificates for Sova with TLS hot-reload"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/sova-acme"
+readme = "README.md"
+keywords = ["http", "tls", "acme", "letsencrypt", "https"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[dependencies]
+sova-core = { workspace = true, features = ["tls"] }
+instant-acme = { workspace = true }
+rcgen = { workspace = true }
+rustls = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["io-util", "macros", "net", "rt", "sync", "time"] }
+tracing = { workspace = true }
+x509-parser = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+sova-core = { workspace = true, features = ["tls", "testing"] }

@@ -4,6 +4,7 @@ export const pluginsNav = [
   {
     text: 'HTTP & middleware',
     items: [
+    { text: 'acme', link: '/plugins/acme' },
     { text: 'compress', link: '/plugins/compress' },
     { text: 'cookies', link: '/plugins/cookies' },
     { text: 'cors', link: '/plugins/cors' },
@@ -85,6 +86,7 @@ export const pluginsSidebar = [
     text: 'HTTP & middleware',
     collapsed: false,
     items: [
+    { text: 'acme', link: '/plugins/acme' },
     { text: 'compress', link: '/plugins/compress' },
     { text: 'cookies', link: '/plugins/cookies' },
     { text: 'cors', link: '/plugins/cors' },

@@ -35,6 +35,8 @@ pub use sova_core::{ResponseAssert, TestClient};
 
 #[cfg(feature = "tls")]
 pub use sova_core::Tls;
+#[cfg(feature = "acme")]
+pub use sova_acme::{Acme, AcmeFailed, AcmeHandle, AcmeStatus, CertificateIssued, CertificateRenewed};
 
 /// Everyday imports for application code.
 ///
@@ -65,7 +67,7 @@ pub use sova_env::{self, require as env_require, EnvError};
 #[cfg(feature = "cors")]
 pub use sova_cors::Cors;
 #[cfg(feature = "csrf")]
-pub use sova_csrf::{Csrf, CsrfExt, CsrfToken};
+pub use sova_csrf::{Csrf, CsrfExt, CsrfMismatch, CsrfToken};
 #[cfg(feature = "shield")]
 pub use sova_shield::Shield;
 
@@ -79,7 +81,7 @@ pub use sova_static::Static;
 pub use sova_compress::Compress;
 
 #[cfg(feature = "rate-limit")]
-pub use sova_rate_limit::{RateLimit, RateLimitKey};
+pub use sova_rate_limit::{RateLimit, RateLimitExceeded, RateLimitKey};
 
 #[cfg(feature = "idempotency")]
 pub use sova_idempotency::Idempotency;
@@ -90,7 +92,8 @@ pub use sova_response_cache::{ResponseCache, ResponseCacheHandle};
 #[cfg(feature = "session")]
 pub use sova_session::{
     memory_sessions, KvSessionStore, SameSite, Session, SessionExt, SessionLayer,
-    SessionStore, SessionStoreHandle, FLASH_ERRORS, FLASH_OLD, FLASH_STATUS, SESSION_USER_KEY,
+    SessionLogoutAll, SessionRegenerated, SessionStore, SessionStoreHandle, FLASH_ERRORS,
+    FLASH_OLD, FLASH_STATUS, SESSION_USER_KEY,
 };
 
 #[cfg(feature = "session-sql")]
@@ -144,7 +147,7 @@ pub mod tasks {
     pub use sova_tasks::{
         ask, bearer_guard, confirm, enter_cli, error as console_error, info, is_interactive, line,
         priority, table, warn as console_warn, ConsoleGuard, Dispatch, HttpTaskError, Job, JobInfo,
-        Schedule, TaskBackend, TaskRegistry, Tasks,
+        Schedule, TaskBackend, TaskDispatched, TaskFailed, TaskRegistry, Tasks,
     };
 }
 
@@ -155,7 +158,7 @@ pub use tasks::{EnqueueOpts, Task, TaskError, TaskStatus, TaskStore};
 pub use tasks::{
     ask, bearer_guard, confirm, console_error, console_warn, enter_cli, info, is_interactive, line,
     priority, table, ConsoleGuard, Dispatch, HttpTaskError, Job, JobInfo, Schedule, TaskBackend,
-    TaskRegistry, Tasks,
+    TaskDispatched, TaskFailed, TaskRegistry, Tasks,
 };
 
 #[cfg(feature = "db")]
@@ -256,8 +259,8 @@ pub use sova_storage::{
 
 #[cfg(feature = "passport")]
 pub use sova_passport::{
-    local_strategy, passport_serialize, Auth, AuthMw, Authenticated, Credentials, Extract,
-    Passport, PassportExt, Source,
+    local_strategy, passport_serialize, ApiTokenRevoked, Auth, AuthMw, Authenticated, Credentials,
+    Extract, Passport, PassportExt, Source,
 };
 
 #[cfg(feature = "passport-jwt")]
@@ -298,8 +301,8 @@ pub use sova_activity::{
 #[cfg(feature = "notifications")]
 pub use sova_notifications::{
     list_notifications, mark_all_read, mark_read, unread_count, Channel, NotificationFilter,
-    NotificationRow, NotificationService, NotificationUser, Notifications, NotificationsMigrator,
-    Notify, NotifyExt, Via,
+    NotificationRow, NotificationSent, NotificationService, NotificationUser, Notifications,
+    NotificationsMigrator, Notify, NotifyExt, Via,
 };
 
 #[cfg(feature = "notifications-templates")]
