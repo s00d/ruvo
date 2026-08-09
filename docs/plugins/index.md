@@ -18,6 +18,7 @@ Open a plugin page from the table. Extra notes for heavier stacks are below.
 | Plugin | Version | Summary | Features |
 |--------|---------|---------|----------|
 | [`activity`](/plugins/activity) | `0.1.2` | Audit / activity log (who changed what) | `activity` |
+| [`ai`](/plugins/ai) | `0.1.0` | AISDK chat / tools / stream + FakeAi | `ai`, `ai-openai`, `ai-anthropic`, `ai-google`, `ai-full` |
 | [`auth`](/plugins/auth) | `0.1.6` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-mail`, `auth-vld` |
 | [`compress`](/plugins/compress) | `0.1.1` | gzip / deflate / brotli response compression | `compress` |
 | [`cookies`](/plugins/cookies) | `0.1.1` | Parse Cookie header into request-local Cookies | `cookies` |
