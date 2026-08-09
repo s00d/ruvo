@@ -25,15 +25,15 @@ Misleading `handle_via_app` (recompiled every call) was removed.
 
 Release binaries, identical fixtures, SHA-256 verify including `POST /api/echo`.
 
-Capture in `bench/stand/results/latest.json` (example: `DURATION=20s` `CONCURRENCY=100` workers=4):
+Capture in `bench/stand/results/latest.json` (median of 3 rounds, oha warm-up, rotating fw order):
 
-| Framework | GET / Req/s | POST /api/echo | Mean Req/s |
-|-----------|-------------|----------------|------------|
-| sova | ~91–117k* | ~117k | ~113k |
-| axum | ~113k | ~118k | ~122k |
-| actix | ~108k | ~105k | ~104k |
+| Framework | GET / (median) | POST /api/echo | Mean Req/s |
+|-----------|----------------|----------------|------------|
+| sova | ~122k | ~123k | ~118k |
+| axum | ~123k | ~126k | ~120k |
+| actix | ~101k | ~103k | ~104k |
 
-\*First path can be noisy before warm-up; script now warms caches. Prefer mean / per-path table in `docs/guide/performance.md`.
+Previous “91–117k on GET /” was cold-start bias (sova always first). Max round spread is reported per path in JSON (`rps_spread_pct`).
 
 ```bash
 ./bench/stand/run.sh

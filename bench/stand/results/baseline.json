@@ -1,11 +1,14 @@
 {
-  "captured_at": "2026-08-09T05:56:00Z",
+  "captured_at": "2026-08-09T06:19:10Z",
   "host": "Admins-MacBook-Pro.local",
   "profile": "deep",
   "build": "release",
-  "duration": "20s",
+  "duration": "15s",
   "concurrency": 100,
   "tokio_worker_threads": 4,
+  "rounds": 3,
+  "warmup": "5s",
+  "aggregate": "median",
   "paths": [
     "/",
     "/about",
@@ -16,201 +19,863 @@
     "/contact"
   ],
   "frameworks": {
-    "sova": {
-      "home_rps": 91299.8176,
-      "home_p50_ms": 0.9118,
-      "home_p99_ms": 3.6365,
-      "echo_rps": 116926.9081,
-      "echo_p99_ms": 2.3887,
-      "mean_rps": 112636.32728571429,
-      "mean_p99_ms": 2.5224285714285712
+    "actix": {
+      "home_rps": 100648.7344,
+      "home_p50_ms": 0.9344,
+      "home_p99_ms": 2.7122,
+      "home_rps_min": 99290.7771,
+      "home_rps_max": 104135.5756,
+      "echo_rps": 102865.0489,
+      "echo_p99_ms": 3.0125,
+      "mean_rps": 103512.82408571428,
+      "mean_p99_ms": 3.016842857142857,
+      "max_path_spread_pct": 7.356374875853576
     },
     "axum": {
-      "home_rps": 112627.1967,
-      "home_p50_ms": 0.7959,
-      "home_p99_ms": 2.3525,
-      "echo_rps": 118473.2507,
-      "echo_p99_ms": 2.5635,
-      "mean_rps": 121632.34924285715,
-      "mean_p99_ms": 1.9968285714285714
+      "home_rps": 122665.4656,
+      "home_p50_ms": 0.7833,
+      "home_p99_ms": 1.7822,
+      "home_rps_min": 115021.1477,
+      "home_rps_max": 124863.8138,
+      "echo_rps": 125580.0788,
+      "echo_p99_ms": 1.9468,
+      "mean_rps": 120448.32172857143,
+      "mean_p99_ms": 2.083428571428571,
+      "max_path_spread_pct": 8.56957438805492
     },
-    "actix": {
-      "home_rps": 107950.4352,
-      "home_p50_ms": 0.9058,
-      "home_p99_ms": 3.083,
-      "echo_rps": 105295.5659,
-      "echo_p99_ms": 4.3442,
-      "mean_rps": 104189.53064285715,
-      "mean_p99_ms": 3.1858428571428568
+    "sova": {
+      "home_rps": 122246.4205,
+      "home_p50_ms": 0.7852,
+      "home_p99_ms": 1.8307,
+      "home_rps_min": 108062.4062,
+      "home_rps_max": 123173.1178,
+      "echo_rps": 122813.1236,
+      "echo_p99_ms": 2.1061,
+      "mean_rps": 117588.55205714285,
+      "mean_p99_ms": 2.2719857142857145,
+      "max_path_spread_pct": 12.36086221436644
     }
   },
   "rows": [
     {
-      "framework": "sova",
-      "path": "/",
-      "rps": 91299.8176,
-      "p50_ms": 0.9118,
-      "p99_ms": 3.6365,
-      "success": "100.00%"
-    },
-    {
-      "framework": "axum",
-      "path": "/",
-      "rps": 112627.1967,
-      "p50_ms": 0.7959,
-      "p99_ms": 2.3525,
-      "success": "100.00%"
-    },
-    {
       "framework": "actix",
       "path": "/",
-      "rps": 107950.4352,
-      "p50_ms": 0.9058,
-      "p99_ms": 3.083,
-      "success": "100.00%"
-    },
-    {
-      "framework": "sova",
-      "path": "/about",
-      "rps": 113972.4654,
-      "p50_ms": 0.7873,
-      "p99_ms": 2.4846,
-      "success": "100.00%"
-    },
-    {
-      "framework": "axum",
-      "path": "/about",
-      "rps": 124914.9128,
-      "p50_ms": 0.7701,
-      "p99_ms": 1.7538,
+      "rps": 100648.7344,
+      "p50_ms": 0.9344,
+      "p99_ms": 2.7122,
+      "rps_min": 99290.7771,
+      "rps_max": 104135.5756,
+      "rps_spread_pct": 4.813571207707098,
+      "samples": 3,
       "success": "100.00%"
     },
     {
       "framework": "actix",
       "path": "/about",
-      "rps": 100387.8747,
-      "p50_ms": 0.919,
-      "p99_ms": 3.6912,
-      "success": "100.00%"
-    },
-    {
-      "framework": "sova",
-      "path": "/blog",
-      "rps": 117259.353,
-      "p50_ms": 0.7855,
-      "p99_ms": 2.1391,
-      "success": "100.00%"
-    },
-    {
-      "framework": "axum",
-      "path": "/blog",
-      "rps": 122222.3583,
-      "p50_ms": 0.7748,
-      "p99_ms": 2.0531,
+      "rps": 104676.2942,
+      "p50_ms": 0.9292,
+      "p99_ms": 2.7512,
+      "rps_min": 99866.0245,
+      "rps_max": 105918.0413,
+      "rps_spread_pct": 5.7816498436949795,
+      "samples": 3,
       "success": "100.00%"
     },
     {
       "framework": "actix",
-      "path": "/blog",
-      "rps": 101179.8363,
-      "p50_ms": 0.909,
-      "p99_ms": 3.4047,
-      "success": "100.00%"
-    },
-    {
-      "framework": "sova",
-      "path": "/blog/hello",
-      "rps": 115320.092,
-      "p50_ms": 0.7862,
-      "p99_ms": 2.4303,
-      "success": "100.00%"
-    },
-    {
-      "framework": "axum",
-      "path": "/blog/hello",
-      "rps": 122530.9451,
-      "p50_ms": 0.7734,
-      "p99_ms": 1.9692,
-      "success": "100.00%"
-    },
-    {
-      "framework": "actix",
-      "path": "/blog/hello",
-      "rps": 101323.5135,
-      "p50_ms": 0.9196,
-      "p99_ms": 3.0326,
-      "success": "100.00%"
-    },
-    {
-      "framework": "sova",
-      "path": "/contact",
-      "rps": 117227.5188,
-      "p50_ms": 0.7803,
-      "p99_ms": 2.2916,
-      "success": "100.00%"
-    },
-    {
-      "framework": "axum",
-      "path": "/contact",
-      "rps": 125753.9838,
-      "p50_ms": 0.7714,
-      "p99_ms": 1.6276,
-      "success": "100.00%"
-    },
-    {
-      "framework": "actix",
-      "path": "/contact",
-      "rps": 102497.7663,
-      "p50_ms": 0.9207,
-      "p99_ms": 2.481,
-      "success": "100.00%"
-    },
-    {
-      "framework": "sova",
-      "path": "/api/health",
-      "rps": 116448.1361,
-      "p50_ms": 0.7724,
-      "p99_ms": 2.2862,
-      "success": "100.00%"
-    },
-    {
-      "framework": "axum",
-      "path": "/api/health",
-      "rps": 124903.7973,
-      "p50_ms": 0.7621,
-      "p99_ms": 1.6581,
-      "success": "100.00%"
-    },
-    {
-      "framework": "actix",
-      "path": "/api/health",
-      "rps": 110691.7226,
-      "p50_ms": 0.9036,
-      "p99_ms": 2.2642,
-      "success": "100.00%"
-    },
-    {
-      "framework": "sova",
       "path": "/api/echo",
-      "rps": 116926.9081,
-      "p50_ms": 0.7645,
-      "p99_ms": 2.3887,
+      "rps": 102865.0489,
+      "p50_ms": 0.9017,
+      "p99_ms": 3.0125,
+      "rps_min": 102146.7602,
+      "rps_max": 106976.8566,
+      "rps_spread_pct": 4.695566134125461,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "actix",
+      "path": "/api/health",
+      "rps": 107682.8225,
+      "p50_ms": 0.9033,
+      "p99_ms": 2.783,
+      "rps_min": 100091.429,
+      "rps_max": 108012.9811,
+      "rps_spread_pct": 7.356374875853576,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "actix",
+      "path": "/blog",
+      "rps": 99643.9405,
+      "p50_ms": 0.9254,
+      "p99_ms": 3.448,
+      "rps_min": 98465.0521,
+      "rps_max": 103153.8861,
+      "rps_spread_pct": 4.705588695581547,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "actix",
+      "path": "/blog/hello",
+      "rps": 104481.679,
+      "p50_ms": 0.9076,
+      "p99_ms": 3.9003,
+      "rps_min": 103196.1973,
+      "rps_max": 106699.0688,
+      "rps_spread_pct": 3.352617926440475,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "actix",
+      "path": "/contact",
+      "rps": 104591.2491,
+      "p50_ms": 0.921,
+      "p99_ms": 2.5107,
+      "rps_min": 100529.8878,
+      "rps_max": 106134.1821,
+      "rps_spread_pct": 5.358282215983219,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/",
+      "rps": 122665.4656,
+      "p50_ms": 0.7833,
+      "p99_ms": 1.7822,
+      "rps_min": 115021.1477,
+      "rps_max": 124863.8138,
+      "rps_spread_pct": 8.023991146861144,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/about",
+      "rps": 123468.5673,
+      "p50_ms": 0.7807,
+      "p99_ms": 1.74,
+      "rps_min": 115999.3159,
+      "rps_max": 125374.5267,
+      "rps_spread_pct": 7.5931963940428755,
+      "samples": 3,
       "success": "100.00%"
     },
     {
       "framework": "axum",
       "path": "/api/echo",
-      "rps": 118473.2507,
+      "rps": 125580.0788,
+      "p50_ms": 0.762,
+      "p99_ms": 1.9468,
+      "rps_min": 117318.0099,
+      "rps_max": 126586.005,
+      "rps_spread_pct": 7.380147542955674,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/api/health",
+      "rps": 125295.3453,
+      "p50_ms": 0.7662,
+      "p99_ms": 1.7738,
+      "rps_min": 123797.864,
+      "rps_max": 126208.3074,
+      "rps_spread_pct": 1.923809215919854,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/blog",
+      "rps": 115613.1168,
+      "p50_ms": 0.7788,
+      "p99_ms": 2.2205,
+      "rps_min": 114235.0203,
+      "rps_max": 122167.4864,
+      "rps_spread_pct": 6.861216373677066,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/blog/hello",
+      "rps": 117183.9714,
+      "p50_ms": 0.7822,
+      "p99_ms": 2.384,
+      "rps_min": 112161.6229,
+      "rps_max": 122203.7905,
+      "rps_spread_pct": 8.56957438805492,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "axum",
+      "path": "/contact",
+      "rps": 113331.7069,
+      "p50_ms": 0.7792,
+      "p99_ms": 2.7367,
+      "rps_min": 113126.1464,
+      "rps_max": 120327.5303,
+      "rps_spread_pct": 6.35425345384964,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "sova",
+      "path": "/",
+      "rps": 122246.4205,
+      "p50_ms": 0.7852,
+      "p99_ms": 1.8307,
+      "rps_min": 108062.4062,
+      "rps_max": 123173.1178,
+      "rps_spread_pct": 12.36086221436644,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "sova",
+      "path": "/about",
+      "rps": 115247.6018,
+      "p50_ms": 0.7865,
+      "p99_ms": 2.5025,
+      "rps_min": 112862.0784,
+      "rps_max": 115341.5384,
+      "rps_spread_pct": 2.151420039353918,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "sova",
+      "path": "/api/echo",
+      "rps": 122813.1236,
+      "p50_ms": 0.7626,
+      "p99_ms": 2.1061,
+      "rps_min": 120465.3455,
+      "rps_max": 124537.3662,
+      "rps_spread_pct": 3.315623429025795,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "sova",
+      "path": "/api/health",
+      "rps": 114521.9303,
+      "p50_ms": 0.7727,
+      "p99_ms": 2.4615,
+      "rps_min": 113883.9278,
+      "rps_max": 115791.3486,
+      "rps_spread_pct": 1.6655506897267105,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "sova",
+      "path": "/blog",
+      "rps": 118889.4855,
+      "p50_ms": 0.7861,
+      "p99_ms": 2.1803,
+      "rps_min": 110540.1028,
+      "rps_max": 119303.567,
+      "rps_spread_pct": 7.371101122310772,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "sova",
+      "path": "/blog/hello",
+      "rps": 110983.9015,
+      "p50_ms": 0.7919,
+      "p99_ms": 2.712,
+      "rps_min": 110878.2134,
+      "rps_max": 114173.7042,
+      "rps_spread_pct": 2.969341278743926,
+      "samples": 3,
+      "success": "100.00%"
+    },
+    {
+      "framework": "sova",
+      "path": "/contact",
+      "rps": 118417.4012,
+      "p50_ms": 0.7874,
+      "p99_ms": 2.1108,
+      "rps_min": 109367.3848,
+      "rps_max": 121291.5511,
+      "rps_spread_pct": 10.069606476045513,
+      "samples": 3,
+      "success": "100.00%"
+    }
+  ],
+  "raw": [
+    {
+      "round": 1,
+      "framework": "sova",
+      "path": "/",
+      "rps": 108062.4062,
+      "p50_ms": 0.7993,
+      "p99_ms": 3.3008,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "axum",
+      "path": "/",
+      "rps": 122665.4656,
+      "p50_ms": 0.784,
+      "p99_ms": 1.7822,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "actix",
+      "path": "/",
+      "rps": 104135.5756,
+      "p50_ms": 0.9344,
+      "p99_ms": 3.0854,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "sova",
+      "path": "/about",
+      "rps": 112862.0784,
+      "p50_ms": 0.7916,
+      "p99_ms": 2.6139,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "axum",
+      "path": "/about",
+      "rps": 123468.5673,
+      "p50_ms": 0.7827,
+      "p99_ms": 1.74,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "actix",
+      "path": "/about",
+      "rps": 99866.0245,
+      "p50_ms": 0.9292,
+      "p99_ms": 2.9429,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "sova",
+      "path": "/blog",
+      "rps": 119303.567,
+      "p50_ms": 0.7861,
+      "p99_ms": 2.1222,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "axum",
+      "path": "/blog",
+      "rps": 114235.0203,
+      "p50_ms": 0.788,
+      "p99_ms": 2.3947,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "actix",
+      "path": "/blog",
+      "rps": 103153.8861,
+      "p50_ms": 0.9131,
+      "p99_ms": 4.4287,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "sova",
+      "path": "/blog/hello",
+      "rps": 110878.2134,
+      "p50_ms": 0.7941,
+      "p99_ms": 2.712,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "axum",
+      "path": "/blog/hello",
+      "rps": 112161.6229,
+      "p50_ms": 0.7822,
+      "p99_ms": 3.0602,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "actix",
+      "path": "/blog/hello",
+      "rps": 104481.679,
+      "p50_ms": 0.9034,
+      "p99_ms": 3.9003,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "sova",
+      "path": "/contact",
+      "rps": 121291.5511,
+      "p50_ms": 0.7841,
+      "p99_ms": 1.966,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "axum",
+      "path": "/contact",
+      "rps": 113126.1464,
+      "p50_ms": 0.781,
+      "p99_ms": 2.978,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "actix",
+      "path": "/contact",
+      "rps": 104591.2491,
+      "p50_ms": 0.9106,
+      "p99_ms": 3.5585,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "sova",
+      "path": "/api/health",
+      "rps": 115791.3486,
+      "p50_ms": 0.7742,
+      "p99_ms": 2.4441,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "axum",
+      "path": "/api/health",
+      "rps": 126208.3074,
+      "p50_ms": 0.7632,
+      "p99_ms": 1.7167,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "actix",
+      "path": "/api/health",
+      "rps": 100091.429,
+      "p50_ms": 0.912,
+      "p99_ms": 2.783,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "sova",
+      "path": "/api/echo",
+      "rps": 120465.3455,
+      "p50_ms": 0.7626,
+      "p99_ms": 2.38,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "axum",
+      "path": "/api/echo",
+      "rps": 126586.005,
+      "p50_ms": 0.7622,
+      "p99_ms": 1.7735,
+      "success": "100.00%"
+    },
+    {
+      "round": 1,
+      "framework": "actix",
+      "path": "/api/echo",
+      "rps": 102865.0489,
+      "p50_ms": 0.9017,
+      "p99_ms": 3.0125,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "axum",
+      "path": "/",
+      "rps": 124863.8138,
+      "p50_ms": 0.776,
+      "p99_ms": 1.6494,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "actix",
+      "path": "/",
+      "rps": 100648.7344,
+      "p50_ms": 0.9282,
+      "p99_ms": 2.7122,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "sova",
+      "path": "/",
+      "rps": 123173.1178,
+      "p50_ms": 0.7826,
+      "p99_ms": 1.7802,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "axum",
+      "path": "/about",
+      "rps": 115999.3159,
+      "p50_ms": 0.7807,
+      "p99_ms": 2.3184,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "actix",
+      "path": "/about",
+      "rps": 105918.0413,
+      "p50_ms": 0.9279,
+      "p99_ms": 2.7512,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "sova",
+      "path": "/about",
+      "rps": 115341.5384,
+      "p50_ms": 0.7844,
+      "p99_ms": 2.5025,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "axum",
+      "path": "/blog",
+      "rps": 122167.4864,
+      "p50_ms": 0.7775,
+      "p99_ms": 1.948,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "actix",
+      "path": "/blog",
+      "rps": 99643.9405,
+      "p50_ms": 0.9275,
+      "p99_ms": 2.6923,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "sova",
+      "path": "/blog",
+      "rps": 110540.1028,
+      "p50_ms": 0.7907,
+      "p99_ms": 2.7968,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "axum",
+      "path": "/blog/hello",
+      "rps": 117183.9714,
+      "p50_ms": 0.7837,
+      "p99_ms": 2.384,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "actix",
+      "path": "/blog/hello",
+      "rps": 103196.1973,
+      "p50_ms": 0.9076,
+      "p99_ms": 4.1308,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "sova",
+      "path": "/blog/hello",
+      "rps": 114173.7042,
+      "p50_ms": 0.7919,
+      "p99_ms": 2.3345,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "axum",
+      "path": "/contact",
+      "rps": 120327.5303,
+      "p50_ms": 0.7782,
+      "p99_ms": 2.1942,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "actix",
+      "path": "/contact",
+      "rps": 106134.1821,
+      "p50_ms": 0.921,
+      "p99_ms": 2.5107,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "sova",
+      "path": "/contact",
+      "rps": 109367.3848,
+      "p50_ms": 0.7963,
+      "p99_ms": 2.8193,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "axum",
+      "path": "/api/health",
+      "rps": 123797.864,
+      "p50_ms": 0.7662,
+      "p99_ms": 1.9488,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "actix",
+      "path": "/api/health",
+      "rps": 108012.9811,
+      "p50_ms": 0.9033,
+      "p99_ms": 2.7774,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "sova",
+      "path": "/api/health",
+      "rps": 114521.9303,
+      "p50_ms": 0.7727,
+      "p99_ms": 2.5266,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "axum",
+      "path": "/api/echo",
+      "rps": 125580.0788,
+      "p50_ms": 0.7612,
+      "p99_ms": 1.9468,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "actix",
+      "path": "/api/echo",
+      "rps": 106976.8566,
+      "p50_ms": 0.9185,
+      "p99_ms": 2.7078,
+      "success": "100.00%"
+    },
+    {
+      "round": 2,
+      "framework": "sova",
+      "path": "/api/echo",
+      "rps": 122813.1236,
       "p50_ms": 0.7639,
-      "p99_ms": 2.5635,
+      "p99_ms": 2.1061,
       "success": "100.00%"
     },
     {
+      "round": 3,
+      "framework": "actix",
+      "path": "/",
+      "rps": 99290.7771,
+      "p50_ms": 0.9433,
+      "p99_ms": 2.2169,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "sova",
+      "path": "/",
+      "rps": 122246.4205,
+      "p50_ms": 0.7852,
+      "p99_ms": 1.8307,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "axum",
+      "path": "/",
+      "rps": 115021.1477,
+      "p50_ms": 0.7833,
+      "p99_ms": 2.559,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "actix",
+      "path": "/about",
+      "rps": 104676.2942,
+      "p50_ms": 0.9501,
+      "p99_ms": 2.5414,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "sova",
+      "path": "/about",
+      "rps": 115247.6018,
+      "p50_ms": 0.7865,
+      "p99_ms": 2.4829,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "axum",
+      "path": "/about",
+      "rps": 125374.5267,
+      "p50_ms": 0.7706,
+      "p99_ms": 1.7025,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "actix",
+      "path": "/blog",
+      "rps": 98465.0521,
+      "p50_ms": 0.9254,
+      "p99_ms": 3.448,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "sova",
+      "path": "/blog",
+      "rps": 118889.4855,
+      "p50_ms": 0.784,
+      "p99_ms": 2.1803,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "axum",
+      "path": "/blog",
+      "rps": 115613.1168,
+      "p50_ms": 0.7788,
+      "p99_ms": 2.2205,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "actix",
+      "path": "/blog/hello",
+      "rps": 106699.0688,
+      "p50_ms": 0.915,
+      "p99_ms": 2.9426,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "sova",
+      "path": "/blog/hello",
+      "rps": 110983.9015,
+      "p50_ms": 0.7899,
+      "p99_ms": 3.1651,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "axum",
+      "path": "/blog/hello",
+      "rps": 122203.7905,
+      "p50_ms": 0.7785,
+      "p99_ms": 1.9311,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "actix",
+      "path": "/contact",
+      "rps": 100529.8878,
+      "p50_ms": 0.9277,
+      "p99_ms": 2.4661,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "sova",
+      "path": "/contact",
+      "rps": 118417.4012,
+      "p50_ms": 0.7874,
+      "p99_ms": 2.1108,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "axum",
+      "path": "/contact",
+      "rps": 113331.7069,
+      "p50_ms": 0.7792,
+      "p99_ms": 2.7367,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "actix",
+      "path": "/api/health",
+      "rps": 107682.8225,
+      "p50_ms": 0.9026,
+      "p99_ms": 2.81,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "sova",
+      "path": "/api/health",
+      "rps": 113883.9278,
+      "p50_ms": 0.7712,
+      "p99_ms": 2.4615,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "axum",
+      "path": "/api/health",
+      "rps": 125295.3453,
+      "p50_ms": 0.7665,
+      "p99_ms": 1.7738,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
       "framework": "actix",
       "path": "/api/echo",
-      "rps": 105295.5659,
-      "p50_ms": 0.8727,
-      "p99_ms": 4.3442,
+      "rps": 102146.7602,
+      "p50_ms": 0.8895,
+      "p99_ms": 3.4003,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "sova",
+      "path": "/api/echo",
+      "rps": 124537.3662,
+      "p50_ms": 0.7611,
+      "p99_ms": 1.9428,
+      "success": "100.00%"
+    },
+    {
+      "round": 3,
+      "framework": "axum",
+      "path": "/api/echo",
+      "rps": 117318.0099,
+      "p50_ms": 0.762,
+      "p99_ms": 2.7029,
       "success": "100.00%"
     }
   ]
