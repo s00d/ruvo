@@ -1,6 +1,6 @@
 [package]
 name = "sova-devtools"
-version = "0.1.1"
+version = "0.1.2"
 authors.workspace = true
 edition.workspace = true
 description = "In-app DevTools bar for Sova (HTML inject, SSE timeline, request snapshots)"

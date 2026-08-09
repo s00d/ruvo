@@ -150,6 +150,7 @@ npm --prefix plugins/sova-devtools/ui run playground
 - `/_devtools/*` is a **GET-only** debug surface — do not expose it on the public internet.
 - Release builds keep the plugin inert even if you forget to strip the feature from `Cargo.toml`.
 - Session values and SQL bindings are redacted/masked in the UI.
+- HTML pages that get the bar send `Cache-Control: no-store` so browser **Back** is not served from bfcache (otherwise no server hit → empty Timeline).
 
 ## Related
 

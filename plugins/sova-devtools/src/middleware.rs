@@ -122,10 +122,30 @@ pub fn install(app: &mut sova_core::App, hub: DevToolsHub) {
                     .count(),
             );
             hub.push_snapshot(snap);
-            maybe_inject(&mut res, &snap_id, st, ms, sql, err);
+            if maybe_inject(&mut res, &snap_id, st, ms, sql, err) {
+                // Prevent bfcache / browser Back from restoring a frozen page
+                // without a server hit (otherwise Timeline stays silent).
+                disable_bfcache(&mut res);
+            }
             res
         }
     }));
+}
+
+fn disable_bfcache(res: &mut Response) {
+    let h = res.headers_mut();
+    h.insert(
+        http::header::CACHE_CONTROL,
+        http::HeaderValue::from_static("no-store, no-cache, must-revalidate, max-age=0"),
+    );
+    h.insert(
+        http::header::PRAGMA,
+        http::HeaderValue::from_static("no-cache"),
+    );
+    h.insert(
+        http::header::EXPIRES,
+        http::HeaderValue::from_static("0"),
+    );
 }
 
 fn maybe_inject(
@@ -135,9 +155,9 @@ fn maybe_inject(
     ms: f64,
     sql: usize,
     errors: usize,
-) {
+) -> bool {
     let fragment = host_html(snap_id, status, ms, sql, errors);
-    res.map_buffered_html(|html| inject_body(html, &fragment));
+    res.map_buffered_html(|html| inject_body(html, &fragment))
 }
 
 /// Host marker + tiny bridge. Full Vue app lives at `/_devtools/`.

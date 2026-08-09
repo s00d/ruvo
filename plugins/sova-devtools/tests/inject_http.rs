@@ -14,6 +14,15 @@ async fn injects_html_skips_json() {
     let client = TestClient::new(app).expect("client");
     let html = client.get("/h").await;
     html.assert_status(200);
+    let cc = html
+        .headers()
+        .get("cache-control")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    assert!(
+        cc.contains("no-store"),
+        "html should disable bfcache, got {cc:?}"
+    );
     let body = String::from_utf8_lossy(html.body_bytes().expect("body"));
     assert!(body.contains("sova-devtools"), "{body}");
     assert!(body.contains("<!-- sova_devtools -->"), "{body}");
@@ -22,6 +31,11 @@ async fn injects_html_skips_json() {
 
     let json = client.get("/j").await;
     json.assert_status(200);
+    let json_cc = json.headers().get("cache-control");
+    assert!(
+        json_cc.is_none(),
+        "json must not get DevTools cache headers"
+    );
     let raw = String::from_utf8_lossy(json.body_bytes().expect("body"));
     assert!(!raw.contains("sova-devtools"), "{raw}");
     assert!(

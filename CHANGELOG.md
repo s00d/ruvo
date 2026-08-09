@@ -3,6 +3,10 @@
 All notable changes to the Sova workspace are recorded here.
 Versions refer to the published crates on [crates.io](https://crates.io/crates/sova).
 
+## 0.1.15 — 2026-08-09
+
+- `sova-devtools` **0.1.2**: HTML responses get `Cache-Control: no-store` (+ bridge `pageshow` reload) so browser Back is not silent bfcache
+
 ## 0.1.14 — 2026-08-09
 
 - New plugin **`sova-devtools` 0.1.1**: in-app debug bar (HTML inject, SSE timeline, request snapshots)

@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-devtools`](https://docs.rs/sova-devtools/0.1.1) `0.1.1` |
+| Crate | [`sova-devtools`](https://docs.rs/sova-devtools/0.1.2) `0.1.2` |
 | Plugin id | `devtools` |
 | Category | Ops |
 

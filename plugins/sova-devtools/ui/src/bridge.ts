@@ -258,6 +258,15 @@ function boot() {
     if (!frame || typeof data.height !== "number") return;
     applyFrameHeight(frame, data.height);
   });
+
+  // Back/forward cache restores the document without a network request — force
+  // a real navigation so the server records a DevTools snapshot again.
+  window.addEventListener("pageshow", (ev) => {
+    const pe = ev as PageTransitionEvent;
+    if (pe.persisted) {
+      location.reload();
+    }
+  });
 }
 
 if (document.readyState === "loading") {
