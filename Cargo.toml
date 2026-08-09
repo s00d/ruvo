@@ -23,8 +23,8 @@ homepage = "https://s00d.github.io/sova/"
 
 [workspace.dependencies]
 # Workspace crates (version+path so `cargo publish` can resolve)
-sova-core = { version = "0.1.10", path = "crates/sova-core" }
-sova = { version = "0.1.18", path = "crates/sova" }
+sova-core = { version = "0.1.11", path = "crates/sova-core" }
+sova = { version = "0.1.19", path = "crates/sova" }
 sova-testing = { version = "0.1.2", path = "crates/sova-testing", default-features = false }
 sova-activity = { version = "0.1.2", path = "plugins/sova-activity" }
 sova-auth = { version = "0.1.8", path = "plugins/sova-auth", default-features = false }
@@ -32,36 +32,37 @@ sovax = { version = "0.1.1", path = "plugins/sovax" }
 sova-compress = { version = "0.1.1", path = "plugins/sova-compress" }
 sova-cookies = { version = "0.1.1", path = "plugins/sova-cookies" }
 sova-cors = { version = "0.1.1", path = "plugins/sova-cors" }
-sova-csrf = { version = "0.1.2", path = "plugins/sova-csrf" }
+sova-csrf = { version = "0.1.3", path = "plugins/sova-csrf" }
 sova-db = { version = "0.1.3", path = "plugins/sova-db", default-features = false }
 sova-env = { version = "0.1.1", path = "plugins/sova-env" }
 sova-http = { version = "0.1.1", path = "plugins/sova-http" }
 sova-i18n = { version = "0.1.2", path = "plugins/sova-i18n" }
 sova-mail = { version = "0.1.2", path = "plugins/sova-mail" }
 sova-meta = { version = "0.1.2", path = "plugins/sova-meta", default-features = false }
-sova-notifications = { version = "0.1.4", path = "plugins/sova-notifications" }
+sova-notifications = { version = "0.1.5", path = "plugins/sova-notifications" }
 sova-observability = { version = "0.1.2", path = "plugins/sova-observability", default-features = false }
 sova-openapi = { version = "0.1.1", path = "plugins/sova-openapi" }
-sova-passport = { version = "0.1.2", path = "plugins/sova-passport" }
+sova-passport = { version = "0.1.3", path = "plugins/sova-passport" }
 sova-quic = { version = "0.1.1", path = "plugins/sova-quic" }
-sova-rate-limit = { version = "0.1.1", path = "plugins/sova-rate-limit" }
+sova-rate-limit = { version = "0.1.2", path = "plugins/sova-rate-limit" }
 sova-idempotency = { version = "0.1.0", path = "plugins/sova-idempotency" }
 sova-response-cache = { version = "0.1.0", path = "plugins/sova-response-cache" }
 sova-redis = { version = "0.1.2", path = "plugins/sova-redis" }
-sova-session = { version = "0.1.2", path = "plugins/sova-session" }
+sova-session = { version = "0.1.3", path = "plugins/sova-session" }
 sova-shield = { version = "0.1.1", path = "plugins/sova-shield" }
 sova-sse = { version = "0.1.1", path = "plugins/sova-sse" }
 sova-static = { version = "0.1.1", path = "plugins/sova-static" }
 sova-storage = { version = "0.1.1", path = "plugins/sova-storage" }
 sova-store = { version = "0.1.2", path = "plugins/sova-store" }
-sova-tasks = { version = "0.1.2", path = "plugins/sova-tasks" }
+sova-tasks = { version = "0.1.3", path = "plugins/sova-tasks" }
 sova-tasks-store = { version = "0.1.1", path = "plugins/sova-tasks-store" }
 sova-templates = { version = "0.1.1", path = "plugins/sova-templates" }
 sova-udp = { version = "0.1.1", path = "plugins/sova-udp" }
 sova-vld = { version = "0.1.4", path = "plugins/sova-vld" }
 sova-ws = { version = "0.1.1", path = "plugins/sova-ws" }
 sova-ai = { version = "0.1.0", path = "plugins/sova-ai", default-features = false }
-sova-devtools = { version = "0.1.4", path = "plugins/sova-devtools", default-features = false }
+sova-acme = { version = "0.1.0", path = "plugins/sova-acme" }
+sova-devtools = { version = "0.1.5", path = "plugins/sova-devtools", default-features = false }
 
 
 # Shared third-party
@@ -126,6 +127,8 @@ quinn = { version = "0.11", features = ["rustls"] }
 rand = "0.8"
 rand_core = { version = "0.6", features = ["std"] }
 rcgen = "0.13"
+instant-acme = { version = "0.8", default-features = false, features = ["hyper-rustls", "ring"] }
+x509-parser = "0.16"
 redis = { version = "0.32", default-features = false, features = ["tokio-comp", "connection-manager"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 rustc-hash = "2"

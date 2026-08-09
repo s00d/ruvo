@@ -115,9 +115,43 @@ impl Tls {
 
     /// Reload certificate + key from disk; new connections pick up the updated certificate.
     pub fn reload(&self) -> Result<()> {
+        self.reload_paths()
+    }
+
+    /// Alias for [`Self::reload`] (disk paths captured at construction).
+    pub fn reload_paths(&self) -> Result<()> {
         let ck = load_certified_key(&self.cert_path, &self.key_path)?;
         self.resolver.current.store(Arc::new(ck));
         Ok(())
+    }
+
+    /// Hot-reload from PEM strings; optionally persists to the configured paths.
+    ///
+    /// New TLS handshakes pick up the certificate immediately (shared resolver).
+    pub fn reload_pem(&self, cert_pem: &str, key_pem: &str) -> Result<()> {
+        let ck = certified_key_from_pem(cert_pem.as_bytes(), key_pem.as_bytes())?;
+        self.resolver.current.store(Arc::new(ck));
+        if let Some(parent) = self.cert_path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        if let Some(parent) = self.key_path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        std::fs::write(&self.cert_path, cert_pem)
+            .map_err(|e| Error::Internal(format!("write cert {}: {e}", self.cert_path.display())))?;
+        std::fs::write(&self.key_path, key_pem)
+            .map_err(|e| Error::Internal(format!("write key {}: {e}", self.key_path.display())))?;
+        Ok(())
+    }
+
+    /// Paths used by [`Self::reload`] / persistence from [`Self::reload_pem`].
+    pub fn cert_path(&self) -> &Path {
+        &self.cert_path
+    }
+
+    /// Private key path paired with [`Self::cert_path`].
+    pub fn key_path(&self) -> &Path {
+        &self.key_path
     }
 
     /// Self-signed certificate for local development (requires feature `dev-tls`).
@@ -230,11 +264,39 @@ fn load_certified_key(cert_path: &Path, key_path: &Path) -> Result<CertifiedKey>
         )));
     }
     let key = load_key(key_path)?;
+    certified_key_from_parts(certs, key, Some(key_path))
+}
+
+fn certified_key_from_pem(cert_pem: &[u8], key_pem: &[u8]) -> Result<CertifiedKey> {
+    let mut cert_rd = BufReader::new(cert_pem);
+    let certs = rustls_pemfile::certs(&mut cert_rd)
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(|e| Error::Internal(format!("parse cert pem: {e}")))?;
+    if certs.is_empty() {
+        return Err(Error::Internal("no certificates in pem".into()));
+    }
+    let mut key_rd = BufReader::new(key_pem);
+    let key = rustls_pemfile::private_key(&mut key_rd)
+        .map_err(|e| Error::Internal(format!("parse key pem: {e}")))?
+        .ok_or_else(|| Error::Internal(format!("no private key in pem ({ENCRYPTED_KEY_HINT})")))?;
+    certified_key_from_parts(certs, key, None)
+}
+
+fn certified_key_from_parts(
+    certs: Vec<CertificateDer<'static>>,
+    key: PrivateKeyDer<'static>,
+    key_path: Option<&Path>,
+) -> Result<CertifiedKey> {
     let provider = rustls::crypto::ring::default_provider();
     let signing_key = provider
         .key_provider
         .load_private_key(key)
-        .map_err(|e| Error::Internal(format!("load private key {}: {e}", key_path.display())))?;
+        .map_err(|e| {
+            let where_ = key_path
+                .map(|p| format!(" {}", p.display()))
+                .unwrap_or_default();
+            Error::Internal(format!("load private key{where_}: {e}"))
+        })?;
     Ok(CertifiedKey::new(certs, signing_key))
 }
 
@@ -340,6 +402,23 @@ mod tests {
         tls.reload().unwrap();
         let after = tls.resolver.current.load_full();
         assert!(!Arc::ptr_eq(&before, &after));
+    }
+
+    #[test]
+    fn reload_pem_swaps_and_persists() {
+        let (dir, cert, key) = temp_pem_pair();
+        let tls = Tls::from_pem(&cert, &key).unwrap();
+        let before = tls.resolver.current.load_full();
+
+        let next = rcgen::generate_simple_self_signed(vec!["reload.example".into()]).unwrap();
+        let cert_pem = next.cert.pem();
+        let key_pem = next.key_pair.serialize_pem();
+        tls.reload_pem(&cert_pem, &key_pem).unwrap();
+
+        let after = tls.resolver.current.load_full();
+        assert!(!Arc::ptr_eq(&before, &after));
+        assert_eq!(std::fs::read_to_string(dir.path().join("cert.pem")).unwrap(), cert_pem);
+        assert_eq!(std::fs::read_to_string(dir.path().join("key.pem")).unwrap(), key_pem);
     }
 
     #[tokio::test]
