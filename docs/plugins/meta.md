@@ -49,3 +49,5 @@ async fn main() -> Result<()> {
 ```
 
 Customize sitemap exclusions after `into_app()` if needed (cabinet excludes `/cabinet/*`, `/api/*`, …). Demo: `meta_blog`.
+
+`.with(Meta::page()…)` after a `get`/`post` attaches to **that last route only**. For a whole `Router`, call `.with(...)` **before** registering routes (router defaults), or chain `.with` per route.

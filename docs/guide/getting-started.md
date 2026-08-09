@@ -11,6 +11,11 @@ cargo add sova --features web
 cargo add sova --features api
 # or both feature sets (deps only — still pick one preset below)
 cargo add sova --features "web,api"
+
+# #[tokio::main] needs a direct tokio dep (sova already uses it transitively)
+cargo add tokio --features "rt-multi-thread,macros"
+# API examples with vld `schema!` + `#[derive(Serialize)]` also need:
+# cargo add serde --features derive
 ```
 
 `web` and `api` can be enabled together. There is no combined preset: start from `App::web()` or `App::api()`, then `install(...)` whatever else you need (OpenAPI on a site, templates on an API, …).
@@ -23,6 +28,7 @@ cargo sovax new blog --web
 cargo sovax new ping-api --api
 ```
 
+Templates already pin `tokio` (and `serde` / `serde_json` for the API preset).
 ## Web app
 
 `features = ["web"]`. Preset installs: `request_id`, `logger`, Cors, Shield, cookie sessions, Csrf, Static (`public/` → `/assets`), Templates (`views/`), Meta, Sitemap, Robots, health probes.
@@ -64,9 +70,10 @@ use sova::{App, Html, Meta, Router};
 
 pub fn register(app: &mut App) {
     let mut blog = Router::new();
-    blog.get("/", list)
-        .get("/:slug", show)
-        .with(Meta::page().title("Posts"));
+    // `.with` after a `get`/`post` hits only that last route.
+    // Put shared meta on the router *before* routes (defaults), or per-route.
+    blog.with(Meta::page().title("Posts"));
+    blog.get("/", list).get("/:slug", show);
     app.mount("/blog", blog);
 }
 
@@ -135,7 +142,7 @@ async fn ping(mut req: Request) -> std::result::Result<Json<Ping>, ValidationErr
 }
 ```
 
-Open Scalar at `http://127.0.0.1:3000/docs`. Same pattern in-tree: `cargo run -p api_preset`.
+Open Scalar at `http://127.0.0.1:3000/docs` (spec at `/docs/openapi.json`). Same pattern in-tree: `cargo run -p api_preset`.
 
 ## Adding plugins on top of a preset
 

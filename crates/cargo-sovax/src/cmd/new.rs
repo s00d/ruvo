@@ -55,7 +55,14 @@ fn write_dir_template_rec(
     fs::create_dir_all(root).map_err(io_err)?;
     for file in dir.files() {
         let rel = file.path().strip_prefix(root_dir.path()).map_err(path_err)?;
-        let out = root.join(rel);
+        // Nested `Cargo.toml` cannot ship in a crates.io package (cargo skips
+        // subdirs that look like other packages). Templates use `_Cargo.toml`.
+        let out_rel = if rel.file_name().and_then(|s| s.to_str()) == Some("_Cargo.toml") {
+            rel.with_file_name("Cargo.toml")
+        } else {
+            rel.to_path_buf()
+        };
+        let out = root.join(out_rel);
         if let Some(parent) = out.parent() {
             fs::create_dir_all(parent).map_err(io_err)?;
         }

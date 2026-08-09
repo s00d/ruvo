@@ -19,7 +19,9 @@
 #
 # sova-testing may depend on auth/notifications once those crates exist on crates.io.
 
-# `cargo-sovax` / `sova-docs-gen` stay publish = false.
+# After first wave, publish scaffolding too:
+#   cargo publish -p cargo-sovax
+# `sova-docs-gen` stays publish = false.
 # In-app CLI helpers: crate `sovax`. Scaffolding binary: `cargo-sovax` → `cargo sovax`.
 #
 # After all crates exist:

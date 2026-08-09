@@ -16,7 +16,7 @@ exclude = ["ci-smoke-min", "ci-smoke-api", "ci-smoke-web", ".ci-gen"]
 [workspace.dependencies]
 # Workspace crates (version+path so `cargo publish` can resolve)
 sova-core = { version = "0.1.0", path = "crates/sova-core" }
-sova = { version = "0.1.0", path = "crates/sova" }
+sova = { version = "0.1.1", path = "crates/sova" }
 sova-testing = { version = "0.1.1", path = "crates/sova-testing", default-features = false }
 sova-activity = { version = "0.1.0", path = "plugins/sova-activity" }
 sova-auth = { version = "0.1.0", path = "plugins/sova-auth" }
@@ -48,7 +48,7 @@ sova-tasks = { version = "0.1.0", path = "plugins/sova-tasks" }
 sova-tasks-store = { version = "0.1.0", path = "plugins/sova-tasks-store" }
 sova-templates = { version = "0.1.0", path = "plugins/sova-templates" }
 sova-udp = { version = "0.1.0", path = "plugins/sova-udp" }
-sova-vld = { version = "0.1.0", path = "plugins/sova-vld" }
+sova-vld = { version = "0.1.1", path = "plugins/sova-vld" }
 sova-ws = { version = "0.1.0", path = "plugins/sova-ws" }
 
 

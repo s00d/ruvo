@@ -16,6 +16,9 @@ pub use validate::{
 mod doc_ext;
 #[cfg(feature = "openapi")]
 pub use doc_ext::{DocVldExt, VldDocSchema};
+/// Re-exported for [`doc_schema!`] (callers do not need a direct `serde_json` dep).
+#[cfg(feature = "openapi")]
+pub use serde_json;
 
 #[cfg(feature = "i18n")]
 mod i18n_msg;

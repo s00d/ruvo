@@ -21,7 +21,7 @@ OpenAPI 3.1 document building and Scalar docs UI.
 
 ## Usage
 
-**`App::api()`** already mounts OpenAPI + Scalar at `/docs`. Your job is schemas + `.doc(...)` on routes — not `OpenApi::new(...)`.
+**`App::api()`** already mounts OpenAPI + Scalar at `/docs` (JSON at `/docs/openapi.json`). Your job is schemas + `.doc(...)` on routes — not `OpenApi::new(...)`.
 
 ```rust
 use sova::prelude::*;

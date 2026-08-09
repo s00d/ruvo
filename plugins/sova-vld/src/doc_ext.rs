@@ -12,12 +12,15 @@ pub trait VldDocSchema {
 }
 
 /// Implement [`VldDocSchema`] for vld `schema!` structs.
+///
+/// Expands without requiring the consumer crate to depend on `serde_json`
+/// (uses the `sova-vld` re-export).
 #[macro_export]
 macro_rules! doc_schema {
     ($($t:ty),+ $(,)?) => {
         $(
             impl $crate::VldDocSchema for $t {
-                fn json_schema() -> serde_json::Value {
+                fn json_schema() -> $crate::serde_json::Value {
                     <$t>::json_schema()
                 }
             }

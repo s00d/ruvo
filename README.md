@@ -30,9 +30,10 @@ cargo add sova --features web
 cargo add sova --features api
 # or both (then pick App::web() or App::api() and install the rest)
 cargo add sova --features "web,api"
+cargo add tokio --features "rt-multi-thread,macros"
 ```
 
-Scaffold: `cargo install cargo-sovax`, then `cargo sovax new myapp --web` / `--api`.
+Scaffold: `cargo install cargo-sovax`, then `cargo sovax new myapp --web` / `--api` (templates already include `tokio`).
 
 ## Example
 
