@@ -1,8 +1,7 @@
 //! Collect request snapshot + inject thin host bridge (not the full Vue app).
 
-use crate::collector::{DevToolsBag, RateLimitSnap, RouteSnap};
-#[cfg(any(feature = "session", feature = "auth", feature = "passport"))]
-use crate::collector::AuthSnap;
+use crate::collector::{DevToolsBag, RouteSnap};
+use crate::hooks;
 use crate::hub::{next_id, DevToolsHub};
 use crate::inject::inject_body;
 use sova_core::extend::named;
@@ -53,7 +52,7 @@ pub fn install(app: &mut sova_core::App, hub: DevToolsHub) {
                 pattern: route_cap.get().map(|p| p.to_string()),
                 captures: Vec::new(),
             });
-            collect_response_meta(&bag, &res);
+            hooks::collect_response_meta(&bag, &res);
 
             #[cfg(feature = "i18n")]
             bag.set_locale(locale);
@@ -61,7 +60,7 @@ pub fn install(app: &mut sova_core::App, hub: DevToolsHub) {
             bag.set_csrf(Some(csrf_present));
 
             #[cfg(feature = "session")]
-            collect_session_auth(
+            hooks::collect_session_auth(
                 &bag,
                 session,
                 #[cfg(feature = "auth")]
@@ -71,7 +70,7 @@ pub fn install(app: &mut sova_core::App, hub: DevToolsHub) {
             );
 
             #[cfg(all(not(feature = "session"), any(feature = "auth", feature = "passport")))]
-            fill_auth_without_session(
+            hooks::fill_auth_without_session(
                 &bag,
                 #[cfg(feature = "auth")]
                 user,
@@ -80,20 +79,7 @@ pub fn install(app: &mut sova_core::App, hub: DevToolsHub) {
             );
 
             #[cfg(feature = "mail")]
-            {
-                use crate::collector::MailLine;
-                if let Some(client) = mail {
-                    if let Some(fake) = client.fake() {
-                        for m in fake.sent().into_iter().rev().take(5) {
-                            bag.push_mail(MailLine {
-                                to: m.to,
-                                subject: m.subject,
-                                backend: "fake".into(),
-                            });
-                        }
-                    }
-                }
-            }
+            hooks::collect_mail(&bag, mail.as_deref());
 
             let status = res.status_code().as_u16();
             let ms = bag.started.elapsed().as_secs_f64() * 1000.0;
@@ -123,109 +109,6 @@ pub fn install(app: &mut sova_core::App, hub: DevToolsHub) {
             res
         }
     }));
-}
-
-fn collect_response_meta(bag: &DevToolsBag, res: &Response) {
-    let h = res.headers();
-    let encoding = h
-        .get(http::header::CONTENT_ENCODING)
-        .and_then(|v| v.to_str().ok())
-        .map(|s| s.to_string());
-    bag.set_encoding(encoding);
-
-    let limit = h
-        .get("ratelimit-limit")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.parse().ok());
-    let remaining = h
-        .get("ratelimit-remaining")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.parse().ok());
-    let reset = h
-        .get("ratelimit-reset")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.parse().ok());
-    if limit.is_some() || remaining.is_some() || reset.is_some() {
-        bag.set_rate_limit(Some(RateLimitSnap {
-            limit,
-            remaining,
-            reset,
-        }));
-    }
-}
-
-#[cfg(feature = "session")]
-fn collect_session_auth(
-    bag: &DevToolsBag,
-    session: Option<sova_session::Session>,
-    #[cfg(feature = "auth")] user: Option<sova_auth::CurrentUser>,
-    #[cfg(feature = "passport")] passport: Option<sova_passport::Authenticated>,
-) {
-    use crate::redact::mask_value;
-    if let Some(sess) = session {
-        let mut keys = Vec::new();
-        for (k, v) in sess.data() {
-            keys.push((k.clone(), mask_value(&k, &v)));
-        }
-        keys.sort_by(|a, b| a.0.cmp(&b.0));
-        #[allow(unused_mut)]
-        let mut auth = AuthSnap {
-            session_id: Some(sess.id()),
-            user_id: sess.user_id(),
-            email: None,
-            roles: Vec::new(),
-            session_keys: keys,
-        };
-        #[cfg(feature = "auth")]
-        if let Some(u) = user {
-            auth.user_id = Some(u.id.to_string());
-            auth.email = Some(u.email.clone());
-            auth.roles = u.roles.clone();
-        }
-        #[cfg(feature = "passport")]
-        if auth.user_id.is_none() {
-            if let Some(p) = passport {
-                auth.user_id = Some(p.id);
-            }
-        }
-        bag.set_auth(auth);
-    } else {
-        fill_auth_without_session(
-            bag,
-            #[cfg(feature = "auth")]
-            user,
-            #[cfg(feature = "passport")]
-            passport,
-        );
-    }
-}
-
-#[cfg(any(feature = "auth", feature = "passport"))]
-fn fill_auth_without_session(
-    bag: &DevToolsBag,
-    #[cfg(feature = "auth")] user: Option<sova_auth::CurrentUser>,
-    #[cfg(feature = "passport")] passport: Option<sova_passport::Authenticated>,
-) {
-    #[allow(unused_mut)]
-    let mut auth = AuthSnap::default();
-    let mut any = false;
-    #[cfg(feature = "auth")]
-    if let Some(u) = user {
-        auth.user_id = Some(u.id.to_string());
-        auth.email = Some(u.email);
-        auth.roles = u.roles;
-        any = true;
-    }
-    #[cfg(feature = "passport")]
-    if let Some(p) = passport {
-        if auth.user_id.is_none() {
-            auth.user_id = Some(p.id);
-            any = true;
-        }
-    }
-    if any {
-        bag.set_auth(auth);
-    }
 }
 
 fn disable_bfcache(res: &mut Response) {

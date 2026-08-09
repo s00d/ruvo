@@ -15,6 +15,8 @@ export type TabId =
   | "mail"
   | "jobs"
   | "auth"
+  | "events"
+  | "memory"
   | "config";
 
 export type UiState = {

@@ -15,6 +15,8 @@ import MailView from "./views/MailView.vue";
 import JobsView from "./views/JobsView.vue";
 import AuthView from "./views/AuthView.vue";
 import ConfigView from "./views/ConfigView.vue";
+import EventsView from "./views/EventsView.vue";
+import MemoryView from "./views/MemoryView.vue";
 
 /** @deprecated use TAB_META */
 export const TAB_ORDER = TAB_META.map((t) => ({ id: t.id, label: t.label }));
@@ -30,6 +32,8 @@ const routes: RouteRecordRaw[] = [
   { path: "/mail", name: "mail", component: MailView },
   { path: "/jobs", name: "jobs", component: JobsView },
   { path: "/auth", name: "auth", component: AuthView },
+  { path: "/events", name: "events", component: EventsView },
+  { path: "/memory", name: "memory", component: MemoryView },
   { path: "/config", name: "config", component: ConfigView },
 ];
 

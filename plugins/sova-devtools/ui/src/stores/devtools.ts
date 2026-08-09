@@ -14,7 +14,9 @@ import {
   type PageMsg,
 } from "../persist";
 import type {
+  CustomEvent,
   LogLine,
+  MemorySample,
   MountAttrs,
   RequestMeta,
   RequestSnapshot,
@@ -291,6 +293,9 @@ export const useDevToolsStore = defineStore("devtools", () => {
     }
   }
 
+  const onCustomEvent = ref<((e: CustomEvent) => void) | null>(null);
+  const onMemorySample = ref<((s: MemorySample) => void) | null>(null);
+
   function connectSse() {
     if (playground.value) return;
     try {
@@ -306,6 +311,26 @@ export const useDevToolsStore = defineStore("devtools", () => {
               void refresh();
             }
           }
+        } catch {
+          /* ignore */
+        }
+      });
+      es.addEventListener("custom", (ev) => {
+        try {
+          const msg = JSON.parse((ev as MessageEvent).data) as {
+            event?: CustomEvent;
+          };
+          if (msg.event) onCustomEvent.value?.(msg.event);
+        } catch {
+          /* ignore */
+        }
+      });
+      es.addEventListener("memory.sample", (ev) => {
+        try {
+          const msg = JSON.parse((ev as MessageEvent).data) as {
+            sample?: MemorySample;
+          };
+          if (msg.sample) onMemorySample.value?.(msg.sample);
         } catch {
           /* ignore */
         }
@@ -363,5 +388,7 @@ export const useDevToolsStore = defineStore("devtools", () => {
     toggleFullscreen,
     loadMock,
     boot,
+    onCustomEvent,
+    onMemorySample,
   };
 });

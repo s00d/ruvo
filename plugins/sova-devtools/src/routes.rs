@@ -41,6 +41,18 @@ pub fn mount(app: &mut sova_core::App, hub: DevToolsHub) {
         async move { Response::json(&hub.recent_logs(200)) }
     });
 
+    let hub_custom = hub.clone();
+    app.get("/_devtools/events/custom", move |_req: Request| {
+        let hub = hub_custom.clone();
+        async move { Response::json(&hub.recent_custom(100)) }
+    });
+
+    let hub_mem = hub.clone();
+    app.get("/_devtools/memory", move |_req: Request| {
+        let hub = hub_mem.clone();
+        async move { Response::json(&hub.recent_memory(120)) }
+    });
+
     let hub_cfg = hub.clone();
     app.get("/_devtools/config", move |_req: Request| {
         let hub = hub_cfg.clone();

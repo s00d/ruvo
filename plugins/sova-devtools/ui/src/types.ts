@@ -118,6 +118,18 @@ export interface MountAttrs {
   embed: boolean;
 }
 
+export interface CustomEvent {
+  id: string;
+  kind: string;
+  payload: unknown;
+  ts_ms: number;
+}
+
+export interface MemorySample {
+  ts_ms: number;
+  rss_bytes: number | null;
+}
+
 export function statusTone(status: number): "ok" | "warn" | "err" {
   if (status >= 500) return "err";
   if (status >= 400) return "warn";

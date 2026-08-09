@@ -12,6 +12,7 @@
 //! Build: `npm --prefix ui ci && npm --prefix ui run build` → `assets/`.
 
 mod collector;
+mod hooks;
 mod hub;
 mod inject;
 mod middleware;
@@ -20,7 +21,7 @@ mod redact;
 mod routes;
 
 pub use collector::{DevToolsBag, HttpLine, LogLine, QueryLine, RequestSnapshot};
-pub use hub::DevToolsHub;
+pub use hub::{CustomEvent, DevToolsHub, MemorySample};
 pub use inject::{inject_body, DEVTOOLS_MARKER};
 pub use plugin::DevTools;
 

@@ -151,6 +151,9 @@ impl Plugin for DevTools {
 
         wire_log_hook(hub.clone());
 
+        crate::hub::wire_event_bus(app, hub.clone());
+        crate::hub::spawn_memory_sampler(hub.clone(), std::time::Duration::from_secs(2));
+
         app.state(hub.clone());
         middleware::install(app, hub.clone());
         routes::mount(app, hub);

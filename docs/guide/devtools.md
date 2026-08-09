@@ -47,8 +47,8 @@ cargo run -p devtools_demo
 | Bottom bar | Status / time / SQL / errors chips; click to dock the panel |
 | Dock panel | Full Vue SPA in an iframe (`/_devtools/app?embed=1`) |
 | New tab | Open the same SPA in a browser tab |
-| SSE feed | Live `request.finished` events → Timeline |
-| JSON API | Snapshots, logs, config under `/_devtools/*` |
+| SSE feed | Live `request.finished`, `custom`, `memory.sample` |
+| JSON API | Snapshots, logs, custom events, memory, config under `/_devtools/*` |
 
 ### Tabs
 
@@ -63,6 +63,8 @@ cargo run -p devtools_demo
 | **Mail** | FakeMail / last messages (with `mail` feature) |
 | **Jobs** | Task enqueue / worker (`sova.tasks`) |
 | **Auth** | Session keys + user / email / roles (redacted) |
+| **Events** | Custom `hub.emit` + forwarded auth/mail EventBus events |
+| **Memory** | Process RSS samples (~2s; Linux `/proc`) |
 | **Config** | Profile + compiled DevTools feature flags |
 
 ### What comes from where
@@ -77,7 +79,9 @@ cargo run -p devtools_demo
 | Session / user | Session + `CurrentUser` | `devtools` (auth) |
 | SQL | sqlx / SeaORM logs | `devtools` (db) + sqlx logging |
 | Outbound HTTP | `http.client` spans | `http-client` + `sova-devtools/http` |
-| Mail | FakeMail bag | `mail` |
+| Mail | FakeMail bag + `MailSent` EventBus | `mail` |
+| Custom events | `DevToolsHub::emit` / auth EventBus | always (hub) / `auth` |
+| Memory RSS | background sampler | always when DevTools enabled |
 | Cache / KV | `tracing` `target: "sova.store"` | `devtools-store` (instrumented store) |
 | Redis pub/queue | `target: "sova.redis"` | `devtools-redis` |
 | Jobs | `target: "sova.tasks"` | `devtools` (tasks) |
