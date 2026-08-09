@@ -149,6 +149,7 @@ async fn dispatch_at_and_priority_override() {
         queues: vec!["default".into()],
         job_queues: HashMap::new(),
         job_priorities: HashMap::new(),
+        events: None,
     };
     let when = SystemTime::now() + Duration::from_secs(120);
     let id = backend

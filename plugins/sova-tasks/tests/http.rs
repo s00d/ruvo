@@ -47,6 +47,7 @@ async fn backend_dispatch() {
         queues: vec!["default".into()],
         job_queues: HashMap::new(),
         job_priorities: HashMap::new(),
+        events: None,
     };
     let id = backend
         .dispatch(Dispatch::new("ping").data(serde_json::json!({ "n": 1 })))

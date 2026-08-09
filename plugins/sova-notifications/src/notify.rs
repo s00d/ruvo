@@ -4,7 +4,7 @@ use crate::channel::{Channel, Via};
 use crate::entity;
 use crate::list::NotificationRow;
 use chrono::Utc;
-use sova_core::{Error, Request, Result};
+use sova_core::{Error, EventBus, Request, Result};
 use sova_db::{DbError, DbExt, DbHandle};
 use sea_orm::{ActiveModelTrait, Set};
 use serde_json::Value;
@@ -167,13 +167,22 @@ impl Notify {
         }
 
         let user_ids = resolve_recipients(req.db(), &self.recipients).await?;
+        let channel = self.channel.clone();
+        let event = self.event.clone();
         let mut out = Vec::with_capacity(user_ids.len());
-        for uid in user_ids {
+        for uid in user_ids.iter().copied() {
             match deliver_one(req, uid, &self).await {
                 Ok(Some(row)) => out.push(row),
                 Ok(None) => {}
                 Err(e) => tracing::warn!(error = %e, user_id = uid, "notification deliver failed"),
             }
+        }
+        if let Some(bus) = req.try_state::<EventBus>() {
+            bus.dispatch(crate::NotificationSent {
+                channel,
+                event,
+                recipients: user_ids,
+            });
         }
         Ok(out)
     }

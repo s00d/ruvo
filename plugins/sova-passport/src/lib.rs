@@ -6,6 +6,7 @@
 //! - feature `oauth`: [`Oauth`] (OAuth2 code + PKCE)
 
 mod extract;
+mod events;
 mod passport;
 
 #[cfg(feature = "jwt")]
@@ -28,6 +29,7 @@ mod store;
 mod oauth;
 
 pub use extract::{Credentials, Extract, Source};
+pub use events::ApiTokenRevoked;
 pub use passport::{passport_serialize, Authenticated, Passport, PassportExt};
 
 #[cfg(feature = "jwt")]

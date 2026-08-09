@@ -12,7 +12,7 @@ use crate::store::{
 };
 use crate::AuthExt;
 use sova_core::extend::{named, MwEntry};
-use sova_core::{App, Error, Json, Plugin, RateLimitIdentity, Request, Response, Result, Router};
+use sova_core::{App, Error, EventBus, Json, Plugin, RateLimitIdentity, Request, Response, Result, Router};
 use sova_db::DbExt;
 use serde::Deserialize;
 use std::sync::Arc;
@@ -260,7 +260,14 @@ async fn revoke_token_handler(req: Request) -> Result<Response> {
         .ok_or_else(|| Error::BadRequest("missing id".into()))?
         .parse()
         .map_err(|_| Error::BadRequest("invalid id".into()))?;
-    if !revoke_api_token(req.db(), user.id, id).await? {
+    if !revoke_api_token(
+        req.db(),
+        user.id,
+        id,
+        req.try_state::<EventBus>().as_deref(),
+    )
+    .await?
+    {
         return Err(Error::NotFound);
     }
     Ok(Response::text("ok"))

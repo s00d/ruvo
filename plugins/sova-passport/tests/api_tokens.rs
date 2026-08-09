@@ -42,7 +42,7 @@ async fn create_list_revoke_and_verify() {
     assert_eq!(u.id, user.id);
     assert_eq!(info.abilities, vec!["read".to_string()]);
 
-    assert!(revoke_api_token(&db, user.id, created.id).await.unwrap());
+    assert!(revoke_api_token(&db, user.id, created.id, None).await.unwrap());
     assert!(user_for_api_token(&db, &created.token).await.is_err());
 }
 

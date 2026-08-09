@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-session`](https://docs.rs/sova-session/0.1.2) `0.1.2` |
+| Crate | [`sova-session`](https://docs.rs/sova-session/0.1.3) `0.1.3` |
 | Plugin id | `session` |
 | Category | Auth |
 

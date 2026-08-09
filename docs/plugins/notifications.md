@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-notifications`](https://docs.rs/sova-notifications/0.1.4) `0.1.4` |
+| Crate | [`sova-notifications`](https://docs.rs/sova-notifications/0.1.5) `0.1.5` |
 | Plugin id | `notifications` |
 | Category | Realtime |
 

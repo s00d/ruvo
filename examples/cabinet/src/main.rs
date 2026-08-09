@@ -55,7 +55,13 @@ async fn main() -> Result<()> {
         tracing::info!(user_id = %e.user_id, email = %e.email, "auth.user_logged_in");
     });
     bus.listen::<sova::MailSent, _>(|e| {
-        tracing::info!(to = %e.to, subject = %e.subject, "mail.sent");
+        tracing::info!(to = ?e.to, subject = %e.subject, "mail.sent");
+    });
+    bus.listen::<sova::CsrfMismatch, _>(|e| {
+        tracing::warn!(method = %e.method, path = %e.path, "csrf.mismatch");
+    });
+    bus.listen::<sova::TaskFailed, _>(|e| {
+        tracing::warn!(id = %e.id, name = %e.name, attempts = e.attempts, "tasks.failed");
     });
     app.use_middleware(request_id());
     app.install(Observability::new());

@@ -9,10 +9,14 @@
 //! With [`Csrf::xsrf_cookie`] (default on), each response also gets a readable
 //! `XSRF-TOKEN` cookie so SPA clients (axios) can send `X-XSRF-TOKEN`.
 
+mod events;
+
+pub use events::CsrfMismatch;
+
 use http::Method;
 use sova_cookies::{CookieBuilder, ResponseCookieExt};
 use sova_core::extend::named;
-use sova_core::{with_state, App, Error, Plugin, Request, Response};
+use sova_core::{with_state, App, Error, EventBus, Plugin, Request, Response};
 use sova_session::SessionExt;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -193,9 +197,11 @@ impl Plugin for Csrf {
                     match submitted_token(&mut req, cfg.as_ref()).await {
                         Ok(TokenFind::Match(got)) if tokens_equal(&got, &token) => {}
                         Ok(TokenFind::Match(_)) => {
+                            emit_csrf_mismatch(&req);
                             return Error::custom(403, "csrf mismatch").into_response();
                         }
                         Ok(TokenFind::Missing) => {
+                            emit_csrf_mismatch(&req);
                             return Error::custom(403, "missing csrf token").into_response();
                         }
                         Ok(TokenFind::Deferred) => {
@@ -212,6 +218,15 @@ impl Plugin for Csrf {
                 res
             }),
         ));
+    }
+}
+
+fn emit_csrf_mismatch(req: &Request) {
+    if let Some(bus) = req.try_state::<EventBus>() {
+        bus.dispatch(CsrfMismatch {
+            method: req.method.to_string(),
+            path: req.path.clone(),
+        });
     }
 }
 

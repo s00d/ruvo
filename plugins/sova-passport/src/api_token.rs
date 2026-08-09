@@ -3,7 +3,7 @@
 use crate::entity::{api_token, user};
 use crate::store::{find_user_by_id, hash_token, AuthUser};
 use chrono::{DateTime, Utc};
-use sova_core::{Error, Result};
+use sova_core::{Error, EventBus, Result};
 use sova_db::{DbError, DbHandle};
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize};
@@ -144,7 +144,12 @@ pub async fn list_api_tokens(db: &DbHandle, user_id: i64) -> Result<Vec<ApiToken
         .collect())
 }
 
-pub async fn revoke_api_token(db: &DbHandle, user_id: i64, id: i64) -> Result<bool> {
+pub async fn revoke_api_token(
+    db: &DbHandle,
+    user_id: i64,
+    id: i64,
+    events: Option<&EventBus>,
+) -> Result<bool> {
     let Some(row) = api_token::Entity::find_by_id(id)
         .one(db)
         .await
@@ -158,6 +163,12 @@ pub async fn revoke_api_token(db: &DbHandle, user_id: i64, id: i64) -> Result<bo
     let mut am: api_token::ActiveModel = row.into();
     am.revoked_at = Set(Some(Utc::now()));
     am.update(db).await.map_err(db_err)?;
+    if let Some(bus) = events {
+        bus.dispatch(crate::ApiTokenRevoked {
+            user_id,
+            token_id: id,
+        });
+    }
     Ok(true)
 }
 

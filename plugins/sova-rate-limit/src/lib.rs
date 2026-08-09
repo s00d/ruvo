@@ -1,8 +1,12 @@
 //! Rate limiting for Sova (Express [`express-rate-limit`](https://www.npmjs.com/package/express-rate-limit)-style).
 
+mod events;
+
+pub use events::RateLimitExceeded;
+
 use sova_core::extend::{named, MwEntry};
 use sova_core::{
-    with_state, App, ClientAddr, Plugin, RateLimitIdentity, Request, Response,
+    with_state, App, ClientAddr, EventBus, Plugin, RateLimitIdentity, Request, Response,
 };
 use sova_store::KvStore;
 use serde_json::Value as JsonValue;
@@ -175,6 +179,7 @@ impl RateLimit {
                     RuntimeBackend::Fixed(w) => w.check(&key).await,
                 };
                 if !out.allowed {
+                    emit_exceeded(&req, &key, &out);
                     return limited(rt.message.as_str(), &out);
                 }
                 let mut res = next(req).await;
@@ -259,6 +264,7 @@ impl Plugin for RateLimit {
                     RuntimeBackend::Fixed(w) => w.check(&key).await,
                 };
                 if !out.allowed {
+                    emit_exceeded(&req, &key, &out);
                     return limited(rt.message.as_str(), &out);
                 }
                 let mut res = next(req).await;
@@ -266,6 +272,17 @@ impl Plugin for RateLimit {
                 res
             }),
         ));
+    }
+}
+
+fn emit_exceeded(req: &Request, key: &str, out: &Outcome) {
+    if let Some(bus) = req.try_state::<EventBus>() {
+        let now = unix_now();
+        bus.dispatch(RateLimitExceeded {
+            key: key.to_string(),
+            limit: out.limit,
+            retry_after: Some(out.reset.saturating_sub(now)),
+        });
     }
 }
 

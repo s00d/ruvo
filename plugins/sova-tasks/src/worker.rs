@@ -1,6 +1,6 @@
-use crate::{Handler, HandlerMap};
+use crate::{Handler, HandlerMap, TaskFailed};
 use sova_core::extend::{wait_shutdown, BoxFuture, StateMap};
-use sova_core::{BackgroundService, Shutdown};
+use sova_core::{BackgroundService, EventBus, Shutdown};
 use sova_tasks_store::{Task, TaskStore};
 use std::sync::Arc;
 use std::time::Duration;
@@ -14,6 +14,7 @@ pub(crate) struct TaskWorker {
     pub handlers: HandlerMap,
     pub max_attempts: u32,
     pub retry_base: Duration,
+    pub events: Option<EventBus>,
 }
 
 impl BackgroundService for TaskWorker {
@@ -49,6 +50,7 @@ impl BackgroundService for TaskWorker {
                                     self.lease,
                                     self.max_attempts,
                                     self.retry_base,
+                                    self.events.as_ref(),
                                 )
                                 .await;
                             }
@@ -76,6 +78,7 @@ impl TaskWorker {
         lease: Duration,
         max_attempts: u32,
         retry_base: Duration,
+        events: Option<&EventBus>,
     ) {
         let started = std::time::Instant::now();
         let name = task_name(&task);
@@ -93,6 +96,13 @@ impl TaskWorker {
                 "sova.tasks"
             );
             let _ = store.fail(&task.id, None).await;
+            if let Some(bus) = events {
+                bus.dispatch(TaskFailed {
+                    id,
+                    name,
+                    attempts: task.attempts,
+                });
+            }
             return;
         };
 
@@ -135,6 +145,15 @@ impl TaskWorker {
                     duration_ms = started.elapsed().as_secs_f64() * 1000.0,
                     "sova.tasks"
                 );
+                if retry_at.is_none() {
+                    if let Some(bus) = events {
+                        bus.dispatch(TaskFailed {
+                            id,
+                            name,
+                            attempts: task.attempts,
+                        });
+                    }
+                }
             }
         }
     }
@@ -222,6 +241,7 @@ mod tests {
             handlers,
             max_attempts,
             retry_base: Duration::from_millis(50),
+            events: None,
         });
         let handle = tokio::spawn(worker.run(Arc::new(StateMap::new()), shutdown));
         (tx, handle)

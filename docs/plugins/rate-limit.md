@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-rate-limit`](https://docs.rs/sova-rate-limit/0.1.1) `0.1.1` |
+| Crate | [`sova-rate-limit`](https://docs.rs/sova-rate-limit/0.1.2) `0.1.2` |
 | Plugin id | `rate-limit` |
 | Category | HTTP |
 

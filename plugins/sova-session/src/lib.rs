@@ -8,6 +8,7 @@
 //! [`SessionExt::logout_other_sessions`] / [`SessionExt::logout_all_sessions`].
 
 mod store;
+mod events;
 #[cfg(feature = "sql")]
 mod sql;
 #[cfg(feature = "redis")]
@@ -17,13 +18,15 @@ use cookie::Cookie;
 pub use cookie::SameSite;
 use sova_cookies::{CookieLayer, CookieLayerPresent, Cookies, ResponseCookieExt};
 use sova_core::extend::{named, BoxFuture, Needs};
-use sova_core::{with_state, App, Error, Plugin, Request, Result};
+use sova_core::{with_state, App, Error, EventBus, Plugin, Request, Result};
 use sova_store::{namespace, KvStore, MemoryStore as KvMemory};
 use std::collections::HashMap;
+use std::fmt;
 use std::future::Future;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+pub use events::{SessionLogoutAll, SessionRegenerated};
 pub use store::{KvSessionStore, SessionStore, SessionStoreHandle, SESSION_USER_KEY};
 #[cfg(feature = "sql")]
 pub use sql::SqlSessionStore;
@@ -51,9 +54,18 @@ struct SessionInner {
 }
 
 /// Shared per-request session (cheap to clone into middleware after `next`).
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Session {
     inner: Arc<Mutex<SessionInner>>,
+    events: Option<EventBus>,
+}
+
+impl fmt::Debug for Session {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Session")
+            .field("inner", &self.inner)
+            .finish_non_exhaustive()
+    }
 }
 
 impl Session {
@@ -166,12 +178,18 @@ impl Session {
 
     /// Issue a new session id, keep data, delete the old store entry.
     pub fn regenerate(&self) {
-        let mut g = self.inner.lock().unwrap();
-        let old = std::mem::replace(&mut g.id, new_sid());
-        g.old_id = Some(old);
-        g.dirty = true;
-        g.is_new = true;
-        g.destroyed = false;
+        let had_user = self.user_id().is_some();
+        {
+            let mut g = self.inner.lock().unwrap();
+            let old = std::mem::replace(&mut g.id, new_sid());
+            g.old_id = Some(old);
+            g.dirty = true;
+            g.is_new = true;
+            g.destroyed = false;
+        }
+        if let Some(bus) = &self.events {
+            bus.dispatch(SessionRegenerated { had_user });
+        }
     }
 
     fn snapshot(&self) -> SessionSnapshot {
@@ -197,6 +215,7 @@ impl Session {
                 old_id: None,
                 is_new: true,
             })),
+            events: None,
         }
     }
 }
@@ -442,6 +461,7 @@ impl Plugin for SessionLayer {
                             old_id: None,
                             is_new,
                         })),
+                        events: req.try_state::<EventBus>().map(|b| (*b).clone()),
                     };
                     req.set(session.clone());
 
@@ -594,6 +614,12 @@ impl SessionExt for sova_core::Request {
         let n = handle.0.destroy_user(&uid, None).await;
         sess.destroy();
         let _ = self.take::<sova_core::RateLimitIdentity>();
+        if let Some(bus) = self.try_state::<EventBus>() {
+            bus.dispatch(SessionLogoutAll {
+                user_id: uid,
+                count: n,
+            });
+        }
         Ok(n)
     }
 }

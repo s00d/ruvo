@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-csrf`](https://docs.rs/sova-csrf/0.1.2) `0.1.2` |
+| Crate | [`sova-csrf`](https://docs.rs/sova-csrf/0.1.3) `0.1.3` |
 | Plugin id | `csrf` |
 | Category | HTTP |
 

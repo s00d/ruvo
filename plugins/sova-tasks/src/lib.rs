@@ -1,6 +1,7 @@
 //! Background task worker + optional scheduler + HTTP dispatch for Sova.
 
 mod console;
+mod events;
 mod job;
 mod schedule;
 mod schedule_toml;
@@ -9,13 +10,14 @@ mod worker;
 pub use console::{
     ask, confirm, enter_cli, error, info, is_interactive, line, table, warn, ConsoleGuard,
 };
+pub use events::{TaskDispatched, TaskFailed};
 pub use job::{parse_cron, priority, Job, Schedule};
 pub use schedule::every_slot;
 
 use bytes::Bytes;
 use job::Job as JobDef;
 use job::priority as prio;
-use sova_core::{App, Error, IntoResponse, Plugin, Request, Response};
+use sova_core::{App, Error, EventBus, IntoResponse, Plugin, Request, Response};
 use sova_tasks_store::{EnqueueOpts, Task, TaskError, TaskStatus, TaskStore};
 use schedule::{ScheduledJob, TaskScheduler};
 use schedule_toml::{merge_schedules, parse_schedule_toml, schedule_label};
@@ -343,11 +345,13 @@ impl Plugin for Tasks {
         app.state(registry.clone());
 
         let store = self.store.clone();
+        let events = Some(app.events());
         let backend = TaskBackend {
             store: store.clone(),
             queues: self.queues.clone(),
             job_queues: job_queues.clone(),
             job_priorities: job_priorities.clone(),
+            events: events.clone(),
         };
         app.state(backend.clone());
 
@@ -446,6 +450,7 @@ impl Plugin for Tasks {
             handlers,
             max_attempts: self.max_attempts,
             retry_base: self.retry_base,
+            events,
         });
     }
 }
@@ -586,6 +591,7 @@ pub struct TaskBackend {
     pub queues: Vec<String>,
     pub job_queues: HashMap<String, String>,
     pub job_priorities: HashMap<String, i32>,
+    events: Option<EventBus>,
 }
 
 impl TaskBackend {
@@ -639,6 +645,13 @@ impl TaskBackend {
             request_id = sova_core::current_request_id().as_deref().unwrap_or(""),
             "sova.tasks enqueue"
         );
+        if let Some(bus) = &self.events {
+            bus.dispatch(TaskDispatched {
+                id: id.clone(),
+                name,
+                queue: queue_for_log,
+            });
+        }
         Ok(id)
     }
 }
@@ -666,6 +679,7 @@ mod tests {
             queues: vec!["default".into()],
             job_queues: HashMap::new(),
             job_priorities: HashMap::new(),
+            events: None,
         };
         let id = backend
             .dispatch(Dispatch::new("ping").data(serde_json::json!({})))
@@ -687,6 +701,7 @@ mod tests {
             queues: vec!["default".into(), "mailer".into()],
             job_queues,
             job_priorities,
+            events: None,
         };
         let id = backend
             .dispatch(Dispatch::new("mail").delay(Duration::from_secs(60)))
@@ -766,6 +781,7 @@ mod tests {
             handlers: Arc::new(handlers),
             max_attempts: 5,
             retry_base: Duration::from_millis(50),
+            events: None,
         });
         let handle = tokio::spawn(worker.run(
             Arc::new(sova_core::extend::StateMap::new()),

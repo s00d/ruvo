@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-passport`](https://docs.rs/sova-passport/0.1.2) `0.1.2` |
+| Crate | [`sova-passport`](https://docs.rs/sova-passport/0.1.3) `0.1.3` |
 | Plugin id | `passport` |
 | Category | Auth |
 
