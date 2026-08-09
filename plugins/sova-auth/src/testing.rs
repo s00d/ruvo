@@ -1,10 +1,32 @@
-//! User / RBAC factories for Fortify tests.
+//! Test helpers: `acting_as` + user/RBAC factories.
+//!
+//! Lives here (not `sova-testing`) so crates.io publish has no cycle with the harness.
 
-use sova_auth::{
+use crate::{
     assign_role, create_permission, create_role, list_permissions, list_roles, load_current_user,
     register_user, CurrentUser,
 };
+use sova_core::TestClient;
 use sova_db::DbHandle;
+
+/// Inject authenticated user extensions on every [`TestClient`] request.
+pub trait ActingAs {
+    fn acting_as(&self, user: CurrentUser);
+    fn logout(&self);
+}
+
+impl ActingAs for TestClient {
+    fn acting_as(&self, user: CurrentUser) {
+        self.clear_request_hooks();
+        self.on_request(move |req| {
+            req.set(user.clone());
+        });
+    }
+
+    fn logout(&self) {
+        self.clear_request_hooks();
+    }
+}
 
 /// Builder that inserts a user via [`register_user`] and returns [`CurrentUser`].
 #[derive(Clone, Debug)]

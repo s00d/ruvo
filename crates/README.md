@@ -13,7 +13,7 @@ Workspace library / tooling crates.
 | [`sova`](./sova/) | `0.1.7` | Express-like HTTP framework for Rust |
 | [`sova-core`](./sova-core/) | `0.1.3` | Core HTTP primitives for Sova (App, Router, Request, Response) |
 | [`sova-docs-gen`](./sova-docs-gen/) | `0.1.0` | Generate VitePress API markdown from Sova Rust sources · unpublished |
-| [`sova-testing`](./sova-testing/) | `0.1.2` | Framework-style test harness for Sova (sqlite, acting_as, factories, snapshots) |
+| [`sova-testing`](./sova-testing/) | `0.1.2` | Framework-style test harness for Sova (sqlite, TestApp, snapshots) |
 
 Published packages include `README.md` and `LICENSE`. Package metadata (`authors`, `license`, `repository`, `homepage`) is inherited from root `[workspace.package]`.
 

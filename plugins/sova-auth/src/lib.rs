@@ -41,6 +41,7 @@ mod two_factor;
 mod activity_log;
 
 pub mod entity;
+pub mod testing;
 
 #[cfg(feature = "mail")]
 pub use mail::{send_reset, send_verify, ResetPasswordMail, VerifyEmailMail};

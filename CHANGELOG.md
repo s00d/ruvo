@@ -11,6 +11,7 @@ Package / docs hygiene across the monorepo:
 - `README.md` + `LICENSE` in every published crate and plugin (crates.io badges)
 - Index READMEs under `crates/` and `plugins/`
 - Patch bump of all published packages for metadata packaging
+- Break publish cycle: auth/notification test helpers moved to `sova_auth::testing` / `sova_notifications::testing`; `sova-testing` stays core+db only
 
 ## 0.1.6 — 2026-08-09
 

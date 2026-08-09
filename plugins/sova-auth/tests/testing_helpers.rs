@@ -1,8 +1,7 @@
-#![cfg(feature = "auth")]
-
+use sova_auth::testing::{ensure_permission, ensure_role, ActingAs, UserFactory};
 use sova_auth::AuthMigrator;
 use sova_core::{Request, Response, ResponseAssert, TestClient};
-use sova_testing::{ActingAs, SqliteTestDb, TestApp, UserFactory};
+use sova_testing::{SqliteTestDb, TestApp};
 
 #[tokio::test]
 async fn user_factory_and_acting_as() {
@@ -21,10 +20,10 @@ async fn user_factory_and_acting_as() {
         .await;
 
     let db = tdb.handle().await;
-    sova_testing::ensure_role(&db, "Editor", "editor").await;
-    sova_testing::ensure_role(&db, "Editor", "editor").await; // idempotent
-    sova_testing::ensure_permission(&db, "Edit posts", "posts.edit").await;
-    sova_testing::ensure_permission(&db, "Edit posts", "posts.edit").await;
+    ensure_role(&db, "Editor", "editor").await;
+    ensure_role(&db, "Editor", "editor").await;
+    ensure_permission(&db, "Edit posts", "posts.edit").await;
+    ensure_permission(&db, "Edit posts", "posts.edit").await;
 
     let user = UserFactory::new()
         .email("factory@example.com")

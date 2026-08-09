@@ -6,7 +6,7 @@
 
 # sova-testing
 
-Framework-style test harness for Sova (sqlite, acting_as, factories, snapshots).
+Framework-style test harness for Sova (sqlite, TestApp, snapshots).
 
 Part of [Sova](https://crates.io/crates/sova) — Express-like HTTP for Rust.
 

@@ -1,7 +1,7 @@
-//! Notifications-only `acting_as_id` (no auth feature).
+//! Test helpers: inject [`NotificationUser`] on [`TestClient`].
 
+use crate::NotificationUser;
 use sova_core::TestClient;
-use sova_notifications::NotificationUser;
 
 /// Inject [`NotificationUser`] on every request.
 pub trait ActingAs {

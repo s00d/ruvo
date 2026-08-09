@@ -35,5 +35,7 @@ pub use migration::NotificationsMigrator;
 pub use notify::{NotificationService, NotificationUser, Notify, NotifyExt};
 pub use plugin::Notifications;
 
+pub mod testing;
+
 #[cfg(feature = "templates")]
 pub use templates::{preload_unread, UnreadCount};

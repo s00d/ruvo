@@ -17,7 +17,8 @@
 #   # …activity / auth / notifications / …
 #   # …then facade `sova`
 #
-# sova-testing may depend on auth/notifications once those crates exist on crates.io.
+# Keep sova-testing free of auth/notifications deps (those helpers live in
+# sova_auth::testing / sova_notifications::testing) to avoid publish cycles.
 
 # After first wave, publish scaffolding too:
 #   cargo publish -p cargo-sovax

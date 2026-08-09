@@ -7,7 +7,8 @@ use sova_core::{ResponseAssert, TestClient};
 use sova_mail::Mail;
 use sova_notifications::{Channel, Notifications, NotificationsMigrator};
 use sova_session::memory_sessions;
-use sova_testing::{ActingAs, TestApp};
+use sova_auth::testing::ActingAs;
+use sova_testing::TestApp;
 use sea_orm_migration::MigratorTrait;
 use serde_json::json;
 
