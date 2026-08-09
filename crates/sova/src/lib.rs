@@ -19,10 +19,11 @@ pub use sova_core::{
     ensure_request_id, logger, request_id, with_state, BackgroundService, Cell, CheckKind,
     CheckResult, ClientAddr, ConfigDoc, Error, FormData, Html, Http, IntoResponse, Json, LogConfig,
     LogRotate, MatchedRoute, MatchedRouteCapture, NoContent, Next, OnUpgrade, Plugin, PluginMeta,
-    PluginSdkVersion, RateLimitIdentity, Redirect, Request, RequestId, Response, ResponseAssert,
-    Router, Server, Shutdown, Slot, TestClient, Text, Upload, UploadRules, PLUGIN_SDK_VERSION,
-    referer_or,
+    PluginSdkVersion, RateLimitIdentity, Redirect, Request, RequestId, Response, Router, Server,
+    Shutdown, Slot, Text, Upload, UploadRules, PLUGIN_SDK_VERSION, referer_or,
 };
+#[cfg(feature = "testing")]
+pub use sova_core::{ResponseAssert, TestClient};
 
 #[cfg(feature = "tls")]
 pub use sova_core::Tls;
