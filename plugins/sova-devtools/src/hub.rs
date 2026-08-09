@@ -282,7 +282,7 @@ pub fn wire_event_bus(app: &mut sova_core::App, hub: DevToolsHub) {
 }
 
 fn compile_features() -> Vec<&'static str> {
-    #[allow(clippy::vec_init_then_push)]
+    #[allow(clippy::vec_init_then_push, unused_mut)]
     {
         let mut v = Vec::new();
         #[cfg(feature = "session")]

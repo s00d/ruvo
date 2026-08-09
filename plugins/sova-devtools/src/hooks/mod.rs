@@ -1,7 +1,9 @@
 //! Soft-hook collectors (session / auth / mail / response meta).
 //! Domain plugins emit EventBus events; DevTools is a sink — these hooks only snapshot request state.
 
+#[cfg(any(feature = "session", feature = "auth", feature = "passport"))]
 mod auth;
+#[cfg(feature = "mail")]
 mod mail;
 mod response;
 
