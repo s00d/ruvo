@@ -5,6 +5,7 @@ use crate::raw::RawHandler;
 use crate::request::{percent_decode, Request};
 use crate::response::Response;
 use crate::route_value::MetaMap;
+use crate::accept::status_response_for_accept;
 use crate::state::{
     Extensions, MatchedMeta, MatchedMetaCapture, MatchedRoute, MatchedRouteCapture, TypeMap,
 };
@@ -114,12 +115,19 @@ impl InnerRouter {
 
         let methods = matched.value;
         let method = req.method.clone();
+        let accept = req.header("accept").map(|s| s.to_string());
 
         if method == Method::OPTIONS {
+            if let Some(handler) = methods.get(&Method::OPTIONS) {
+                return handler(req).await;
+            }
             return allow_response(methods.keys());
         }
 
         if method == Method::HEAD {
+            if let Some(handler) = methods.get(&Method::HEAD) {
+                return handler(req).await;
+            }
             if let Some(handler) = methods.get(&Method::GET) {
                 let mut res = handler(req).await;
                 if let Some(bytes) = res.body_bytes() {
@@ -142,7 +150,11 @@ impl InnerRouter {
             return invoke_catcher(&self.catchers, req, 405).await;
         }
 
-        let mut res = Response::text("Method Not Allowed").status(405);
+        let mut res = status_response_for_accept(
+            accept.as_deref(),
+            405,
+            "Method Not Allowed",
+        );
         if let Ok(v) = HeaderValue::from_str(&allow_header(methods.keys())) {
             res.headers.insert(http::header::ALLOW, v);
         }
@@ -153,15 +165,15 @@ impl InnerRouter {
 async fn invoke_catcher(catchers: &CatcherTable, req: Request, status: u16) -> Response {
     match catchers.find(&req.path, status) {
         Some(h) => h(req).await.status(status),
-        None => default_status_response(status),
-    }
-}
-
-fn default_status_response(status: u16) -> Response {
-    match status {
-        404 => Response::text("Not Found").status(404),
-        405 => Response::text("Method Not Allowed").status(405),
-        _ => Response::text(format!("Error {status}")).status(status),
+        None => {
+            let accept = req.header("accept");
+            let detail = match status {
+                404 => "Not Found",
+                405 => "Method Not Allowed",
+                _ => "Error",
+            };
+            status_response_for_accept(accept, status, detail)
+        }
     }
 }
 

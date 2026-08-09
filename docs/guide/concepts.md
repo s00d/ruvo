@@ -21,6 +21,10 @@ accept
 
 `App::build()` compiles routes once into a cheap-to-clone `Server`. Prefer `Server::handle` in tests so the matcher is not rebuilt per request.
 
+## Routing helpers
+
+`Router::head` / `Router::options` register explicit handlers. If no HEAD is registered, GET still serves HEAD with the body stripped. If no OPTIONS is registered, the router answers with `204` and an `Allow` header.
+
 ## Typed extractors
 
 Import from `sova::extract` (`Path`, `Query`, `Json`, `Form`, `State`, `Extension`). Classic `async fn(req: Request)` handlers remain supported. See [Plugin SDK → Extractors](/api/plugin-sdk/extractors).

@@ -22,4 +22,4 @@ bus.listen::<NoteCreated, _>(|e| tracing::info!(?e.note_id, "created"));
 bus.dispatch(NoteCreated { note_id: 1, user_id: 2 });
 ```
 
-**API errors:** `App::api()` installs an `error_handler` that maps framework `Error` to `application/problem+json`. Validation (`sova-vld`) uses the same Problem Details shape with an `errors` array.
+**API errors:** `App::api()` maps framework `Error` to `application/problem+json`. `App::web()` negotiates via `Accept`: prefer `text/html` → minimal HTML error page; `application/problem+json` / `application/json` → Problem Details; otherwise `text/plain`. Router 404/405 use the same Accept-aware builder. Validation (`sova-vld`) uses Problem Details with an `errors` array.

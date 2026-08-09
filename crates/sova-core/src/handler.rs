@@ -202,16 +202,23 @@ pub fn wrap_errors(handler: FallibleHandler, eh: Option<ErrorHandlerFn>) -> Hand
     Arc::new(move |req| {
         let handler = Arc::clone(&handler);
         let eh = eh.clone();
+        let accept = req
+            .header("accept")
+            .unwrap_or("*/*")
+            .to_string();
         Box::pin(async move {
-            match handler(req).await {
-                Ok(res) => res,
-                // Plugin already decided status/body — do not run error_handler.
-                Err(Error::Response(res)) => *res,
-                Err(err) => match &eh {
-                    Some(hook) => hook(err).await,
-                    None => err.into_response(),
-                },
-            }
+            crate::accept::with_accept(accept, async move {
+                match handler(req).await {
+                    Ok(res) => res,
+                    // Plugin already decided status/body — do not run error_handler.
+                    Err(Error::Response(res)) => *res,
+                    Err(err) => match &eh {
+                        Some(hook) => hook(err).await,
+                        None => crate::accept::error_response_for_accept(None, err),
+                    },
+                }
+            })
+            .await
         })
     })
 }

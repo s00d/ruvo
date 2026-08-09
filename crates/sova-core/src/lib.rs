@@ -14,6 +14,7 @@
 //! Product docs: <https://s00d.github.io/sova/> (VitePress guide `/guide/concepts`).
 
 mod request_id;
+mod accept;
 mod app;
 mod config;
 mod error;
@@ -45,6 +46,10 @@ mod tls;
 // Application-facing API (~16–18 names).
 pub use app::{App, BoundApp, CheckKind, CheckResult, Http, Server};
 pub use config::ConfigDoc;
+pub use accept::{
+    current_accept, error_response_for_accept, html_error_page, negotiate_error_format,
+    status_response_for_accept, with_accept, ErrorFormat,
+};
 pub use error::{Error, IntoResponse, Result};
 pub use events::{Event, EventBus};
 pub use middleware::{
@@ -89,6 +94,10 @@ pub mod extend {
     pub use crate::plugin::{
         check_plugin_sdk, InstalledPlugin, PluginMeta, PluginSdkVersion, SdkCompat,
         PLUGIN_SDK_VERSION,
+    };
+    pub use crate::accept::{
+        current_accept, error_response_for_accept, html_error_page, negotiate_error_format,
+        status_response_for_accept, with_accept, ErrorFormat,
     };
     pub use crate::events::{Event, EventBus};
     pub use crate::extract::{

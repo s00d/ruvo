@@ -91,6 +91,52 @@ async fn method_not_allowed_and_head() {
 }
 
 #[tokio::test]
+async fn explicit_head_and_options() {
+    let mut app = App::new();
+    app.get("/x", |_r: Request| async { Response::text("get-body") });
+    app.head("/x", |_r: Request| async {
+        Response::empty().status(200).header("x-head", "1")
+    });
+    app.options("/x", |_r: Request| async {
+        Response::text("custom-options").status(200)
+    });
+
+    let head = app.handle_request(Method::HEAD, "/x", "").await;
+    assert_eq!(head.status_code().as_u16(), 200);
+    assert_eq!(
+        head.headers()
+            .get("x-head")
+            .and_then(|v| v.to_str().ok()),
+        Some("1")
+    );
+
+    let opt = app.handle_request(Method::OPTIONS, "/x", "").await;
+    assert_eq!(opt.status_code().as_u16(), 200);
+    assert_eq!(opt.body_bytes(), Some(b"custom-options".as_slice()));
+}
+
+#[tokio::test]
+async fn accept_html_on_404() {
+    let mut app = App::new();
+    app.get("/ok", |_r: Request| async { "ok" });
+    let req = Request::builder()
+        .method(Method::GET)
+        .path("/missing")
+        .header("accept", "text/html")
+        .build();
+    let res = app.handle(req).await;
+    assert_eq!(res.status_code().as_u16(), 404);
+    let ct = res
+        .headers()
+        .get(http::header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    assert!(ct.contains("text/html"), "{ct}");
+    let body = String::from_utf8_lossy(res.body_bytes().unwrap());
+    assert!(body.contains("Not Found"));
+}
+
+#[tokio::test]
 async fn percent_decodes_params() {
     let mut app = App::new();
     app.get("/u/:name", |req: Request| async move {

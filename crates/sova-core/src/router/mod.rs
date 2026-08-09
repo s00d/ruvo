@@ -244,6 +244,22 @@ impl Router {
         self.add(Method::DELETE, path, handler)
     }
 
+    /// Explicit `HEAD` handler (takes precedence over GET→strip-body).
+    pub fn head<H, T>(&mut self, path: &str, handler: H) -> &mut Self
+    where
+        H: IntoHandler<T>,
+    {
+        self.add(Method::HEAD, path, handler)
+    }
+
+    /// Explicit `OPTIONS` handler (takes precedence over auto `204 + Allow`).
+    pub fn options<H, T>(&mut self, path: &str, handler: H) -> &mut Self
+    where
+        H: IntoHandler<T>,
+    {
+        self.add(Method::OPTIONS, path, handler)
+    }
+
     /// `GET from` → redirect to `to` with the given HTTP status (e.g. `302`, `301`, `303`).
     ///
     /// ```ignore

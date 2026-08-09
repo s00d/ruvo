@@ -72,6 +72,9 @@ impl WebApp {
 
         self.inner.use_middleware(crate::request_id());
         self.inner.use_middleware(crate::logger());
+        self.inner.error_handler(|err| async move {
+            sova_core::error_response_for_accept(None, err)
+        });
         self.inner.install(Cors::new());
         self.inner.install(Shield::new());
         self.inner.install(memory_sessions());
