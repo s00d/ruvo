@@ -1,0 +1,105 @@
+warning: field `explain` is never read
+   --> crates/sova-core/src/app/hooks.rs:203:16
+    |
+185 | pub(crate) struct AppInner {
+    |                   -------- field in this struct
+...
+203 |     pub(crate) explain: String,
+    |                ^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `sova-core` (lib) generated 1 warning
+    Finished `bench` profile [optimized] target(s) in 0.19s
+     Running benches/dispatch.rs (target/release/deps/dispatch-99b59d9967f0971e)
+Benchmarking build/minimal
+Benchmarking build/minimal: Analyzing
+build/minimal           time:   [2.7452 µs 2.7501 µs 2.7513 µs]
+                        change: [+0.0853% +0.6313% +1.1820%] (p = 0.15 > 0.05)
+                        No change in performance detected.
+Benchmarking build/realistic
+Benchmarking build/realistic: Analyzing
+build/realistic         time:   [8.0865 µs 8.1072 µs 8.1898 µs]
+                        change: [-2.3199% -1.4937% -0.6641%] (p = 0.08 > 0.05)
+                        No change in performance detected.
+
+Benchmarking handle_minimal/root
+Benchmarking handle_minimal/root: Analyzing
+handle_minimal/root     time:   [707.62 ns 713.53 ns 715.00 ns]
+                        thrpt:  [1.3986 Melem/s 1.4015 Melem/s 1.4132 Melem/s]
+                 change:
+                        time:   [+0.5474% +1.1798% +1.8136%] (p = 0.12 > 0.05)
+                        thrpt:  [-1.7812% -1.1660% -0.5444%]
+                        No change in performance detected.
+Benchmarking handle_minimal/param
+Benchmarking handle_minimal/param: Analyzing
+handle_minimal/param    time:   [821.17 ns 822.57 ns 828.16 ns]
+                        thrpt:  [1.2075 Melem/s 1.2157 Melem/s 1.2178 Melem/s]
+                 change:
+                        time:   [-3.9611% -2.9191% -1.8634%] (p = 0.07 > 0.05)
+                        thrpt:  [+1.8988% +3.0069% +4.1245%]
+                        No change in performance detected.
+
+Benchmarking handle_realistic/home
+Benchmarking handle_realistic/home: Analyzing
+handle_realistic/home   time:   [1.0461 µs 1.0549 µs 1.0901 µs]
+                        thrpt:  [917.39 Kelem/s 948.00 Kelem/s 955.98 Kelem/s]
+                 change:
+                        time:   [-3.4006% -1.0012% +1.4162%] (p = 0.67 > 0.05)
+                        thrpt:  [-1.3964% +1.0113% +3.5203%]
+                        No change in performance detected.
+Benchmarking handle_realistic/api_health
+Benchmarking handle_realistic/api_health: Analyzing
+handle_realistic/api_health
+                        time:   [1.1805 µs 1.1809 µs 1.1829 µs]
+                        thrpt:  [845.41 Kelem/s 846.79 Kelem/s 847.13 Kelem/s]
+                 change:
+                        time:   [-0.6259% -0.4293% -0.2322%] (p = 0.07 > 0.05)
+                        thrpt:  [+0.2327% +0.4311% +0.6299%]
+                        No change in performance detected.
+Benchmarking handle_realistic/api_user
+Benchmarking handle_realistic/api_user: Analyzing
+handle_realistic/api_user
+                        time:   [1.3683 µs 1.3750 µs 1.3767 µs]
+                        thrpt:  [726.36 Kelem/s 727.26 Kelem/s 730.86 Kelem/s]
+                 change:
+                        time:   [+0.1448% +0.5297% +0.9151%] (p = 0.13 > 0.05)
+                        thrpt:  [-0.9068% -0.5269% -0.1446%]
+                        No change in performance detected.
+Benchmarking handle_realistic/search_query
+Benchmarking handle_realistic/search_query: Analyzing
+handle_realistic/search_query
+                        time:   [1.4587 µs 1.4616 µs 1.4623 µs]
+                        thrpt:  [683.87 Kelem/s 684.20 Kelem/s 685.55 Kelem/s]
+                 change:
+                        time:   [+0.6156% +1.2436% +1.8780%] (p = 0.12 > 0.05)
+                        thrpt:  [-1.8433% -1.2284% -0.6119%]
+                        No change in performance detected.
+Benchmarking handle_realistic/api_404
+Benchmarking handle_realistic/api_404: Analyzing
+handle_realistic/api_404
+                        time:   [929.02 ns 930.74 ns 931.17 ns]
+                        thrpt:  [1.0739 Melem/s 1.0744 Melem/s 1.0764 Melem/s]
+                 change:
+                        time:   [+1.7418% +2.2479% +2.7579%] (p = 0.08 > 0.05)
+                        thrpt:  [-2.6838% -2.1985% -1.7120%]
+                        No change in performance detected.
+Benchmarking handle_realistic/echo_json
+Benchmarking handle_realistic/echo_json: Analyzing
+handle_realistic/echo_json
+                        time:   [1.3335 µs 1.3657 µs 1.3738 µs]
+                        thrpt:  [727.91 Kelem/s 732.21 Kelem/s 749.91 Kelem/s]
+                 change:
+                        time:   [-1.2063% +0.3907% +1.9911%] (p = 0.82 > 0.05)
+                        thrpt:  [-1.9523% -0.3892% +1.2211%]
+                        No change in performance detected.
+
+Benchmarking burst/256_mixed
+Benchmarking burst/256_mixed: Analyzing
+burst/256_mixed         time:   [366.48 µs 367.88 µs 373.45 µs]
+                        thrpt:  [685.49 Kelem/s 695.89 Kelem/s 698.54 Kelem/s]
+                 change:
+                        time:   [-0.2148% +1.3643% +2.9632%] (p = 0.27 > 0.05)
+                        thrpt:  [-2.8779% -1.3459% +0.2152%]
+                        No change in performance detected.
+

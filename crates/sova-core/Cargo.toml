@@ -1,6 +1,6 @@
 [package]
 name = "sova-core"
-version = "0.1.4"
+version = "0.1.5"
 authors.workspace = true
 edition.workspace = true
 description = "Core HTTP primitives for Sova (App, Router, Request, Response)"
@@ -36,6 +36,7 @@ mime_guess = { workspace = true }
 thiserror = { workspace = true }
 percent-encoding = { workspace = true }
 matchit = { workspace = true }
+rustc-hash = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 tracing-appender = { workspace = true }
@@ -49,6 +50,7 @@ rustls-pemfile = { workspace = true, optional = true }
 rustls-pki-types = { workspace = true, optional = true }
 arc-swap = { workspace = true, optional = true }
 rcgen = { workspace = true, optional = true }
+getrandom = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros", "test-util", "net", "time", "io-util"] }

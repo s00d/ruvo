@@ -82,6 +82,12 @@ async fn method_not_allowed_and_head() {
     let head = app.handle_request(Method::HEAD, "/x", "").await;
     assert_eq!(head.status_code().as_u16(), 200);
     assert_eq!(head.body_bytes(), Some(b"".as_slice()));
+    assert_eq!(
+        head.headers()
+            .get(http::header::CONTENT_LENGTH)
+            .and_then(|v| v.to_str().ok()),
+        Some("6") // "secret"
+    );
 }
 
 #[tokio::test]

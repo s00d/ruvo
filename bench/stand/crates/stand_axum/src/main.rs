@@ -3,7 +3,7 @@
 use axum::extract::Path;
 use axum::http::{header, StatusCode};
 use axum::response::{IntoResponse, Response};
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::Router;
 use stand_fixtures::{
     ABOUT, BLOG, CONTACT, CONTENT_TYPE_HTML, CONTENT_TYPE_JSON, HEALTH_JSON, HOME, POST_HELLO,
@@ -31,7 +31,17 @@ async fn main() {
             }),
         )
         .route("/contact", get(|| async { html(CONTACT) }))
-        .route("/api/health", get(|| async { json_raw(HEALTH_JSON) }));
+        .route("/api/health", get(|| async { json_raw(HEALTH_JSON) }))
+        .route(
+            "/api/echo",
+            post(|body: axum::body::Bytes| async move {
+                (
+                    [(header::CONTENT_TYPE, CONTENT_TYPE_JSON)],
+                    body,
+                )
+                    .into_response()
+            }),
+        );
 
     let listener = tokio::net::TcpListener::bind(("127.0.0.1", port))
         .await

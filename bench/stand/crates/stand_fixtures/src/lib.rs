@@ -7,11 +7,13 @@ pub const BLOG: &str = include_str!("../../../fixtures/blog.html");
 pub const POST_HELLO: &str = include_str!("../../../fixtures/post_hello.html");
 pub const CONTACT: &str = include_str!("../../../fixtures/contact.html");
 pub const HEALTH_JSON: &str = include_str!("../../../fixtures/health.json");
+/// Canonical POST body for `/api/echo` (byte-identical round-trip).
+pub const ECHO_BODY: &str = include_str!("../../../fixtures/echo.json");
 
 pub const CONTENT_TYPE_HTML: &str = "text/html; charset=utf-8";
 pub const CONTENT_TYPE_JSON: &str = "application/json";
 
-/// Routes exercised by verify + load.
+/// GET routes exercised by verify + load.
 pub const PATHS: &[&str] = &["/", "/about", "/blog", "/blog/hello", "/contact", "/api/health"];
 
 pub fn body_for(path: &str) -> Option<(&'static str, &'static str)> {

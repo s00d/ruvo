@@ -5,8 +5,8 @@ use crate::state::{Extensions, StateMap};
 use bytes::Bytes;
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use http_body_util::BodyExt;
+use rustc_hash::FxHashMap;
 use serde::de::DeserializeOwned;
-use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -26,8 +26,8 @@ pub struct Request {
     pub method: Method,
     pub path: String,
     pub headers: HeaderMap,
-    pub params: HashMap<String, String>,
-    pub query: HashMap<String, String>,
+    pub params: FxHashMap<String, String>,
+    pub query: FxHashMap<String, String>,
     /// Scheme (`http` / `https`), possibly from `X-Forwarded-Proto` when trust_proxy.
     pub(crate) scheme: String,
     /// Host (no port stripping beyond what the client sent).
@@ -47,7 +47,7 @@ pub struct RequestBuilder {
     path: String,
     headers: HeaderMap,
     body: Bytes,
-    query: HashMap<String, String>,
+    query: FxHashMap<String, String>,
     raw_query: String,
     scheme: String,
     host: String,
@@ -116,7 +116,7 @@ impl RequestBuilder {
             method: self.method,
             path: self.path,
             headers: self.headers,
-            params: HashMap::new(),
+            params: FxHashMap::default(),
             query: self.query,
             scheme: self.scheme,
             host: self.host,
@@ -141,7 +141,7 @@ impl Request {
             path: "/".into(),
             headers: HeaderMap::new(),
             body: Bytes::new(),
-            query: HashMap::new(),
+            query: FxHashMap::default(),
             raw_query: String::new(),
             scheme: "http".into(),
             host: "localhost".into(),
@@ -360,11 +360,14 @@ impl Request {
 }
 
 /// Parse query string with `+` → space (via serde_urlencoded).
-pub fn parse_query(query: &str) -> HashMap<String, String> {
-    serde_urlencoded::from_str::<HashMap<String, String>>(query).unwrap_or_default()
+pub fn parse_query(query: &str) -> FxHashMap<String, String> {
+    serde_urlencoded::from_str::<FxHashMap<String, String>>(query).unwrap_or_default()
 }
 
 pub fn percent_decode(input: &str) -> String {
+    if !input.as_bytes().contains(&b'%') {
+        return input.to_string();
+    }
     percent_encoding::percent_decode_str(input)
         .decode_utf8_lossy()
         .into_owned()

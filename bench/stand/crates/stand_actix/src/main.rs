@@ -1,6 +1,6 @@
 //! Actix-web stand: identical fixture bodies.
 
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use stand_fixtures::{
     ABOUT, BLOG, CONTACT, CONTENT_TYPE_HTML, CONTENT_TYPE_JSON, HEALTH_JSON, HOME, POST_HELLO,
 };
@@ -21,7 +21,7 @@ async fn blog() -> impl Responder {
 }
 
 #[get("/blog/{slug}")]
-async fn post(slug: web::Path<String>) -> impl Responder {
+async fn post_page(slug: web::Path<String>) -> impl Responder {
     if slug.as_str() == "hello" {
         html(POST_HELLO)
     } else {
@@ -39,6 +39,13 @@ async fn health() -> impl Responder {
     HttpResponse::Ok()
         .content_type(CONTENT_TYPE_JSON)
         .body(HEALTH_JSON)
+}
+
+#[post("/api/echo")]
+async fn echo(body: web::Bytes) -> impl Responder {
+    HttpResponse::Ok()
+        .content_type(CONTENT_TYPE_JSON)
+        .body(body)
 }
 
 fn html(body: &'static str) -> HttpResponse {
@@ -60,9 +67,10 @@ async fn main() -> std::io::Result<()> {
             .service(home)
             .service(about)
             .service(blog)
-            .service(post)
+            .service(post_page)
             .service(contact)
             .service(health)
+            .service(echo)
     })
     .bind(("127.0.0.1", port))?
     .run()

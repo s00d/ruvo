@@ -2,63 +2,77 @@
 
 ![Performance](/banners/performance.svg)
 
-Sova vs Axum vs Actix-web on an **identical multi-page fixture site** (same HTML/JSON bodies, verified SHA-256).
+Sova vs Axum vs Actix-web on an **identical multi-page fixture site** (same HTML/JSON bodies, verified SHA-256), including a realistic **POST /api/echo** JSON path.
 
 ## Methodology
 
-- Stand: `bench/stand/` — shared fixtures in `fixtures/`, three minimal servers (`stand_sova`, `stand_axum`, `stand_actix`).
+- Stand: `bench/stand/` — shared fixtures, three **release** servers (`stand_sova`, `stand_axum`, `stand_actix`).
+- Workspace `[profile.release]` uses thin LTO (`codegen-units = 1`) — production-shaped binaries, not `dev`.
 - Bodies must match **byte-for-byte** across frameworks before load runs (`run.sh` aborts on mismatch).
 - Load tool: [oha](https://github.com/hatoo/oha).
-- This capture: duration `10s`, concurrency `50`, `TOKIO_WORKER_THREADS=4`.
-- Captured at `2026-08-08T09:42:22Z` on `Admins-MacBook-Pro.local`.
+- This capture: profile `deep`, duration `20s`, concurrency `100`, `TOKIO_WORKER_THREADS=4`.
+- Captured at `2026-08-09T05:56:00Z` on `Admins-MacBook-Pro.local`.
 
-Pages: `/`, `/about`, `/blog`, `/blog/hello`, `/contact`, `/api/health`.
+Pages: `/`, `/about`, `/blog`, `/blog/hello`, `/contact`, `/api/health`, `POST /api/echo`.
 
 ## Latest results — `GET /`
 
 | Framework | Req/s | p50 (ms) | p99 (ms) |
 |-----------|-------|----------|----------|
-| sova | 101685 | 0.415 | 1.725 |
-| axum | 120476 | 0.403 | 0.820 |
-| actix | 85351 | 0.509 | 2.347 |
+| sova | 91300 | 0.912 | 3.636 |
+| axum | 112627 | 0.796 | 2.353 |
+| actix | 107950 | 0.906 | 3.083 |
+
+## Latest results — `POST /api/echo`
+
+| Framework | Req/s | p99 (ms) |
+|-----------|-------|----------|
+| sova | 116927 | 2.389 |
+| axum | 118473 | 2.563 |
+| actix | 105296 | 4.344 |
 
 ## Latest results — mean across all paths
 
 | Framework | Mean Req/s | Mean p99 (ms) |
 |-----------|------------|---------------|
-| sova | 103094 | 1.705 |
-| axum | 117216 | 1.006 |
-| actix | 92173 | 1.899 |
+| sova | 112636 | 2.522 |
+| axum | 121632 | 1.997 |
+| actix | 104190 | 3.186 |
 
 ## Per-path detail
 
 | Framework | Path | Req/s | p50 (ms) | p99 (ms) |
 |-----------|------|-------|----------|----------|
-| sova | `/` | 101685 | 0.415 | 1.725 |
-| axum | `/` | 120476 | 0.403 | 0.820 |
-| actix | `/` | 85351 | 0.509 | 2.347 |
-| sova | `/about` | 112790 | 0.411 | 1.181 |
-| axum | `/about` | 118332 | 0.405 | 0.880 |
-| actix | `/about` | 94307 | 0.510 | 1.659 |
-| sova | `/blog` | 100645 | 0.414 | 1.671 |
-| axum | `/blog` | 116968 | 0.404 | 1.046 |
-| actix | `/blog` | 91560 | 0.504 | 2.260 |
-| sova | `/blog/hello` | 103288 | 0.412 | 1.624 |
-| axum | `/blog/hello` | 117281 | 0.408 | 0.944 |
-| actix | `/blog/hello` | 94716 | 0.512 | 1.631 |
-| sova | `/contact` | 96406 | 0.418 | 2.243 |
-| axum | `/contact` | 113758 | 0.407 | 1.146 |
-| actix | `/contact` | 93758 | 0.518 | 1.593 |
-| sova | `/api/health` | 103748 | 0.408 | 1.784 |
-| axum | `/api/health` | 116484 | 0.398 | 1.198 |
-| actix | `/api/health` | 93347 | 0.507 | 1.902 |
+| sova | `/` | 91300 | 0.912 | 3.636 |
+| axum | `/` | 112627 | 0.796 | 2.353 |
+| actix | `/` | 107950 | 0.906 | 3.083 |
+| sova | `/about` | 113972 | 0.787 | 2.485 |
+| axum | `/about` | 124915 | 0.770 | 1.754 |
+| actix | `/about` | 100388 | 0.919 | 3.691 |
+| sova | `/blog` | 117259 | 0.785 | 2.139 |
+| axum | `/blog` | 122222 | 0.775 | 2.053 |
+| actix | `/blog` | 101180 | 0.909 | 3.405 |
+| sova | `/blog/hello` | 115320 | 0.786 | 2.430 |
+| axum | `/blog/hello` | 122531 | 0.773 | 1.969 |
+| actix | `/blog/hello` | 101324 | 0.920 | 3.033 |
+| sova | `/contact` | 117228 | 0.780 | 2.292 |
+| axum | `/contact` | 125754 | 0.771 | 1.628 |
+| actix | `/contact` | 102498 | 0.921 | 2.481 |
+| sova | `/api/health` | 116448 | 0.772 | 2.286 |
+| axum | `/api/health` | 124904 | 0.762 | 1.658 |
+| actix | `/api/health` | 110692 | 0.904 | 2.264 |
+| sova | `/api/echo` | 116927 | 0.764 | 2.389 |
+| axum | `/api/echo` | 118473 | 0.764 | 2.563 |
+| actix | `/api/echo` | 105296 | 0.873 | 4.344 |
 
 ## Re-run / regression gate
 
 ```bash
-./bench/stand/run.sh
-./bench/stand/run.sh --update-baseline   # after intentional perf changes
-DURATION=15s CONCURRENCY=100 ./bench/stand/run.sh
+./bench/stand/run.sh                  # deep (30s, c=100) release
+PROFILE=quick ./bench/stand/run.sh   # smoke
+./bench/stand/run.sh --update-baseline
+DURATION=60s CONCURRENCY=200 ./bench/stand/run.sh
+cargo bench -p sova-core --bench dispatch   # release criterion
 ```
 
 Regression thresholds (vs `bench/stand/results/baseline.json`): home RPS drop > 15% or p99 rise > 40% fails the script.

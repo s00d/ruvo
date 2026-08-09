@@ -23,8 +23,8 @@ homepage = "https://s00d.github.io/sova/"
 
 [workspace.dependencies]
 # Workspace crates (version+path so `cargo publish` can resolve)
-sova-core = { version = "0.1.4", path = "crates/sova-core" }
-sova = { version = "0.1.10", path = "crates/sova" }
+sova-core = { version = "0.1.5", path = "crates/sova-core" }
+sova = { version = "0.1.11", path = "crates/sova" }
 sova-testing = { version = "0.1.2", path = "crates/sova-testing", default-features = false }
 sova-activity = { version = "0.1.2", path = "plugins/sova-activity" }
 sova-auth = { version = "0.1.6", path = "plugins/sova-auth", default-features = false }
@@ -123,6 +123,7 @@ rand_core = { version = "0.6", features = ["std"] }
 rcgen = "0.13"
 redis = { version = "0.32", default-features = false, features = ["tokio-comp", "connection-manager"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+rustc-hash = "2"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
 rustls-pemfile = "2"
 rustls-pki-types = "1"
@@ -150,3 +151,11 @@ tracing-subscriber = { version = "0.3", default-features = false, features = ["e
 url = "2"
 urlencoding = "2"
 vld = { version = "0.4", default-features = true, features = ["serialize"] }
+
+# Hot-path release / criterion benches (production-shaped).
+[profile.release]
+lto = "thin"
+codegen-units = 1
+
+[profile.bench]
+inherits = "release"

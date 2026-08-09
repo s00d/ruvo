@@ -1,5 +1,5 @@
+use rustc_hash::FxHashMap;
 use std::any::{Any, TypeId};
-use std::collections::HashMap;
 use std::sync::Arc;
 
 /// Typed bag keyed by [`TypeId`] (route meta, shared app state).
@@ -8,7 +8,7 @@ use std::sync::Arc;
 /// conflict; call order across types does not matter.
 #[derive(Default, Clone)]
 pub struct TypeMap {
-    map: HashMap<TypeId, Arc<dyn Any + Send + Sync>>,
+    map: FxHashMap<TypeId, Arc<dyn Any + Send + Sync>>,
 }
 
 /// Shared application state: `app.state(db)` / `req.state::<Database>()`.
@@ -17,7 +17,7 @@ pub type StateMap = TypeMap;
 impl TypeMap {
     pub fn new() -> Self {
         Self {
-            map: HashMap::new(),
+            map: FxHashMap::default(),
         }
     }
 
@@ -54,13 +54,13 @@ impl TypeMap {
 /// Per-request typed bag: `req.set(user)` / `req.get::<User>()`.
 #[derive(Default)]
 pub struct Extensions {
-    map: HashMap<TypeId, Box<dyn Any + Send + Sync>>,
+    map: FxHashMap<TypeId, Box<dyn Any + Send + Sync>>,
 }
 
 impl Extensions {
     pub fn new() -> Self {
         Self {
-            map: HashMap::new(),
+            map: FxHashMap::default(),
         }
     }
 
@@ -88,14 +88,16 @@ impl Extensions {
 }
 
 /// Route metadata bag attached to the request after a successful match.
+///
+/// Wrapped in [`Arc`] so inject-on-match does not deep-clone the map per request.
 #[derive(Clone)]
-pub struct MatchedMeta(pub crate::route_value::MetaMap);
+pub struct MatchedMeta(pub Arc<crate::route_value::MetaMap>);
 
 /// Optional slot filled when a route matches — for root middleware that runs
 /// before match but needs meta after `next` (e.g. SEO head inject).
 #[derive(Clone, Default)]
 pub struct MatchedMetaCapture {
-    inner: std::sync::Arc<std::sync::Mutex<Option<crate::route_value::MetaMap>>>,
+    inner: std::sync::Arc<std::sync::Mutex<Option<Arc<crate::route_value::MetaMap>>>>,
 }
 
 impl MatchedMetaCapture {
@@ -103,23 +105,23 @@ impl MatchedMetaCapture {
         Self::default()
     }
 
-    pub fn set(&self, meta: crate::route_value::MetaMap) {
+    pub fn set(&self, meta: Arc<crate::route_value::MetaMap>) {
         *self.inner.lock().unwrap() = Some(meta);
     }
 
-    pub fn get(&self) -> Option<crate::route_value::MetaMap> {
+    pub fn get(&self) -> Option<Arc<crate::route_value::MetaMap>> {
         self.inner.lock().unwrap().clone()
     }
 }
 
 /// Matched route path template (e.g. `/users/:id`), set after route match.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MatchedRoute(pub String);
+pub struct MatchedRoute(pub Arc<str>);
 
 /// Capture for root middleware: filled when a route matches (low-cardinality metrics).
 #[derive(Clone, Default)]
 pub struct MatchedRouteCapture {
-    inner: std::sync::Arc<std::sync::Mutex<Option<String>>>,
+    inner: std::sync::Arc<std::sync::Mutex<Option<Arc<str>>>>,
 }
 
 impl MatchedRouteCapture {
@@ -127,11 +129,11 @@ impl MatchedRouteCapture {
         Self::default()
     }
 
-    pub fn set(&self, route: impl Into<String>) {
-        *self.inner.lock().unwrap() = Some(route.into());
+    pub fn set(&self, route: Arc<str>) {
+        *self.inner.lock().unwrap() = Some(route);
     }
 
-    pub fn get(&self) -> Option<String> {
+    pub fn get(&self) -> Option<Arc<str>> {
         self.inner.lock().unwrap().clone()
     }
 }

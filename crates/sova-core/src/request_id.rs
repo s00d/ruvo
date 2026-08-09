@@ -63,11 +63,13 @@ pub fn ensure_request_id(req: &mut Request) {
 }
 
 fn generate_request_id() -> String {
-    let nanos = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_nanos();
-    format!("req-{nanos:x}")
+    use std::sync::atomic::{AtomicU64, Ordering};
+    static COUNTER: AtomicU64 = AtomicU64::new(1);
+    let n = COUNTER.fetch_add(1, Ordering::Relaxed);
+    let mut bytes = [0u8; 8];
+    let _ = getrandom::getrandom(&mut bytes);
+    let entropy = u64::from_le_bytes(bytes);
+    format!("req-{entropy:016x}-{n:x}")
 }
 
 #[cfg(test)]

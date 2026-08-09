@@ -5,6 +5,7 @@ use crate::response::{Response, ResponseBody};
 use crate::state::Extensions;
 use crate::upgrade::PendingUpgrade;
 use bytes::Bytes;
+use http::HeaderValue;
 use http_body_util::{BodyExt, Full};
 use hyper::body::Incoming;
 use hyper::upgrade::OnUpgrade as HyperOnUpgrade;
@@ -84,19 +85,20 @@ pub(super) fn to_hyper_response(
     hsts: bool,
     alt_svc: Option<&str>,
 ) -> HyperResponse<ResponseBody> {
-    let status = res.status;
-    let headers = res.headers.clone();
-    let body = res.into_http_body();
-    let mut builder = HyperResponse::builder().status(status);
-    for (name, value) in headers.iter() {
-        builder = builder.header(name, value);
-    }
+    let (status, mut headers, body) = res.into_parts();
     if hsts {
-        builder = builder.header("strict-transport-security", "max-age=31536000");
+        headers.insert(
+            http::header::STRICT_TRANSPORT_SECURITY,
+            HeaderValue::from_static("max-age=31536000"),
+        );
     }
     if let Some(alt_svc) = alt_svc {
-        builder = builder.header("alt-svc", alt_svc);
+        if let Ok(v) = HeaderValue::from_str(alt_svc) {
+            headers.insert(http::header::HeaderName::from_static("alt-svc"), v);
+        }
     }
+    let mut builder = HyperResponse::builder().status(status);
+    *builder.headers_mut().expect("builder") = headers;
     builder.body(body).unwrap_or_else(|_| {
         HyperResponse::builder()
             .status(500)

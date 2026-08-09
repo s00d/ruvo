@@ -287,13 +287,15 @@ impl Response {
         self.body = Body::Bytes(Bytes::from(body));
     }
 
-    pub(crate) fn into_http_body(self) -> ResponseBody {
-        match self.body {
+    /// Consume into status / headers / body without cloning headers.
+    pub(crate) fn into_parts(self) -> (StatusCode, HeaderMap, ResponseBody) {
+        let body = match self.body {
             Body::Bytes(b) => Full::new(b)
                 .map_err(|_: Infallible| unreachable!())
                 .boxed(),
             Body::Stream(b) => b,
-        }
+        };
+        (self.status, self.headers, body)
     }
 }
 

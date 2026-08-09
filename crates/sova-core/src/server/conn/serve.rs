@@ -85,23 +85,25 @@ pub(super) async fn handle_hyper(
     let timeout = app.request_timeout;
     let app_deadline = timeout.map(|d| Instant::now() + d);
     let fut = async {
-        let path = req.uri().path().to_string();
-        if let Some(raw) = app.compiled.lookup_raw(&path) {
-            let fut = AssertUnwindSafe(raw(req));
-            return match fut.catch_unwind().await {
-                Ok(res) => res,
-                Err(_) => {
-                    tracing::error!("raw handler panicked");
-                    HyperResponse::builder()
-                        .status(500)
-                        .body(
-                            Full::new(Bytes::from_static(b"Internal Server Error"))
-                                .map_err(|_: Infallible| unreachable!())
-                                .boxed(),
-                        )
-                        .expect("fallback")
-                }
-            };
+        if app.compiled.has_raw {
+            let path = req.uri().path();
+            if let Some(raw) = app.compiled.lookup_raw(path) {
+                let fut = AssertUnwindSafe(raw(req));
+                return match fut.catch_unwind().await {
+                    Ok(res) => res,
+                    Err(_) => {
+                        tracing::error!("raw handler panicked");
+                        HyperResponse::builder()
+                            .status(500)
+                            .body(
+                                Full::new(Bytes::from_static(b"Internal Server Error"))
+                                    .map_err(|_: Infallible| unreachable!())
+                                    .boxed(),
+                            )
+                            .expect("fallback")
+                    }
+                };
+            }
         }
 
         let fut = AssertUnwindSafe(async {

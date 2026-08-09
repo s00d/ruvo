@@ -2,9 +2,10 @@
 
 use crate::state::StateMap;
 use http::Method;
+use rustc_hash::FxHashMap;
 use std::any::{Any, TypeId};
 use std::borrow::Cow;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::sync::Arc;
 
 /// Value attached via [`crate::Router::with`] (route, router, or app scope).
@@ -33,9 +34,9 @@ type CheckFn = Arc<dyn Fn(&BuildCtx<'_>) -> Result<(), String> + Send + Sync>;
 /// Typed metadata bag for routes/routers (one value per `TypeId`; last insert wins).
 #[derive(Default, Clone)]
 pub struct MetaMap {
-    map: HashMap<TypeId, Arc<dyn Any + Send + Sync>>,
-    checkers: HashMap<TypeId, CheckFn>,
-    labels: HashMap<TypeId, String>,
+    map: FxHashMap<TypeId, Arc<dyn Any + Send + Sync>>,
+    checkers: FxHashMap<TypeId, CheckFn>,
+    labels: FxHashMap<TypeId, String>,
 }
 
 impl MetaMap {

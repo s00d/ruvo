@@ -196,6 +196,7 @@ fn metrics_middleware(metrics_path: String) -> MwEntry {
                 let status = res.status_code().as_u16();
                 let route = capture
                     .get()
+                    .map(|r| r.to_string())
                     .unwrap_or_else(|| path.clone());
                 let elapsed = start.elapsed().as_secs_f64();
                 metrics::counter!(

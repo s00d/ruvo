@@ -3,6 +3,18 @@
 All notable changes to the Sova workspace are recorded here.
 Versions refer to the published crates on [crates.io](https://crates.io/crates/sova).
 
+## 0.1.11 — 2026-08-09
+
+Performance hot path (`sova-core` 0.1.5) + deeper release benches:
+
+- `FxHashMap` (rustc-hash) for TypeMap / MetaMap / Extensions / params / query / method maps
+- Arc-wrap matched `MetaMap` / route path (no deep clone per request)
+- Skip catcher snapshot wrapper when no catchers registered; skip raw-route lookup when unused
+- Move response headers into hyper without clone; HEAD preserves `Content-Length`
+- Route `RequestTimeout` returns **408** (was 504); request-id uses entropy + counter
+- Workspace `[profile.release]` / `[profile.bench]`: thin LTO, `codegen-units = 1`
+- Stand: longer defaults, warm-up, `POST /api/echo`, release-only load + criterion realistic/burst groups
+
 ## 0.1.10 — 2026-08-09
 
 Deep audit fixes:

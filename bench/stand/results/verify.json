@@ -108,6 +108,25 @@
         "axum": "application/json",
         "actix": "application/json"
       }
+    },
+    "POST /api/echo": {
+      "ok": true,
+      "sha256": {
+        "sova": "56454cbcbb344a21206b91ffa5513268301b2a096c7ecd47534f60aa1f61f991",
+        "axum": "56454cbcbb344a21206b91ffa5513268301b2a096c7ecd47534f60aa1f61f991",
+        "actix": "56454cbcbb344a21206b91ffa5513268301b2a096c7ecd47534f60aa1f61f991"
+      },
+      "bytes": {
+        "sova": 21,
+        "axum": 21,
+        "actix": 21
+      },
+      "content_type": {
+        "sova": "application/json",
+        "axum": "application/json",
+        "actix": "application/json"
+      },
+      "echo_matches_request": true
     }
   }
 }

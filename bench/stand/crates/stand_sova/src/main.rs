@@ -1,5 +1,6 @@
 //! Sova stand: same bodies as axum/actix (see `stand_fixtures`).
 //! Minimal stack — no logger middleware (fair vs other frameworks).
+//! Built and run only via `cargo build --release` in `bench/stand/run.sh`.
 
 use sova::{App, Html, IntoResponse, Request, Response, Result};
 use stand_fixtures::{
@@ -26,6 +27,11 @@ async fn main() -> Result<()> {
     app.get("/contact", || async { Html(CONTACT) });
     app.get("/api/health", || async {
         Response::bytes(HEALTH_JSON.as_bytes(), CONTENT_TYPE_JSON)
+    });
+    // Realistic JSON API path: read body, echo bytes (prod-shaped work).
+    app.post("/api/echo", |mut req: Request| async move {
+        let bytes = req.body().await.unwrap_or_default();
+        Response::bytes(bytes, CONTENT_TYPE_JSON)
     });
 
     eprintln!("stand_sova listening on http://127.0.0.1:{port}");

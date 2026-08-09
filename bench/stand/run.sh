@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # Framework comparison stand: byte-identical bodies + oha load + regression gate.
 #
+# Always builds --release (production profile with workspace LTO).
+#
 # Usage:
-#   ./bench/stand/run.sh              # verify + load, write results
+#   ./bench/stand/run.sh              # verify + deep load, write results
 #   ./bench/stand/run.sh --update-baseline
-#   DURATION=15s CONCURRENCY=100 ./bench/stand/run.sh
+#   DURATION=60s CONCURRENCY=200 ./bench/stand/run.sh
+#   PROFILE=quick ./bench/stand/run.sh   # shorter smoke (10s / c=50)
 #
 # Requires: oha, curl, python3, cargo
 set -euo pipefail
@@ -12,8 +15,18 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$ROOT/../.." && pwd)"
 RESULTS="$ROOT/results"
-DURATION="${DURATION:-10s}"
-CONCURRENCY="${CONCURRENCY:-50}"
+PROFILE="${PROFILE:-deep}"
+case "$PROFILE" in
+  quick)
+    DURATION="${DURATION:-10s}"
+    CONCURRENCY="${CONCURRENCY:-50}"
+    ;;
+  *)
+    # Deep / realistic defaults: longer windows reduce noise; higher c stresses accept loop.
+    DURATION="${DURATION:-30s}"
+    CONCURRENCY="${CONCURRENCY:-100}"
+    ;;
+esac
 TOKIO_WORKER_THREADS="${TOKIO_WORKER_THREADS:-4}"
 UPDATE_BASELINE=0
 REGRESSION_RPS_PCT="${REGRESSION_RPS_PCT:-15}"   # fail if RPS drops more than this %
@@ -23,7 +36,7 @@ for arg in "$@"; do
   case "$arg" in
     --update-baseline) UPDATE_BASELINE=1 ;;
     -h|--help)
-      sed -n '2,12p' "$0"
+      sed -n '2,14p' "$0"
       exit 0
       ;;
   esac
@@ -37,7 +50,7 @@ fi
 mkdir -p "$RESULTS"
 cd "$ROOT"
 
-echo "==> building stand binaries"
+echo "==> building stand binaries (release / production)"
 TOKIO_WORKER_THREADS="$TOKIO_WORKER_THREADS" cargo build --release -q \
   -p stand_sova -p stand_axum -p stand_actix
 
@@ -71,19 +84,39 @@ start_one sova 9101 stand_sova
 start_one axum 9102 stand_axum
 start_one actix 9103 stand_actix
 
-PATHS=(/ /about /blog /blog/hello /contact /api/health)
+echo "==> warm-up (stabilize caches / CPU)"
+for port in 9101 9102 9103; do
+  for _ in $(seq 1 200); do
+    curl -sf "http://127.0.0.1:$port/" >/dev/null || true
+    curl -sf "http://127.0.0.1:$port/api/health" >/dev/null || true
+  done
+done
 
-echo "==> verifying byte-identical response bodies"
+PATHS=(/ /about /blog /blog/hello /contact /api/health)
+ECHO_BODY="$(cat "$ROOT/fixtures/echo.json")"
+
+echo "==> verifying byte-identical response bodies (GET + POST echo)"
 VERIFY_JSON="$RESULTS/verify.json"
-python3 - "$VERIFY_JSON" <<'PY'
+python3 - "$VERIFY_JSON" "$ECHO_BODY" <<'PY'
 import hashlib, json, sys, urllib.request
 
 out_path = sys.argv[1]
+echo_body = sys.argv[2].encode()
 ports = {"sova": 9101, "axum": 9102, "actix": 9103}
 paths = ["/", "/about", "/blog", "/blog/hello", "/contact", "/api/health"]
 
-def fetch(port, path):
-    with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=5) as r:
+def fetch(port, path, data=None):
+    url = f"http://127.0.0.1:{port}{path}"
+    if data is None:
+        req = urllib.request.Request(url)
+    else:
+        req = urllib.request.Request(
+            url,
+            data=data,
+            method="POST",
+            headers={"Content-Type": "application/json"},
+        )
+    with urllib.request.urlopen(req, timeout=5) as r:
         body = r.read()
         ctype = r.headers.get("Content-Type", "")
         return body, ctype
@@ -106,11 +139,31 @@ for path in paths:
     }
     if not same:
         report["ok"] = False
-        # show first differing pair
         names = list(bodies)
         a, b = names[0], names[1]
         entry["diff"] = f"{a} vs {b}: {hashes[a]} != {hashes[b]}"
     report["paths"][path] = entry
+
+# POST /api/echo — realistic JSON body path
+bodies = {}
+ctypes = {}
+for name, port in ports.items():
+    body, ctype = fetch(port, "/api/echo", data=echo_body)
+    bodies[name] = body
+    ctypes[name] = ctype
+hashes = {n: hashlib.sha256(b).hexdigest() for n, b in bodies.items()}
+same = len(set(hashes.values())) == 1 and bodies["sova"] == echo_body
+entry = {
+    "ok": same,
+    "sha256": hashes,
+    "bytes": {n: len(b) for n, b in bodies.items()},
+    "content_type": ctypes,
+    "echo_matches_request": bodies.get("sova") == echo_body,
+}
+if not same:
+    report["ok"] = False
+    entry["diff"] = "echo body mismatch across frameworks or vs request"
+report["paths"]["POST /api/echo"] = entry
 
 with open(out_path, "w") as f:
     json.dump(report, f, indent=2)
@@ -119,44 +172,53 @@ with open(out_path, "w") as f:
 if not report["ok"]:
     print("BODY MISMATCH", json.dumps(report, indent=2))
     sys.exit(1)
-print("bodies match for all paths across sova/axum/actix")
+print("bodies match for all paths across sova/axum/actix (incl. POST /api/echo)")
 PY
 
 oha_one() {
   local name="$1" port="$2" path="$3"
+  local method="${4:-GET}"
+  local body_file="${5:-}"
   local url="http://127.0.0.1:${port}${path}"
   local raw
-  raw="$(oha -z "$DURATION" -c "$CONCURRENCY" --no-tui "$url" 2>&1)" || true
+  if [[ "$method" == "POST" ]]; then
+    raw="$(oha -z "$DURATION" -c "$CONCURRENCY" -m POST -T 'application/json' -D "$body_file" --no-tui "$url" 2>&1)" || true
+  else
+    raw="$(oha -z "$DURATION" -c "$CONCURRENCY" --no-tui "$url" 2>&1)" || true
+  fi
   local rps p50 p99 success
   rps="$(echo "$raw" | awk '/Requests\/sec:/ {print $NF; exit}')"
   p50="$(echo "$raw" | awk '/50\.00% in/ {print $(NF-1); exit}')"
   p99="$(echo "$raw" | awk '/99\.00% in/ {print $(NF-1); exit}')"
   success="$(echo "$raw" | awk '/Success rate:/ {print $NF; exit}')"
-  # fallbacks
   rps="${rps:-0}"
   p50="${p50:-0}"
   p99="${p99:-0}"
   printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$path" "$rps" "$p50" "$p99" "$success"
 }
 
-echo "==> load test (DURATION=$DURATION CONCURRENCY=$CONCURRENCY workers=$TOKIO_WORKER_THREADS)"
+echo "==> load test PROFILE=$PROFILE (DURATION=$DURATION CONCURRENCY=$CONCURRENCY workers=$TOKIO_WORKER_THREADS) release binaries"
 LOAD_TSV="$RESULTS/load.tsv"
 {
   echo -e "framework\tpath\trps\tp50\tp99\tsuccess"
   for path in "${PATHS[@]}"; do
-    echo "  load / path=$path" >&2
+    echo "  load GET path=$path" >&2
     oha_one sova 9101 "$path"
     oha_one axum 9102 "$path"
     oha_one actix 9103 "$path"
   done
+  echo "  load POST /api/echo" >&2
+  oha_one sova 9101 "/api/echo" POST "$ROOT/fixtures/echo.json"
+  oha_one axum 9102 "/api/echo" POST "$ROOT/fixtures/echo.json"
+  oha_one actix 9103 "/api/echo" POST "$ROOT/fixtures/echo.json"
 } | tee "$LOAD_TSV"
 
 echo "==> summarizing"
-python3 - "$LOAD_TSV" "$RESULTS" "$DURATION" "$CONCURRENCY" "$TOKIO_WORKER_THREADS" "$REPO" "$UPDATE_BASELINE" "$REGRESSION_RPS_PCT" "$REGRESSION_P99_PCT" <<'PY'
+python3 - "$LOAD_TSV" "$RESULTS" "$DURATION" "$CONCURRENCY" "$TOKIO_WORKER_THREADS" "$REPO" "$UPDATE_BASELINE" "$REGRESSION_RPS_PCT" "$REGRESSION_P99_PCT" "$PROFILE" <<'PY'
 import csv, json, os, sys, datetime as dt
 from pathlib import Path
 
-load_tsv, results_dir, duration, concurrency, workers, repo, update_bl, rps_pct, p99_pct = sys.argv[1:]
+load_tsv, results_dir, duration, concurrency, workers, repo, update_bl, rps_pct, p99_pct, profile = sys.argv[1:]
 update_bl = update_bl == "1"
 rps_pct = float(rps_pct)
 p99_pct = float(p99_pct)
@@ -166,16 +228,18 @@ repo = Path(repo)
 rows = []
 with open(load_tsv, newline="") as f:
     for row in csv.DictReader(f, delimiter="\t"):
+        path = row["path"]
+        # Distinguish POST echo in reports
+        label = path
         rows.append({
             "framework": row["framework"],
-            "path": row["path"],
+            "path": label,
             "rps": float(row["rps"]) if row["rps"] else 0.0,
             "p50_ms": float(row["p50"]) if row["p50"] else 0.0,
             "p99_ms": float(row["p99"]) if row["p99"] else 0.0,
             "success": row.get("success") or "",
         })
 
-# Aggregate mean RPS across paths per framework (home-weighted primary = "/")
 by_fw = {}
 for r in rows:
     by_fw.setdefault(r["framework"], []).append(r)
@@ -183,6 +247,8 @@ for r in rows:
 summary = {
     "captured_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     "host": os.uname().nodename if hasattr(os, "uname") else "",
+    "profile": profile,
+    "build": "release",
     "duration": duration,
     "concurrency": int(concurrency),
     "tokio_worker_threads": int(workers),
@@ -193,10 +259,13 @@ summary = {
 
 for fw, items in by_fw.items():
     home = next((i for i in items if i["path"] == "/"), items[0])
+    echo = next((i for i in items if i["path"] == "/api/echo"), None)
     summary["frameworks"][fw] = {
         "home_rps": home["rps"],
         "home_p50_ms": home["p50_ms"],
         "home_p99_ms": home["p99_ms"],
+        "echo_rps": echo["rps"] if echo else 0.0,
+        "echo_p99_ms": echo["p99_ms"] if echo else 0.0,
         "mean_rps": sum(i["rps"] for i in items) / len(items),
         "mean_p99_ms": sum(i["p99_ms"] for i in items) / len(items),
     }
@@ -229,23 +298,23 @@ if update_bl or not baseline_path.exists():
     baseline_path.write_text(json.dumps(summary, indent=2) + "\n")
     print(f"baseline written → {baseline_path}")
 
-# Markdown for docs
 md_lines = []
 md_lines.append("# Performance")
 md_lines.append("")
 md_lines.append("![Performance](/banners/performance.svg)")
 md_lines.append("")
-md_lines.append("Sova vs Axum vs Actix-web on an **identical multi-page fixture site** (same HTML/JSON bodies, verified SHA-256).")
+md_lines.append("Sova vs Axum vs Actix-web on an **identical multi-page fixture site** (same HTML/JSON bodies, verified SHA-256), including a realistic **POST /api/echo** JSON path.")
 md_lines.append("")
 md_lines.append("## Methodology")
 md_lines.append("")
-md_lines.append("- Stand: `bench/stand/` — shared fixtures in `fixtures/`, three minimal servers (`stand_sova`, `stand_axum`, `stand_actix`).")
+md_lines.append("- Stand: `bench/stand/` — shared fixtures, three **release** servers (`stand_sova`, `stand_axum`, `stand_actix`).")
+md_lines.append("- Workspace `[profile.release]` uses thin LTO (`codegen-units = 1`) — production-shaped binaries, not `dev`.")
 md_lines.append("- Bodies must match **byte-for-byte** across frameworks before load runs (`run.sh` aborts on mismatch).")
 md_lines.append("- Load tool: [oha](https://github.com/hatoo/oha).")
-md_lines.append(f"- This capture: duration `{duration}`, concurrency `{concurrency}`, `TOKIO_WORKER_THREADS={workers}`.")
+md_lines.append(f"- This capture: profile `{profile}`, duration `{duration}`, concurrency `{concurrency}`, `TOKIO_WORKER_THREADS={workers}`.")
 md_lines.append(f"- Captured at `{summary['captured_at']}` on `{summary['host']}`.")
 md_lines.append("")
-md_lines.append("Pages: `/`, `/about`, `/blog`, `/blog/hello`, `/contact`, `/api/health`.")
+md_lines.append("Pages: `/`, `/about`, `/blog`, `/blog/hello`, `/contact`, `/api/health`, `POST /api/echo`.")
 md_lines.append("")
 md_lines.append("## Latest results — `GET /`")
 md_lines.append("")
@@ -256,6 +325,14 @@ for fw in ("sova", "axum", "actix"):
     md_lines.append(
         f"| {fw} | {f['home_rps']:.0f} | {f['home_p50_ms']:.3f} | {f['home_p99_ms']:.3f} |"
     )
+md_lines.append("")
+md_lines.append("## Latest results — `POST /api/echo`")
+md_lines.append("")
+md_lines.append("| Framework | Req/s | p99 (ms) |")
+md_lines.append("|-----------|-------|----------|")
+for fw in ("sova", "axum", "actix"):
+    f = summary["frameworks"][fw]
+    md_lines.append(f"| {fw} | {f['echo_rps']:.0f} | {f['echo_p99_ms']:.3f} |")
 md_lines.append("")
 md_lines.append("## Latest results — mean across all paths")
 md_lines.append("")
@@ -277,9 +354,11 @@ md_lines.append("")
 md_lines.append("## Re-run / regression gate")
 md_lines.append("")
 md_lines.append("```bash")
-md_lines.append("./bench/stand/run.sh")
-md_lines.append("./bench/stand/run.sh --update-baseline   # after intentional perf changes")
-md_lines.append("DURATION=15s CONCURRENCY=100 ./bench/stand/run.sh")
+md_lines.append("./bench/stand/run.sh                  # deep (30s, c=100) release")
+md_lines.append("PROFILE=quick ./bench/stand/run.sh   # smoke")
+md_lines.append("./bench/stand/run.sh --update-baseline")
+md_lines.append("DURATION=60s CONCURRENCY=200 ./bench/stand/run.sh")
+md_lines.append("cargo bench -p sova-core --bench dispatch   # release criterion")
 md_lines.append("```")
 md_lines.append("")
 md_lines.append(f"Regression thresholds (vs `bench/stand/results/baseline.json`): home RPS drop > {rps_pct:.0f}% or p99 rise > {p99_pct:.0f}% fails the script.")
