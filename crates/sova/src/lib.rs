@@ -233,9 +233,6 @@ pub use sova_passport::{
     Passport, PassportExt, Source,
 };
 
-#[cfg(all(feature = "passport", not(feature = "auth")))]
-pub use sova_passport::PassportExt;
-
 #[cfg(feature = "passport-jwt")]
 pub use sova_passport::{
     hash_password, hash_refresh_token, hash_token, issue_token_pair, token_can, verify_password,

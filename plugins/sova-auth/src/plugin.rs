@@ -48,7 +48,8 @@ pub struct Fortify {
 impl Fortify {
     pub fn new() -> Self {
         Self {
-            features: Feature::all().iter().copied().collect(),
+            // Registration-only by default — mail-backed features are opt-in.
+            features: [Feature::Registration].into_iter().collect(),
             web_forms: false,
             mount: "/".into(),
             api_mount: Some("/api/auth".into()),

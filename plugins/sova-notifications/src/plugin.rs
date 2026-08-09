@@ -77,9 +77,17 @@ impl Plugin for Notifications {
     }
 
     fn requires(&self) -> &'static [&'static str] {
+        #[cfg(all(feature = "ws", feature = "templates"))]
+        if self.ws_path.is_some() && self.template_helpers {
+            return &["db", "ws", "templates"];
+        }
         #[cfg(feature = "ws")]
         if self.ws_path.is_some() {
             return &["db", "ws"];
+        }
+        #[cfg(feature = "templates")]
+        if self.template_helpers {
+            return &["db", "templates"];
         }
         &["db"]
     }

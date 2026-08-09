@@ -3,6 +3,17 @@
 All notable changes to the Sova workspace are recorded here.
 Versions refer to the published crates on [crates.io](https://crates.io/crates/sova).
 
+## 0.1.10 — 2026-08-09
+
+Deep audit fixes:
+
+- Reject duplicate `Plugin::id` on `App::install` (build error)
+- `Fortify::new()` defaults to Registration only
+- `App::api()` installs `Vld`
+- Notifications template helpers require `templates`; i18n-cookie always requires cookies
+- cargo-sovax: `--fields` required; csrf/templates stack; entities stub; seed wiring; uuid/chrono features
+- Docs: SSE/cookies/cors/shield/session dual-install; getting-started forms/uploads/auth features
+
 ## 0.1.9 — 2026-08-09
 
 - Docs: CSRF field `csrf`, no double-install after `App::web()`

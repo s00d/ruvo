@@ -83,6 +83,11 @@ impl App {
                 "plugin `{plugin}` requires `{dep}`; install `{dep}` before `{plugin}`"
             )));
         }
+        if let Some(id) = self.duplicate_plugin_ids.first().copied() {
+            return Err(crate::error::Error::Internal(format!(
+                "plugin `{id}` already installed; customize before first install or build App::new() with an explicit stack (re-install does not replace)"
+            )));
+        }
         if let Some(msg) = self.plugin_sdk_errors.first() {
             return Err(crate::error::Error::Internal(msg.clone()));
         }

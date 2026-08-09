@@ -1,17 +1,20 @@
-Outbound mail next to Fortify / tasks on a real app:
+Outbound mail (facade features `mail` / `mail-templates`). `MailClient::send` takes [`Email`], not a Message type:
 
 ```rust
+use sova::{Email, Mail, MailExt};
+
 let mut app = App::web()
     .site("App")
     .public_url("https://example.com")
     .into_app();
 
-let mail_plugin = Mail::from_env();
-let mail = mail_plugin.client();
-app.install(mail_plugin);
+app.install(Mail::from_env());
 
-// later in a task / handler:
-mail.send(/* Message */).await?;
+// in a handler / task:
+req.mail()
+    .to("user@example.com")
+    .send(Email::new().subject("Hi").text("Hello"))
+    .await?;
 ```
 
-Templates: `mail-templates`. Cabinet sends welcome mail from a Tasks job after register.
+Install Mail **once** (duplicate `mail` id fails at build). Templates: feature `mail-templates`.

@@ -1,4 +1,4 @@
-Shared `KvStore` for rate-limit, cache, etc. Install beside a preset (cabinet uses SQL on the same `DbPool`):
+Shared `KvStore` for rate-limit, cache, etc. Namespace with `sova::store::namespace(store, "sess")` or `AppStore::namespaced`:
 
 ```rust
 use std::sync::Arc;
@@ -18,7 +18,8 @@ async fn main() -> Result<()> {
     app.install(Db::from_env());
     let pool = app.try_state::<DbPool>().expect("db").as_ref().clone();
     let kv = Arc::new(sova::store::Sql::from_db_pool(&pool)) as Arc<dyn sova::KvStore>;
-    app.install(SharedStore::new(Arc::clone(&kv)));
+    let sess = sova::store::namespace(Arc::clone(&kv), "sess");
+    app.install(SharedStore::new(sess));
 
     app.run().await
 }

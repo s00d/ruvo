@@ -137,11 +137,16 @@ impl Plugin for I18n {
     }
 
     fn requires(&self) -> &'static [&'static str] {
+        // Feature `cookie` always needs Cookies (toml may set cookie_name at install).
         #[cfg(feature = "cookie")]
-        if self.cookie_name.is_some() {
+        {
+            let _ = &self.cookie_name;
             return &["cookies"];
         }
-        &[]
+        #[cfg(not(feature = "cookie"))]
+        {
+            &[]
+        }
     }
 
     fn install(mut self, app: &mut App) {

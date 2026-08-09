@@ -21,9 +21,11 @@ cargo sovax generate migration add_status_to_posts
 cargo sovax generate migration create_tags --fields name:string
 cargo sovax generate seed DemoUsers
 cargo sovax generate resource post --fields name:string,body:text
-cargo sovax generate resource post --api
-# `generate crud <name>` → alias of `resource --api`
+cargo sovax generate resource post --api --fields name:string,body:text
+cargo sovax generate crud post --fields name:string   # alias of resource --api
 ```
+
+`--fields` is **required** for `resource` / `crud` (entity + handlers).
 
 | Generate | Writes |
 |----------|--------|

@@ -193,6 +193,8 @@ impl ApiApp {
         self.inner.install(
             OpenApi::new(self.title.clone(), self.version.clone()).mount(self.docs_mount.clone()),
         );
+        #[cfg(feature = "vld")]
+        self.inner.install(crate::Vld);
         self.inner.with_probes();
     }
 

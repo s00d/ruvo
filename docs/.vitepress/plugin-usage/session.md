@@ -1,4 +1,4 @@
-Cookie sessions are part of **`App::web()`** and **`App::api()`** (`memory_sessions`). Read/write in handlers — do not reinstall the layer unless you need SQL/Redis:
+Cookie sessions are part of **`App::web()`** and **`App::api()`** (`memory_sessions`). Read/write in handlers — do **not** install a second `SessionLayer` on top of a preset (duplicate `session` id fails at `build`):
 
 ```rust
 use sova::prelude::*;
@@ -23,19 +23,14 @@ async fn main() -> Result<()> {
         Redirect::see_other("/")
     });
 
-    app.post("/logout", |req: Request| async move {
-        req.session().set("user", "guest");
-        Redirect::see_other("/")
-    });
-
     app.run().await
 }
 ```
 
-SQL backend (shared `DbPool`):
+SQL backend — use `App::new()` (or skip the preset session) and install once:
 
 ```rust
-let mut app = App::web().site("App").public_url("https://example.com").into_app();
+let mut app = App::new();
 app.install(Db::from_env());
 let pool = app.try_state::<DbPool>().expect("db").as_ref().clone();
 app.install(SessionLayer::from_store(Arc::new(

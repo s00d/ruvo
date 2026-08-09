@@ -85,6 +85,7 @@ pub struct App {
     pub(crate) installed_plugins: HashSet<&'static str>,
     pub(crate) installed_plugin_meta: Vec<InstalledPlugin>,
     pub(crate) missing_plugin_requires: Vec<(&'static str, &'static str)>,
+    pub(crate) duplicate_plugin_ids: Vec<&'static str>,
     pub(crate) plugin_sdk_errors: Vec<String>,
     pub(crate) on_startup: Vec<StartupHook>,
     pub(crate) on_shutdown: Vec<ShutdownHook>,
@@ -118,6 +119,7 @@ impl App {
             installed_plugins: HashSet::new(),
             installed_plugin_meta: Vec::new(),
             missing_plugin_requires: Vec::new(),
+            duplicate_plugin_ids: Vec::new(),
             plugin_sdk_errors: Vec::new(),
             on_startup: Vec::new(),
             on_shutdown: Vec::new(),
@@ -304,6 +306,10 @@ impl App {
 
     pub fn install<P: Plugin>(&mut self, plugin: P) -> &mut Self {
         let plugin_id = plugin.id();
+        if self.installed_plugins.contains(plugin_id) {
+            self.duplicate_plugin_ids.push(plugin_id);
+            return self;
+        }
         let meta = plugin.meta();
         for dep in plugin.requires() {
             if !self.installed_plugins.contains(dep) {

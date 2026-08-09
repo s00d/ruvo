@@ -1,6 +1,6 @@
 [package]
 name = "cargo-sovax"
-version = "0.1.6"
+version = "0.1.7"
 authors.workspace = true
 edition.workspace = true
 description = "Cargo subcommand for scaffolding and running Sova apps"

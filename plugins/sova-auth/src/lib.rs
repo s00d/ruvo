@@ -6,9 +6,11 @@
 //! ```ignore
 //! use sova_auth::{AuthMigrator, Feature, Fortify};
 //! // Facade re-exports the same enum as `AuthFeature`.
+//! // Fortify::new() enables Registration only; add mail-backed features explicitly.
 //!
 //! app.install(Db::from_env().migrations::<AuthMigrator>());
 //! app.install(memory_sessions());
+//! app.install(Mail::from_env()); // required for ResetPasswords / EmailVerification
 //! app.install(
 //!   Fortify::new()
 //!     .features([Feature::Registration, Feature::ResetPasswords, /* … */])
@@ -16,8 +18,6 @@
 //!     .login_redirect("/login")
 //!     .home("/cabinet"),
 //! );
-//! // Mail only when ResetPasswords / EmailVerification:
-//! // app.install(Mail::from_env());
 //! cabinet.use_middleware(Fortify::guard());
 //!
 //! // Programmatic login (impersonation / seed / admin switch):

@@ -15,7 +15,7 @@ cargo add sova --features meta,meta-i18n,meta-openapi,meta-store,meta-templates
 |---------|-------------|
 | `meta` | SEO head tags, Sitemap, Robots (`sova_meta`). |
 | `meta-i18n` | Locale-aware meta. |
-| `meta-openapi` | — |
+| `meta-openapi` | OpenAPI helpers for Meta routes. |
 | `meta-store` | Meta helpers backed by KvStore. |
 | `meta-templates` | Inject meta into MiniJinja HTML. |
 

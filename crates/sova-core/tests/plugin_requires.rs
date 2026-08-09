@@ -60,3 +60,20 @@ fn requires_fails_when_dep_installed_after() {
         Ok(_) => panic!("order matters at install"),
     }
 }
+
+#[test]
+fn duplicate_plugin_id_fails_build() {
+    let mut app = App::new();
+    app.install(FakeDb);
+    app.install(FakeDb);
+    match app.build() {
+        Err(err) => {
+            let msg = err.to_string();
+            assert!(
+                msg.contains("already installed") && msg.contains("`db`"),
+                "unexpected error: {msg}"
+            );
+        }
+        Ok(_) => panic!("duplicate id should fail"),
+    }
+}

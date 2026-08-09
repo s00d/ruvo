@@ -10,7 +10,7 @@ Opt-in domain plugins for Sova. Prefer enabling them through facade features on 
 | Crate | Version | Description | Docs |
 |-------|---------|-------------|------|
 | [`sova-activity`](./sova-activity/) | `0.1.2` | Laravel-style activity / audit log for Sova | [guide](https://s00d.github.io/sova/plugins/activity) |
-| [`sova-auth`](./sova-auth/) | `0.1.5` | Fortify-style authentication for Sova (register, 2FA, reset, roles) | [guide](https://s00d.github.io/sova/plugins/auth) |
+| [`sova-auth`](./sova-auth/) | `0.1.6` | Fortify-style authentication for Sova (register, 2FA, reset, roles) | [guide](https://s00d.github.io/sova/plugins/auth) |
 | [`sova-compress`](./sova-compress/) | `0.1.1` | Response compression plugin for Sova | [guide](https://s00d.github.io/sova/plugins/compress) |
 | [`sova-cookies`](./sova-cookies/) | `0.1.1` | Cookie parsing plugin for Sova | [guide](https://s00d.github.io/sova/plugins/cookies) |
 | [`sova-cors`](./sova-cors/) | `0.1.1` | CORS plugin for Sova | [guide](https://s00d.github.io/sova/plugins/cors) |
@@ -18,10 +18,10 @@ Opt-in domain plugins for Sova. Prefer enabling them through facade features on 
 | [`sova-db`](./sova-db/) | `0.1.3` | SeaORM database plugin for Sova (postgres / sqlite / mysql) | [guide](https://s00d.github.io/sova/plugins/db) |
 | [`sova-env`](./sova-env/) | `0.1.1` | Cascade .env loading for Sova apps (dotenvy) | [guide](https://s00d.github.io/sova/plugins/env) |
 | [`sova-http`](./sova-http/) | `0.1.1` | Outbound HTTP client bound to request deadline and tracing | [guide](https://s00d.github.io/sova/plugins/http) |
-| [`sova-i18n`](./sova-i18n/) | `0.1.1` | Two-level i18n store and locale resolution for Sova | [guide](https://s00d.github.io/sova/plugins/i18n) |
+| [`sova-i18n`](./sova-i18n/) | `0.1.2` | Two-level i18n store and locale resolution for Sova | [guide](https://s00d.github.io/sova/plugins/i18n) |
 | [`sova-mail`](./sova-mail/) | `0.1.1` | Outbound email for Sova (lettre SMTP / fake / file) | [guide](https://s00d.github.io/sova/plugins/mail) |
 | [`sova-meta`](./sova-meta/) | `0.1.2` | Document meta, OG/Twitter, JSON-LD, sitemap and robots for Sova | [guide](https://s00d.github.io/sova/plugins/meta) |
-| [`sova-notifications`](./sova-notifications/) | `0.1.3` | Database notifications with channels, ACL, optional WS/mail | [guide](https://s00d.github.io/sova/plugins/notifications) |
+| [`sova-notifications`](./sova-notifications/) | `0.1.4` | Database notifications with channels, ACL, optional WS/mail | [guide](https://s00d.github.io/sova/plugins/notifications) |
 | [`sova-observability`](./sova-observability/) | `0.1.1` | Request metrics (Prometheus), OpenTelemetry, and Elasticsearch logs for Sova | [guide](https://s00d.github.io/sova/plugins/observability) |
 | [`sova-openapi`](./sova-openapi/) | `0.1.1` | OpenAPI document generation and /docs UI for Sova | [guide](https://s00d.github.io/sova/plugins/openapi) |
 | [`sova-passport`](./sova-passport/) | `0.1.2` | Passport-style authentication for Sova (strategies, JWT, OAuth2, sessions) | [guide](https://s00d.github.io/sova/plugins/passport) |

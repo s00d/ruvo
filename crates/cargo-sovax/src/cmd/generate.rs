@@ -2,7 +2,10 @@ use clap::{Args, Subcommand};
 use std::fs;
 use std::path::PathBuf;
 
-use crate::manifest::{ensure_mail_stack, ensure_resource_stack, ensure_tasks_stack};
+use crate::manifest::{
+    ensure_mail_stack, ensure_resource_stack, ensure_resource_stack_with_fields, ensure_seed_in_main,
+    ensure_tasks_stack,
+};
 use crate::templates::codegen::{
     append_migration_mod, append_pub_mod, ensure_jobs_registry, ensure_mail_layout,
     ensure_root_layout, ensure_seeds_registry, mailer_names, parse_fields, pluralize,
@@ -30,7 +33,11 @@ pub enum GenerateKind {
         fields: String,
     },
     /// JSON REST module (alias of `resource --api`).
-    Crud { name: String },
+    Crud {
+        name: String,
+        #[arg(long)]
+        fields: String,
+    },
     Mailer { name: String },
     Job { name: String },
     /// Alias of [`GenerateKind::Job`].
@@ -38,7 +45,7 @@ pub enum GenerateKind {
     Resource {
         name: String,
         #[arg(long)]
-        fields: Option<String>,
+        fields: String,
         /// JSON REST + smoke test instead of HTML views.
         #[arg(long)]
         api: bool,
@@ -59,12 +66,10 @@ pub fn run(args: GenerateArgs) -> Result<(), String> {
         GenerateKind::Module { name } => generate_module(&name),
         GenerateKind::Plugin { name } => generate_plugin(&name),
         GenerateKind::Model { name, fields } => generate_model(&name, &fields),
-        GenerateKind::Crud { name } => generate_resource(&name, None, true),
+        GenerateKind::Crud { name, fields } => generate_resource(&name, &fields, true),
         GenerateKind::Mailer { name } => generate_mailer(&name),
         GenerateKind::Job { name } | GenerateKind::Worker { name } => generate_job(&name),
-        GenerateKind::Resource { name, fields, api } => {
-            generate_resource(&name, fields.as_deref(), api)
-        }
+        GenerateKind::Resource { name, fields, api } => generate_resource(&name, &fields, api),
         GenerateKind::Migration { name, fields } => {
             generate_migration(&name, fields.as_deref())
         }
@@ -251,6 +256,8 @@ Workspace members `plugins/*` pick this crate up automatically.
 
     println!("generated plugin `sova-{name}`");
     println!("  path: {}", root.display());
+    println!("  add to your app Cargo.toml:");
+    println!("    sova-{name} = {{ path = \"plugins/sova-{name}\" }}");
     println!("  use:  app.install(sova_{name}::{ty}::new());");
     Ok(())
 }
@@ -277,8 +284,8 @@ fn write_model(name: &str, specs: &[FieldSpec]) -> Result<(), String> {
 
 fn generate_model(name: &str, fields: &str) -> Result<(), String> {
     validate_ident(name)?;
-    ensure_resource_stack(false)?;
     let specs = parse_fields(fields)?;
+    ensure_resource_stack_with_fields(false, Some(&specs))?;
     write_model(name, &specs)
 }
 
@@ -303,6 +310,7 @@ fn generate_mailer(name: &str) -> Result<(), String> {
     println!("generated mailer `{ty}`");
     println!("  src/mailers/{snake}.rs");
     println!("  views/mail/{snake}.html");
+    println!("  next: app.install(Templates::minijinja(\"views\")); app.install(Mail::from_env());");
     println!("  use:  req.mail().to(user).send_mail({ty} {{ name: \"…\".into() }}).await?;");
     Ok(())
 }
@@ -322,12 +330,16 @@ fn generate_job(name: &str) -> Result<(), String> {
 
     println!("generated job `{snake}`");
     println!("  src/jobs/{snake}.rs");
-    println!("  use:  let tasks = crate::jobs::install(Tasks::new(/* store */));");
+    println!("  next: app.install(crate::jobs::install(Tasks::new(/* Arc<dyn TaskStore> */)));");
     Ok(())
 }
 
 fn generate_migration(name: &str, fields: Option<&str>) -> Result<(), String> {
-    ensure_resource_stack(false)?;
+    let specs = match fields {
+        Some(raw) => Some(parse_fields(raw)?),
+        None => None,
+    };
+    ensure_resource_stack_with_fields(false, specs.as_deref())?;
     let snake = to_snake_case(name);
     validate_ident(&snake)?;
     let stamp = utc_ymdhms();
@@ -338,13 +350,12 @@ fn generate_migration(name: &str, fields: Option<&str>) -> Result<(), String> {
     }
     fs::create_dir_all("src/migrations").map_err(io_err)?;
 
-    let body = if let Some(raw) = fields {
-        let specs = parse_fields(raw)?;
+    let body = if let Some(ref specs) = specs {
         let table = snake
             .strip_prefix("create_")
             .unwrap_or(snake.as_str());
         validate_ident(table)?;
-        render_migration(&mig_mod, table, &specs)
+        render_migration(&mig_mod, table, specs)
     } else {
         render_blank_migration(&mig_mod)
     };
@@ -371,33 +382,30 @@ fn generate_seed(name: &str) -> Result<(), String> {
     fs::create_dir_all("src/seeds").map_err(io_err)?;
     fs::write(&file, render_seed(&snake)).map_err(io_err)?;
     ensure_seeds_registry(&snake)?;
+    ensure_seed_in_main()?;
 
     println!("generated seed `{snake}`");
     println!("  src/seeds/{snake}.rs");
-    println!("  use:  Db::from_env().seed(crate::seeds::run)");
+    println!("  use:  Db::from_env().migrations::<…>().seed(crate::seeds::run)");
     Ok(())
 }
 
-fn generate_resource(name: &str, fields: Option<&str>, api: bool) -> Result<(), String> {
+fn generate_resource(name: &str, fields: &str, api: bool) -> Result<(), String> {
     validate_ident(name)?;
-    ensure_resource_stack(api)?;
-    let specs = match fields {
-        Some(raw) => Some(parse_fields(raw)?),
-        None => None,
-    };
-    if let Some(ref specs) = specs {
-        write_model(name, specs)?;
-    }
-
     let module_file = PathBuf::from("src/modules").join(format!("{name}.rs"));
     let module_dir = PathBuf::from("src/modules").join(name);
     if module_file.exists() || module_dir.exists() {
         return Err(format!("module already exists: {name}"));
     }
+
+    let specs = parse_fields(fields)?;
+    ensure_resource_stack_with_fields(api, Some(&specs))?;
+    write_model(name, &specs)?;
+
     fs::create_dir_all(&module_dir).map_err(io_err)?;
 
     let plural = pluralize(name);
-    let field_slice = specs.as_deref();
+    let field_slice = Some(specs.as_slice());
 
     if api {
         fs::write(module_dir.join("mod.rs"), render_crud_mod(name, &plural)).map_err(io_err)?;

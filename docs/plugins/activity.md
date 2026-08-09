@@ -26,15 +26,10 @@ Laravel-style activity / audit log for Sova.
 
 ## Usage
 
-Audit log on top of Db (often with Fortify). Compose migrators, then install the plugin:
+Audit log on top of Db (often with Fortify). Use `ActivityMigrator` (or your app migrator that includes it):
 
 ```rust
-let mut app = App::web()
-    .site("App")
-    .public_url("https://example.com")
-    .into_app();
-
-app.install(Db::from_env().migrations::<CabinetMigrator>()); // includes ActivityMigrator
+app.install(Db::from_env().migrations::<ActivityMigrator>());
 app.install(Activity::new().mount("/activity"));
 
 // In a handler:
@@ -42,4 +37,4 @@ req.log_activity("note.created", "note", id, json!({ "title": title }))
     .await?;
 ```
 
-Feature `auth-activity` records Fortify mutations automatically. See cabinet.
+Feature `auth-activity` records Fortify mutations automatically. See `examples/cabinet`.

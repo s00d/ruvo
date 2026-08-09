@@ -59,6 +59,7 @@
 /// Feature `passport-jwt`: JWT access + refresh + PAT.
 /// Feature `passport-oauth`: OAuth2 drivers (GitHub/Google/Apple/Custom).
 /// Feature `auth`: Fortify (register/login/verify/reset/2FA/RBAC).
+/// Feature `auth-mail`: Email verify/reset templates (`mail-templates` + Fortify mail helpers).
 /// Feature `auth-vld`: Fortify forms wired to `vld` flash/form.
 /// Feature `activity`: Audit / activity log table (`sova-activity`).
 /// Feature `auth-activity`: Fortify mutations write activity events.
@@ -68,6 +69,7 @@
 /// Feature `notifications-auth`: Role/permission audiences.
 /// Feature `notifications-templates`: Unread helpers in templates.
 /// Feature `meta`: SEO head tags, Sitemap, Robots (`sova_meta`).
+/// Feature `meta-openapi`: OpenAPI helpers for Meta routes.
 /// Feature `meta-templates`: Inject meta into MiniJinja HTML.
 /// Feature `meta-i18n`: Locale-aware meta.
 /// Feature `meta-store`: Meta helpers backed by KvStore.

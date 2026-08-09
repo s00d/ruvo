@@ -18,7 +18,7 @@ Open a plugin page from the table. Extra notes for heavier stacks are below.
 | Plugin | Version | Summary | Features |
 |--------|---------|---------|----------|
 | [`activity`](/plugins/activity) | `0.1.2` | Audit / activity log (who changed what) | `activity` |
-| [`auth`](/plugins/auth) | `0.1.5` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-mail`, `auth-vld` |
+| [`auth`](/plugins/auth) | `0.1.6` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-mail`, `auth-vld` |
 | [`compress`](/plugins/compress) | `0.1.1` | gzip / deflate / brotli response compression | `compress` |
 | [`cookies`](/plugins/cookies) | `0.1.1` | Parse Cookie header into request-local Cookies | `cookies` |
 | [`cors`](/plugins/cors) | `0.1.1` | Cross-Origin Resource Sharing headers | `cors` |
@@ -26,10 +26,10 @@ Open a plugin page from the table. Extra notes for heavier stacks are below.
 | [`db`](/plugins/db) | `0.1.3` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
 | [`env`](/plugins/env) | `0.1.1` | Cascade .env loading for Sova apps (dotenvy) | `env` |
 | [`http`](/plugins/http) | `0.1.1` | Outbound HTTP client with SSRF guards and named configs | `http-client` |
-| [`i18n`](/plugins/i18n) | `0.1.1` | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |
+| [`i18n`](/plugins/i18n) | `0.1.2` | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |
 | [`mail`](/plugins/mail) | `0.1.1` | Outbound email via lettre (SMTP / fake / file) | `mail`, `mail-markdown`, `mail-templates` |
 | [`meta`](/plugins/meta) | `0.1.2` | Document meta, OG/Twitter, JSON-LD, and head inject | `meta`, `meta-i18n`, `meta-openapi`, `meta-store`, `meta-templates` |
-| [`notifications`](/plugins/notifications) | `0.1.3` | DB inbox, channels with ACL, optional WS/mail | `notifications`, `notifications-auth`, `notifications-mail`, `notifications-templates`, `notifications-ws` |
+| [`notifications`](/plugins/notifications) | `0.1.4` | DB inbox, channels with ACL, optional WS/mail | `notifications`, `notifications-auth`, `notifications-mail`, `notifications-templates`, `notifications-ws` |
 | [`observability`](/plugins/observability) | `0.1.1` | HTTP metrics, OpenTelemetry, Elasticsearch log shipping | `observability`, `observability-elasticsearch`, `observability-otel` |
 | [`openapi`](/plugins/openapi) | `0.1.1` | OpenAPI 3.1 document + Scalar UI at mount path | `openapi` |
 | [`passport`](/plugins/passport) | `0.1.2` | Users + access/refresh JWT + personal access tokens | `passport`, `passport-jwt`, `passport-oauth`, `passport-session` |
@@ -60,7 +60,7 @@ Needs **db + session**. Add **mail** only for `EmailVerification` / `ResetPasswo
 ```rust
 app.install(Db::from_env().migrations::<AuthMigrator>());
 app.install(memory_sessions()); // or SessionLayer::from_store(...)
-// app.install(Mail::from_env()); // only if verify/reset
+app.install(Mail::from_env()); // required when ResetPasswords / EmailVerification
 app.install(
   Fortify::new()
     .features([AuthFeature::Registration, AuthFeature::ResetPasswords])

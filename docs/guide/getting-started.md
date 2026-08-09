@@ -146,7 +146,13 @@ Open Scalar at `http://127.0.0.1:3000/docs` (spec at `/docs/openapi.json`). Same
 
 ## Adding plugins on top of a preset
 
-Presets already own the baseline. Extra plugins are **`app.install(...)` after** `App::web()` / `App::api()` — do not rebuild the stack with `App::new()`.
+Presets already own the baseline. Extra plugins are **`app.install(...)` after** `App::web()` / `App::api()` — do not rebuild the stack with `App::new()` unless you need a custom baseline.
+
+Features beyond `web` (example needs `db`, `auth`, `auth-mail`, `mail`):
+
+```bash
+cargo add sova --features "web,db,db-sqlite,auth,auth-mail"
+```
 
 ```rust
 let mut app = App::web()
@@ -165,6 +171,8 @@ app.install(
 modules::register(&mut app);
 app.run().await
 ```
+
+`Fortify::new()` defaults to **Registration only** (no mail). Add verify/reset features + Mail explicitly.
 
 Need the underlying `App` (tests, custom listen): `let app = App::web().site("X").into_app();`.
 
@@ -284,20 +292,31 @@ Order is onion: first `use_middleware` is outermost. Root stack runs **before** 
 
 ## Forms, flash, uploads
 
-With the **web** preset, sessions and CSRF are already installed:
+With the **web** preset, sessions and CSRF are already installed. Forms also need **`vld` + `vld-form`** (not in `web`):
+
+```bash
+cargo add sova --features "web,vld,vld-form,vld-flash"
+```
 
 ```rust
+use sova::SessionExt;
+
 async fn save(mut req: Request) -> Result<Redirect> {
-    let form: NoteForm = req.validate_form().await?; // feature `vld-form`
-    // …
+    let form: NoteForm = req.validate_form().await?;
     req.flash_status("Saved");
     Ok(Redirect::back(&req))
 }
 ```
 
-Uploads need `multipart` + `storage`:
+Uploads need `multipart` + `storage` **and** an installed store:
+
+```bash
+cargo add sova --features "web,multipart,storage"
+```
 
 ```rust
+app.install(Storage::local("./storage"));
+
 async fn avatar(mut req: Request) -> Result<Redirect> {
     let data = req.input().await?;
     let file = data

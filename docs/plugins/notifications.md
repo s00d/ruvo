@@ -5,7 +5,7 @@ editLink: false
 
 # `notifications`
 
-**DB inbox, channels with ACL, optional WS/mail** · crate `sova-notifications` `0.1.3` · id `notifications`
+**DB inbox, channels with ACL, optional WS/mail** · crate `sova-notifications` `0.1.4` · id `notifications`
 
 ```bash
 cargo add sova --features notifications,notifications-auth,notifications-mail,notifications-templates,notifications-ws
@@ -33,17 +33,16 @@ Database notifications with named channels, ACL, optional WS / mail.
 
 ## Usage
 
-DB inbox (+ optional WS/mail) on a full app — cabinet is the reference:
+DB inbox (+ optional WS/mail). Install Db first; add `Ws` before `.ws_path(...)`:
 
 ```rust
-let mut app = App::web()
-    .site("App")
-    .public_url("https://example.com")
-    .into_app();
-
-app.install(Db::from_env().migrations::<CabinetMigrator>());
+app.install(Db::from_env().migrations::<NotificationsMigrator>());
 app.install(Ws::new());
-app.install(Notifications::new() /* feature flags: ws / mail / auth / templates */);
+app.install(
+    Notifications::new()
+        .mount("/notifications")
+        .ws_path("/ws/notifications"), // requires feature notifications-ws + Ws plugin
+);
 ```
 
-Features: `notifications-ws`, `notifications-mail`, `notifications-auth`, `notifications-templates`.
+Features: `notifications-ws`, `notifications-mail`, `notifications-auth`, `notifications-templates`. Template helpers require installed Templates.

@@ -35,4 +35,4 @@ async fn home(req: Request) -> Response {
 }
 ```
 
-i18n helper in templates: `.per_request("t", sova::template_fn)` after `into_app()` when you add the i18n plugin. Demos: `templates`, `templates_i18n`.
+Extra per-request helpers after the preset: `sova_templates::register_per_request(&mut app, "t", sova::template_fn)`. Do not reinstall Templates on top of `App::web()` (duplicate id). Demos: `templates`, `templates_i18n`.

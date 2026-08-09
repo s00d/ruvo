@@ -5,7 +5,7 @@ editLink: false
 
 # `auth`
 
-**Register/login, verify, reset, 2FA, profile, roles** · crate `sova-auth` `0.1.5` · id `fortify`
+**Register/login, verify, reset, 2FA, profile, roles** · crate `sova-auth` `0.1.6` · id `fortify`
 
 ```bash
 cargo add sova --features auth,auth-activity,auth-mail,auth-vld
@@ -15,7 +15,7 @@ cargo add sova --features auth,auth-activity,auth-mail,auth-vld
 |---------|-------------|
 | `auth` | Fortify (register/login/verify/reset/2FA/RBAC). |
 | `auth-activity` | Fortify mutations write activity events. |
-| `auth-mail` | — |
+| `auth-mail` | Email verify/reset templates (`mail-templates` + Fortify mail helpers). |
 | `auth-vld` | Fortify forms wired to `vld` flash/form. |
 
 Fortify-style authentication for Sova (register, verify, reset, 2FA, RBAC).
@@ -26,9 +26,11 @@ Fortify-style authentication for Sova (register, verify, reset, 2FA, RBAC).
 ```rust
  use sova_auth::{AuthMigrator, Feature, Fortify};
  // Facade re-exports the same enum as `AuthFeature`.
+ // Fortify::new() enables Registration only; add mail-backed features explicitly.
 
  app.install(Db::from_env().migrations::<AuthMigrator>());
  app.install(memory_sessions());
+ app.install(Mail::from_env()); // required for ResetPasswords / EmailVerification
  app.install(
    Fortify::new()
      .features([Feature::Registration, Feature::ResetPasswords, /* … */])
@@ -36,8 +38,6 @@ Fortify-style authentication for Sova (register, verify, reset, 2FA, RBAC).
      .login_redirect("/login")
      .home("/cabinet"),
  );
- // Mail only when ResetPasswords / EmailVerification:
- // app.install(Mail::from_env());
  cabinet.use_middleware(Fortify::guard());
 
  // Programmatic login (impersonation / seed / admin switch):

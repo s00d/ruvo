@@ -19,9 +19,9 @@ Security response headers (helmet-style subset). HSTS stays on [`sova_core::Tls`
 
 ## Usage
 
-**`App::web()`** already installs Shield (helmet-style headers). You only reinstall to customize:
+**`App::web()`** already installs Shield. **Do not** reinstall — duplicate `shield` id fails at `build`. For a custom CSP/stack, build with `App::new()` and install Shield once:
 
 ```rust
-let mut app = App::web().site("App").public_url("https://example.com").into_app();
-app.install(Shield::new() /* builders for CSP etc. when you need them */);
+let mut app = App::new();
+app.install(Shield::new() /* builders when you need them */);
 ```
