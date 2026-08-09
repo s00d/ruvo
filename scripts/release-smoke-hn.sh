@@ -59,9 +59,9 @@ async fn main() -> Result<()> {
     );
     let mut r = Router::new();
     r.use_middleware(Fortify::guard());
-    r.get("/", || async { Html("<h1>ok</h1>".into()) });
+    r.get("/", || async { Html("<h1>ok</h1>".to_string()) });
     app.mount("/me", r);
-    app.get("/", || async { Html("<a href=/me>me</a>".into()) });
+    app.get("/", || async { Html("<a href=/me>me</a>".to_string()) });
     app.run().await
 }
 RS
@@ -127,9 +127,9 @@ async fn registration_only_without_mail() {
     );
     let mut r = Router::new();
     r.use_middleware(Fortify::guard());
-    r.get("/", || async { Html("<h1>ok</h1>".into()) });
+    r.get("/", || async { Html("<h1>ok</h1>".to_string()) });
     app.mount("/me", r);
-    app.get("/", || async { Html("<a href=/me>me</a>".into()) });
+    app.get("/", || async { Html("<a href=/me>me</a>".to_string()) });
 
     let c = TestClient::boot(app.into()).await.unwrap();
     assert_eq!(c.get("/me").await.status_code().as_u16(), 303);
