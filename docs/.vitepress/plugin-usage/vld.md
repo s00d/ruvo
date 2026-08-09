@@ -41,7 +41,7 @@ HTML forms (web preset already has session/csrf):
 
 ```rust
 async fn store(mut req: Request) -> Result<Redirect> {
-    let form: NoteForm = req.validate_form().await?;
+    let form: NoteForm = req.validate_form().await?; // feature `vld-form`
     req.flash_status("Saved");
     Ok(Redirect::back(&req))
 }

@@ -54,6 +54,7 @@ pub enum GenerateKind {
 }
 
 pub fn run(args: GenerateArgs) -> Result<(), String> {
+    refuse_workspace_root()?;
     match args.kind {
         GenerateKind::Module { name } => generate_module(&name),
         GenerateKind::Plugin { name } => generate_plugin(&name),
@@ -69,6 +70,18 @@ pub fn run(args: GenerateArgs) -> Result<(), String> {
         }
         GenerateKind::Seed { name } => generate_seed(&name),
     }
+}
+
+fn refuse_workspace_root() -> Result<(), String> {
+    let Ok(raw) = fs::read_to_string("Cargo.toml") else {
+        return Ok(());
+    };
+    if raw.contains("[workspace]") && !raw.contains("[package]") {
+        return Err(
+            "refusing to generate in a Cargo workspace root — cd into an app package first".into(),
+        );
+    }
+    Ok(())
 }
 
 fn generate_module(name: &str) -> Result<(), String> {
