@@ -16,12 +16,14 @@ pub use preset::WebApp;
 #[cfg(feature = "api")]
 pub use preset::ApiApp;
 pub use sova_core::{
-    ensure_request_id, error_to_problem, logger, logger_skip_path, logger_skip_paths, problem_response,
-    problem_with_errors, request_id, with_state, BackgroundService, Cell, CheckKind, CheckResult,
-    ClientAddr, ConfigDoc, Error, Event, EventBus, FormData, Html, Http, IntoResponse, Json,
-    LogConfig, LogRotate, MatchedRoute, MatchedRouteCapture, NoContent, Next, OnUpgrade, Plugin,
-    PluginMeta, PluginSdkVersion, RateLimitIdentity, Redirect, Request, RequestId, Response, Router,
-    Server, Shutdown, Slot, Text, Upload, UploadRules, PLUGIN_SDK_VERSION, referer_or,
+    current_accept, ensure_request_id, error_response_for_accept, error_to_problem, html_error_page,
+    logger, logger_skip_path, logger_skip_paths, negotiate_error_format, problem_response,
+    problem_with_errors, request_id, status_response_for_accept, with_state, with_accept,
+    BackgroundService, Cell, CheckKind, CheckResult, ClientAddr, ConfigDoc, Error, ErrorFormat,
+    Event, EventBus, FormData, Html, Http, IntoResponse, Json, LogConfig, LogRotate, MatchedRoute,
+    MatchedRouteCapture, NoContent, Next, OnUpgrade, Plugin, PluginMeta, PluginSdkVersion,
+    RateLimitIdentity, Redirect, Request, RequestId, Response, Router, Server, Shutdown, Slot, Text,
+    Upload, UploadRules, PLUGIN_SDK_VERSION, referer_or,
 };
 /// Typed request extractors (`Path`, `Query`, `Json`, `State`, …).
 pub mod extract {
@@ -232,8 +234,8 @@ pub use sova_http::{
 
 #[cfg(feature = "mail")]
 pub use sova_mail::{
-    Content, Email, EmailSnapshot, Envelope, FakeMail, Mail, MailClient, MailExt, Mailable,
-    SmtpBuilder,
+    Content, Email, EmailSnapshot, Envelope, FakeMail, Mail, MailClient, MailExt, MailSent,
+    Mailable, SmtpBuilder,
 };
 
 #[cfg(feature = "ai")]
@@ -281,7 +283,7 @@ pub use sova_auth::{
     mark_email_verified, parse_verify_token, register_user, revoke_role, set_avatar, set_user_roles,
     sync_role_permissions, update_permission, update_role, user_ids_with_permission,
     user_ids_with_role, Ability, AuthExt, AuthMigrator, CurrentUser, Feature as AuthFeature,
-    Fortify, FortifyPaths, Policy,
+    Fortify, FortifyPaths, Policy, UserLoggedIn, UserRegistered,
 };
 
 #[cfg(feature = "auth-mail")]

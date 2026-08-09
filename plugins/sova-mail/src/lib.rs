@@ -21,6 +21,7 @@
 
 mod client;
 mod email;
+mod events;
 mod fake;
 mod mailable;
 
@@ -29,6 +30,7 @@ mod markdown;
 
 pub use client::{Mail, MailClient, SmtpBuilder};
 pub use email::{Email, EmailSnapshot};
+pub use events::MailSent;
 pub use fake::FakeMail;
 pub use mailable::{Content, Envelope, Mailable};
 
@@ -75,7 +77,8 @@ impl Plugin for Mail {
                 }
             }
         }
-        let client = mail.into_client();
+        let mut client = mail.into_client();
+        client.set_events(app.events());
 
         #[cfg(feature = "templates")]
         {

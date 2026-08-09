@@ -23,18 +23,18 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 |--------|----------|---------|---------|----------|
 | [`activity`](/plugins/activity) | Ops | `0.1.2` | Audit / activity log (who changed what) | `activity` |
 | [`ai`](/plugins/ai) | Integrations | `0.1.0` | AISDK language models (chat, tools, stream, fake) | `ai`, `ai-anthropic`, `ai-full`, `ai-google`, `ai-openai`, `ai-prompt` |
-| [`auth`](/plugins/auth) | Auth | `0.1.7` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-mail`, `auth-vld` |
+| [`auth`](/plugins/auth) | Auth | `0.1.8` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-mail`, `auth-vld` |
 | [`compress`](/plugins/compress) | HTTP | `0.1.1` | gzip / deflate / brotli response compression | `compress` |
 | [`cookies`](/plugins/cookies) | HTTP | `0.1.1` | Parse Cookie header into request-local Cookies | `cookies` |
 | [`cors`](/plugins/cors) | HTTP | `0.1.1` | Cross-Origin Resource Sharing headers | `cors` |
 | [`csrf`](/plugins/csrf) | HTTP | `0.1.2` | Session double-submit CSRF (Laravel-style except/XSRF cookie) | `csrf` |
 | [`db`](/plugins/db) | Data | `0.1.3` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
-| [`devtools`](/plugins/devtools) | Ops | `0.1.3` | In-app debug bar (HTML inject, SSE timeline, request snapshots) | `devtools`, `devtools-csrf`, `devtools-i18n`, `devtools-passport`, `devtools-rate-limit`, `devtools-redis`, `devtools-store` |
+| [`devtools`](/plugins/devtools) | Ops | `0.1.4` | In-app debug bar (HTML inject, SSE timeline, request snapshots) | `devtools`, `devtools-csrf`, `devtools-i18n`, `devtools-passport`, `devtools-rate-limit`, `devtools-redis`, `devtools-store` |
 | [`env`](/plugins/env) | HTTP | `0.1.1` | Cascade .env loading for Sova apps (dotenvy) | `env` |
 | [`http`](/plugins/http) | Integrations | `0.1.1` | Outbound HTTP client with SSRF guards and named configs | `http-client` |
 | [`i18n`](/plugins/i18n) | Content | `0.1.2` | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |
 | [`idempotency`](/plugins/idempotency) | HTTP | `0.1.0` | Replay 2xx responses for Idempotency-Key on mutating methods | `idempotency` |
-| [`mail`](/plugins/mail) | Content | `0.1.1` | Outbound email via lettre (SMTP / fake / file) | `mail`, `mail-markdown`, `mail-templates` |
+| [`mail`](/plugins/mail) | Content | `0.1.2` | Outbound email via lettre (SMTP / fake / file) | `mail`, `mail-markdown`, `mail-templates` |
 | [`meta`](/plugins/meta) | Content | `0.1.2` | Document meta, OG/Twitter, JSON-LD, and head inject | `meta`, `meta-i18n`, `meta-openapi`, `meta-store`, `meta-templates` |
 | [`notifications`](/plugins/notifications) | Realtime | `0.1.4` | DB inbox, channels with ACL, optional WS/mail | `notifications`, `notifications-auth`, `notifications-mail`, `notifications-templates`, `notifications-ws` |
 | [`observability`](/plugins/observability) | Ops | `0.1.2` | HTTP metrics, OpenTelemetry, Elasticsearch log shipping | `observability`, `observability-elasticsearch`, `observability-otel` |

@@ -68,7 +68,16 @@ impl ResponseCache {
         self
     }
 
-    /// Drop all keys under this plugin prefix + `path_prefix`.
+    /// Invalidate keys under `path_prefix` (same as [`ResponseCacheHandle::invalidate_prefix`]).
+    ///
+    /// Typical pattern with [`sova_core::EventBus`]:
+    /// ```ignore
+    /// let handle = app.try_state::<ResponseCacheHandle>().unwrap();
+    /// bus.listen::<NoteCreated, _>(move |_| {
+    ///     let h = handle.clone();
+    ///     tokio::spawn(async move { h.invalidate_prefix("/api/notes").await; });
+    /// });
+    /// ```
     pub async fn invalidate_prefix(&self, path_prefix: &str) -> u64 {
         let full = format!("{}{}", self.prefix, path_prefix);
         self.store.clear_prefix(&full).await

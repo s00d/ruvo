@@ -182,6 +182,7 @@ impl Mail {
             },
             default_from: self.default_from.clone(),
             fake: self.fake.clone(),
+            events: None,
             #[cfg(feature = "templates")]
             templates: Arc::clone(&self.templates_slot),
         }
@@ -269,6 +270,7 @@ pub struct MailClient {
     backend: Arc<ClientBackend>,
     pub(crate) default_from: Option<String>,
     fake: Option<FakeMail>,
+    events: Option<sova_core::EventBus>,
     #[cfg(feature = "templates")]
     templates: TemplatesSlot,
 }
@@ -276,6 +278,11 @@ pub struct MailClient {
 impl MailClient {
     pub fn compose(&self) -> Email {
         Email::with_client(self.clone())
+    }
+
+    /// Soft-wire [`EventBus`] for [`crate::MailSent`] emits after send.
+    pub fn set_events(&mut self, bus: sova_core::EventBus) {
+        self.events = Some(bus);
     }
 
     #[cfg(feature = "templates")]
@@ -293,7 +300,9 @@ impl MailClient {
         #[cfg(any(feature = "templates", feature = "markdown"))]
         email.resolve_body(self)?;
         let (snap, message) = email.into_message(self.default_from.as_deref())?;
-        match self.backend.as_ref() {
+        let to = snap.to.clone();
+        let subject = snap.subject.clone();
+        let result = match self.backend.as_ref() {
             ClientBackend::Fake(fake) => {
                 fake.record(snap);
                 Ok(())
@@ -308,7 +317,13 @@ impl MailClient {
                 .await
                 .map(|_| ())
                 .map_err(|e| Error::Internal(format!("mail file: {e}"))),
+        };
+        if result.is_ok() {
+            if let Some(bus) = &self.events {
+                bus.dispatch(crate::MailSent { to, subject });
+            }
         }
+        result
     }
 
     /// Fake inbox when installed via [`Mail::fake`].

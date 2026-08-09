@@ -309,6 +309,13 @@ pub async fn register(mut req: Request) -> Result<Response> {
     )
     .await;
 
+    if let Some(bus) = req.try_state::<sova_core::EventBus>() {
+        bus.dispatch(crate::UserRegistered {
+            user_id: cu.id,
+            email: cu.email.clone(),
+        });
+    }
+
     finish_login(&mut req, cu, &state).await
 }
 
@@ -1199,6 +1206,12 @@ async fn finish_login(
     state: &FortifyState,
 ) -> Result<Response> {
     use crate::guard::AuthExt;
+    if let Some(bus) = req.try_state::<sova_core::EventBus>() {
+        bus.dispatch(crate::UserLoggedIn {
+            user_id: cu.id,
+            email: cu.email.clone(),
+        });
+    }
     req.login_user(cu.clone());
     if wants_json(req) {
         return Ok(json_ok(json!({

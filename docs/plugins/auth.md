@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-auth`](https://docs.rs/sova-auth/0.1.7) `0.1.7` |
+| Crate | [`sova-auth`](https://docs.rs/sova-auth/0.1.8) `0.1.8` |
 | Plugin id | `fortify` |
 | Category | Auth |
 

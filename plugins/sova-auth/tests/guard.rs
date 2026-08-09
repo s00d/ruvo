@@ -35,42 +35,42 @@ async fn build_with_guards() -> (sova_testing::SqliteTestDb, TestClient) {
         .configure(|app| {
             let mut protected = Router::new();
             protected.use_middleware(Fortify::guard());
-            protected.get("/ping", |_req| async { Response::text("pong") });
+            protected.get("/ping", |_req: Request| async { Response::text("pong") });
             app.mount("/protected", protected);
 
             let mut protected_to = Router::new();
             protected_to.use_middleware(Fortify::guard_to("/custom-login"));
-            protected_to.get("/ping", |_req| async { Response::text("pong") });
+            protected_to.get("/ping", |_req: Request| async { Response::text("pong") });
             app.mount("/guard-to", protected_to);
 
             let mut admin = Router::new();
             admin.use_middleware(Fortify::permission("users.manage"));
-            admin.get("/ping", |_req| async { Response::text("admin") });
+            admin.get("/ping", |_req: Request| async { Response::text("admin") });
             app.mount("/admin-only", admin);
 
             let mut role_r = Router::new();
             role_r.use_middleware(Fortify::role("admin"));
-            role_r.get("/ping", |_req| async { Response::text("role-ok") });
+            role_r.get("/ping", |_req: Request| async { Response::text("role-ok") });
             app.mount("/role-admin", role_r);
 
             let mut verified = Router::new();
             verified.use_middleware(Fortify::verified());
-            verified.get("/ping", |_req| async { Response::text("verified") });
+            verified.get("/ping", |_req: Request| async { Response::text("verified") });
             app.mount("/verified", verified);
 
             let mut verified_to = Router::new();
             verified_to.use_middleware(Fortify::verified_to("/verify-please"));
-            verified_to.get("/ping", |_req| async { Response::text("verified") });
+            verified_to.get("/ping", |_req: Request| async { Response::text("verified") });
             app.mount("/verified-to", verified_to);
 
             let mut pw = Router::new();
             pw.use_middleware(Fortify::password_confirmed());
-            pw.get("/ping", |_req| async { Response::text("confirmed") });
+            pw.get("/ping", |_req: Request| async { Response::text("confirmed") });
             app.mount("/pw-confirmed", pw);
 
             let mut pw_to = Router::new();
             pw_to.use_middleware(Fortify::password_confirmed_to("/confirm-now"));
-            pw_to.get("/ping", |_req| async { Response::text("confirmed") });
+            pw_to.get("/ping", |_req: Request| async { Response::text("confirmed") });
             app.mount("/pw-confirmed-to", pw_to);
 
             app.get("/auth-ext", |req: Request| async move {

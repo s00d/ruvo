@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-mail`](https://docs.rs/sova-mail/0.1.1) `0.1.1` |
+| Crate | [`sova-mail`](https://docs.rs/sova-mail/0.1.2) `0.1.2` |
 | Plugin id | `mail` |
 | Category | Content |
 

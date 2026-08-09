@@ -48,6 +48,15 @@ async fn main() -> Result<()> {
     bus.listen::<modules::notes::NoteCreated, _>(|e| {
         tracing::info!(note_id = e.note_id, user_id = e.user_id, "note.created");
     });
+    bus.listen::<sova::UserRegistered, _>(|e| {
+        tracing::info!(user_id = %e.user_id, email = %e.email, "auth.user_registered");
+    });
+    bus.listen::<sova::UserLoggedIn, _>(|e| {
+        tracing::info!(user_id = %e.user_id, email = %e.email, "auth.user_logged_in");
+    });
+    bus.listen::<sova::MailSent, _>(|e| {
+        tracing::info!(to = %e.to, subject = %e.subject, "mail.sent");
+    });
     app.use_middleware(request_id());
     app.install(Observability::new());
     app.use_middleware(logger());
