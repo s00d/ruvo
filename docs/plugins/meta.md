@@ -76,7 +76,7 @@ Customize sitemap exclusions after `into_app()` if needed (cabinet excludes `/ca
 
 ## Examples
 
-- `examples/web/meta_blog`
+- [`examples/web/meta_blog`](https://github.com/s00d/sova/tree/master/examples/web/meta_blog)
 
 ## Related
 

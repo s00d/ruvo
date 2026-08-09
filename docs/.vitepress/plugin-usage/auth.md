@@ -80,4 +80,4 @@ pub fn register(app: &mut App) {
 
 Programmatic login (seed / impersonation): `req.login_user(cu)` / `req.logout_user()`.
 
-See `examples/web/hackernews` (Registration-only) and `examples/cabinet` (full stack).
+See [`examples/web/hackernews`](https://github.com/s00d/sova/tree/master/examples/web/hackernews) (Registration-only) and [`examples/cabinet`](https://github.com/s00d/sova/tree/master/examples/cabinet) (full stack).

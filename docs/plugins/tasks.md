@@ -139,7 +139,7 @@ With `.exposed().guard(bearer_guard("secret"))`:
 ### Notes
 - Queues claim order = `Tasks::queues([...])` (first = highest). Within a queue, higher `priority` wins.
 - Defaults: queues=`["default"]`, lease=30s, poll=200ms, max_attempts=5, retry_base=5s, scheduler_tick=1s.
-- See `examples/misc/tasks` and cabinet (`tasks::Sql::from_db_pool`).
+- See [`examples/misc/tasks`](https://github.com/s00d/sova/tree/master/examples/misc/tasks) and cabinet (`tasks::Sql::from_db_pool`).
 
 ## Quick start
 
@@ -219,7 +219,7 @@ SQL/Redis stores: features `tasks-sql` / `tasks-redis` — see [tasks-store](/pl
 
 ## Examples
 
-- `examples/misc/tasks`
+- [`examples/misc/tasks`](https://github.com/s00d/sova/tree/master/examples/misc/tasks)
 
 ## Related
 

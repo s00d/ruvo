@@ -42,7 +42,7 @@ QuicDatagramService::from_pem(quic_bind, "cert.pem", "key.pem", alpn, true, hand
 app.listen(3011).await?;
 ```
 
-See `examples/net/quic_udp_echo`.
+See [`examples/net/quic_udp_echo`](https://github.com/s00d/sova/tree/master/examples/net/quic_udp_echo).
 
 ## Quick start
 
@@ -63,7 +63,7 @@ cargo run -p quic_udp_echo
 
 ## Examples
 
-- `examples/net/quic_udp_echo`
+- [`examples/net/quic_udp_echo`](https://github.com/s00d/sova/tree/master/examples/net/quic_udp_echo)
 
 ## Related
 

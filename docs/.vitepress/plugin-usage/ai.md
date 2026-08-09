@@ -18,4 +18,4 @@ app.get("/api/chat/stream", |req: Request| async move {
 });
 ```
 
-Full AISDK tools/agents: `req.ai().builder()` + `sova::ai::prelude`. See `examples/api/api_ai`.
+Full AISDK tools/agents: `req.ai().builder()` + `sova::ai::prelude`. See [`examples/api/api_ai`](https://github.com/s00d/sova/tree/master/examples/api/api_ai).

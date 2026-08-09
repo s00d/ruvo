@@ -96,7 +96,7 @@ Install Mail **once**. Templates: `mail-templates` / markdown: `mail-markdown`.
 
 ## Examples
 
-- `examples/cabinet`
+- [`examples/cabinet`](https://github.com/s00d/sova/tree/master/examples/cabinet)
 
 ## Related
 

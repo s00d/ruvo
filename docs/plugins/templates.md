@@ -84,7 +84,7 @@ Extra per-request helpers after the preset: `sova_templates::register_per_reques
 
 ## Examples
 
-- `examples/web/templates`
+- [`examples/web/templates`](https://github.com/s00d/sova/tree/master/examples/web/templates)
 
 ## Related
 

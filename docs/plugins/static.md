@@ -54,11 +54,11 @@ app.install(
 );
 ```
 
-Dotfiles denied by default. See `examples/web/static_files`.
+Dotfiles denied by default. See [`examples/web/static_files`](https://github.com/s00d/sova/tree/master/examples/web/static_files).
 
 ## Examples
 
-- `examples/web/static_files`
+- [`examples/web/static_files`](https://github.com/s00d/sova/tree/master/examples/web/static_files)
 
 ## Related
 

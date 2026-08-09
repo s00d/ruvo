@@ -23,6 +23,9 @@ use std::path::{Path, PathBuf};
 use syn::{Expr, ImplItem, Item, Lit, Meta, visit::Visit};
 use walkdir::WalkDir;
 
+/// GitHub tree base for in-repo example paths.
+const GH_TREE: &str = "https://github.com/s00d/sova/tree/master";
+
 #[derive(Parser, Debug)]
 #[command(about = "Generate VitePress markdown from Sova sources")]
 struct Args {
@@ -261,7 +264,7 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
         let overview = guide.unwrap_or_else(|| crate_docs.clone());
         if !overview.is_empty() {
             page.push_str("\n## Overview\n\n");
-            page.push_str(&overview);
+            page.push_str(&linkify_example_paths(&overview));
             page.push('\n');
         }
 
@@ -273,7 +276,7 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
             let usage = usage.trim();
             if !usage.is_empty() {
                 page.push_str("\n## Quick start\n\n");
-                page.push_str(usage);
+                page.push_str(&linkify_example_paths(usage));
                 page.push('\n');
             }
         }
@@ -281,7 +284,7 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
         if let Some(ex) = plugin_examples(&slug) {
             page.push_str("\n## Examples\n\n");
             for line in ex {
-                page.push_str(&format!("- `{line}`\n"));
+                page.push_str(&format!("- {}\n", example_md_link(line)));
             }
         }
 
@@ -345,6 +348,7 @@ export const pluginsSidebar = [\n  {{ text: 'Catalog', link: '/plugins/' }},\n\
     }
 
     generate_plugin_sdk(root, &mut w)?;
+    linkify_handwritten_docs(&mut w)?;
 
     if check {
         if w.stale {
@@ -718,6 +722,91 @@ fn build_grouped_blocks(slugs: &[String], indent: usize, collapsed: bool) -> Str
         ));
     }
     blocks.join(",\n")
+}
+
+fn example_md_link(path: &str) -> String {
+    format!("[`{path}`]({GH_TREE}/{path})")
+}
+
+fn is_repo_example_path(s: &str) -> bool {
+    let s = s.trim_end_matches('/');
+    if s != "examples" && !s.starts_with("examples/") {
+        return false;
+    }
+    !s.is_empty()
+        && !s.contains("..")
+        && s.chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '/' | '_' | '-' | '.'))
+}
+
+/// Turn `` `examples/...` `` into GitHub markdown links (idempotent for already-linked paths).
+fn linkify_example_paths(md: &str) -> String {
+    let mut out = String::with_capacity(md.len() + 64);
+    let mut rest = md;
+    while let Some(start) = rest.find('`') {
+        out.push_str(&rest[..start]);
+        let after = &rest[start + 1..];
+        let Some(end) = after.find('`') else {
+            out.push_str(&rest[start..]);
+            return out;
+        };
+        let inner = &after[..end];
+        if !out.ends_with('[') && is_repo_example_path(inner) {
+            out.push_str(&example_md_link(inner));
+        } else {
+            out.push('`');
+            out.push_str(inner);
+            out.push('`');
+        }
+        rest = &after[end + 1..];
+    }
+    out.push_str(rest);
+    out
+}
+
+fn linkify_handwritten_docs(w: &mut Writer) -> Result<(), String> {
+    const RELS: &[&str] = &[
+        "examples.md",
+        "guide/getting-started.md",
+        "guide/concepts.md",
+        "guide/configuration.md",
+        "guide/devtools.md",
+        "plugins/index.md",
+    ];
+    for rel in RELS {
+        let path = w.docs.join(rel);
+        if !path.is_file() {
+            continue;
+        }
+        let raw = fs::read_to_string(&path).map_err(|e| format!("{rel}: {e}"))?;
+        let linked = linkify_example_paths(&raw);
+        if linked != raw {
+            w.emit(rel, &linked)?;
+        }
+    }
+
+    // Keep VitePress author sources linkified too (GitHub browse).
+    for sub in [".vitepress/plugin-usage", ".vitepress/plugin-guides"] {
+        let dir = w.docs.join(sub);
+        if !dir.is_dir() {
+            continue;
+        }
+        for entry in fs::read_dir(&dir).map_err(|e| format!("{sub}: {e}"))? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) != Some("md") {
+                continue;
+            }
+            let name = entry.file_name();
+            let rel = format!("{sub}/{}", name.to_string_lossy());
+            let raw = fs::read_to_string(&path).map_err(|e| format!("{rel}: {e}"))?;
+            let linked = linkify_example_paths(&raw);
+            if linked != raw {
+                w.emit(&rel, &linked)?;
+            }
+        }
+    }
+    Ok(())
 }
 
 fn plugin_examples(slug: &str) -> Option<&'static [&'static str]> {

@@ -77,7 +77,7 @@ For SQL tab with SeaORM: `Db::from_env().sqlx_logging(true)` and/or `RUST_LOG=sq
 ### Notes
 - GET-only under `/_devtools/*` — not for production exposure
 - Install after session/mail if you want those tabs filled
-- See `examples/web/devtools` (`devtools_demo`)
+- See [`examples/web/devtools`](https://github.com/s00d/sova/tree/master/examples/web/devtools) (`devtools_demo`)
 - Guide: [/guide/devtools](/guide/devtools)
 
 ## Quick start

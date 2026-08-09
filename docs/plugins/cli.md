@@ -62,7 +62,7 @@ async fn main() -> Result<()> {
 
 ## Examples
 
-- `examples/basic/cli`
+- [`examples/basic/cli`](https://github.com/s00d/sova/tree/master/examples/basic/cli)
 
 ## Related
 

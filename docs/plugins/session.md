@@ -113,8 +113,8 @@ app.install(SessionLayer::from_app_store(&app));
 
 ## Examples
 
-- `examples/cabinet`
-- `examples/web/hackernews`
+- [`examples/cabinet`](https://github.com/s00d/sova/tree/master/examples/cabinet)
+- [`examples/web/hackernews`](https://github.com/s00d/sova/tree/master/examples/web/hackernews)
 
 ## Related
 

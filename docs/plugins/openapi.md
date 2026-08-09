@@ -98,7 +98,7 @@ Runnable: `cargo run -p api_preset`. Only install `OpenApi` yourself when you in
 
 ## Examples
 
-- `examples/api/api_preset`
+- [`examples/api/api_preset`](https://github.com/s00d/sova/tree/master/examples/api/api_preset)
 
 ## Related
 

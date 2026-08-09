@@ -105,7 +105,7 @@ Features: `vld-openapi`, `vld-flash`, `vld-form`, `vld-i18n`.
 
 ## Examples
 
-- `examples/api/api_validated`
+- [`examples/api/api_validated`](https://github.com/s00d/sova/tree/master/examples/api/api_validated)
 
 ## Related
 

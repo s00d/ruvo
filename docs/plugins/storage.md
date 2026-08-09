@@ -123,8 +123,8 @@ SOVA_STORAGE_PATH=./storage
 
 ## Examples
 
-- `examples/misc/storage`
-- `examples/web/upload`
+- [`examples/misc/storage`](https://github.com/s00d/sova/tree/master/examples/misc/storage)
+- [`examples/web/upload`](https://github.com/s00d/sova/tree/master/examples/web/upload)
 
 ## Related
 

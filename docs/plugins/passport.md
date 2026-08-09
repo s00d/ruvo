@@ -89,8 +89,8 @@ OAuth providers: `cargo run -p api_oauth`. API keys: `api_auth`. Session browser
 
 ## Examples
 
-- `examples/api/api_jwt`
-- `examples/api/api_oauth`
+- [`examples/api/api_jwt`](https://github.com/s00d/sova/tree/master/examples/api/api_jwt)
+- [`examples/api/api_oauth`](https://github.com/s00d/sova/tree/master/examples/api/api_oauth)
 
 ## Related
 

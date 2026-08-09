@@ -88,7 +88,7 @@ cargo run -p ws_chat
 
 ## Examples
 
-- `examples/realtime/ws_chat`
+- [`examples/realtime/ws_chat`](https://github.com/s00d/sova/tree/master/examples/realtime/ws_chat)
 
 ## Related
 

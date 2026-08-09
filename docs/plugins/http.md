@@ -61,7 +61,7 @@ SSRF guards / named configs — see crate docs. Cabinet: `OutboundHttp` + fetch 
 
 ## Examples
 
-- `examples/cabinet`
+- [`examples/cabinet`](https://github.com/s00d/sova/tree/master/examples/cabinet)
 
 ## Related
 

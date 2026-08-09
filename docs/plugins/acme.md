@@ -68,7 +68,7 @@ app.listen(443).await?;
 
 ## Examples
 
-- `examples/net/acme_hello`
+- [`examples/net/acme_hello`](https://github.com/s00d/sova/tree/master/examples/net/acme_hello)
 
 ## Related
 

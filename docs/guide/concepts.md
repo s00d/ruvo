@@ -106,7 +106,7 @@ App-author patterns (routes, validate, auth): [Getting started](/guide/getting-s
 - `Cell<T: Clone>` — counters / flags
 - `Slot<T>` — ownership handoff for sockets/streams
 
-See `examples/misc/share_demo`.
+See [`examples/misc/share_demo`](https://github.com/s00d/sova/tree/master/examples/misc/share_demo).
 
 ## Logging
 

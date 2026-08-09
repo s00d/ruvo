@@ -50,7 +50,7 @@ Paths are relative to the jail. Absolute paths and `..` escapes return `Forbidde
 
 ## Examples
 
-- `examples/misc/fs_demo`
+- [`examples/misc/fs_demo`](https://github.com/s00d/sova/tree/master/examples/misc/fs_demo)
 
 ## Related
 

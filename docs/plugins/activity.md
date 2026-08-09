@@ -56,7 +56,7 @@ req.log_activity("note.created", "note", id, json!({ "title": title }))
     .await?;
 ```
 
-Feature `auth-activity` records Fortify mutations automatically. See `examples/cabinet`.
+Feature `auth-activity` records Fortify mutations automatically. See [`examples/cabinet`](https://github.com/s00d/sova/tree/master/examples/cabinet).
 
 ## Related
 

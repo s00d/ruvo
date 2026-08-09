@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
 }
 ```
 
-There is no `Sse` plugin — use `SseChannel` + `app.state` (see `examples/realtime/sse_feed`).
+There is no `Sse` plugin — use `SseChannel` + `app.state` (see [`examples/realtime/sse_feed`](https://github.com/s00d/sova/tree/master/examples/realtime/sse_feed)).
 
 ```bash
 cargo run -p sse_feed

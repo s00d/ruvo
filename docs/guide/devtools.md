@@ -181,5 +181,5 @@ npm --prefix plugins/sova-devtools/ui run playground
 ## Related
 
 - Plugin catalog: [devtools](/plugins/devtools)
-- Example: `examples/web/devtools` (`devtools_demo`)
+- Example: [`examples/web/devtools`](https://github.com/s00d/sova/tree/master/examples/web/devtools) (`devtools_demo`)
 - Core helper: `sova::logger_skip_path` (skip noisy routes from access logs)

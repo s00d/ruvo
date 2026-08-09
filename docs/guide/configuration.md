@@ -140,6 +140,6 @@ Later file wins; process env is never overwritten:
 3. `.env.local` (skipped in `test`)
 4. `.env`
 
-See also [env](/plugins/#env) and kitchen-sink `examples/cabinet/sova.toml`.
+See also [env](/plugins/#env) and kitchen-sink [`examples/cabinet/sova.toml`](https://github.com/s00d/sova/tree/master/examples/cabinet/sova.toml).
 
 List installed plugins: `cargo run -- plugins`.

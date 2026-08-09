@@ -105,7 +105,7 @@ queue = "mailer"
 priority = -100
 ```
 
-Toml overrides code `.cron()` / `.every()` per job name (`cron` **or** `every`). CLI: `tasks list` | `schedule` | `run NAME [--json]`. Dispatch: `req.try_state::<TaskBackend>()` + `Dispatch::new(...)`. → `examples/misc/tasks`, [tasks](/plugins/tasks).
+Toml overrides code `.cron()` / `.every()` per job name (`cron` **or** `every`). CLI: `tasks list` | `schedule` | `run NAME [--json]`. Dispatch: `req.try_state::<TaskBackend>()` + `Dispatch::new(...)`. → [`examples/misc/tasks`](https://github.com/s00d/sova/tree/master/examples/misc/tasks), [tasks](/plugins/tasks).
 
 ### Database
 

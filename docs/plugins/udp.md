@@ -69,7 +69,7 @@ cargo run -p udp_echo
 
 ## Examples
 
-- `examples/net/udp_echo`
+- [`examples/net/udp_echo`](https://github.com/s00d/sova/tree/master/examples/net/udp_echo)
 
 ## Related
 

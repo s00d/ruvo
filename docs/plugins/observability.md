@@ -86,7 +86,7 @@ Env: `OTEL_EXPORTER_OTLP_ENDPOINT`, `ELASTICSEARCH_URL` (+ user/password/api key
 
 ## Examples
 
-- `examples/misc/bench_loaded`
+- [`examples/misc/bench_loaded`](https://github.com/s00d/sova/tree/master/examples/misc/bench_loaded)
 
 ## Related
 

@@ -77,7 +77,7 @@ Features: `notifications-ws`, `notifications-mail`, `notifications-auth`, `notif
 
 ## Examples
 
-- `examples/cabinet`
+- [`examples/cabinet`](https://github.com/s00d/sova/tree/master/examples/cabinet)
 
 ## Related
 

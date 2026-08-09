@@ -261,7 +261,7 @@ pub fn register(app: &mut App) {
 }
 ```
 
-Same pattern as `examples/basic/hello` (`x-admin: 1`) and cabinet (`Fortify::guard()` on `/cabinet`).
+Same pattern as [`examples/basic/hello`](https://github.com/s00d/sova/tree/master/examples/basic/hello) (`x-admin: 1`) and cabinet (`Fortify::guard()` on `/cabinet`).
 
 ### Request-local work before the handler
 
@@ -340,7 +340,7 @@ async fn avatar(mut req: Request) -> Result<Redirect> {
 
 ## When `App::new()` is appropriate
 
-Use a bare app only when you are **not** shipping a web/API product stack (tiny demos, custom middleware order, net/UDP). Product apps should stay on presets. Kitchen-sink reference that still composes plugins deliberately: `examples/cabinet`.
+Use a bare app only when you are **not** shipping a web/API product stack (tiny demos, custom middleware order, net/UDP). Product apps should stay on presets. Kitchen-sink reference that still composes plugins deliberately: [`examples/cabinet`](https://github.com/s00d/sova/tree/master/examples/cabinet).
 
 ## Testing
 

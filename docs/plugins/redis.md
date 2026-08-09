@@ -79,7 +79,7 @@ url = "redis://127.0.0.1:6379"
 
 ## Examples
 
-- `examples/misc/redis`
+- [`examples/misc/redis`](https://github.com/s00d/sova/tree/master/examples/misc/redis)
 
 ## Related
 

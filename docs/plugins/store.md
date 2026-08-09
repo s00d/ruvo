@@ -78,7 +78,7 @@ Features: `store-sql`, `store-redis`, `store-redb`, `store-file`, `store-crypto`
 
 ## Examples
 
-- `examples/misc/redb`
+- [`examples/misc/redb`](https://github.com/s00d/sova/tree/master/examples/misc/redb)
 
 ## Related
 

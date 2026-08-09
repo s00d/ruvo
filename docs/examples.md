@@ -3,7 +3,7 @@
 ![Examples](/banners/examples.svg)
 
 Canonical shape: **`App::web()` / `App::api()` → modules → `app.run()`**.  
-In-repo packages under `examples/` are runnable; some older demos still use `App::new()` — prefer the patterns here for new apps.
+In-repo packages under [`examples/`](https://github.com/s00d/sova/tree/master/examples/) are runnable; some older demos still use `App::new()` — prefer the patterns here for new apps.
 
 ```bash
 cargo run -p <package>
@@ -164,7 +164,7 @@ async fn main() -> Result<()> {
 }
 ```
 
-See [Getting started → Custom middleware](/guide/getting-started#custom-middleware) and `examples/basic/hello` (`modules/blog.rs` admin gate).
+See [Getting started → Custom middleware](/guide/getting-started#custom-middleware) and [`examples/basic/hello`](https://github.com/s00d/sova/tree/master/examples/basic/hello) (`modules/blog.rs` admin gate).
 
 ## Templates (on the web preset)
 
@@ -327,7 +327,7 @@ cargo run -p ws_chat
 
 ## Cabinet (full product stack)
 
-Fortify, DB, mail, storage, tasks, notifications, OpenAPI, WS — modules + guarded `/cabinet`. Study `examples/cabinet` when presets alone are not enough.
+Fortify, DB, mail, storage, tasks, notifications, OpenAPI, WS — modules + guarded `/cabinet`. Study [`examples/cabinet`](https://github.com/s00d/sova/tree/master/examples/cabinet) when presets alone are not enough.
 
 ```bash
 cp examples/cabinet/.env.example examples/cabinet/.env
@@ -340,7 +340,7 @@ Seed: `demo@sova.local` / `demo1234`.
 
 ## Hacker News–style (web + Fortify Registration-only)
 
-Structured demo under `examples/web/hackernews`: stories, upvotes, comments, SQLite, Fortify **Registration** only (no Mail / 2FA / reset).
+Structured demo under [`examples/web/hackernews`](https://github.com/s00d/sova/tree/master/examples/web/hackernews): stories, upvotes, comments, SQLite, Fortify **Registration** only (no Mail / 2FA / reset).
 
 ```bash
 export DATABASE_URL="sqlite:./hn.db?mode=rwc"

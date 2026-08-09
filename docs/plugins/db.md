@@ -128,8 +128,8 @@ url = "postgres://postgres@localhost/sova"
 
 ## Examples
 
-- `examples/api/crud`
-- `examples/cabinet`
+- [`examples/api/crud`](https://github.com/s00d/sova/tree/master/examples/api/crud)
+- [`examples/cabinet`](https://github.com/s00d/sova/tree/master/examples/cabinet)
 
 ## Related
 
