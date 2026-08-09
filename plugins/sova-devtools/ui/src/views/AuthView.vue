@@ -14,6 +14,7 @@ const keys = computed(() =>
     value: v,
   })),
 );
+const roles = computed(() => (auth.value?.roles ?? []).join(", ") || "—");
 </script>
 
 <template>
@@ -29,6 +30,8 @@ const keys = computed(() =>
         :items="[
           { label: 'session', value: auth?.session_id || '—' },
           { label: 'user', value: auth?.user_id || '—' },
+          { label: 'email', value: auth?.email || '—' },
+          { label: 'roles', value: roles },
         ]"
       />
     </Pane>

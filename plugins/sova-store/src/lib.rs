@@ -173,21 +173,45 @@ fn shard_index(key: &str, n: usize) -> usize {
     (h.finish() as usize) % n
 }
 
+fn trunc_key(key: &str) -> String {
+    const MAX: usize = 120;
+    if key.len() <= MAX {
+        key.to_string()
+    } else {
+        format!("{}…", &key[..MAX - 1])
+    }
+}
+
 impl KvStore for MemoryStore {
     fn get<'a>(&'a self, key: &'a str) -> BoxFuture<'a, Option<Bytes>> {
         let shard = Arc::clone(self.shard(key));
         let key = key.to_string();
         Box::pin(async move {
+            let started = Instant::now();
             let mut map = shard.lock().await;
             let now = Instant::now();
-            match map.get(&key) {
+            let val = match map.get(&key) {
                 Some(e) if Self::alive(e, now) => Some(e.val.clone()),
                 Some(_) => {
                     map.remove(&key);
                     None
                 }
                 None => None,
-            }
+            };
+            let hit = val.is_some();
+            let n = val.as_ref().map(|b| b.len() as u64);
+            tracing::debug!(
+                target: "sova.store",
+                op = "get",
+                backend = "memory",
+                key = %trunc_key(&key),
+                hit,
+                bytes = n,
+                duration_ms = started.elapsed().as_secs_f64() * 1000.0,
+                request_id = sova_core::current_request_id().as_deref().unwrap_or(""),
+                "sova.store"
+            );
+            val
         })
     }
 
@@ -195,13 +219,25 @@ impl KvStore for MemoryStore {
         let shard = Arc::clone(self.shard(key));
         let key = key.to_string();
         Box::pin(async move {
+            let started = Instant::now();
+            let n = val.len() as u64;
             let mut map = shard.lock().await;
             map.insert(
-                key,
+                key.clone(),
                 Entry {
                     val,
                     exp: ttl.map(|d| Instant::now() + d),
                 },
+            );
+            tracing::debug!(
+                target: "sova.store",
+                op = "set",
+                backend = "memory",
+                key = %trunc_key(&key),
+                bytes = n,
+                duration_ms = started.elapsed().as_secs_f64() * 1000.0,
+                request_id = sova_core::current_request_id().as_deref().unwrap_or(""),
+                "sova.store"
             );
         })
     }

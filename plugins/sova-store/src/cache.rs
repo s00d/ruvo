@@ -6,7 +6,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::future::Future;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -25,13 +25,42 @@ pub struct Cache {
     store: Arc<dyn KvStore>,
 }
 
+fn trunc(key: &str) -> String {
+    const MAX: usize = 120;
+    if key.len() <= MAX {
+        key.to_string()
+    } else {
+        format!("{}…", &key[..MAX - 1])
+    }
+}
+
+fn rid() -> Option<String> {
+    sova_core::current_request_id()
+}
+
 impl Cache {
     pub fn new(store: Arc<dyn KvStore>) -> Self {
         Self { store }
     }
 
     pub async fn get_json<T: DeserializeOwned>(&self, key: &str) -> Option<T> {
-        let bytes = self.store.get(key).await?;
+        let started = Instant::now();
+        let bytes = self.store.get(key).await;
+        let hit = bytes.is_some();
+        let n = bytes.as_ref().map(|b| b.len() as u64);
+        let ms = started.elapsed().as_secs_f64() * 1000.0;
+        tracing::debug!(
+            target: "sova.store",
+            op = "get",
+            backend = "cache",
+            key = %trunc(key),
+            hit,
+            bytes = n,
+            duration_ms = ms,
+            request_id = rid().as_deref().unwrap_or(""),
+            "sova.store"
+        );
+        let bytes = bytes?;
         serde_json::from_slice(&bytes).ok()
     }
 
@@ -41,8 +70,21 @@ impl Cache {
         val: &T,
         ttl: Option<Duration>,
     ) -> Result<(), CacheError> {
-        let bytes = serde_json::to_vec(val).map_err(|e| CacheError::Serialize(e.to_string()))?;
-        self.store.set(key, Bytes::from(bytes), ttl).await;
+        let started = Instant::now();
+        let raw = serde_json::to_vec(val).map_err(|e| CacheError::Serialize(e.to_string()))?;
+        let n = raw.len() as u64;
+        self.store.set(key, Bytes::from(raw), ttl).await;
+        let ms = started.elapsed().as_secs_f64() * 1000.0;
+        tracing::debug!(
+            target: "sova.store",
+            op = "set",
+            backend = "cache",
+            key = %trunc(key),
+            bytes = n,
+            duration_ms = ms,
+            request_id = rid().as_deref().unwrap_or(""),
+            "sova.store"
+        );
         Ok(())
     }
 
@@ -67,7 +109,18 @@ impl Cache {
     }
 
     pub async fn invalidate(&self, key: &str) {
+        let started = Instant::now();
         self.store.remove(key).await;
+        let ms = started.elapsed().as_secs_f64() * 1000.0;
+        tracing::debug!(
+            target: "sova.store",
+            op = "remove",
+            backend = "cache",
+            key = %trunc(key),
+            duration_ms = ms,
+            request_id = rid().as_deref().unwrap_or(""),
+            "sova.store"
+        );
     }
 }
 

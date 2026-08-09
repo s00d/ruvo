@@ -2,8 +2,7 @@ import type { LogLine, RequestMeta, RequestSnapshot } from "../types";
 
 const SQL_USERS =
   "SELECT id, email, name FROM users WHERE active = 1 ORDER BY created_at DESC LIMIT 50";
-const SQL_DUP =
-  "SELECT * FROM sessions WHERE user_id = $1";
+const SQL_DUP = "SELECT * FROM sessions WHERE user_id = $1";
 
 export const mockCurrent: RequestSnapshot = {
   id: "snap_demo_001",
@@ -74,18 +73,65 @@ export const mockCurrent: RequestSnapshot = {
     },
   ],
   jobs: [
-    { name: "reindex_search", status: "queued", detail: "delay 5s" },
-    { name: "send_digest", status: "running", detail: null },
+    {
+      name: "reindex_search",
+      status: "enqueued",
+      detail: "queue=default id=t_abc",
+      duration_ms: 1.2,
+    },
+    {
+      name: "send_digest",
+      status: "completed",
+      detail: "queue=mail id=t_def",
+      duration_ms: 42.0,
+    },
+  ],
+  cache: [
+    {
+      op: "get",
+      key: "cache:dashboard:7d",
+      hit: true,
+      bytes: 2048,
+      duration_ms: 0.4,
+      backend: "cache",
+      ok: true,
+    },
+    {
+      op: "set",
+      key: "cache:dashboard:7d",
+      bytes: 2100,
+      duration_ms: 0.8,
+      backend: "memory",
+      ok: true,
+    },
+    {
+      op: "publish",
+      key: "events:orders",
+      duration_ms: 1.1,
+      backend: "redis",
+      ok: true,
+    },
   ],
   auth: {
     session_id: "sess_abc123",
     user_id: "42",
+    email: "admin@example.com",
+    roles: ["admin", "billing"],
     session_keys: [
       ["role", "admin"],
       ["locale", "en"],
       ["csrf", "***"],
     ],
   },
+  route: {
+    path: "/api/dashboard",
+    pattern: "/api/dashboard",
+    captures: [],
+  },
+  locale: "en",
+  csrf: true,
+  rate_limit: { limit: 120, remaining: 118, reset: 60 },
+  encoding: "gzip",
 };
 
 export const mockTimeline: RequestMeta[] = [
@@ -101,6 +147,8 @@ export const mockTimeline: RequestMeta[] = [
     log_errors: 1,
     http_count: 2,
     mail_count: 1,
+    cache_count: 3,
+    job_count: 2,
   },
   {
     id: "snap_demo_002",
@@ -114,6 +162,8 @@ export const mockTimeline: RequestMeta[] = [
     log_errors: 0,
     http_count: 0,
     mail_count: 0,
+    cache_count: 0,
+    job_count: 0,
   },
   {
     id: "snap_demo_003",
@@ -127,6 +177,8 @@ export const mockTimeline: RequestMeta[] = [
     log_errors: 3,
     http_count: 1,
     mail_count: 0,
+    cache_count: 2,
+    job_count: 1,
   },
   {
     id: "snap_demo_004",
@@ -140,6 +192,8 @@ export const mockTimeline: RequestMeta[] = [
     log_errors: 0,
     http_count: 0,
     mail_count: 0,
+    cache_count: 0,
+    job_count: 0,
   },
 ];
 
@@ -147,7 +201,8 @@ export const mockLogs: LogLine[] = mockCurrent.logs;
 
 export const mockConfig = {
   profile: "development",
-  plugins: ["devtools", "db", "session", "mail", "sse"],
+  plugins: ["devtools", "db", "session", "mail", "sse", "store", "tasks"],
+  features: ["session", "mail", "http", "db", "tasks", "auth", "store"],
 };
 
 export function mockBundle() {

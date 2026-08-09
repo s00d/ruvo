@@ -87,7 +87,13 @@
 /// Feature `observability`: Prometheus `/metrics` + HTTP RED middleware.
 /// Feature `observability-otel`: OpenTelemetry OTLP export.
 /// Feature `observability-elasticsearch`: Ship tracing logs to Elasticsearch.
-/// Feature `devtools`: In-app DevTools bar (HTML inject + SSE timeline).
+/// Feature `devtools`: In-app DevTools bar (HTML inject + SSE timeline; auth/db/tasks soft-hooks).
+/// Feature `devtools-store`: `devtools` + KvStore/Cache tracing (`sova.store`).
+/// Feature `devtools-redis`: `devtools-store` + Redis messaging traces.
+/// Feature `devtools-i18n`: locale soft-hook on snapshots.
+/// Feature `devtools-csrf`: CSRF presence soft-hook.
+/// Feature `devtools-passport`: Passport `Authenticated` soft-hook.
+/// Feature `devtools-rate-limit`: rate-limit header soft-hook marker.
 /// Feature `testing`: Expose `App::run_startup` / `run_shutdown` for tests.
 /// Feature `listen-reuseport`: `SO_REUSEPORT` for graceful `cargo sovax dev`.
 pub(crate) fn _doc_features_anchor() {}

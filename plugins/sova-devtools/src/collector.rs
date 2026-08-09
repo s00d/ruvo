@@ -41,12 +41,54 @@ pub struct JobLine {
     pub name: String,
     pub status: String,
     pub detail: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub duration_ms: Option<f64>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct CacheLine {
+    /// `get` / `set` / `remember` / `remove` / `incr` / redis cmd
+    pub op: String,
+    pub key: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hit: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bytes: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub duration_ms: Option<f64>,
+    /// `cache` | `kv` | `redis`
+    pub backend: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ok: Option<bool>,
+}
+
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct RouteSnap {
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pattern: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub captures: Vec<(String, String)>,
+}
+
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct RateLimitSnap {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub remaining: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reset: Option<u64>,
 }
 
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct AuthSnap {
     pub session_id: Option<String>,
     pub user_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub roles: Vec<String>,
     pub session_keys: Vec<(String, String)>,
 }
 
@@ -64,7 +106,17 @@ pub struct RequestSnapshot {
     pub http: Vec<HttpLine>,
     pub mail: Vec<MailLine>,
     pub jobs: Vec<JobLine>,
+    pub cache: Vec<CacheLine>,
     pub auth: AuthSnap,
+    pub route: RouteSnap,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locale: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub csrf: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rate_limit: Option<RateLimitSnap>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub encoding: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -80,6 +132,8 @@ pub struct RequestMeta {
     pub log_errors: usize,
     pub http_count: usize,
     pub mail_count: usize,
+    pub cache_count: usize,
+    pub job_count: usize,
 }
 
 impl From<&RequestSnapshot> for RequestMeta {
@@ -100,6 +154,8 @@ impl From<&RequestSnapshot> for RequestMeta {
                 .count(),
             http_count: s.http.len(),
             mail_count: s.mail.len(),
+            cache_count: s.cache.len(),
+            job_count: s.jobs.len(),
         }
     }
 }
@@ -111,7 +167,13 @@ struct BagInner {
     http: Vec<HttpLine>,
     mail: Vec<MailLine>,
     jobs: Vec<JobLine>,
+    cache: Vec<CacheLine>,
     auth: AuthSnap,
+    route: RouteSnap,
+    locale: Option<String>,
+    csrf: Option<bool>,
+    rate_limit: Option<RateLimitSnap>,
+    encoding: Option<String>,
 }
 
 /// Per-request collection bag (stored on Request extensions).
@@ -131,9 +193,15 @@ impl DevToolsBag {
             id,
             request_id,
             method,
-            path,
+            path: path.clone(),
             started: Instant::now(),
-            inner: Arc::new(Mutex::new(BagInner::default())),
+            inner: Arc::new(Mutex::new(BagInner {
+                route: RouteSnap {
+                    path,
+                    ..Default::default()
+                },
+                ..Default::default()
+            })),
         }
     }
 
@@ -172,8 +240,35 @@ impl DevToolsBag {
         }
     }
 
+    pub fn push_cache(&self, c: CacheLine) {
+        let mut g = self.inner.lock().unwrap();
+        if g.cache.len() < 200 {
+            g.cache.push(c);
+        }
+    }
+
     pub fn set_auth(&self, auth: AuthSnap) {
         self.inner.lock().unwrap().auth = auth;
+    }
+
+    pub fn set_route(&self, route: RouteSnap) {
+        self.inner.lock().unwrap().route = route;
+    }
+
+    pub fn set_locale(&self, locale: Option<String>) {
+        self.inner.lock().unwrap().locale = locale;
+    }
+
+    pub fn set_csrf(&self, present: Option<bool>) {
+        self.inner.lock().unwrap().csrf = present;
+    }
+
+    pub fn set_rate_limit(&self, rl: Option<RateLimitSnap>) {
+        self.inner.lock().unwrap().rate_limit = rl;
+    }
+
+    pub fn set_encoding(&self, encoding: Option<String>) {
+        self.inner.lock().unwrap().encoding = encoding;
     }
 
     pub fn finish(self, status: u16) -> RequestSnapshot {
@@ -196,7 +291,13 @@ impl DevToolsBag {
             http: inner.http.clone(),
             mail: inner.mail.clone(),
             jobs: inner.jobs.clone(),
+            cache: inner.cache.clone(),
             auth: inner.auth.clone(),
+            route: inner.route.clone(),
+            locale: inner.locale.clone(),
+            csrf: inner.csrf,
+            rate_limit: inner.rate_limit.clone(),
+            encoding: inner.encoding.clone(),
         }
     }
 }
@@ -206,4 +307,13 @@ pub fn now_ms() -> u64 {
         .duration_since(UNIX_EPOCH)
         .unwrap_or(Duration::ZERO)
         .as_millis() as u64
+}
+
+/// Truncate keys for safe display / logs.
+pub fn truncate_key(key: &str, max: usize) -> String {
+    if key.len() <= max {
+        key.to_string()
+    } else {
+        format!("{}…", &key[..max.saturating_sub(1)])
+    }
 }

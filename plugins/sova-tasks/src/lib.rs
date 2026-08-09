@@ -590,8 +590,11 @@ pub struct TaskBackend {
 
 impl TaskBackend {
     pub async fn dispatch(&self, d: Dispatch) -> Result<String, TaskError> {
+        let started = std::time::Instant::now();
+        let name = d.name.clone();
         let queue = d
             .queue
+            .clone()
             .or_else(|| self.job_queues.get(&d.name).cloned())
             .unwrap_or_else(|| {
                 self.queues
@@ -615,7 +618,9 @@ impl TaskBackend {
             }))
             .map_err(|e| TaskError::Msg(e.to_string()))?,
         );
-        self.store
+        let queue_for_log = queue.clone();
+        let id = self
+            .store
             .enqueue(EnqueueOpts {
                 queue,
                 payload,
@@ -623,7 +628,18 @@ impl TaskBackend {
                 dedup_key: d.dedup_key,
                 priority,
             })
-            .await
+            .await?;
+        tracing::debug!(
+            target: "sova.tasks",
+            name = %name,
+            queue = %queue_for_log,
+            id = %id,
+            status = "enqueued",
+            duration_ms = started.elapsed().as_secs_f64() * 1000.0,
+            request_id = sova_core::current_request_id().as_deref().unwrap_or(""),
+            "sova.tasks enqueue"
+        );
+        Ok(id)
     }
 }
 

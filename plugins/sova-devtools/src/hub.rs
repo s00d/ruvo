@@ -125,6 +125,37 @@ impl DevToolsHub {
         json!({
             "profile": g.profile,
             "plugins": g.plugins,
+            "features": compile_features(),
         })
     }
+}
+
+fn compile_features() -> Vec<&'static str> {
+    #[allow(unused_mut)]
+    let mut v = Vec::new();
+    #[cfg(feature = "session")]
+    v.push("session");
+    #[cfg(feature = "mail")]
+    v.push("mail");
+    #[cfg(feature = "http")]
+    v.push("http");
+    #[cfg(feature = "db")]
+    v.push("db");
+    #[cfg(feature = "tasks")]
+    v.push("tasks");
+    #[cfg(feature = "auth")]
+    v.push("auth");
+    #[cfg(feature = "i18n")]
+    v.push("i18n");
+    #[cfg(feature = "csrf")]
+    v.push("csrf");
+    #[cfg(feature = "passport")]
+    v.push("passport");
+    #[cfg(feature = "store")]
+    v.push("store");
+    #[cfg(feature = "redis")]
+    v.push("redis");
+    #[cfg(feature = "rate-limit")]
+    v.push("rate-limit");
+    v
 }

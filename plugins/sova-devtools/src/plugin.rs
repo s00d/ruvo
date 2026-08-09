@@ -1,6 +1,6 @@
 //! `DevTools` plugin entry.
 
-use crate::collector::{HttpLine, LogLine, QueryLine, now_ms};
+use crate::collector::{CacheLine, HttpLine, JobLine, LogLine, QueryLine, now_ms, truncate_key};
 use crate::hub::DevToolsHub;
 use crate::middleware;
 use crate::redact::redact_sql_bindings;
@@ -167,20 +167,105 @@ fn path_is_devtools(path: &str) -> bool {
 fn wire_log_hook(hub: DevToolsHub) {
     let hub = Arc::new(hub);
     add_log_event_hook(Arc::new(move |rec: LogRecord| {
-        // Drop access-log noise about the DevTools UI itself (even if logger skip missed it).
         if let Some(path) = field(&rec, "path") {
             if path_is_devtools(path.trim_matches('"')) {
                 return;
             }
         }
 
-        let request_id = rec
-            .fields
-            .iter()
-            .find(|(k, _)| k == "request_id")
-            .map(|(_, v)| v.trim_matches('"').to_string());
+        let request_id = field(&rec, "request_id").or_else(|| {
+            sova_core::current_request_id()
+        });
 
         let target = rec.target.as_str();
+
+        if target.starts_with("sova.store") || target.starts_with("sova.redis") {
+            let op = field(&rec, "op")
+                .or_else(|| field(&rec, "cmd"))
+                .unwrap_or_else(|| "op".into());
+            let key = field(&rec, "key")
+                .or_else(|| field(&rec, "channel"))
+                .or_else(|| field(&rec, "queue"))
+                .unwrap_or_default();
+            let hit = field(&rec, "hit").and_then(|s| match s.as_str() {
+                "true" | "1" => Some(true),
+                "false" | "0" => Some(false),
+                _ => None,
+            });
+            let bytes = field(&rec, "bytes").and_then(|s| s.parse().ok());
+            let duration_ms = field(&rec, "duration_ms").and_then(|s| s.parse().ok());
+            let ok = field(&rec, "ok").and_then(|s| match s.as_str() {
+                "true" | "1" => Some(true),
+                "false" | "0" => Some(false),
+                _ => None,
+            });
+            let backend = if target.starts_with("sova.redis") {
+                "redis".into()
+            } else {
+                field(&rec, "backend").unwrap_or_else(|| "kv".into())
+            };
+            let line = CacheLine {
+                op,
+                key: truncate_key(&key, 120),
+                hit,
+                bytes,
+                duration_ms,
+                backend,
+                ok,
+            };
+            open_bags::with_open(request_id.as_deref(), |bag| bag.push_cache(line));
+            // Also mirror as a short log line.
+            let msg = format!(
+                "[{}] {} {}",
+                target.trim_start_matches("sova."),
+                field(&rec, "op").or_else(|| field(&rec, "cmd")).unwrap_or_default(),
+                truncate_key(&key, 80)
+            );
+            let log = LogLine {
+                level: rec.level.clone(),
+                target: rec.target.clone(),
+                message: msg,
+                request_id: request_id.clone(),
+                at_ms: now_ms(),
+            };
+            open_bags::with_open(request_id.as_deref(), |bag| bag.push_log(log.clone()));
+            hub.push_log(log);
+            return;
+        }
+
+        if target.starts_with("sova.tasks") {
+            let name = field(&rec, "name").unwrap_or_else(|| "job".into());
+            let status = field(&rec, "status").unwrap_or_else(|| rec.message.clone());
+            let detail = field(&rec, "id")
+                .map(|id| {
+                    let q = field(&rec, "queue").unwrap_or_default();
+                    if q.is_empty() {
+                        id
+                    } else {
+                        format!("queue={q} id={id}")
+                    }
+                })
+                .or_else(|| field(&rec, "queue"));
+            let duration_ms = field(&rec, "duration_ms").and_then(|s| s.parse().ok());
+            let job = JobLine {
+                name,
+                status,
+                detail,
+                duration_ms,
+            };
+            open_bags::with_open(request_id.as_deref(), |bag| bag.push_job(job));
+            let log = LogLine {
+                level: rec.level.clone(),
+                target: rec.target.clone(),
+                message: format!("[tasks] {}", rec.message),
+                request_id: request_id.clone(),
+                at_ms: now_ms(),
+            };
+            open_bags::with_open(request_id.as_deref(), |bag| bag.push_log(log.clone()));
+            hub.push_log(log);
+            return;
+        }
+
         let is_sql = target.starts_with("sqlx::query")
             || target.contains("sea_orm")
             || rec.message.contains("SELECT")
@@ -188,16 +273,16 @@ fn wire_log_hook(hub: DevToolsHub) {
             || rec.message.contains("UPDATE")
             || rec.message.contains("DELETE");
 
-        let is_http_client =
-            target.contains("http.client") || rec.message.contains("http.client");
+        let is_http_client = target.contains("http.client")
+            || rec.message.contains("http.client")
+            || rec.message == "http.client done"
+            || rec.message == "http.client error";
 
         if is_sql {
             let sql = redact_sql_bindings(&rec.message);
-            let duration_ms = rec
-                .fields
-                .iter()
-                .find(|(k, _)| k == "elapsed" || k.contains("time"))
-                .and_then(|(_, v)| v.trim_matches('"').parse::<f64>().ok());
+            let duration_ms = field(&rec, "elapsed")
+                .or_else(|| field(&rec, "duration_ms"))
+                .and_then(|v| v.trim_matches('"').parse::<f64>().ok());
             let line = LogLine {
                 level: rec.level.clone(),
                 target: rec.target.clone(),
@@ -208,7 +293,6 @@ fn wire_log_hook(hub: DevToolsHub) {
             open_bags::with_open(request_id.as_deref(), |bag| bag.push_log(line.clone()));
             hub.push_log(line);
             attach_query_to_open(
-                &hub,
                 request_id.as_deref(),
                 QueryLine {
                     sql,
@@ -220,25 +304,29 @@ fn wire_log_hook(hub: DevToolsHub) {
         }
 
         if is_http_client {
-            let method = field(&rec, "method").unwrap_or_else(|| "?".into());
-            let url = field(&rec, "uri")
+            let method = field(&rec, "http.method")
+                .or_else(|| field(&rec, "method"))
+                .unwrap_or_else(|| "?".into());
+            let url = field(&rec, "http.url")
                 .or_else(|| field(&rec, "url"))
+                .or_else(|| field(&rec, "uri"))
                 .unwrap_or_else(|| rec.message.clone());
             let status = field(&rec, "status").and_then(|s| s.parse().ok());
+            let duration_ms = field(&rec, "duration_ms").and_then(|s| s.parse().ok());
+            let error = field(&rec, "error");
             attach_http_to_open(
-                &hub,
                 request_id.as_deref(),
                 HttpLine {
                     method,
                     url,
                     status,
-                    duration_ms: None,
-                    error: None,
+                    duration_ms,
+                    error,
                 },
             );
+            // Still fall through to logs for visibility.
         }
 
-        // Format request access lines more readably in the panel.
         let message = if rec.message == "request" {
             let method = field(&rec, "method").unwrap_or_else(|| "?".into());
             let path = field(&rec, "path").unwrap_or_else(|| "?".into());
@@ -256,7 +344,6 @@ fn wire_log_hook(hub: DevToolsHub) {
             request_id: request_id.clone(),
             at_ms: now_ms(),
         };
-        // Per-request Logs tab + site-wide /_devtools/logs feed.
         open_bags::with_open(request_id.as_deref(), |bag| bag.push_log(line.clone()));
         hub.push_log(line);
     }));
@@ -306,10 +393,10 @@ pub(crate) mod open_bags {
     }
 }
 
-fn attach_query_to_open(_hub: &DevToolsHub, request_id: Option<&str>, q: QueryLine) {
+fn attach_query_to_open(request_id: Option<&str>, q: QueryLine) {
     open_bags::with_open(request_id, |bag| bag.push_query(q));
 }
 
-fn attach_http_to_open(_hub: &DevToolsHub, request_id: Option<&str>, h: HttpLine) {
+fn attach_http_to_open(request_id: Option<&str>, h: HttpLine) {
     open_bags::with_open(request_id, |bag| bag.push_http(h));
 }

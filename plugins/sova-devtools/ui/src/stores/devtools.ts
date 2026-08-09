@@ -106,6 +106,7 @@ export const useDevToolsStore = defineStore("devtools", () => {
 
   const sqlTotalMs = computed(() => sumMs(current.value?.queries));
   const httpTotalMs = computed(() => sumMs(current.value?.http));
+  const cacheTotalMs = computed(() => sumMs(current.value?.cache));
   const logErrorCount = computed(
     () =>
       current.value?.logs.filter((l) =>
@@ -140,6 +141,7 @@ export const useDevToolsStore = defineStore("devtools", () => {
       request: 0,
       timeline: timeline.value.length,
       db: c?.queries.length ?? 0,
+      cache: c?.cache?.length ?? 0,
       logs: c?.logs.length || globalLogs.value.length,
       http: c?.http.length ?? 0,
       mail: c?.mail.length ?? 0,
@@ -348,6 +350,7 @@ export const useDevToolsStore = defineStore("devtools", () => {
     isPlayground,
     sqlTotalMs,
     httpTotalMs,
+    cacheTotalMs,
     logErrorCount,
     statusBuckets,
     tabBadges,

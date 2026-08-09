@@ -54,15 +54,35 @@ cargo run -p devtools_demo
 
 | Tab | Contents |
 |-----|----------|
-| **Request** | Method, path, status, duration, summary metrics |
+| **Request** | Method, path, status, duration, route / locale / CSRF / rate-limit / encoding |
 | **Timeline** | Recent requests (SSE); click to load a snapshot |
 | **DB** | SQL queries for the selected request (bindings redacted) |
+| **Cache** | KvStore / Cache / Redis ops (`sova.store` / `sova.redis`) |
 | **Logs** | `tracing` / console lines (per-request + site-wide) |
 | **HTTP** | Outbound client calls |
 | **Mail** | FakeMail / last messages (with `mail` feature) |
-| **Jobs** | Task/worker hints (optional feature) |
-| **Auth** | Session keys + user id (redacted) |
-| **Config** | Profile / plugin info |
+| **Jobs** | Task enqueue / worker (`sova.tasks`) |
+| **Auth** | Session keys + user / email / roles (redacted) |
+| **Config** | Profile + compiled DevTools feature flags |
+
+### What comes from where
+
+| Signal | Source | Needs |
+|--------|--------|-------|
+| Route pattern | `MatchedRouteCapture` soft-hook | always |
+| Locale | `LocaleCode` | `devtools-i18n` / `sova-devtools/i18n` |
+| CSRF present | `CsrfToken` | `devtools-csrf` |
+| Rate-limit headers | `ratelimit-*` / `x-ratelimit-*` on response | always (headers) |
+| Content-Encoding | response header | always |
+| Session / user | Session + `CurrentUser` | `devtools` (auth) |
+| SQL | sqlx / SeaORM logs | `devtools` (db) + sqlx logging |
+| Outbound HTTP | `http.client` spans | `http-client` + `sova-devtools/http` |
+| Mail | FakeMail bag | `mail` |
+| Cache / KV | `tracing` `target: "sova.store"` | `devtools-store` (instrumented store) |
+| Redis pub/queue | `target: "sova.redis"` | `devtools-redis` |
+| Jobs | `target: "sova.tasks"` | `devtools` (tasks) |
+
+Facade features: `devtools`, `devtools-store`, `devtools-redis`, `devtools-i18n`, `devtools-csrf`, `devtools-passport`, `devtools-rate-limit`.
 
 ![Request tab](/devtools/tab-request.png)
 
@@ -121,6 +141,8 @@ app.install(Mail::from_env());       // Mail tab (fake backend)
 app.install(OutboundHttp::new());    // HTTP tab
 app.install(DevTools::new());
 ```
+
+For Cache / Redis / Jobs, use instrumented plugins (`sova-store` / `sova-redis` / `sova-tasks`) and enable the matching facade features (`devtools-store`, `devtools-redis`; jobs come with `devtools`).
 
 SQL (SeaORM): enable sqlx logging, e.g. `Db::from_env().sqlx_logging(true)` and/or `RUST_LOG=sqlx=debug`.
 

@@ -9,6 +9,7 @@ export type TabId =
   | "request"
   | "timeline"
   | "db"
+  | "cache"
   | "logs"
   | "http"
   | "mail"

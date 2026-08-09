@@ -8,6 +8,7 @@ import { TAB_META } from "./tabs";
 import RequestView from "./views/RequestView.vue";
 import TimelineView from "./views/TimelineView.vue";
 import DbView from "./views/DbView.vue";
+import CacheView from "./views/CacheView.vue";
 import LogsView from "./views/LogsView.vue";
 import HttpView from "./views/HttpView.vue";
 import MailView from "./views/MailView.vue";
@@ -23,6 +24,7 @@ const routes: RouteRecordRaw[] = [
   { path: "/request", name: "request", component: RequestView },
   { path: "/timeline", name: "timeline", component: TimelineView },
   { path: "/db", name: "db", component: DbView },
+  { path: "/cache", name: "cache", component: CacheView },
   { path: "/logs", name: "logs", component: LogsView },
   { path: "/http", name: "http", component: HttpView },
   { path: "/mail", name: "mail", component: MailView },

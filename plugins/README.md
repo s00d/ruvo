@@ -17,7 +17,7 @@ Opt-in domain plugins for Sova. Prefer enabling them through facade features on 
 | [`sova-cors`](./sova-cors/) | `0.1.1` | CORS plugin for Sova | [guide](https://s00d.github.io/sova/plugins/cors) |
 | [`sova-csrf`](./sova-csrf/) | `0.1.2` | CSRF protection plugin for Sova (session double-submit) | [guide](https://s00d.github.io/sova/plugins/csrf) |
 | [`sova-db`](./sova-db/) | `0.1.3` | SeaORM database plugin for Sova (postgres / sqlite / mysql) | [guide](https://s00d.github.io/sova/plugins/db) |
-| [`sova-devtools`](./sova-devtools/) | `0.1.0` | In-app DevTools bar (HTML inject, SSE timeline) | [guide](https://s00d.github.io/sova/plugins/devtools) |
+| [`sova-devtools`](./sova-devtools/) | `0.1.3` | In-app DevTools bar (HTML inject, SSE timeline) | [guide](https://s00d.github.io/sova/plugins/devtools) |
 | [`sova-env`](./sova-env/) | `0.1.1` | Cascade .env loading for Sova apps (dotenvy) | [guide](https://s00d.github.io/sova/plugins/env) |
 | [`sova-http`](./sova-http/) | `0.1.1` | Outbound HTTP client bound to request deadline and tracing | [guide](https://s00d.github.io/sova/plugins/http) |
 | [`sova-i18n`](./sova-i18n/) | `0.1.2` | Two-level i18n store and locale resolution for Sova | [guide](https://s00d.github.io/sova/plugins/i18n) |
@@ -29,14 +29,14 @@ Opt-in domain plugins for Sova. Prefer enabling them through facade features on 
 | [`sova-passport`](./sova-passport/) | `0.1.2` | Passport-style authentication for Sova (strategies, JWT, OAuth2, sessions) | [guide](https://s00d.github.io/sova/plugins/passport) |
 | [`sova-quic`](./sova-quic/) | `0.1.1` | QUIC datagrams BackgroundService helpers for Sova | [guide](https://s00d.github.io/sova/plugins/quic) |
 | [`sova-rate-limit`](./sova-rate-limit/) | `0.1.1` | Rate limit plugin for Sova (local sliding + shared fixed window) | [guide](https://s00d.github.io/sova/plugins/rate-limit) |
-| [`sova-redis`](./sova-redis/) | `0.1.1` | Shared Redis/Valkey pool plugin for Sova | [guide](https://s00d.github.io/sova/plugins/redis) |
+| [`sova-redis`](./sova-redis/) | `0.1.2` | Shared Redis/Valkey pool plugin for Sova | [guide](https://s00d.github.io/sova/plugins/redis) |
 | [`sova-session`](./sova-session/) | `0.1.2` | Session plugin for Sova | [guide](https://s00d.github.io/sova/plugins/session) |
 | [`sova-shield`](./sova-shield/) | `0.1.1` | Security headers middleware for Sova | [guide](https://s00d.github.io/sova/plugins/shield) |
 | [`sova-sse`](./sova-sse/) | `0.1.1` | Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive) | [guide](https://s00d.github.io/sova/plugins/sse) |
 | [`sova-static`](./sova-static/) | `0.1.1` | Static file plugin for Sova | [guide](https://s00d.github.io/sova/plugins/static) |
 | [`sova-storage`](./sova-storage/) | `0.1.1` | Object storage for Sova (local / memory / S3 / GCS / Azure) | [guide](https://s00d.github.io/sova/plugins/storage) |
-| [`sova-store`](./sova-store/) | `0.1.1` | KvStore trait + memory / file / sql / redis backends for Sova | [guide](https://s00d.github.io/sova/plugins/store) |
-| [`sova-tasks`](./sova-tasks/) | `0.1.1` | Task worker / scheduler / HTTP enqueue for Sova | [guide](https://s00d.github.io/sova/plugins/tasks) |
+| [`sova-store`](./sova-store/) | `0.1.2` | KvStore trait + memory / file / sql / redis backends for Sova | [guide](https://s00d.github.io/sova/plugins/store) |
+| [`sova-tasks`](./sova-tasks/) | `0.1.2` | Task worker / scheduler / HTTP enqueue for Sova | [guide](https://s00d.github.io/sova/plugins/tasks) |
 | [`sova-tasks-store`](./sova-tasks-store/) | `0.1.1` | TaskStore trait + memory / file / sql / redis backends | [guide](https://s00d.github.io/sova/plugins/tasks-store) |
 | [`sova-templates`](./sova-templates/) | `0.1.1` | Template engine plugin for Sova | [guide](https://s00d.github.io/sova/plugins/templates) |
 | [`sova-udp`](./sova-udp/) | `0.1.1` | UDP BackgroundService helpers for Sova | [guide](https://s00d.github.io/sova/plugins/udp) |

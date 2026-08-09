@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-devtools`](https://docs.rs/sova-devtools/0.1.2) `0.1.2` |
+| Crate | [`sova-devtools`](https://docs.rs/sova-devtools/0.1.3) `0.1.3` |
 | Plugin id | `devtools` |
 | Category | Ops |
 
@@ -23,7 +23,10 @@ cargo add sova --features devtools
 
 | Feature | What you get |
 |---------|-------------|
-| `devtools` | In-app DevTools bar (HTML inject + SSE timeline). |
+| `devtools` | Bar + session/mail/http/auth/db/tasks soft-hooks |
+| `devtools-store` | + Cache/KV (`sova.store`) |
+| `devtools-redis` | + Redis messaging traces |
+| `devtools-i18n` / `devtools-csrf` / `devtools-passport` / `devtools-rate-limit` | optional soft-hooks |
 
 ## Overview
 

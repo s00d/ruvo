@@ -14,6 +14,8 @@ export interface RequestMeta {
   log_errors: number;
   http_count: number;
   mail_count: number;
+  cache_count?: number;
+  job_count?: number;
 }
 
 export interface QueryLine {
@@ -48,11 +50,36 @@ export interface JobLine {
   name: string;
   status: string;
   detail?: string | null;
+  duration_ms?: number | null;
+}
+
+export interface CacheLine {
+  op: string;
+  key: string;
+  hit?: boolean | null;
+  bytes?: number | null;
+  duration_ms?: number | null;
+  backend: string;
+  ok?: boolean | null;
+}
+
+export interface RouteSnap {
+  path: string;
+  pattern?: string | null;
+  captures?: [string, string][];
+}
+
+export interface RateLimitSnap {
+  limit?: number | null;
+  remaining?: number | null;
+  reset?: number | null;
 }
 
 export interface AuthSnap {
   session_id?: string | null;
   user_id?: string | null;
+  email?: string | null;
+  roles?: string[];
   session_keys?: [string, string][];
 }
 
@@ -69,7 +96,13 @@ export interface RequestSnapshot {
   http: HttpLine[];
   mail: MailLine[];
   jobs: JobLine[];
+  cache?: CacheLine[];
   auth?: AuthSnap | null;
+  route?: RouteSnap | null;
+  locale?: string | null;
+  csrf?: boolean | null;
+  rate_limit?: RateLimitSnap | null;
+  encoding?: string | null;
 }
 
 export interface MountAttrs {

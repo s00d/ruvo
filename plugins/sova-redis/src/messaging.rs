@@ -71,6 +71,19 @@ impl RedisSubscriber {
     }
 }
 
+fn rid() -> Option<String> {
+    sova_core::current_request_id()
+}
+
+fn trunc(s: &str) -> String {
+    const MAX: usize = 120;
+    if s.len() <= MAX {
+        s.to_string()
+    } else {
+        format!("{}…", &s[..MAX - 1])
+    }
+}
+
 impl RedisPool {
     /// `PUBLISH channel message` — returns subscriber count that received it.
     pub async fn publish(
@@ -78,12 +91,25 @@ impl RedisPool {
         channel: impl AsRef<str>,
         message: impl AsRef<[u8]>,
     ) -> Result<i64, RedisError> {
+        let started = std::time::Instant::now();
+        let ch = channel.as_ref();
         let mut conn = self.get().await?;
-        let n: i64 = conn
-            .publish(channel.as_ref(), message.as_ref())
+        let res = conn
+            .publish(ch, message.as_ref())
             .await
-            .map_err(RedisError::from)?;
-        Ok(n)
+            .map_err(RedisError::from);
+        let ok = res.is_ok();
+        tracing::debug!(
+            target: "sova.redis",
+            cmd = "publish",
+            key = %trunc(ch),
+            channel = %trunc(ch),
+            ok,
+            duration_ms = started.elapsed().as_secs_f64() * 1000.0,
+            request_id = rid().as_deref().unwrap_or(""),
+            "sova.redis"
+        );
+        res
     }
 
     /// Open a dedicated Pub/Sub connection and subscribe to `channels`.
@@ -133,19 +159,48 @@ impl RedisPool {
         queue: impl AsRef<str>,
         message: impl AsRef<[u8]>,
     ) -> Result<i64, RedisError> {
+        let started = std::time::Instant::now();
+        let q = queue.as_ref();
         let mut conn = self.get().await?;
-        let n: i64 = conn
-            .lpush(queue.as_ref(), message.as_ref())
+        let res = conn
+            .lpush(q, message.as_ref())
             .await
-            .map_err(RedisError::from)?;
-        Ok(n)
+            .map_err(RedisError::from);
+        let ok = res.is_ok();
+        tracing::debug!(
+            target: "sova.redis",
+            cmd = "enqueue",
+            key = %trunc(q),
+            queue = %trunc(q),
+            ok,
+            duration_ms = started.elapsed().as_secs_f64() * 1000.0,
+            request_id = rid().as_deref().unwrap_or(""),
+            "sova.redis"
+        );
+        res
     }
 
     /// Non-blocking pop (`RPOP`). `None` if empty.
     pub async fn dequeue(&self, queue: impl AsRef<str>) -> Result<Option<Vec<u8>>, RedisError> {
+        let started = std::time::Instant::now();
+        let q = queue.as_ref();
         let mut conn = self.get().await?;
-        let val: Option<Vec<u8>> = conn.rpop(queue.as_ref(), None).await.map_err(RedisError::from)?;
-        Ok(val)
+        let res: Result<Option<Vec<u8>>, RedisError> =
+            conn.rpop(q, None).await.map_err(RedisError::from);
+        let ok = res.is_ok();
+        let hit = matches!(res, Ok(Some(_)));
+        tracing::debug!(
+            target: "sova.redis",
+            cmd = "dequeue",
+            key = %trunc(q),
+            queue = %trunc(q),
+            hit,
+            ok,
+            duration_ms = started.elapsed().as_secs_f64() * 1000.0,
+            request_id = rid().as_deref().unwrap_or(""),
+            "sova.redis"
+        );
+        res
     }
 
     /// Blocking pop (`BRPOP`). `timeout = 0` waits forever.
@@ -156,14 +211,29 @@ impl RedisPool {
         queue: impl AsRef<str>,
         timeout: Duration,
     ) -> Result<Option<(String, Vec<u8>)>, RedisError> {
+        let started = std::time::Instant::now();
+        let q = queue.as_ref();
         let mut conn = self.get().await?;
         let secs = timeout.as_secs() as f64 + f64::from(timeout.subsec_nanos()) / 1e9;
-        let val: Option<(String, Vec<u8>)> = redis::cmd("BRPOP")
-            .arg(queue.as_ref())
+        let res: Result<Option<(String, Vec<u8>)>, RedisError> = redis::cmd("BRPOP")
+            .arg(q)
             .arg(secs)
             .query_async(&mut conn)
             .await
-            .map_err(RedisError::from)?;
-        Ok(val)
+            .map_err(RedisError::from);
+        let ok = res.is_ok();
+        let hit = matches!(res, Ok(Some(_)));
+        tracing::debug!(
+            target: "sova.redis",
+            cmd = "dequeue_wait",
+            key = %trunc(q),
+            queue = %trunc(q),
+            hit,
+            ok,
+            duration_ms = started.elapsed().as_secs_f64() * 1000.0,
+            request_id = rid().as_deref().unwrap_or(""),
+            "sova.redis"
+        );
+        res
     }
 }

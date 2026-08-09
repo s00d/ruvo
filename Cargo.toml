@@ -23,7 +23,7 @@ homepage = "https://s00d.github.io/sova/"
 
 [workspace.dependencies]
 # Workspace crates (version+path so `cargo publish` can resolve)
-sova-core = { version = "0.1.7", path = "crates/sova-core" }
+sova-core = { version = "0.1.8", path = "crates/sova-core" }
 sova = { version = "0.1.15", path = "crates/sova" }
 sova-testing = { version = "0.1.2", path = "crates/sova-testing", default-features = false }
 sova-activity = { version = "0.1.2", path = "plugins/sova-activity" }
@@ -45,21 +45,21 @@ sova-openapi = { version = "0.1.1", path = "plugins/sova-openapi" }
 sova-passport = { version = "0.1.2", path = "plugins/sova-passport" }
 sova-quic = { version = "0.1.1", path = "plugins/sova-quic" }
 sova-rate-limit = { version = "0.1.1", path = "plugins/sova-rate-limit" }
-sova-redis = { version = "0.1.1", path = "plugins/sova-redis" }
+sova-redis = { version = "0.1.2", path = "plugins/sova-redis" }
 sova-session = { version = "0.1.2", path = "plugins/sova-session" }
 sova-shield = { version = "0.1.1", path = "plugins/sova-shield" }
 sova-sse = { version = "0.1.1", path = "plugins/sova-sse" }
 sova-static = { version = "0.1.1", path = "plugins/sova-static" }
 sova-storage = { version = "0.1.1", path = "plugins/sova-storage" }
-sova-store = { version = "0.1.1", path = "plugins/sova-store" }
-sova-tasks = { version = "0.1.1", path = "plugins/sova-tasks" }
+sova-store = { version = "0.1.2", path = "plugins/sova-store" }
+sova-tasks = { version = "0.1.2", path = "plugins/sova-tasks" }
 sova-tasks-store = { version = "0.1.1", path = "plugins/sova-tasks-store" }
 sova-templates = { version = "0.1.1", path = "plugins/sova-templates" }
 sova-udp = { version = "0.1.1", path = "plugins/sova-udp" }
 sova-vld = { version = "0.1.3", path = "plugins/sova-vld" }
 sova-ws = { version = "0.1.1", path = "plugins/sova-ws" }
 sova-ai = { version = "0.1.0", path = "plugins/sova-ai", default-features = false }
-sova-devtools = { version = "0.1.2", path = "plugins/sova-devtools", default-features = false }
+sova-devtools = { version = "0.1.3", path = "plugins/sova-devtools", default-features = false }
 
 
 # Shared third-party

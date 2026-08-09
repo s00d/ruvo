@@ -1,20 +1,24 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { HardDrive } from "@lucide/vue";
-import DefList from "../components/DefList.vue";
+import DataTable from "../components/DataTable.vue";
 import EmptyState from "../components/EmptyState.vue";
 import Pane from "../components/Pane.vue";
 import { useDevToolsStore } from "../stores/devtools";
+import { fmtMs } from "../types";
 
 const store = useDevToolsStore();
 const items = computed(() => store.current?.jobs ?? []);
 
-function paneTone(status: string): "default" | "warn" | "err" {
-  const s = status.toLowerCase();
-  if (s.includes("fail") || s.includes("error")) return "err";
-  if (s.includes("run") || s.includes("pend") || s.includes("queue")) return "warn";
-  return "default";
-}
+const headers = ["name", "status", "detail", "ms"];
+const rows = computed(() =>
+  items.value.map((j) => [
+    j.name,
+    j.status,
+    j.detail || "—",
+    fmtMs(j.duration_ms),
+  ]),
+);
 </script>
 
 <template>
@@ -27,24 +31,12 @@ function paneTone(status: string): "default" | "warn" | "err" {
   <EmptyState
     v-else-if="!items.length"
     title="No jobs"
-    hint="Background tasks for this request list here."
+    hint="Task enqueue / worker events (sova.tasks) for this request."
     :icon="HardDrive"
   />
   <div v-else class="flex flex-col gap-3">
-    <Pane
-      v-for="(j, i) in items"
-      :key="i"
-      :title="j.name"
-      :icon="HardDrive"
-      :hint="j.status"
-      :tone="paneTone(j.status)"
-    >
-      <DefList
-        :items="[
-          { label: 'status', value: j.status },
-          { label: 'detail', value: j.detail || '—', mono: false },
-        ]"
-      />
+    <Pane title="Jobs" :icon="HardDrive" :hint="`${items.length}`">
+      <DataTable :headers="headers" :rows="rows" :mono-cols="[2]" />
     </Pane>
   </div>
 </template>

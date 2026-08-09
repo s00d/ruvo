@@ -5,7 +5,7 @@
 - Collects per-request snapshot (correlated via `request_id`)
 - Site-wide live feed over SSE `GET /_devtools/events`
 - JSON: `/_devtools/requests`, `/_devtools/requests/:id`, `/_devtools/logs`, `/_devtools/config`
-- Soft hooks: session dump, FakeMail, sqlx/http tracing via `add_log_event_hook`
+- Soft hooks: session dump, FakeMail, route / rate-limit / encoding; sqlx / http / store / redis / tasks via `add_log_event_hook`
 - Mirrors console/`tracing` into Logs; skips `/_devtools` access logs via `logger_skip_path`
 - **Release builds:** hard-off unless `SOVA_DEVTOOLS=1`
 

@@ -4,6 +4,18 @@ use crate::middleware::{named, MwEntry, Next};
 use crate::request::Request;
 use tracing::Instrument;
 
+tokio::task_local! {
+    static CURRENT_REQUEST_ID: String;
+}
+
+/// Request id for the current async task (set by [`request_id`] middleware).
+///
+/// Plugins (store / redis / tasks) can attach this to tracing events so DevTools
+/// correlates them with the open request bag.
+pub fn current_request_id() -> Option<String> {
+    CURRENT_REQUEST_ID.try_with(|s| s.clone()).ok()
+}
+
 /// Per-request correlation id (inbound `x-request-id` or generated).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RequestId(pub String);
@@ -37,15 +49,17 @@ pub fn request_id() -> MwEntry {
             path = %path,
             otel.kind = "server",
         );
-        async move {
-            let mut res = next(req).await;
-            if !id.is_empty() {
-                res = res.header("x-request-id", &id);
-            }
-            res
-        }
-        .instrument(span)
-        .await
+        let id_for_header = id.clone();
+        CURRENT_REQUEST_ID
+            .scope(id, async move {
+                let mut res = next(req).await;
+                if !id_for_header.is_empty() {
+                    res = res.header("x-request-id", &id_for_header);
+                }
+                res
+            })
+            .instrument(span)
+            .await
     })
 }
 

@@ -77,9 +77,21 @@ impl TaskWorker {
         max_attempts: u32,
         retry_base: Duration,
     ) {
+        let started = std::time::Instant::now();
         let name = task_name(&task);
+        let queue = task.queue.clone();
+        let id = task.id.clone();
         let Some(h) = handlers.get(&name) else {
             tracing::warn!(%name, "no handler");
+            tracing::debug!(
+                target: "sova.tasks",
+                name = %name,
+                queue = %queue,
+                id = %id,
+                status = "no_handler",
+                duration_ms = started.elapsed().as_secs_f64() * 1000.0,
+                "sova.tasks"
+            );
             let _ = store.fail(&task.id, None).await;
             return;
         };
@@ -87,6 +99,15 @@ impl TaskWorker {
         match run_with_heartbeat(store, &task, lease, h).await {
             Ok(()) => {
                 let _ = store.complete(&task.id).await;
+                tracing::debug!(
+                    target: "sova.tasks",
+                    name = %name,
+                    queue = %queue,
+                    id = %id,
+                    status = "completed",
+                    duration_ms = started.elapsed().as_secs_f64() * 1000.0,
+                    "sova.tasks"
+                );
             }
             Err(e) => {
                 tracing::warn!(id = %task.id, error = %e, "task failed");
@@ -99,7 +120,21 @@ impl TaskWorker {
                             + retry_base.saturating_mul(mult),
                     )
                 };
+                let status = if retry_at.is_some() {
+                    "retry"
+                } else {
+                    "failed"
+                };
                 let _ = store.fail(&task.id, retry_at).await;
+                tracing::debug!(
+                    target: "sova.tasks",
+                    name = %name,
+                    queue = %queue,
+                    id = %id,
+                    status,
+                    duration_ms = started.elapsed().as_secs_f64() * 1000.0,
+                    "sova.tasks"
+                );
             }
         }
     }

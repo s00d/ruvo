@@ -27,7 +27,7 @@ How pages are built: crate `//!` + optional [`plugin-guides`](https://github.com
 | [`cors`](/plugins/cors) | HTTP | `0.1.1` | Cross-Origin Resource Sharing headers | `cors` |
 | [`csrf`](/plugins/csrf) | HTTP | `0.1.2` | Session double-submit CSRF (Laravel-style except/XSRF cookie) | `csrf` |
 | [`db`](/plugins/db) | Data | `0.1.3` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
-| [`devtools`](/plugins/devtools) | Ops | `0.1.2` | In-app debug bar (HTML inject, SSE timeline, request snapshots) | `devtools` |
+| [`devtools`](/plugins/devtools) | Ops | `0.1.3` | In-app debug bar (HTML inject, SSE timeline, request snapshots) | `devtools` |
 | [`env`](/plugins/env) | HTTP | `0.1.1` | Cascade .env loading for Sova apps (dotenvy) | `env` |
 | [`http`](/plugins/http) | Integrations | `0.1.1` | Outbound HTTP client with SSRF guards and named configs | `http-client` |
 | [`i18n`](/plugins/i18n) | Content | `0.1.2` | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |

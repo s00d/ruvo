@@ -51,7 +51,7 @@ pub use plugin::{
     PLUGIN_SDK_VERSION,
 };
 pub use request::{FormData, Request, Upload, UploadRules};
-pub use request_id::{ensure_request_id, request_id, RequestId};
+pub use request_id::{current_request_id, ensure_request_id, request_id, RequestId};
 pub use response::{referer_or, Html, Json, NoContent, Redirect, Response, Text};
 pub use router::Router;
 pub use server::{ClientAddr, RateLimitIdentity};
@@ -59,7 +59,8 @@ pub use service::{BackgroundService, Shutdown};
 pub use share::{Cell, Slot};
 pub use state::{MatchedRoute, MatchedRouteCapture};
 pub use tracing_init::{
-    parse_log_rotate, set_log_event_hook, add_log_event_hook, LogConfig, LogEventHook, LogRecord, LogRotate,
+    add_log_event_hook, ensure_tracing, parse_log_rotate, set_log_event_hook, LogConfig,
+    LogEventHook, LogRecord, LogRotate,
 };
 #[cfg(any(test, feature = "testing"))]
 pub use service::{shutdown_channel, ShutdownSender};

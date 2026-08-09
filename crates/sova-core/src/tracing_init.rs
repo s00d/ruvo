@@ -130,6 +130,11 @@ impl Visit for FieldVisitor {
         self.fields
             .push((field.name().to_string(), value.to_string()));
     }
+
+    fn record_bool(&mut self, field: &Field, value: bool) {
+        self.fields
+            .push((field.name().to_string(), value.to_string()));
+    }
 }
 
 /// How to rotate the log file when [`LogConfig::file`] is set.
