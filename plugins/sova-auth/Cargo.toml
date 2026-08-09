@@ -45,7 +45,7 @@ tracing = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 sova-core = { workspace = true, features = ["testing", "multipart"] }
 sova-db = { workspace = true, features = ["sqlite"] }
-sova-testing = { workspace = true, features = ["sqlite"] }
+sova-testing = { workspace = true, features = ["sqlite", "auth"] }
 sova-session = { workspace = true }
 sova-csrf = { workspace = true }
 sova-mail = { workspace = true }

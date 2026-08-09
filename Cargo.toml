@@ -17,7 +17,7 @@ exclude = ["ci-smoke-min", "ci-smoke-api", "ci-smoke-web", ".ci-gen"]
 # Workspace crates (version+path so `cargo publish` can resolve)
 sova-core = { version = "0.1.0", path = "crates/sova-core" }
 sova = { version = "0.1.0", path = "crates/sova" }
-sova-testing = { version = "0.1.0", path = "crates/sova-testing", default-features = false }
+sova-testing = { version = "0.1.1", path = "crates/sova-testing", default-features = false }
 sova-activity = { version = "0.1.0", path = "plugins/sova-activity" }
 sova-auth = { version = "0.1.0", path = "plugins/sova-auth" }
 sovax = { version = "0.1.0", path = "plugins/sovax" }

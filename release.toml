@@ -17,7 +17,7 @@
 #   # …activity / auth / notifications / …
 #   # …then facade `sova`
 #
-# Do not give sova-testing deps on auth/notifications (cycle with their dev-deps).
+# sova-testing may depend on auth/notifications once those crates exist on crates.io.
 
 # `cargo-sovax` / `sova-docs-gen` stay publish = false.
 # In-app CLI helpers: crate `sovax`. Scaffolding binary: `cargo-sovax` → `cargo sovax`.
