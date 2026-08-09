@@ -5,7 +5,7 @@ editLink: false
 
 # `shield`
 
-**Baseline security response headers (helmet-style)** · crate `sova-shield` `0.1.0` · id `shield`
+**Baseline security response headers (helmet-style)** · crate `sova-shield` `0.1.1` · id `shield`
 
 ```bash
 cargo add sova --features shield

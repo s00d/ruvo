@@ -5,7 +5,7 @@ editLink: false
 
 # `store`
 
-**KvStore trait + memory / file / sql / redis backends for Sova** · crate `sova-store` `0.1.0` · id `store`
+**KvStore trait + memory / file / sql / redis backends for Sova** · crate `sova-store` `0.1.1` · id `store`
 
 ```bash
 cargo add sova --features store,store-crypto,store-file,store-redis,store-sql
@@ -27,26 +27,7 @@ Byte-oriented key-value store for Sova plugins (sessions, cache, CSRF, rate-limi
 
 ## Usage
 
-Shared `KvStore` for rate-limit, cache, etc. Install beside a preset. In-memory:
-
-```rust
-use sova::prelude::*;
-use sova::{Parser, ServerArgs, SharedStore};
-
-#[tokio::main]
-async fn main() -> Result<()> {
-    let args = ServerArgs::parse();
-    args.init_tracing();
-
-    let mut app = App::web()
-        .site("App")
-        .public_url("https://example.com");
-    app.install(SharedStore::memory());
-    app.run().await
-}
-```
-
-SQL on the same `DbPool` (cabinet-style):
+Shared `KvStore` for rate-limit, cache, etc. Install beside a preset (cabinet uses SQL on the same `DbPool`):
 
 ```rust
 use std::sync::Arc;

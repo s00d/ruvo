@@ -20,7 +20,9 @@ The goal is not a line-for-line port of Express. Express won because it stayed o
 
 There is already a solid pack of ready plugins for common server work — see the list below and the docs for guides.
 
-**Docs:** [https://s00d.github.io/sova/](https://s00d.github.io/sova/)
+**Docs:** [https://s00d.github.io/sova/](https://s00d.github.io/sova/)  
+**Changelog:** [CHANGELOG.md](CHANGELOG.md)  
+**License:** [MIT](LICENSE)
 
 ## Install
 

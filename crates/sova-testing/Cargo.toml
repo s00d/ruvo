@@ -1,12 +1,14 @@
 [package]
 name = "sova-testing"
-version = "0.1.1"
-edition = "2021"
+version = "0.1.2"
+authors.workspace = true
+edition.workspace = true
 description = "Framework-style test harness for Sova (sqlite, acting_as, factories, snapshots)"
-license = "MIT"
-repository = "https://github.com/s00d/sova"
-homepage = "https://s00d.github.io/sova/"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
 documentation = "https://docs.rs/sova-testing"
+readme = "README.md"
 keywords = ["http", "web", "framework", "async"]
 categories = ["web-programming::http-server", "network-programming"]
 

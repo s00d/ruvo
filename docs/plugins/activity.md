@@ -5,7 +5,7 @@ editLink: false
 
 # `activity`
 
-**Audit / activity log (who changed what)** · crate `sova-activity` `0.1.0` · id `activity`
+**Audit / activity log (who changed what)** · crate `sova-activity` `0.1.2` · id `activity`
 
 ```bash
 cargo add sova --features activity

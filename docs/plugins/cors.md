@@ -5,7 +5,7 @@ editLink: false
 
 # `cors`
 
-**Cross-Origin Resource Sharing headers** · crate `sova-cors` `0.1.0` · id `cors`
+**Cross-Origin Resource Sharing headers** · crate `sova-cors` `0.1.1` · id `cors`
 
 ```bash
 cargo add sova --features cors

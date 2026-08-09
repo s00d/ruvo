@@ -5,7 +5,7 @@ editLink: false
 
 # `db`
 
-**SeaORM pool, migrate CLI, optional seed CLI** · crate `sova-db` `0.1.1` · id `db`
+**SeaORM pool, migrate CLI, optional seed CLI** · crate `sova-db` `0.1.3` · id `db`
 
 ```bash
 cargo add sova --features db,db-mysql,db-sqlite
@@ -20,11 +20,9 @@ cargo add sova --features db,db-mysql,db-sqlite
 SeaORM database plugin for Sova (postgres / sqlite / mysql via Cargo features).
 
 ```rust
-app.install(Db::from_env().migrations::<Migrator>());
-// Tests: pin URL so parallel tests are not racing on DATABASE_URL
-// app.install(Db::from_env().url(&test_url).migrations::<Migrator>());
-let u = User::find_by_id(id).one(req.db()).await?;
-```
+ app.install(Db::from_env().migrations::<Migrator>());
+ let u = User::find_by_id(id).one(req.db()).await?;
+ ```
 
 ## Usage
 

@@ -5,7 +5,7 @@ editLink: false
 
 # `vld`
 
-**Request validation hooks and coverage check** · crate `sova-vld` `0.1.0` · id `vld`
+**Request validation hooks and coverage check** · crate `sova-vld` `0.1.3` · id `vld`
 
 ```bash
 cargo add sova --features vld,vld-flash,vld-flash-templates,vld-form,vld-i18n,vld-openapi
@@ -63,20 +63,14 @@ async fn create(
 }
 ```
 
-HTML forms (needs feature `vld-form`; web resource generator uses this):
+HTML forms (web preset already has session/csrf):
 
 ```rust
 async fn store(mut req: Request) -> Result<Redirect> {
-    let form: NoteForm = req.validate_form().await?;
+    let form: NoteForm = req.validate_form().await?; // feature `vld-form`
     req.flash_status("Saved");
     Ok(Redirect::back(&req))
 }
-```
-
-Or attach validation on the route and read via `req.valid::<NoteForm>()`:
-
-```rust
-app.post("/notes", store).validate_form::<NoteForm>();
 ```
 
 Features: `vld-openapi`, `vld-flash`, `vld-form`, `vld-i18n`.

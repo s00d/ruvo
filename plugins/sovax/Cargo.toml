@@ -1,12 +1,14 @@
 [package]
 name = "sovax"
-version = "0.1.0"
-edition = "2021"
+version = "0.1.1"
+authors.workspace = true
+edition.workspace = true
 description = "CLI ServerArgs / listen_args for Sova (local dev)"
-license = "MIT"
-repository = "https://github.com/s00d/sova"
-homepage = "https://s00d.github.io/sova/"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
 documentation = "https://docs.rs/sovax"
+readme = "README.md"
 keywords = ["http", "web", "framework", "async", "cli"]
 categories = ["web-programming::http-server", "command-line-interface"]
 

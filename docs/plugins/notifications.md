@@ -5,7 +5,7 @@ editLink: false
 
 # `notifications`
 
-**DB inbox, channels with ACL, optional WS/mail** · crate `sova-notifications` `0.1.0` · id `notifications`
+**DB inbox, channels with ACL, optional WS/mail** · crate `sova-notifications` `0.1.2` · id `notifications`
 
 ```bash
 cargo add sova --features notifications,notifications-auth,notifications-mail,notifications-templates,notifications-ws

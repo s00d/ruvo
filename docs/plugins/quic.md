@@ -5,7 +5,7 @@ editLink: false
 
 # `quic`
 
-**QUIC datagrams BackgroundService helpers for Sova** · crate `sova-quic` `0.1.0` · id `quic`
+**QUIC datagrams BackgroundService helpers for Sova** · crate `sova-quic` `0.1.1` · id `quic`
 
 ```bash
 cargo add sova --features quic-udp

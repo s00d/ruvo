@@ -5,7 +5,7 @@ editLink: false
 
 # `openapi`
 
-**OpenAPI 3.1 document + Scalar UI at mount path** · crate `sova-openapi` `0.1.0` · id `openapi`
+**OpenAPI 3.1 document + Scalar UI at mount path** · crate `sova-openapi` `0.1.1` · id `openapi`
 
 ```bash
 cargo add sova --features openapi

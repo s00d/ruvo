@@ -1,20 +1,22 @@
 [package]
 name = "cargo-sovax"
-version = "0.1.4"
-edition = "2021"
+version = "0.1.5"
+authors.workspace = true
+edition.workspace = true
 description = "Cargo subcommand for scaffolding and running Sova apps"
-license = "MIT"
-repository = "https://github.com/s00d/sova"
-homepage = "https://s00d.github.io/sova/"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
 documentation = "https://s00d.github.io/sova/guide/cargo-sovax"
+readme = "README.md"
 keywords = ["sova", "cargo-subcommand", "web", "scaffold"]
 categories = ["command-line-utilities", "development-tools::cargo-plugins"]
-readme = "README.md"
 include = [
   "src/**/*",
   "templates/**/*",
   "README.md",
   "Cargo.toml",
+  "LICENSE",
 ]
 
 [[bin]]

@@ -5,16 +5,17 @@ editLink: false
 
 # `meta`
 
-**Document meta, OG/Twitter, JSON-LD, and head inject** · crate `sova-meta` `0.1.0` · id `sitemap`
+**Document meta, OG/Twitter, JSON-LD, and head inject** · crate `sova-meta` `0.1.2` · id `sitemap`
 
 ```bash
-cargo add sova --features meta,meta-i18n,meta-store,meta-templates
+cargo add sova --features meta,meta-i18n,meta-openapi,meta-store,meta-templates
 ```
 
 | Feature | What you get |
 |---------|-------------|
 | `meta` | SEO head tags, Sitemap, Robots (`sova_meta`). |
 | `meta-i18n` | Locale-aware meta. |
+| `meta-openapi` | — |
 | `meta-store` | Meta helpers backed by KvStore. |
 | `meta-templates` | Inject meta into MiniJinja HTML. |
 
@@ -49,5 +50,3 @@ async fn main() -> Result<()> {
 ```
 
 Customize sitemap exclusions after `into_app()` if needed (cabinet excludes `/cabinet/*`, `/api/*`, …). Demo: `meta_blog`.
-
-`.with(Meta::page()…)` after a `get`/`post` attaches to **that last route only**. For a whole `Router`, call `.with(...)` **before** registering routes (router defaults), or chain `.with` per route.

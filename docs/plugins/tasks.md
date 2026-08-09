@@ -5,7 +5,7 @@ editLink: false
 
 # `tasks`
 
-**Job worker, priorities, and optional cron/interval scheduler** · crate `sova-tasks` `0.1.0` · id `tasks`
+**Job worker, priorities, and optional cron/interval scheduler** · crate `sova-tasks` `0.1.1` · id `tasks`
 
 ```bash
 cargo add sova --features tasks

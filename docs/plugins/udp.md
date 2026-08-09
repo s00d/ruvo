@@ -5,7 +5,7 @@ editLink: false
 
 # `udp`
 
-**UDP BackgroundService helpers for Sova** · crate `sova-udp` `0.1.0` · id `udp`
+**UDP BackgroundService helpers for Sova** · crate `sova-udp` `0.1.1` · id `udp`
 
 ```bash
 cargo add sova --features udp

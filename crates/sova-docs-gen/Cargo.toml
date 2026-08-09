@@ -1,9 +1,13 @@
 [package]
 name = "sova-docs-gen"
 version = "0.1.0"
-edition = "2021"
-publish = false
+authors.workspace = true
+edition.workspace = true
 description = "Generate VitePress API markdown from Sova Rust sources"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+publish = false
 
 [[bin]]
 name = "sova-docs-gen"

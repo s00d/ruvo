@@ -5,7 +5,7 @@ editLink: false
 
 # `observability`
 
-**HTTP metrics, OpenTelemetry, Elasticsearch log shipping** · crate `sova-observability` `0.1.0` · id `observability`
+**HTTP metrics, OpenTelemetry, Elasticsearch log shipping** · crate `sova-observability` `0.1.1` · id `observability`
 
 ```bash
 cargo add sova --features observability,observability-elasticsearch,observability-otel

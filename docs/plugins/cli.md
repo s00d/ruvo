@@ -5,7 +5,7 @@ editLink: false
 
 # `cli`
 
-**CLI ServerArgs / listen_args for Sova (local dev)** · crate `sovax` `0.1.0` · id `cli`
+**CLI ServerArgs / listen_args for Sova (local dev)** · crate `sovax` `0.1.1` · id `cli`
 
 Optional CLI helpers for local development (`--log-level`, file logging).
  This crate pulls in `clap` — enable only when you want argv parsing.

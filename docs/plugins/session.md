@@ -5,7 +5,7 @@ editLink: false
 
 # `session`
 
-**Cookie sessions backed by a SessionStore** · crate `sova-session` `0.1.0` · id `session`
+**Cookie sessions backed by a SessionStore** · crate `sova-session` `0.1.2` · id `session`
 
 ```bash
 cargo add sova --features session,session-redis,session-sql
@@ -74,10 +74,3 @@ app.install(SessionLayer::from_store(Arc::new(
 ```
 
 Features: `session-sql`, `session-redis`.
-
-### Production cookies
-
-Defaults are fine for local HTTP (`Secure` off, `SameSite=Lax`, `HttpOnly` on).
-In production set `SOVA_ENV=production` or `SESSION_SECURE=1` so the session cookie
-gets the `Secure` flag (also applied to the CSRF `XSRF-TOKEN` cookie). Override with
-`SessionLayer::secure(false)` / `[session] secure = false` in `sova.toml` if needed.

@@ -5,7 +5,7 @@ editLink: false
 
 # `cookies`
 
-**Parse Cookie header into request-local Cookies** · crate `sova-cookies` `0.1.0` · id `cookies`
+**Parse Cookie header into request-local Cookies** · crate `sova-cookies` `0.1.1` · id `cookies`
 
 ```bash
 cargo add sova --features cookies

@@ -5,7 +5,7 @@ editLink: false
 
 # `compress`
 
-**gzip / deflate / brotli response compression** · crate `sova-compress` `0.1.0` · id `compress`
+**gzip / deflate / brotli response compression** · crate `sova-compress` `0.1.1` · id `compress`
 
 ```bash
 cargo add sova --features compress
