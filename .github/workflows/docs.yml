@@ -8,8 +8,12 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  # Manual only — no auto-run on push.
   workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
 
 jobs:
   docs:
