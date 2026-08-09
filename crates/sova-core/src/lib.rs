@@ -61,6 +61,7 @@ pub use tracing_init::{
 #[cfg(any(test, feature = "testing"))]
 pub use service::{shutdown_channel, ShutdownSender};
 pub use upgrade::{OnUpgrade, UpgradePermit};
+#[cfg(any(test, feature = "testing"))]
 pub use test_client::{ClientRequest, RequestHook, ResponseAssert, TestClient};
 #[cfg(feature = "tls")]
 pub use tls::Tls;
