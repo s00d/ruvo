@@ -19,6 +19,7 @@ vld = ["dep:sova-vld", "dep:vld", "sova-vld/form", "sova-vld/flash", "sova-vld/o
 activity = ["dep:sova-activity"]
 mail = ["dep:sova-mail"]
 templates = ["mail", "sova-mail/templates", "dep:sova-templates"]
+testing = ["sova-core/testing"]
 
 [dependencies]
 sova-core = { workspace = true, features = ["multipart"] }
@@ -47,6 +48,7 @@ tracing = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+sova-auth = { path = ".", features = ["testing"] }
 sova-core = { workspace = true, features = ["testing", "multipart"] }
 sova-db = { workspace = true, features = ["sqlite"] }
 sova-testing = { workspace = true, features = ["sqlite"] }

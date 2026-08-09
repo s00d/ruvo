@@ -35,6 +35,7 @@ pub use migration::NotificationsMigrator;
 pub use notify::{NotificationService, NotificationUser, Notify, NotifyExt};
 pub use plugin::Notifications;
 
+#[cfg(feature = "testing")]
 pub mod testing;
 
 #[cfg(feature = "templates")]

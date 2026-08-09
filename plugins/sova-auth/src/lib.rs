@@ -41,6 +41,8 @@ mod two_factor;
 mod activity_log;
 
 pub mod entity;
+
+#[cfg(feature = "testing")]
 pub mod testing;
 
 #[cfg(feature = "mail")]
