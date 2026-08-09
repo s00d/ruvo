@@ -105,7 +105,7 @@ pub use sova_session::RedisSessionStore;
 #[cfg(feature = "store")]
 mod shared_store;
 
-/// Key-value store backends (`Memory`, `File`, `Sql`, `Redis`).
+/// Key-value store backends (`Memory`, `File`, `Sql`, `Redis`, `Redb`).
 #[cfg(feature = "store")]
 pub mod store {
     pub use sova_store::{namespace, AppStore, Cache, CacheError, KvStore, MemoryStore as Memory, Namespace};
@@ -119,6 +119,9 @@ pub mod store {
 
     #[cfg(feature = "store-redis")]
     pub use sova_store::RedisStore as Redis;
+
+    #[cfg(feature = "store-redb")]
+    pub use sova_store::RedbStore as Redb;
 
     #[cfg(feature = "store-crypto")]
     pub use sova_store::{encrypted, encrypted_ns, AppKey, Encrypted};

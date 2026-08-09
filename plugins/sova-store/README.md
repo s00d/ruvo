@@ -6,7 +6,7 @@
 
 # sova-store
 
-KvStore trait + memory / file / sql / redis backends for Sova.
+KvStore trait + memory / file / sql / redis / redb backends for Sova.
 
 Part of [Sova](https://crates.io/crates/sova) — Express-like HTTP for Rust.
 

@@ -1,8 +1,8 @@
-Shared `KvStore` for rate-limit, cache, etc. Soft-wire from Db/Redis when installed:
+Shared `KvStore` for rate-limit, cache, session, etc. Soft-wire from Db/Redis or open embedded redb:
 
 ```rust
 use sova::prelude::*;
-use sova::{Db, Parser, ServerArgs, SharedStore};
+use sova::{Parser, ServerArgs, SharedStore};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -14,8 +14,9 @@ async fn main() -> Result<()> {
         .public_url("https://example.com")
         .into_app();
 
-    app.install(Db::from_env());
-    app.install(SharedStore::sql(&app)); // or ::redis(&app) / ::memory()
+    // Embedded (no daemon):
+    app.install(SharedStore::redb("./data/kv.redb"));
+    // Or: SharedStore::memory() / ::sql(&app) after Db / ::redis(&app) after Redis
 
     app.run().await
 }
@@ -23,4 +24,4 @@ async fn main() -> Result<()> {
 
 Namespaces: `app.try_state::<AppStore>().unwrap().namespaced("sess")`.
 
-Features: `store-sql`, `store-redis`, `store-file`, `store-crypto`.
+Features: `store-sql`, `store-redis`, `store-redb`, `store-file`, `store-crypto`.

@@ -51,7 +51,7 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`sse`](/plugins/sse) | Realtime | `0.1.1` | Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive) | `sse-feed` |
 | [`static`](/plugins/static) | HTTP | `0.1.1` | Serve files from a directory under a mount path | `static-files` |
 | [`storage`](/plugins/storage) | Data | `0.1.1` | Object storage (local / memory / S3 / GCS / Azure) | `storage`, `storage-azure`, `storage-gcs`, `storage-memory`, `storage-s3` |
-| [`store`](/plugins/store) | Data | `0.1.2` | KvStore trait + memory / file / sql / redis backends for Sova | `store`, `store-crypto`, `store-file`, `store-redis`, `store-sql` |
+| [`store`](/plugins/store) | Data | `0.1.3` | KvStore trait + memory / file / sql / redis / redb backends for Sova | `store`, `store-crypto`, `store-file`, `store-redb`, `store-redis`, `store-sql` |
 | [`tasks`](/plugins/tasks) | Data | `0.1.4` | Job worker, priorities, and optional cron/interval scheduler | `tasks`, `tasks-redis`, `tasks-sql` |
 | [`tasks-store`](/plugins/tasks-store) | Data | `0.1.1` | TaskStore trait + memory / file / sql / redis backends | `tasks-file`, `tasks-redis`, `tasks-sql`, `tasks-store` |
 | [`templates`](/plugins/templates) | Content | `0.1.1` | MiniJinja HTML templates with optional autoreload | `templates` |

@@ -1,6 +1,6 @@
 //! Byte-oriented key-value store for Sova plugins (sessions, cache, CSRF, rate-limit).
 //!
-//! Trait is stable (memory + file + sql + redis backends).
+//! Trait is stable (memory + file + sql + redis + redb backends).
 //! Enable feature `unstable-store` for backwards-compatible feature flags.
 //! **Not in sova-core** — wire with `app.state(store.namespace("sess"))`.
 
@@ -9,6 +9,8 @@ mod cache;
 mod encrypted;
 #[cfg(feature = "file")]
 mod file;
+#[cfg(feature = "redb")]
+mod redb;
 #[cfg(feature = "redis")]
 mod redis;
 #[cfg(feature = "sql")]
@@ -71,6 +73,9 @@ pub use encrypted::{encrypted, encrypted_ns, AppKey, Encrypted};
 
 #[cfg(feature = "file")]
 pub use file::{Durability, FileStore};
+
+#[cfg(feature = "redb")]
+pub use redb::RedbStore;
 
 #[cfg(feature = "redis")]
 pub use redis::RedisStore;

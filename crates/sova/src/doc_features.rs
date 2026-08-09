@@ -30,6 +30,7 @@
 /// Feature `store-file`: File-backed `KvStore`.
 /// Feature `store-sql`: SQL `KvStore` on `DbPool`.
 /// Feature `store-redis`: Redis `KvStore` on `RedisPool`.
+/// Feature `store-redb`: Embedded redb `KvStore` (file, no daemon).
 /// Feature `store-crypto`: XChaCha20-Poly1305 wrapper for `KvStore`.
 /// Feature `tasks-store`: `TaskStore` backends crate.
 /// Feature `tasks-file`: File `TaskStore`.

@@ -45,6 +45,6 @@ app.install(SessionLayer::redis(&app));
 Or reuse [`SharedStore`](/plugins/store):
 
 ```rust
-app.install(SharedStore::memory()); // or ::sql(&app) / ::redis(&app)
+app.install(SharedStore::memory()); // or ::redb("./data/kv.redb") / ::sql(&app) / ::redis(&app)
 app.install(SessionLayer::from_app_store(&app));
 ```

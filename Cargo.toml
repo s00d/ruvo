@@ -24,7 +24,7 @@ homepage = "https://s00d.github.io/sova/"
 [workspace.dependencies]
 # Workspace crates (version+path so `cargo publish` can resolve)
 sova-core = { version = "0.1.13", path = "crates/sova-core" }
-sova = { version = "0.1.21", path = "crates/sova" }
+sova = { version = "0.1.22", path = "crates/sova" }
 sova-testing = { version = "0.1.2", path = "crates/sova-testing", default-features = false }
 sova-activity = { version = "0.1.2", path = "plugins/sova-activity" }
 sova-auth = { version = "0.1.8", path = "plugins/sova-auth", default-features = false }
@@ -54,7 +54,7 @@ sova-sse = { version = "0.1.1", path = "plugins/sova-sse" }
 sova-static = { version = "0.1.1", path = "plugins/sova-static" }
 sova-storage = { version = "0.1.1", path = "plugins/sova-storage" }
 sova-fs = { version = "0.1.0", path = "plugins/sova-fs" }
-sova-store = { version = "0.1.2", path = "plugins/sova-store" }
+sova-store = { version = "0.1.3", path = "plugins/sova-store" }
 sova-tasks = { version = "0.1.4", path = "plugins/sova-tasks" }
 sova-tasks-store = { version = "0.1.1", path = "plugins/sova-tasks-store" }
 sova-templates = { version = "0.1.1", path = "plugins/sova-templates" }
@@ -131,6 +131,7 @@ rcgen = "0.13"
 instant-acme = { version = "0.8", default-features = false, features = ["hyper-rustls", "ring"] }
 x509-parser = "0.16"
 redis = { version = "0.32", default-features = false, features = ["tokio-comp", "connection-manager"] }
+redb = "2.6"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 rustc-hash = "2"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }

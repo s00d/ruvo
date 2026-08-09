@@ -35,6 +35,19 @@ impl SharedStore {
             pool.as_ref(),
         )))
     }
+
+    /// Embedded redb KvStore at `path` (creates parent dirs / file).
+    #[cfg(feature = "store-redb")]
+    pub fn redb(path: impl AsRef<std::path::Path>) -> Self {
+        let path = path.as_ref();
+        let store = sova_store::RedbStore::open(path).unwrap_or_else(|e| {
+            panic!(
+                "SharedStore::redb failed to open {}: {e}",
+                path.display()
+            )
+        });
+        Self::new(Arc::new(store))
+    }
 }
 
 impl Plugin for SharedStore {

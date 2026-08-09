@@ -735,6 +735,7 @@ fn plugin_examples(slug: &str) -> Option<&'static [&'static str]> {
         "redis" => &["examples/misc/redis"],
         "storage" => &["examples/misc/storage", "examples/web/upload"],
         "fs" => &["examples/misc/fs_demo"],
+        "store" => &["examples/misc/redb"],
         "sse" => &["examples/realtime/sse", "examples/realtime/sse_feed"],
         "ws" => &["examples/realtime/ws_chat"],
         "quic" => &["examples/net/quic_udp_echo"],

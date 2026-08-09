@@ -1,0 +1,14 @@
+[package]
+name = "redb_demo"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "redb_demo"
+path = "src/main.rs"
+
+[dependencies]
+sova = { workspace = true, features = ["store-redb", "rate-limit", "session"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+serde_json = { workspace = true }

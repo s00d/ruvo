@@ -5,11 +5,11 @@ editLink: false
 
 # `store`
 
-**KvStore trait + memory / file / sql / redis backends for Sova**
+**KvStore trait + memory / file / sql / redis / redb backends for Sova**
 
 | | |
 |--|--|
-| Crate | [`sova-store`](https://docs.rs/sova-store/0.1.2) `0.1.2` |
+| Crate | [`sova-store`](https://docs.rs/sova-store/0.1.3) `0.1.3` |
 | Plugin id | `store` |
 | Category | Data |
 
@@ -26,6 +26,7 @@ cargo add sova --features store
 | `store` | `KvStore` + `Cache` (sessions, CSRF, rate-limit, …). |
 | `store-crypto` | XChaCha20-Poly1305 wrapper for `KvStore`. |
 | `store-file` | File-backed `KvStore`. |
+| `store-redb` | Embedded redb `KvStore` (file, no daemon). |
 | `store-redis` | Redis `KvStore` on `RedisPool`. |
 | `store-sql` | SQL `KvStore` on `DbPool`. |
 
@@ -35,24 +36,23 @@ cargo add sova --features store
 
 **Does:**
 - `KvStore` + `AppStore` / `SharedStore`
-- memory / file / sql / redis backends
+- memory / file / sql / redis / redb backends
 - `namespace(store, "sess")` / `AppStore::namespaced` for isolation
 - Optional crypto (`store-crypto`)
 
 ### Example
 
 ```rust
-app.install(Db::from_env());
-app.install(SharedStore::sql(&app)); // or ::memory() / ::redis(&app)
+app.install(SharedStore::redb("./data/kv.redb")); // or ::memory() / ::sql(&app) / ::redis(&app)
 ```
 
 ## Quick start
 
-Shared `KvStore` for rate-limit, cache, etc. Soft-wire from Db/Redis when installed:
+Shared `KvStore` for rate-limit, cache, session, etc. Soft-wire from Db/Redis or open embedded redb:
 
 ```rust
 use sova::prelude::*;
-use sova::{Db, Parser, ServerArgs, SharedStore};
+use sova::{Parser, ServerArgs, SharedStore};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -64,8 +64,9 @@ async fn main() -> Result<()> {
         .public_url("https://example.com")
         .into_app();
 
-    app.install(Db::from_env());
-    app.install(SharedStore::sql(&app)); // or ::redis(&app) / ::memory()
+    // Embedded (no daemon):
+    app.install(SharedStore::redb("./data/kv.redb"));
+    // Or: SharedStore::memory() / ::sql(&app) after Db / ::redis(&app) after Redis
 
     app.run().await
 }
@@ -73,7 +74,11 @@ async fn main() -> Result<()> {
 
 Namespaces: `app.try_state::<AppStore>().unwrap().namespaced("sess")`.
 
-Features: `store-sql`, `store-redis`, `store-file`, `store-crypto`.
+Features: `store-sql`, `store-redis`, `store-redb`, `store-file`, `store-crypto`.
+
+## Examples
+
+- `examples/misc/redb`
 
 ## Related
 
