@@ -220,6 +220,7 @@ pub struct SessionLayer {
     cookie_name: String,
     cookie_name_explicit: bool,
     secure: bool,
+    secure_explicit: bool,
     http_only: bool,
     same_site: SameSite,
     same_site_explicit: bool,
@@ -244,6 +245,7 @@ impl SessionLayer {
             cookie_name: "sova_sid".into(),
             cookie_name_explicit: false,
             secure: false,
+            secure_explicit: false,
             http_only: true,
             same_site: SameSite::Lax,
             same_site_explicit: false,
@@ -264,6 +266,7 @@ impl SessionLayer {
 
     pub fn secure(mut self, secure: bool) -> Self {
         self.secure = secure;
+        self.secure_explicit = true;
         self
     }
 
@@ -355,6 +358,23 @@ impl SessionLayer {
         }
         if let Some(v) = section.get("secure").and_then(|v| v.as_bool()) {
             self.secure = v;
+            self.secure_explicit = true;
+        }
+    }
+
+    fn apply_env_defaults(&mut self) {
+        if self.secure_explicit {
+            return;
+        }
+        // HTTPS deployments: prefer Secure cookies unless explicitly disabled.
+        let production = std::env::var("SOVA_ENV")
+            .map(|v| v.eq_ignore_ascii_case("production"))
+            .unwrap_or(false);
+        let session_secure = std::env::var("SESSION_SECURE")
+            .map(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes"))
+            .unwrap_or(false);
+        if production || session_secure {
+            self.secure = true;
         }
     }
 }
@@ -372,6 +392,7 @@ impl Plugin for SessionLayer {
 
     fn install(mut self, app: &mut App) {
         self.apply_config(app);
+        self.apply_env_defaults();
         if !app.has_plugin("cookies") {
             app.install(CookieLayer);
         }

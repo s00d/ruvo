@@ -34,6 +34,43 @@ async fn session_sets_cookie_with_cookie_layer() {
 }
 
 #[tokio::test]
+async fn production_env_enables_secure_cookie() {
+    let prev_env = std::env::var("SOVA_ENV").ok();
+    let prev_secure = std::env::var("SESSION_SECURE").ok();
+    std::env::remove_var("SESSION_SECURE");
+    std::env::set_var("SOVA_ENV", "production");
+
+    let mut app = App::new();
+    app.install(memory_sessions());
+    app.get("/", |req: Request| async move {
+        req.session().set("k", "v");
+        Html("ok".to_string())
+    });
+    let c = TestClient::tracked(app).unwrap();
+    let res = c.get("/").await;
+    let cookie = res
+        .headers()
+        .get_all("set-cookie")
+        .iter()
+        .filter_map(|v| v.to_str().ok())
+        .find(|v| v.contains("sova_sid="))
+        .expect("sid cookie");
+    assert!(
+        cookie.to_ascii_lowercase().contains("secure"),
+        "expected Secure in production: {cookie}"
+    );
+
+    match prev_env {
+        Some(v) => std::env::set_var("SOVA_ENV", v),
+        None => std::env::remove_var("SOVA_ENV"),
+    }
+    match prev_secure {
+        Some(v) => std::env::set_var("SESSION_SECURE", v),
+        None => std::env::remove_var("SESSION_SECURE"),
+    }
+}
+
+#[tokio::test]
 async fn session_auto_installs_cookie_layer() {
     let mut app = App::new();
     app.install(memory_sessions());

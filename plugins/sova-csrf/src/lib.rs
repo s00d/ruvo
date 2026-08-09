@@ -216,11 +216,21 @@ impl Plugin for Csrf {
 }
 
 fn attach_xsrf_cookie(res: Response, name: &str, token: &str) -> Response {
-    res.cookie(
-        CookieBuilder::build((name.to_string(), token.to_string()))
-            .path("/")
-            .build(),
-    )
+    let mut builder = CookieBuilder::build((name.to_string(), token.to_string())).path("/");
+    if xsrf_cookie_secure() {
+        builder = builder.secure(true);
+    }
+    res.cookie(builder.build())
+}
+
+fn xsrf_cookie_secure() -> bool {
+    let production = std::env::var("SOVA_ENV")
+        .map(|v| v.eq_ignore_ascii_case("production"))
+        .unwrap_or(false);
+    let forced = std::env::var("SESSION_SECURE")
+        .map(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes"))
+        .unwrap_or(false);
+    production || forced
 }
 
 /// Request helpers for CSRF tokens.

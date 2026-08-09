@@ -1,6 +1,6 @@
 [package]
 name = "sova-csrf"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "CSRF protection plugin for Sova (session double-submit)"
 license = "MIT"
