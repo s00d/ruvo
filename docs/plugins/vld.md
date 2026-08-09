@@ -63,7 +63,7 @@ async fn create(
 }
 ```
 
-HTML forms (web preset already has session/csrf):
+HTML forms (needs feature `vld-form`; web resource generator uses this):
 
 ```rust
 async fn store(mut req: Request) -> Result<Redirect> {
@@ -71,6 +71,12 @@ async fn store(mut req: Request) -> Result<Redirect> {
     req.flash_status("Saved");
     Ok(Redirect::back(&req))
 }
+```
+
+Or attach validation on the route and read via `req.valid::<NoteForm>()`:
+
+```rust
+app.post("/notes", store).validate_form::<NoteForm>();
 ```
 
 Features: `vld-openapi`, `vld-flash`, `vld-form`, `vld-i18n`.

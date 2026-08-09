@@ -1,6 +1,6 @@
 [package]
 name = "cargo-sovax"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2021"
 description = "Cargo subcommand for scaffolding and running Sova apps"
 license = "MIT"
@@ -26,5 +26,8 @@ clap = { workspace = true, features = ["derive"] }
 include_dir = { workspace = true }
 notify = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-toml = { workspace = true }
+toml = { workspace = true, features = ["parse", "display"] }
 ctrlc = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

@@ -352,7 +352,8 @@ fn set_expr(spec: &FieldSpec, from: &str) -> String {
 pub fn render_crud_dto(fields: Option<&[FieldSpec]>) -> String {
     let fields = dto_fields(fields);
     let mut out = String::new();
-    out.push_str("use sova::doc_schema;\n\n");
+    out.push_str("use sova::doc_schema;\n");
+    out.push_str("use sova::vld;\n\n");
     out.push_str("vld::schema! {\n");
     out.push_str("    #[derive(Debug, Clone, serde::Serialize)]\n");
     out.push_str("    pub struct Create {\n");
@@ -396,10 +397,9 @@ pub fn render_crud_handlers(name: &str, fields: Option<&[FieldSpec]>) -> String 
     out.push_str(&format!("use crate::entities::{name} as entity;\n"));
     out.push_str("use sova::{\n");
     out.push_str(
-        "    ActiveModelTrait, DbError, DbExt, Error, Json, Request, Response, Result, Set, ValidationExt,\n",
+        "    ActiveModelTrait, DbError, DbExt, EntityTrait, Error, Json, Request, Response, Result, Set, ValidationExt,\n",
     );
-    out.push_str("};\n");
-    out.push_str("use sea_orm::EntityTrait;\n\n");
+    out.push_str("};\n\n");
 
     out.push_str("pub async fn list(req: Request) -> Result<Json<Vec<entity::Model>>> {\n");
     out.push_str("    let rows = entity::Entity::find()\n");
@@ -645,7 +645,7 @@ pub fn render_web_mod(name: &str, plural: &str) -> String {
 pub fn render_web_dto(fields: Option<&[FieldSpec]>) -> String {
     let fields = dto_fields(fields);
     let mut out = String::new();
-    out.push_str("use sova::doc_schema;\n\n");
+    out.push_str("use sova::vld;\n\n");
     out.push_str("vld::schema! {\n");
     out.push_str("    #[derive(Debug, Clone)]\n");
     out.push_str("    pub struct Form {\n");
@@ -667,8 +667,7 @@ pub fn render_web_dto(fields: Option<&[FieldSpec]>) -> String {
     out.push_str("    pub struct IdParams {\n");
     out.push_str("        pub id: String => vld::string().min(1),\n");
     out.push_str("    }\n");
-    out.push_str("}\n\n");
-    out.push_str("doc_schema!(Form, IdParams);\n");
+    out.push_str("}\n");
     out
 }
 
@@ -749,10 +748,9 @@ pub fn render_web_handlers(name: &str, plural: &str, fields: Option<&[FieldSpec]
     out.push_str("use super::dto::{Form, IdParams};\n");
     out.push_str(&format!("use crate::entities::{name} as entity;\n"));
     out.push_str("use sova::{\n");
-    out.push_str("    ActiveModelTrait, DbError, DbExt, Error, Redirect, RenderExt, Request, Response, Result,\n");
-    out.push_str("    Set, ValidationExt,\n");
+    out.push_str("    ActiveModelTrait, CsrfExt, DbError, DbExt, EntityTrait, Error, IntoResponse,\n");
+    out.push_str("    Redirect, RenderExt, Request, Response, Result, Set, ValidationExt,\n");
     out.push_str("};\n");
-    out.push_str("use sea_orm::EntityTrait;\n");
     out.push_str("use serde_json::json;\n\n");
 
     out.push_str("pub async fn index(req: Request) -> Result<Response> {\n");
@@ -776,19 +774,21 @@ pub fn render_web_handlers(name: &str, plural: &str, fields: Option<&[FieldSpec]
     out.push_str("        .await\n");
     out.push_str("        .map_err(DbError::from)?\n");
     out.push_str("        .ok_or(Error::NotFound)?;\n");
+    out.push_str("    let csrf = req.csrf_token();\n");
     out.push_str(&format!(
-        "    Ok(req.render(\"{plural}/show.html\", json!({{ \"item\": row }}))?)\n"
+        "    Ok(req.render(\"{plural}/show.html\", json!({{ \"item\": row, \"csrf\": csrf }}))?)\n"
     ));
     out.push_str("}\n\n");
 
     out.push_str("pub async fn new_form(req: Request) -> Result<Response> {\n");
+    out.push_str("    let csrf = req.csrf_token();\n");
     out.push_str(&format!(
-        "    Ok(req.render(\"{plural}/form.html\", json!({{ \"item\": serde_json::Value::Null, \"action\": \"/{plural}\" }}))?)\n"
+        "    Ok(req.render(\"{plural}/form.html\", json!({{ \"item\": serde_json::Value::Null, \"action\": \"/{plural}\", \"csrf\": csrf }}))?)\n"
     ));
     out.push_str("}\n\n");
 
     out.push_str("pub async fn create(mut req: Request) -> Result<Response> {\n");
-    out.push_str("    let form: Form = req.validate().await?;\n");
+    out.push_str("    let form: Form = req.validate_form().await?;\n");
     out.push_str("    let row = entity::ActiveModel {\n");
     for f in &fields {
         out.push_str(&format!("        {}: {},\n", f.name, web_set_from_form(f)));
@@ -814,8 +814,9 @@ pub fn render_web_handlers(name: &str, plural: &str, fields: Option<&[FieldSpec]
     out.push_str("        .await\n");
     out.push_str("        .map_err(DbError::from)?\n");
     out.push_str("        .ok_or(Error::NotFound)?;\n");
+    out.push_str("    let csrf = req.csrf_token();\n");
     out.push_str(&format!(
-        "    Ok(req.render(\"{plural}/form.html\", json!({{ \"item\": row, \"action\": format!(\"/{plural}/{{}}\", id) }}))?)\n"
+        "    Ok(req.render(\"{plural}/form.html\", json!({{ \"item\": row, \"action\": format!(\"/{plural}/{{}}\", id), \"csrf\": csrf }}))?)\n"
     ));
     out.push_str("}\n\n");
 
@@ -825,7 +826,7 @@ pub fn render_web_handlers(name: &str, plural: &str, fields: Option<&[FieldSpec]
     out.push_str("        .id\n");
     out.push_str("        .parse()\n");
     out.push_str("        .map_err(|_| Error::BadRequest(\"invalid id\".into()))?;\n");
-    out.push_str("    let form: Form = req.validate().await?;\n");
+    out.push_str("    let form: Form = req.validate_form().await?;\n");
     out.push_str("    let row = entity::Entity::find_by_id(id)\n");
     out.push_str("        .one(req.db())\n");
     out.push_str("        .await\n");
@@ -857,30 +858,23 @@ pub fn render_web_handlers(name: &str, plural: &str, fields: Option<&[FieldSpec]
     out.push_str(&format!(
         "    Ok(Redirect::see_other(\"/{plural}\").into_response())\n"
     ));
-    out.push_str("}\n\n");
-    out.push_str("use sova::IntoResponse;\n");
+    out.push_str("}\n");
     out
 }
 
 pub fn render_web_routes(_plural: &str) -> String {
     [
-        "use super::dto::{Form, IdParams};\n",
         "use super::handlers;\n",
-        "use sova::{Doc, DocVldExt, OpenApiDocExt, Router};\n\n",
+        "use sova::Router;\n\n",
         "pub fn routes() -> Router {\n",
         "    let mut r = Router::new();\n",
-        "    r.get(\"/\", handlers::index).doc(Doc::new());\n",
-        "    r.get(\"/new\", handlers::new_form).doc(Doc::new());\n",
-        "    r.post(\"/\", handlers::create)\n",
-        "        .doc(Doc::new().body::<Form>());\n",
-        "    r.get(\"/:id\", handlers::show)\n",
-        "        .doc(Doc::new().params::<IdParams>());\n",
-        "    r.get(\"/:id/edit\", handlers::edit_form)\n",
-        "        .doc(Doc::new().params::<IdParams>());\n",
-        "    r.post(\"/:id\", handlers::update)\n",
-        "        .doc(Doc::new().params::<IdParams>().body::<Form>());\n",
-        "    r.post(\"/:id/delete\", handlers::destroy)\n",
-        "        .doc(Doc::new().params::<IdParams>());\n",
+        "    r.get(\"/\", handlers::index);\n",
+        "    r.get(\"/new\", handlers::new_form);\n",
+        "    r.post(\"/\", handlers::create);\n",
+        "    r.get(\"/:id\", handlers::show);\n",
+        "    r.get(\"/:id/edit\", handlers::edit_form);\n",
+        "    r.post(\"/:id\", handlers::update);\n",
+        "    r.post(\"/:id/delete\", handlers::destroy);\n",
         "    r\n",
         "}\n",
     ]
@@ -939,6 +933,7 @@ pub fn render_web_show_view(plural: &str, title: &str) -> String {
 <h1>{title} #{{{{ item.id }}}}</h1>
 <p><a href="/{plural}">Back</a> · <a href="/{plural}/{{{{ item.id }}}}/edit">Edit</a></p>
 <form method="post" action="/{plural}/{{{{ item.id }}}}/delete">
+  <input type="hidden" name="csrf" value="{{{{ csrf }}}}">
   <button type="submit">Delete</button>
 </form>
 {{% endblock %}}
@@ -966,6 +961,7 @@ pub fn render_web_form_view(plural: &str, title: &str, fields: Option<&[FieldSpe
 {{% block content %}}
 <h1>{title}</h1>
 <form method="post" action="{{{{ action }}}}">
+  <input type="hidden" name="csrf" value="{{{{ csrf }}}}">
 {inputs}  <button type="submit">Save</button>
 </form>
 <p><a href="/{plural}">Cancel</a></p>
@@ -1060,4 +1056,51 @@ pub fn append_migration_mod(mig_mod: &str) -> Result<(), String> {
 
     fs::write(&path, next).map_err(io_err)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn web_dto_imports_sova_vld_not_doc_schema() {
+        let dto = render_web_dto(Some(&[FieldSpec {
+            name: "title".into(),
+            ty: FieldType::String,
+            nullable: false,
+            unique: false,
+        }]));
+        assert!(dto.contains("use sova::vld;"), "{dto}");
+        assert!(!dto.contains("doc_schema"), "{dto}");
+    }
+
+    #[test]
+    fn web_routes_skip_openapi() {
+        let routes = render_web_routes("posts");
+        assert!(routes.contains("handlers::index"), "{routes}");
+        assert!(!routes.contains("OpenApiDocExt"), "{routes}");
+        assert!(!routes.contains(".doc("), "{routes}");
+    }
+
+    #[test]
+    fn web_form_includes_csrf_field() {
+        let form = render_web_form_view("posts", "Post", None);
+        assert!(form.contains("name=\"csrf\""), "{form}");
+    }
+
+    #[test]
+    fn web_handlers_pass_csrf_and_use_entity_trait() {
+        let h = render_web_handlers("post", "posts", None);
+        assert!(h.contains("csrf_token()"), "{h}");
+        assert!(h.contains("EntityTrait"), "{h}");
+        assert!(h.contains("validate_form()"), "{h}");
+        assert!(!h.contains("use sea_orm::EntityTrait"), "{h}");
+    }
+
+    #[test]
+    fn crud_dto_imports_vld() {
+        let dto = render_crud_dto(None);
+        assert!(dto.contains("use sova::vld;"), "{dto}");
+        assert!(dto.contains("doc_schema!(Create, Update, IdParams)"), "{dto}");
+    }
 }

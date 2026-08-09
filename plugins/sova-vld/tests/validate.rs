@@ -350,6 +350,40 @@ async fn validate_form_multipart_text() {
     assert_eq!(res.body_bytes(), Some(b"Alex".as_slice()));
 }
 
+#[cfg(feature = "form")]
+#[tokio::test]
+async fn validation_ext_validate_form_urlencoded() {
+    use sova_vld::ValidationExt;
+
+    vld::schema! {
+        #[derive(Debug, Clone)]
+        pub struct NoteForm {
+            pub title: String => vld::string().min(1),
+            pub body: String => vld::string(),
+        }
+    }
+
+    let mut app = App::new();
+    app.post("/notes", |mut req: Request| async move {
+        let form: NoteForm = req.validate_form().await.unwrap();
+        Response::text(form.title)
+    });
+
+    let server = app.build().unwrap();
+    let res = server
+        .handle(
+            Request::builder()
+                .method(Method::POST)
+                .path("/notes")
+                .header("content-type", "application/x-www-form-urlencoded")
+                .body("title=Hello&body=World")
+                .build(),
+        )
+        .await;
+    assert_eq!(res.status_code().as_u16(), 200);
+    assert_eq!(res.body_bytes(), Some(b"Hello".as_slice()));
+}
+
 #[tokio::test]
 async fn vld_plugin_audit_and_validate_query_route() {
     use sova_core::CheckKind;

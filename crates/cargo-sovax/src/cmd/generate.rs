@@ -2,6 +2,7 @@ use clap::{Args, Subcommand};
 use std::fs;
 use std::path::PathBuf;
 
+use crate::manifest::{ensure_mail_stack, ensure_resource_stack, ensure_tasks_stack};
 use crate::templates::codegen::{
     append_migration_mod, append_pub_mod, ensure_jobs_registry, ensure_mail_layout,
     ensure_root_layout, ensure_seeds_registry, mailer_names, parse_fields, pluralize,
@@ -241,12 +242,6 @@ Workspace members `plugins/*` pick this crate up automatically.
     Ok(())
 }
 
-fn generate_model(name: &str, fields: &str) -> Result<(), String> {
-    validate_ident(name)?;
-    let specs = parse_fields(fields)?;
-    write_model(name, &specs)
-}
-
 fn write_model(name: &str, specs: &[FieldSpec]) -> Result<(), String> {
     let entity_path = PathBuf::from("src/entities").join(format!("{name}.rs"));
     if entity_path.exists() {
@@ -267,8 +262,16 @@ fn write_model(name: &str, specs: &[FieldSpec]) -> Result<(), String> {
     Ok(())
 }
 
+fn generate_model(name: &str, fields: &str) -> Result<(), String> {
+    validate_ident(name)?;
+    ensure_resource_stack(false)?;
+    let specs = parse_fields(fields)?;
+    write_model(name, &specs)
+}
+
 fn generate_mailer(name: &str) -> Result<(), String> {
     validate_ident(name)?;
+    ensure_mail_stack()?;
     let (ty, snake) = mailer_names(name);
     let file = PathBuf::from("src/mailers").join(format!("{snake}.rs"));
     if file.exists() {
@@ -293,6 +296,7 @@ fn generate_mailer(name: &str) -> Result<(), String> {
 
 fn generate_job(name: &str) -> Result<(), String> {
     validate_ident(name)?;
+    ensure_tasks_stack()?;
     let snake = to_snake_case(name);
     validate_ident(&snake)?;
     let file = PathBuf::from("src/jobs").join(format!("{snake}.rs"));
@@ -310,6 +314,7 @@ fn generate_job(name: &str) -> Result<(), String> {
 }
 
 fn generate_migration(name: &str, fields: Option<&str>) -> Result<(), String> {
+    ensure_resource_stack(false)?;
     let snake = to_snake_case(name);
     validate_ident(&snake)?;
     let stamp = utc_ymdhms();
@@ -343,6 +348,7 @@ fn generate_migration(name: &str, fields: Option<&str>) -> Result<(), String> {
 
 fn generate_seed(name: &str) -> Result<(), String> {
     validate_ident(name)?;
+    ensure_resource_stack(false)?;
     let snake = to_snake_case(name);
     validate_ident(&snake)?;
     let file = PathBuf::from("src/seeds").join(format!("{snake}.rs"));
@@ -361,6 +367,7 @@ fn generate_seed(name: &str) -> Result<(), String> {
 
 fn generate_resource(name: &str, fields: Option<&str>, api: bool) -> Result<(), String> {
     validate_ident(name)?;
+    ensure_resource_stack(api)?;
     let specs = match fields {
         Some(raw) => Some(parse_fields(raw)?),
         None => None,
@@ -398,6 +405,7 @@ fn generate_resource(name: &str, fields: Option<&str>, api: bool) -> Result<(), 
         register_module(name)?;
         println!("generated api resource `{name}` at /{plural}");
         println!("  tests/{name}_api.rs");
+        println!("  hint: DATABASE_URL=sqlite:./app.db?mode=rwc cargo run");
     } else {
         let title = to_type_name(name);
         fs::write(module_dir.join("mod.rs"), render_web_mod(name, &plural)).map_err(io_err)?;
@@ -438,6 +446,7 @@ fn generate_resource(name: &str, fields: Option<&str>, api: bool) -> Result<(), 
         println!("generated web resource `{name}` at /{plural}");
         println!("  views/{plural}/{{index,show,form}}.html");
         println!("  tests/{name}_resource.rs");
+        println!("  hint: DATABASE_URL=sqlite:./app.db?mode=rwc cargo run");
     }
     Ok(())
 }

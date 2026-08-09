@@ -36,6 +36,14 @@ cargo sovax generate resource post --api
 | `job` / `worker <Name>` | `src/jobs/…` |
 | `resource` / `crud` | module + routes (+ JSON with `--api`) |
 
+`resource` / `model` / `migration` / `seed` also patch `Cargo.toml` (sqlite + vld) and wire
+`Db::from_env().migrations::<…>()` into `src/main.rs`. Web forms include a CSRF hidden field
+for the `App::web()` preset. After generate:
+
+```bash
+DATABASE_URL=sqlite:./app.db?mode=rwc cargo run
+```
+
 ## Run / build
 
 | Command | What |

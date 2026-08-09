@@ -288,7 +288,7 @@ With the **web** preset, sessions and CSRF are already installed:
 
 ```rust
 async fn save(mut req: Request) -> Result<Redirect> {
-    let form: NoteForm = req.validate_form().await?; // feature `vld` / `auth-vld`
+    let form: NoteForm = req.validate_form().await?; // feature `vld-form`
     // …
     req.flash_status("Saved");
     Ok(Redirect::back(&req))

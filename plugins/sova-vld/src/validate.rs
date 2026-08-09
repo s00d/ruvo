@@ -246,7 +246,7 @@ pub(crate) fn read_query_value(req: &Request) -> Value {
 }
 
 #[cfg(feature = "form")]
-async fn read_form_value(req: &mut Request) -> Result<Value, ValidationError> {
+pub(crate) async fn read_form_value(req: &mut Request) -> Result<Value, ValidationError> {
     let data = req.input().await?;
     let mut map = Map::new();
     for (name, values) in data.text_map() {

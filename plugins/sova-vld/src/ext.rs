@@ -13,6 +13,12 @@ pub trait ValidationExt {
     fn validate_query<T: VldParse>(&self) -> Result<T, ValidationError>;
 
     fn validate_params<T: VldParse>(&self) -> Result<T, ValidationError>;
+
+    /// Parse `application/x-www-form-urlencoded` or `multipart/form-data` (feature `form`).
+    #[cfg(feature = "form")]
+    fn validate_form<T: VldParse>(
+        &mut self,
+    ) -> impl std::future::Future<Output = Result<T, ValidationError>> + Send;
 }
 
 impl ValidationExt for Request {
@@ -34,6 +40,12 @@ impl ValidationExt for Request {
 
     fn validate_params<T: VldParse>(&self) -> Result<T, ValidationError> {
         let value = read_params_value(self);
+        T::vld_parse_value(&value).map_err(ValidationError::from)
+    }
+
+    #[cfg(feature = "form")]
+    async fn validate_form<T: VldParse>(&mut self) -> Result<T, ValidationError> {
+        let value = crate::validate::read_form_value(self).await?;
         T::vld_parse_value(&value).map_err(ValidationError::from)
     }
 }
