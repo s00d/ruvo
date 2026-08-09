@@ -16,8 +16,13 @@ impl MigratorTrait for HnMigrator {
 mod m20260809_hn_tables {
     use sea_orm_migration::prelude::*;
 
-    #[derive(DeriveMigrationName)]
     pub struct Migration;
+
+    impl MigrationName for Migration {
+        fn name(&self) -> &str {
+            "m20260809_hn_tables"
+        }
+    }
 
     #[async_trait::async_trait]
     impl MigrationTrait for Migration {

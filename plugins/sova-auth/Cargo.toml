@@ -1,6 +1,6 @@
 [package]
 name = "sova-auth"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Fortify-style authentication for Sova (register, 2FA, reset, roles)"
 license = "MIT"

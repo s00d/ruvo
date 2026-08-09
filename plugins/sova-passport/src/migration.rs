@@ -24,8 +24,13 @@ impl MigratorTrait for AuthMigrator {
 mod m20260308_000001_passport {
     use sea_orm_migration::prelude::*;
 
-    #[derive(DeriveMigrationName)]
     pub struct Migration;
+
+    impl MigrationName for Migration {
+        fn name(&self) -> &str {
+            "m20260308_000001_passport"
+        }
+    }
 
     #[async_trait::async_trait]
     impl MigrationTrait for Migration {

@@ -1,6 +1,6 @@
 [package]
 name = "sova-passport"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Passport-style authentication for Sova (strategies, JWT, OAuth2, sessions)"
 license = "MIT"

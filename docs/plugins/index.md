@@ -18,7 +18,7 @@ Open a plugin page from the table. Extra notes for heavier stacks are below.
 | Plugin | Version | Summary | Features |
 |--------|---------|---------|----------|
 | [`activity`](/plugins/activity) | `0.1.0` | Audit / activity log (who changed what) | `activity` |
-| [`auth`](/plugins/auth) | `0.1.1` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-vld` |
+| [`auth`](/plugins/auth) | `0.1.2` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-vld` |
 | [`compress`](/plugins/compress) | `0.1.0` | gzip / deflate / brotli response compression | `compress` |
 | [`cookies`](/plugins/cookies) | `0.1.0` | Parse Cookie header into request-local Cookies | `cookies` |
 | [`cors`](/plugins/cors) | `0.1.0` | Cross-Origin Resource Sharing headers | `cors` |
@@ -32,7 +32,7 @@ Open a plugin page from the table. Extra notes for heavier stacks are below.
 | [`notifications`](/plugins/notifications) | `0.1.0` | DB inbox, channels with ACL, optional WS/mail | `notifications`, `notifications-auth`, `notifications-mail`, `notifications-templates`, `notifications-ws` |
 | [`observability`](/plugins/observability) | `0.1.0` | HTTP metrics, OpenTelemetry, Elasticsearch log shipping | `observability`, `observability-elasticsearch`, `observability-otel` |
 | [`openapi`](/plugins/openapi) | `0.1.0` | OpenAPI 3.1 document + Scalar UI at mount path | `openapi` |
-| [`passport`](/plugins/passport) | `0.1.0` | Users + access/refresh JWT + personal access tokens | `passport`, `passport-jwt`, `passport-oauth`, `passport-session` |
+| [`passport`](/plugins/passport) | `0.1.1` | Users + access/refresh JWT + personal access tokens | `passport`, `passport-jwt`, `passport-oauth`, `passport-session` |
 | [`quic`](/plugins/quic) | `0.1.0` | QUIC datagrams BackgroundService helpers for Sova | `quic-udp` |
 | [`rate-limit`](/plugins/rate-limit) | `0.1.0` | Per-key request rate limiting | `rate-limit` |
 | [`redis`](/plugins/redis) | `0.1.0` | Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues | `redis` |
