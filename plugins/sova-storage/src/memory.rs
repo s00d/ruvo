@@ -3,18 +3,12 @@
 use crate::{normalize_key, normalize_prefix, BlobStore, BoxFuture, PutOpts, StorageError};
 use bytes::Bytes;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 #[derive(Clone, Default)]
 pub struct MemoryStore {
     inner: Arc<Mutex<HashMap<String, Bytes>>>,
-}
-
-fn lock_map(inner: &Mutex<HashMap<String, Bytes>>) -> MutexGuard<'_, HashMap<String, Bytes>> {
-    match inner.try_lock() {
-        Ok(g) => g,
-        Err(_) => tokio::task::block_in_place(|| inner.lock().unwrap()),
-    }
 }
 
 impl MemoryStore {
@@ -32,7 +26,7 @@ impl BlobStore for MemoryStore {
     ) -> BoxFuture<'a, Result<(), StorageError>> {
         Box::pin(async move {
             let key = normalize_key(key)?;
-            lock_map(&self.inner).insert(key, data);
+            self.inner.lock().await.insert(key, data);
             Ok(())
         })
     }
@@ -40,14 +34,14 @@ impl BlobStore for MemoryStore {
     fn get<'a>(&'a self, key: &'a str) -> BoxFuture<'a, Result<Option<Bytes>, StorageError>> {
         Box::pin(async move {
             let key = normalize_key(key)?;
-            Ok(lock_map(&self.inner).get(&key).cloned())
+            Ok(self.inner.lock().await.get(&key).cloned())
         })
     }
 
     fn delete<'a>(&'a self, key: &'a str) -> BoxFuture<'a, Result<(), StorageError>> {
         Box::pin(async move {
             let key = normalize_key(key)?;
-            lock_map(&self.inner).remove(&key);
+            self.inner.lock().await.remove(&key);
             Ok(())
         })
     }
@@ -55,14 +49,14 @@ impl BlobStore for MemoryStore {
     fn exists<'a>(&'a self, key: &'a str) -> BoxFuture<'a, Result<bool, StorageError>> {
         Box::pin(async move {
             let key = normalize_key(key)?;
-            Ok(lock_map(&self.inner).contains_key(&key))
+            Ok(self.inner.lock().await.contains_key(&key))
         })
     }
 
     fn list<'a>(&'a self, prefix: &'a str) -> BoxFuture<'a, Result<Vec<String>, StorageError>> {
         Box::pin(async move {
             let prefix = normalize_prefix(prefix)?;
-            let map = lock_map(&self.inner);
+            let map = self.inner.lock().await;
             let mut keys: Vec<String> = map
                 .keys()
                 .filter(|k| {

@@ -1,6 +1,6 @@
 [package]
 name = "sova-storage"
-version = "0.1.3"
+version = "0.1.4"
 authors.workspace = true
 edition.workspace = true
 description = "Object storage for Sova (local / memory / S3 / GCS / Azure)"

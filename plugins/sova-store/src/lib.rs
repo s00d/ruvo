@@ -22,8 +22,9 @@ use std::collections::hash_map::DefaultHasher;
 use std::future::Future;
 use std::hash::{Hash, Hasher};
 use std::pin::Pin;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
+use tokio::sync::Mutex;
 
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
@@ -171,15 +172,6 @@ impl MemoryStore {
     }
 }
 
-/// Sync mutex in async: fast path `try_lock`, contended path
-/// [`block_in_place`](tokio::task::block_in_place) so the runtime can move work.
-fn lock_shard(shard: &ShardMap) -> MutexGuard<'_, HashMap<String, Entry>> {
-    match shard.try_lock() {
-        Ok(g) => g,
-        Err(_) => tokio::task::block_in_place(|| shard.lock().unwrap()),
-    }
-}
-
 fn shard_index(key: &str, n: usize) -> usize {
     let mut h = DefaultHasher::new();
     key.hash(&mut h);
@@ -201,7 +193,7 @@ impl KvStore for MemoryStore {
         let key = key.to_string();
         Box::pin(async move {
             let started = Instant::now();
-            let mut map = lock_shard(&shard);
+            let mut map = shard.lock().await;
             let now = Instant::now();
             let val = match map.get(&key) {
                 Some(e) if Self::alive(e, now) => Some(e.val.clone()),
@@ -234,7 +226,7 @@ impl KvStore for MemoryStore {
         Box::pin(async move {
             let started = Instant::now();
             let n = val.len() as u64;
-            let mut map = lock_shard(&shard);
+            let mut map = shard.lock().await;
             map.insert(
                 key.clone(),
                 Entry {
@@ -259,7 +251,7 @@ impl KvStore for MemoryStore {
         let shard = Arc::clone(self.shard(key));
         let key = key.to_string();
         Box::pin(async move {
-            lock_shard(&shard).remove(&key);
+            shard.lock().await.remove(&key);
         })
     }
 
@@ -267,7 +259,7 @@ impl KvStore for MemoryStore {
         let shard = Arc::clone(self.shard(key));
         let key = key.to_string();
         Box::pin(async move {
-            let mut map = lock_shard(&shard);
+            let mut map = shard.lock().await;
             let now = Instant::now();
             let cur = match map.get(&key) {
                 Some(e) if Self::alive(e, now) => {
@@ -294,7 +286,7 @@ impl KvStore for MemoryStore {
         Box::pin(async move {
             let mut total = 0u64;
             for shard in shards {
-                let mut map = lock_shard(&shard);
+                let mut map = shard.lock().await;
                 let keys: Vec<_> = map
                     .keys()
                     .filter(|k| k.starts_with(&prefix))

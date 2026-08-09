@@ -1,6 +1,6 @@
 [package]
 name = "sova-tasks-store"
-version = "0.1.3"
+version = "0.1.4"
 authors.workspace = true
 edition.workspace = true
 description = "TaskStore trait + memory / file / sql / redis backends"
@@ -21,7 +21,7 @@ redis = ["dep:sova-redis", "dep:serde", "dep:serde_json", "dep:redis", "dep:base
 
 [dependencies]
 bytes = { workspace = true }
-tokio = { workspace = true, features = ["sync", "time", "rt", "rt-multi-thread", "macros"] }
+tokio = { workspace = true, features = ["sync", "time", "rt", "macros"] }
 thiserror = { workspace = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
