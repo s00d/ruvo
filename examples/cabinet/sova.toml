@@ -22,8 +22,10 @@ path = "public/uploads"
 public_url = "/assets/uploads"
 
 [db]
-# Overridden when DATABASE_URL is set (non-empty).
-url = "postgres://postgres@localhost/sova"
+# Local sqlite by default. Overridden when DATABASE_URL is set (non-empty).
+url = "sqlite:data/cabinet.db?mode=rwc"
+migrate_on_startup = true
+seed_on_startup = true
 
 # Optional: schedule already-registered jobs (toml overrides code .cron/.every).
 # [schedule.welcome_email]

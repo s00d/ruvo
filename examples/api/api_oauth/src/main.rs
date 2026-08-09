@@ -1,7 +1,6 @@
 //! OAuth2 login (GitHub / Google / optional Apple) + JWT API guard.
 //!
 //! ```bash
-//! export DATABASE_URL=postgres://postgres@localhost/sova
 //! export JWT_SECRET=dev-secret
 //! export GITHUB_CLIENT_ID=...
 //! export GITHUB_CLIENT_SECRET=...
@@ -17,14 +16,19 @@
 //! cargo run -p api_oauth
 //! # open http://127.0.0.1:3000/oauth/github  or /oauth/google
 //! ```
+//!
+//! DB: `sova.toml` `[db] url` (sqlite). Override with `DATABASE_URL`.
 
 use sova::{
     App, Apple, AuthMigrator, Db, Driver, Github, Google, JwtAuth, JwtAuthExt, Json, Oauth,
     Request, Result, Router,
 };
+use std::path::PathBuf;
 
 fn build_app() -> App {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let mut app = App::new();
+    let _ = app.configure_from_path(root.join("sova.toml"));
     app.install(Db::from_env().migrations::<AuthMigrator>());
     app.install(JwtAuth::from_env().mount("/auth"));
 

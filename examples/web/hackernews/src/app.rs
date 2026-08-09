@@ -23,10 +23,13 @@ pub fn build_app_with_db(database_url: Option<&str>) -> Result<App> {
         .views(root.join("views"))
         .assets(root.join("public"))
         .into_app();
+    let _ = app.configure_from_path(root.join("sova.toml"));
 
     let mut db = Db::from_env()
         .migrations::<HnMigrator>()
-        .seed(|state| async move { seed::run(state).await });
+        .migrate_on_startup()
+        .seed(|state| async move { seed::run(state).await })
+        .seed_on_startup();
     if let Some(url) = database_url {
         db = db.url(url);
     }

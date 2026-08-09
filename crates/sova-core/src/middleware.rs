@@ -225,6 +225,14 @@ pub fn logger() -> MwEntry {
         let method = req.method.as_str().to_string();
         let path = req.path.clone();
         let quiet = logger_should_skip(&path);
+        let user_agent = req
+            .header("user-agent")
+            .unwrap_or("-")
+            .to_string();
+        let peer = req
+            .get::<crate::server::ClientAddr>()
+            .map(|a| a.0.to_string())
+            .unwrap_or_else(|| "-".into());
         let request_id = req
             .get::<crate::request_id::RequestId>()
             .map(|r| r.0.clone())
@@ -242,6 +250,8 @@ pub fn logger() -> MwEntry {
                 path = %path,
                 status,
                 latency_ms,
+                peer = %peer,
+                user_agent = %user_agent,
                 "request"
             );
         } else {
@@ -251,6 +261,8 @@ pub fn logger() -> MwEntry {
                 path = %path,
                 status,
                 latency_ms,
+                peer = %peer,
+                user_agent = %user_agent,
                 "request"
             );
         }

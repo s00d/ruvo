@@ -1,6 +1,6 @@
 [package]
 name = "sova"
-version = "0.1.23"
+version = "0.1.24"
 authors.workspace = true
 edition.workspace = true
 description = "Express-like HTTP framework for Rust"

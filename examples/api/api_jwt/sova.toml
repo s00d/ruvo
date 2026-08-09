@@ -1,0 +1,5 @@
+# JWT demo — local sqlite by default (override with DATABASE_URL).
+
+[db]
+url = "sqlite:api_jwt.db?mode=rwc"
+migrate_on_startup = true

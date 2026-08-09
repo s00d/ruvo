@@ -1,4 +1,4 @@
-//! Optional demo data: `cargo run -p hackernews -- seed`
+//! Demo data on first boot (`seed_on_startup` / `cargo run -p hackernews -- seed`).
 
 use crate::db;
 use sea_orm::{EntityTrait, PaginatorTrait};
@@ -21,31 +21,77 @@ pub async fn run(state: Arc<StateMap>) -> Result<()> {
         return Ok(());
     }
 
-    let user_id = ensure_demo_user(&db).await?;
+    let demo = ensure_user(&db, "demo@sova.news", "demo", "demo1234").await?;
+    let alice = ensure_user(&db, "alice@sova.news", "alice", "alice1234").await?;
+    let bob = ensure_user(&db, "bob@sova.news", "bob", "bob12345").await?;
 
-    db::create_story(
+    let welcome = db::create_story(
         &db,
-        user_id,
+        demo,
         "Welcome to Sova News".into(),
         Some("https://s00d.github.io/sova/".into()),
         None,
     )
     .await?;
-    db::create_story(
+    let ask = db::create_story(
         &db,
-        user_id,
+        alice,
         "Ask SN: what should we build next?".into(),
         None,
-        Some("Drop ideas in the comments.".into()),
+        Some("Drop ideas in the comments — plugins, DX, docs…".into()),
     )
     .await?;
+    let show = db::create_story(
+        &db,
+        bob,
+        "Show SN: cargo-sovax scaffolding".into(),
+        Some("https://s00d.github.io/sova/guide/cargo-sovax".into()),
+        None,
+    )
+    .await?;
+    let _perf = db::create_story(
+        &db,
+        demo,
+        "Notes on MemoryStore sharding".into(),
+        None,
+        Some("Default shards are fine for HTTP; avoid with_shards(1) under load.".into()),
+    )
+    .await?;
+
+    let _ = db::upvote(&db, alice, welcome.id).await?;
+    let _ = db::upvote(&db, bob, welcome.id).await?;
+    let _ = db::upvote(&db, demo, ask.id).await?;
+    let _ = db::upvote(&db, alice, show.id).await?;
+
+    db::add_comment(
+        &db,
+        alice,
+        welcome.id,
+        "Nice — sqlite + migrate_on_startup just works.".into(),
+    )
+    .await?;
+    db::add_comment(
+        &db,
+        bob,
+        welcome.id,
+        "Try registering another account and submitting a link.".into(),
+    )
+    .await?;
+    db::add_comment(
+        &db,
+        demo,
+        ask.id,
+        "I'd love more realtime examples (ws / sse).".into(),
+    )
+    .await?;
+
     Ok(())
 }
 
-async fn ensure_demo_user(db: &DbHandle) -> Result<i64> {
-    if let Some(u) = find_user_by_email(db, "demo@sova.news").await? {
+async fn ensure_user(db: &DbHandle, email: &str, name: &str, password: &str) -> Result<i64> {
+    if let Some(u) = find_user_by_email(db, email).await? {
         return Ok(u.id);
     }
-    let u = register_user(db, "demo@sova.news", "demo", "demo1234").await?;
+    let u = register_user(db, email, name, password).await?;
     Ok(u.id)
 }

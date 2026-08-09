@@ -1,0 +1,5 @@
+# OAuth demo — local sqlite by default (override with DATABASE_URL).
+
+[db]
+url = "sqlite:api_oauth.db?mode=rwc"
+migrate_on_startup = true

@@ -1,10 +1,11 @@
 //! Hacker News–style demo for Sova.
 //!
 //! ```bash
-//! DATABASE_URL=sqlite:./hn.db?mode=rwc cargo run -p hackernews -- migrate
-//! DATABASE_URL=sqlite:./hn.db?mode=rwc cargo run -p hackernews -- seed
-//! DATABASE_URL=sqlite:./hn.db?mode=rwc cargo run -p hackernews
+//! cargo run -p hackernews
 //! ```
+//!
+//! DB URL + auto migrate/seed: `examples/web/hackernews/sova.toml`. Override with `DATABASE_URL`.
+//! Manual: `cargo run -p hackernews -- migrate` / `-- seed`.
 
 use hackernews::build_app;
 use sova::{Parser, Result, ServerArgs};

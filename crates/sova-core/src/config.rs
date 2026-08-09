@@ -29,7 +29,7 @@ use crate::error::{Error, Result};
 use crate::human::{parse_bytes, parse_duration};
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -40,6 +40,8 @@ pub struct ConfigDoc {
     pub root: toml::Value,
     /// Active profile (`development` / `production` / `test` / custom).
     pub profile: String,
+    /// Directory of the loaded `sova.toml`, when loaded via [`App::configure_from_path`].
+    pub source_dir: Option<PathBuf>,
 }
 
 impl ConfigDoc {
@@ -375,19 +377,33 @@ impl App {
 
     /// Load settings from a toml file (app-level only), then `SOVA_*` env overrides.
     pub fn configure_from_path(&mut self, path: impl AsRef<Path>) -> Result<&mut Self> {
-        let text = std::fs::read_to_string(path.as_ref()).map_err(Error::Io)?;
-        self.configure_from_str(&text)?;
+        let path = path.as_ref();
+        let text = std::fs::read_to_string(path).map_err(Error::Io)?;
+        let source_dir = path
+            .parent()
+            .filter(|p| !p.as_os_str().is_empty())
+            .map(|p| p.to_path_buf());
+        self.configure_from_str_with_dir(&text, source_dir)?;
         Ok(self)
     }
 
     /// Parse toml and apply `[server]` (+ legacy) for the active profile, then env overrides.
     pub fn configure_from_str(&mut self, text: &str) -> Result<&mut Self> {
+        self.configure_from_str_with_dir(text, None)
+    }
+
+    fn configure_from_str_with_dir(
+        &mut self,
+        text: &str,
+        source_dir: Option<PathBuf>,
+    ) -> Result<&mut Self> {
         let root: toml::Value =
             toml::from_str(text).map_err(|e| Error::Internal(format!("sova.toml: {e}")))?;
         let profile_name = active_profile();
         self.state(ConfigDoc {
             root: root.clone(),
             profile: profile_name.clone(),
+            source_dir,
         });
 
         let server = resolve_server(&root, &profile_name);

@@ -9,7 +9,7 @@ name = "api_jwt"
 path = "src/main.rs"
 
 [dependencies]
-sova = { workspace = true, features = ["passport-jwt", "env", "cli"] }
+sova = { workspace = true, features = ["passport-jwt", "db-sqlite", "env", "cli"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde = { workspace = true, features = ["derive"] }
 tracing = { workspace = true }

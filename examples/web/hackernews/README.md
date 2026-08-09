@@ -9,14 +9,12 @@ Minimal news site: **stories**, **upvotes**, **comments**, session auth via Fort
 (`Registration` only — no Mail / 2FA / reset / roles).
 
 ```bash
-cd examples/web/hackernews
-export DATABASE_URL="sqlite:./hn.db?mode=rwc"
-export FORTIFY_SECRET="dev-hn-secret-change-me"
-cargo run -p hackernews -- migrate
-cargo run -p hackernews -- seed   # optional: demo@sova.news / demo1234
 cargo run -p hackernews
 # http://127.0.0.1:3000
+# Accounts (seeded): demo@sova.news / demo1234 · alice@sova.news / alice1234 · bob@sova.news / bob12345
 ```
+
+Auto migrate + seed on startup (`Db::migrate_on_startup` / `seed_on_startup` + `[db]` in [`sova.toml`](./sova.toml)). Override DB with `DATABASE_URL`.
 
 | Path | What |
 |------|------|

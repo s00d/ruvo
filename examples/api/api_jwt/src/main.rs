@@ -1,10 +1,8 @@
 //! Full JWT auth + personal access tokens via `JwtAuth` + `AuthMigrator`.
 //!
 //! ```bash
-//! export DATABASE_URL=postgres://postgres@localhost/sova
 //! export JWT_SECRET=dev-secret-change-me
 //! cargo run -p api_jwt -- migrate
-//! # or: cargo sovax db migrate -p api_jwt
 //! cargo run -p api_jwt
 //!
 //! # register / login → JWT
@@ -20,13 +18,18 @@
 //!   -d '{"name":"ci","abilities":[]}'
 //! curl -s http://127.0.0.1:3000/api/me -H "authorization: Bearer <svpat_…>"
 //! ```
+//!
+//! DB: `sova.toml` `[db] url` (sqlite). Override with `DATABASE_URL`.
 
 use sova::{
     App, AuthMigrator, Db, JwtAuth, JwtAuthExt, Json, Request, Result, Router,
 };
+use std::path::PathBuf;
 
 fn build_app() -> App {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let mut app = App::new();
+    let _ = app.configure_from_path(root.join("sova.toml"));
     app.install(Db::from_env().migrations::<AuthMigrator>());
     app.install(JwtAuth::from_env().mount("/auth"));
     app.with_probes();

@@ -1,0 +1,6 @@
+# Hacker News demo — defaults to local sqlite (override with DATABASE_URL).
+
+[db]
+url = "sqlite:hn.db?mode=rwc"
+migrate_on_startup = true
+seed_on_startup = true

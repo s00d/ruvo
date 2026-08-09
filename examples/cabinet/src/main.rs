@@ -1,14 +1,13 @@
 //! Sova kitchen-sink demo: Fortify auth, cabinet, notes, most web plugins.
 //!
 //! ```bash
-//! export DATABASE_URL=postgres://postgres@localhost/sova
 //! cargo run -p cabinet -- migrate
 //! cargo run -p cabinet -- seed
 //! cargo run -p cabinet
 //! # http://127.0.0.1:3000  demo@sova.local / demo1234
 //! ```
 //!
-//! Or via tooling: `cargo sovax db migrate -p cabinet` / `cargo sovax db seed -p cabinet`.
+//! DB: `sova.toml` `[db] url` (sqlite). Override with `DATABASE_URL`.
 
 mod db;
 mod entity;

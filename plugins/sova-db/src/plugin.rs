@@ -6,6 +6,7 @@ use sova_core::{App, Error, Plugin};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use sea_orm_migration::MigratorTrait;
 use std::future::Future;
+use std::path::Path;
 use std::pin::Pin;
 use std::sync::Arc;
 
@@ -33,6 +34,8 @@ pub struct Db {
     sqlx_logging: bool,
     migrate: Option<MigrateFn>,
     seed: Option<SeedFn>,
+    migrate_on_startup: bool,
+    seed_on_startup: bool,
 }
 
 impl Db {
@@ -44,6 +47,8 @@ impl Db {
             sqlx_logging: false,
             migrate: None,
             seed: None,
+            migrate_on_startup: false,
+            seed_on_startup: false,
         }
     }
 
@@ -60,6 +65,18 @@ impl Db {
         self
     }
 
+    /// Apply pending migrations after connect (also still available as `migrate` CLI).
+    pub fn migrate_on_startup(mut self) -> Self {
+        self.migrate_on_startup = true;
+        self
+    }
+
+    /// Run [`Self::seed`] after connect / migrate (also still available as `seed` CLI).
+    pub fn seed_on_startup(mut self) -> Self {
+        self.seed_on_startup = true;
+        self
+    }
+
     /// Register `myapp migrate [up|down|status] [N]` CLI hooks.
     pub fn migrations<M: MigratorTrait + 'static>(mut self) -> Self {
         self.migrate = Some(Arc::new(move |conn, args| {
@@ -68,7 +85,7 @@ impl Db {
         self
     }
 
-    /// Register `myapp seed` CLI (runs after DB startup; not on every server start).
+    /// Register `myapp seed` CLI (and optionally [`Self::seed_on_startup`]).
     ///
     /// Accepts `Result<(), E>` where `E: Into<Error>` so facade `AppError` works with `?`.
     pub fn seed<F, Fut, E>(mut self, f: F) -> Self
@@ -105,12 +122,33 @@ impl Plugin for Db {
                 }
             }
             if self.url.is_empty() {
-                if let Some(u) = app
-                    .config_doc()
-                    .and_then(|d| d.section("db"))
-                    .and_then(|s| s.get("url").and_then(|v| v.as_str()).map(str::to_string))
+                if let Some(doc) = app.config_doc() {
+                    if let Some(u) = doc
+                        .section("db")
+                        .and_then(|s| s.get("url").and_then(|v| v.as_str()).map(str::to_string))
+                    {
+                        self.url = resolve_sqlite_url(&u, doc.source_dir.as_deref());
+                    }
+                }
+            }
+        }
+
+        // Toml can enable auto migrate/seed without code changes.
+        if let Some(doc) = app.config_doc() {
+            if let Some(section) = doc.section("db") {
+                if section
+                    .get("migrate_on_startup")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false)
                 {
-                    self.url = u;
+                    self.migrate_on_startup = true;
+                }
+                if section
+                    .get("seed_on_startup")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false)
+                {
+                    self.seed_on_startup = true;
                 }
             }
         }
@@ -130,9 +168,14 @@ impl Plugin for Db {
         let url = self.url.clone();
         let pool_start = pool.clone();
         let sqlx_logging = self.sqlx_logging;
+        let migrate_boot = self
+            .migrate_on_startup
+            .then(|| self.migrate.clone())
+            .flatten();
         app.on_startup(move |_state| {
             let url = url.clone();
             let pool = pool_start.clone();
+            let migrate_boot = migrate_boot.clone();
             async move {
                 let mut opt = ConnectOptions::new(url);
                 opt.sqlx_logging(sqlx_logging);
@@ -142,6 +185,10 @@ impl Plugin for Db {
                 conn.ping()
                     .await
                     .map_err(|e| Error::Internal(format!("db ping: {e}")))?;
+                if let Some(migrate) = migrate_boot {
+                    // empty args → migrate up (all pending)
+                    migrate(conn.clone(), Vec::new()).await?;
+                }
                 pool.set(conn);
                 Ok(())
             }
@@ -169,7 +216,7 @@ impl Plugin for Db {
             }
         });
 
-        if let Some(migrate) = self.migrate {
+        if let Some(migrate) = self.migrate.clone() {
             let pool_cli = pool.clone();
             app.register_cli("migrate", move |_state, args| {
                 let pool = pool_cli.clone();
@@ -181,11 +228,43 @@ impl Plugin for Db {
             });
         }
 
-        if let Some(seed) = self.seed {
+        if let Some(seed) = self.seed.clone() {
+            let seed_cli = Arc::clone(&seed);
             app.register_cli("seed", move |state, _args| {
-                let seed = Arc::clone(&seed);
+                let seed = Arc::clone(&seed_cli);
                 async move { seed(state).await }
             });
+            if self.seed_on_startup {
+                app.on_startup(move |state| {
+                    let seed = Arc::clone(&seed);
+                    async move { seed(state).await }
+                });
+            }
         }
+    }
+}
+
+/// If `sqlite:` path is relative, resolve it against the directory of `sova.toml`.
+fn resolve_sqlite_url(url: &str, source_dir: Option<&Path>) -> String {
+    let Some(dir) = source_dir else {
+        return url.to_string();
+    };
+    let rest = match url.strip_prefix("sqlite:") {
+        Some(r) if !r.starts_with('/') && !r.starts_with("//") && r != ":memory:" && !r.starts_with(":memory:") => r,
+        _ => return url.to_string(),
+    };
+    // `sqlite:hn.db?mode=rwc` or `sqlite:./data/x.db?mode=rwc`
+    let (path_part, query) = match rest.split_once('?') {
+        Some((p, q)) => (p, Some(q)),
+        None => (rest, None),
+    };
+    let path = Path::new(path_part);
+    if path.is_absolute() {
+        return url.to_string();
+    }
+    let abs = dir.join(path);
+    match query {
+        Some(q) => format!("sqlite://{}?{q}", abs.display()),
+        None => format!("sqlite://{}", abs.display()),
     }
 }

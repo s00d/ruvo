@@ -8,9 +8,9 @@
 Kitchen-sink sample. Full walkthrough: [docs → Examples](https://s00d.github.io/sova/examples).
 
 ```bash
-cp .env.example .env
-cargo sovax db migrate -p cabinet && cargo sovax db seed -p cabinet
+cp .env.example .env   # optional
 cargo run -p cabinet
+# http://127.0.0.1:3000  demo@sova.local / demo1234
 ```
 
-Seed user: `demo@sova.local` / `demo1234`. Config: `sova.toml`.
+Seed user created on first start (`seed_on_startup`). Config: `sova.toml` (sqlite + auto migrate).

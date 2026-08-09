@@ -9,11 +9,11 @@ name = "crud"
 path = "src/main.rs"
 
 [dependencies]
-sova = { workspace = true, features = ["db", "vld", "env"] }
+sova = { workspace = true, features = ["db-sqlite", "vld", "env"] }
 sova-env = { path = "../../../plugins/sova-env" }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
-sea-orm-migration = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-rustls"] }
+sea-orm = { workspace = true, features = ["sqlx-sqlite", "runtime-tokio-rustls", "macros"] }
+sea-orm-migration = { workspace = true, features = ["sqlx-sqlite", "runtime-tokio-rustls"] }
 async-trait = { workspace = true }
