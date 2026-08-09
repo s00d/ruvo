@@ -82,14 +82,7 @@ pub fn install(app: &mut sova_core::App, hub: DevToolsHub) {
             hooks::collect_mail(&bag, mail.as_deref());
 
             let status = res.status_code().as_u16();
-            let ms = bag.started.elapsed().as_secs_f64() * 1000.0;
-            bag.push_log(crate::collector::LogLine {
-                level: "INFO".into(),
-                target: "http.server".into(),
-                message: format!("{} {} → {status} ({ms:.0}ms)", bag.method, bag.path),
-                request_id: Some(bag.request_id.clone()),
-                at_ms: crate::collector::now_ms(),
-            });
+            // Access line already lands in Logs via the tracing logger hook — avoid a duplicate.
             crate::plugin::open_bags::remove(&bag.request_id);
             let snap = bag.finish(status);
             let snap_id = snap.id.clone();

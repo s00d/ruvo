@@ -17,7 +17,7 @@ pub use preset::WebApp;
 pub use preset::ApiApp;
 pub use sova_core::{
     current_accept, ensure_request_id, error_response_for_accept, error_to_problem, html_error_page,
-    logger, logger_skip_path, logger_skip_paths, negotiate_error_format, problem_response,
+    logger, logger_should_skip, logger_skip_path, logger_skip_paths, negotiate_error_format, problem_response,
     problem_with_errors, request_id, status_response_for_accept, with_state, with_accept,
     BackgroundService, Cell, CheckKind, CheckResult, ClientAddr, ConfigDoc, Error, ErrorFormat,
     Event, EventBus, FormData, Html, Http, IntoResponse, Json, LogConfig, LogRotate, MatchedRoute,

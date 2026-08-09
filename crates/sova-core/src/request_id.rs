@@ -33,6 +33,9 @@ impl AsRef<str> for RequestId {
 }
 
 /// Ensure [`RequestId`], echo `x-request-id`, wrap in an `http.server` span.
+///
+/// Quiet paths ([`crate::logger_should_skip`]) still get a request id, but use a
+/// `debug` span so `/_devtools/*` / favicon do not flood the console.
 pub fn request_id() -> MwEntry {
     named("request-id", |mut req: Request, next: Next| async move {
         ensure_request_id(&mut req);
@@ -42,24 +45,37 @@ pub fn request_id() -> MwEntry {
             .unwrap_or_default();
         let method = req.method.as_str().to_string();
         let path = req.path.clone();
-        let span = tracing::info_span!(
-            "http.server",
-            request_id = %id,
-            method = %method,
-            path = %path,
-            otel.kind = "server",
-        );
+        let quiet = crate::middleware::logger_should_skip(&path);
+        let id_for_span = id.clone();
         let id_for_header = id.clone();
-        CURRENT_REQUEST_ID
-            .scope(id, async move {
-                let mut res = next(req).await;
-                if !id_for_header.is_empty() {
-                    res = res.header("x-request-id", &id_for_header);
-                }
-                res
-            })
-            .instrument(span)
-            .await
+
+        let run = CURRENT_REQUEST_ID.scope(id, async move {
+            let mut res = next(req).await;
+            if !id_for_header.is_empty() {
+                res = res.header("x-request-id", &id_for_header);
+            }
+            res
+        });
+
+        if quiet {
+            let span = tracing::debug_span!(
+                "http.server",
+                request_id = %id_for_span,
+                method = %method,
+                path = %path,
+                otel.kind = "server",
+            );
+            run.instrument(span).await
+        } else {
+            let span = tracing::info_span!(
+                "http.server",
+                request_id = %id_for_span,
+                method = %method,
+                path = %path,
+                otel.kind = "server",
+            );
+            run.instrument(span).await
+        }
     })
 }
 

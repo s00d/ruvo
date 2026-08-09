@@ -296,6 +296,15 @@ export const useDevToolsStore = defineStore("devtools", () => {
   const onCustomEvent = ref<((e: CustomEvent) => void) | null>(null);
   const onMemorySample = ref<((s: MemorySample) => void) | null>(null);
 
+  let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+  function scheduleRefresh() {
+    if (refreshTimer != null) return;
+    refreshTimer = setTimeout(() => {
+      refreshTimer = null;
+      if (open.value || isEmbed.value) void refresh();
+    }, 250);
+  }
+
   function connectSse() {
     if (playground.value) return;
     try {
@@ -308,7 +317,7 @@ export const useDevToolsStore = defineStore("devtools", () => {
           if (msg.meta) {
             pushTimelineMeta(msg.meta);
             if ((open.value || isEmbed.value) && tab.value === "timeline") {
-              void refresh();
+              scheduleRefresh();
             }
           }
         } catch {

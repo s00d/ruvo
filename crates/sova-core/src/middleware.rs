@@ -218,21 +218,20 @@ pub(crate) fn chain_from_entries(entries: &[MwEntry], handler: Handler) -> Handl
     build_chain(&mws, handler)
 }
 
-/// Request logger (`method`, `path`, `status`, `latency_ms`, optional `request_id`).
-///
 /// Paths registered via [`logger_skip_path`] / [`logger_skip_paths`] are not logged
 /// (useful for health checks and `/_devtools/*`).
 pub fn logger() -> MwEntry {
     named("logger", |req: Request, next: Next| async move {
         let method = req.method.as_str().to_string();
         let path = req.path.clone();
+        let quiet = logger_should_skip(&path);
         let request_id = req
             .get::<crate::request_id::RequestId>()
             .map(|r| r.0.clone())
             .unwrap_or_default();
         let start = std::time::Instant::now();
         let res = next(req).await;
-        if logger_should_skip(&path) {
+        if quiet {
             return res;
         }
         let status = res.status_code().as_u16();
@@ -263,7 +262,10 @@ static LOGGER_SKIP_PREFIXES: std::sync::OnceLock<std::sync::Mutex<Vec<String>>> 
     std::sync::OnceLock::new();
 
 fn logger_skip_list() -> &'static std::sync::Mutex<Vec<String>> {
-    LOGGER_SKIP_PREFIXES.get_or_init(|| std::sync::Mutex::new(Vec::new()))
+    LOGGER_SKIP_PREFIXES.get_or_init(|| {
+        // Common browser noise — apps can still log these by not matching exact paths.
+        std::sync::Mutex::new(vec!["/favicon.ico".into()])
+    })
 }
 
 /// Skip access-log lines for paths that equal or start with `prefix`
@@ -286,14 +288,16 @@ pub fn logger_skip_paths(prefixes: impl IntoIterator<Item = impl Into<String>>) 
     }
 }
 
-fn logger_should_skip(path: &str) -> bool {
+/// Whether [`logger`] (and quiet [`crate::request_id`] spans) should skip this path.
+pub fn logger_should_skip(path: &str) -> bool {
     let g = logger_skip_list().lock().unwrap();
-    g.iter().any(|p| path == p.as_str() || path.starts_with(&format!("{p}/")))
+    g.iter()
+        .any(|p| path == p.as_str() || path.starts_with(&format!("{p}/")))
 }
 
 #[cfg(any(test, feature = "testing"))]
 pub fn logger_clear_skip_paths() {
-    logger_skip_list().lock().unwrap().clear();
+    *logger_skip_list().lock().unwrap() = vec!["/favicon.ico".into()];
 }
 
 #[cfg(test)]
@@ -340,6 +344,14 @@ mod tests {
             chain(Request::new(Method::GET, "/")).await.body_bytes(),
             Some(b"ok".as_slice())
         );
+    }
+
+    #[test]
+    fn logger_skip_favicon_by_default() {
+        logger_clear_skip_paths();
+        assert!(logger_should_skip("/favicon.ico"));
+        assert!(!logger_should_skip("/favicon"));
+        logger_clear_skip_paths();
     }
 
     #[test]

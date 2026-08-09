@@ -53,7 +53,8 @@ pub use accept::{
 pub use error::{Error, IntoResponse, Result};
 pub use events::{Event, EventBus};
 pub use middleware::{
-    after, around, before, logger, logger_skip_path, logger_skip_paths, map_html, with_state, Next,
+    after, around, before, logger, logger_should_skip, logger_skip_path, logger_skip_paths, map_html,
+    with_state, Next,
 };
 pub use problem::{error_to_problem, problem_response, problem_with_errors};
 pub use plugin::{
