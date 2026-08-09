@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-quic`](https://docs.rs/sova-quic/0.1.1) `0.1.1` |
+| Crate | [`sova-quic`](https://docs.rs/sova-quic/0.1.2) `0.1.2` |
 | Plugin id | `quic` |
 | Category | Realtime |
 
@@ -30,16 +30,16 @@ cargo add sova --features quic-udp
 **When:** QUIC datagrams (TLS 1.3) — not HTTP/3 request streams.
 
 **Does:**
-- `QuicDatagramService::from_tls` as a `BackgroundService`
+- `QuicDatagramService` as a `BackgroundService`
 - Client helper `QuicDatagramClient`
-- Share one `Tls` with HTTPS so `reload()` updates both
+- `.install(&mut app)` attaches TLS to HTTPS (`App::use_tls`) so `reload()` updates both
 
 ### Example
 
 ```rust
-app.service(QuicDatagramService::from_tls(
-    quic_bind, tls.clone(), alpn, true, handler,
-)?);
+QuicDatagramService::from_pem(quic_bind, "cert.pem", "key.pem", alpn, true, handler)?
+    .install(&mut app);
+app.listen(3011).await?;
 ```
 
 See `examples/net/quic_udp_echo`.
@@ -49,13 +49,12 @@ See `examples/net/quic_udp_echo`.
 QUIC datagrams share `Tls` with HTTPS (reload updates both). Not in presets:
 
 ```rust
-use sova::{QuicDatagramService, Tls};
+use sova::QuicDatagramService;
 // handler: QuicDatagramHandler = Arc::new(|peer, data, conn| Box::pin(async move { … }));
 
-app.service(QuicDatagramService::from_tls(
-    quic_bind, tls.clone(), alpn, true, handler,
-)?);
-app.bind("0.0.0.0:3011").tls(tls)?.run().await?;
+QuicDatagramService::from_pem(quic_bind, "cert.pem", "key.pem", alpn, true, handler)?
+    .install(&mut app); // wires QUIC + App::use_tls
+app.listen(3011).await?;
 ```
 
 ```bash

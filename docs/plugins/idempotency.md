@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-idempotency`](https://docs.rs/sova-idempotency/0.1.0) `0.1.0` |
+| Crate | [`sova-idempotency`](https://docs.rs/sova-idempotency/0.1.1) `0.1.1` |
 | Plugin id | `idempotency` |
 | Category | HTTP |
 
@@ -51,12 +51,11 @@ app.install(Idempotency::from_store(Arc::clone(&store.inner)));
 ## Quick start
 
 ```rust
-use sova::{AppStore, Idempotency};
-use std::sync::Arc;
-
-let kv = AppStore::memory();
-app.install(Idempotency::from_store(Arc::clone(&kv.inner)).ttl(std::time::Duration::from_secs(3600)));
+app.install(SharedStore::memory());
+app.install(Idempotency::from_app(&app).ttl(std::time::Duration::from_secs(3600)));
 ```
+
+Or `Idempotency::from_store(kv)` with an explicit [`KvStore`].
 
 ## Related
 

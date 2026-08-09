@@ -137,6 +137,14 @@ impl RateLimit {
         }
     }
 
+    /// Like [`Self::fixed_window`], using an installed [`sova_store::AppStore`] (`rl` namespace).
+    pub fn shared(app: &App, max: usize, window: Duration) -> Self {
+        let store = app.try_state::<sova_store::AppStore>().unwrap_or_else(|| {
+            panic!("RateLimit::shared requires SharedStore / AppStore installed first")
+        });
+        Self::fixed_window(store.namespaced("rl"), max, window)
+    }
+
     /// Login POST throttle: 5 / 60s, key = IP + email.
     pub fn login() -> Self {
         Self::per_minute(5)

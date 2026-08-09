@@ -62,6 +62,12 @@ impl Http3Service {
         let tls = sova_core::Tls::self_signed(hosts)?;
         Self::from_tls(bind_addr, tls, alpn, server)
     }
+
+    /// Register as a [`BackgroundService`] and attach TLS to the app HTTPS listener.
+    pub fn install(self, app: &mut sova_core::App) {
+        app.use_tls((*self.tls).clone());
+        app.service(self);
+    }
 }
 
 impl BackgroundService for Http3Service {

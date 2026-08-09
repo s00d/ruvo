@@ -27,25 +27,24 @@ async fn main() -> Result<()> {
 }
 ```
 
-SQL backend — use `App::new()` (or skip the preset session) and install once:
+SQL backend — install Db first, then soft-wire the pool:
 
 ```rust
 let mut app = App::new();
 app.install(Db::from_env());
-let pool = app.try_state::<DbPool>().expect("db").as_ref().clone();
-app.install(SessionLayer::from_store(Arc::new(
-    SqlSessionStore::from_db_pool(&pool),
-)));
+app.install(SessionLayer::sql(&app));
 ```
 
-Features: `session-sql`, `session-redis`.
+Redis:
 
-```toml
-[session]
-cookie = "sova_sid"
-ttl = "7d"
-same_site = "lax"
-# secure = true
+```rust
+app.install(Redis::from_env());
+app.install(SessionLayer::redis(&app));
 ```
 
-`SOVA_ENV=production` → Secure cookies; override with `SESSION_SECURE=true|false`.
+Or reuse [`SharedStore`](/plugins/store):
+
+```rust
+app.install(SharedStore::memory()); // or ::sql(&app) / ::redis(&app)
+app.install(SessionLayer::from_app_store(&app));
+```

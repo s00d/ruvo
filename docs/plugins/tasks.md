@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-tasks`](https://docs.rs/sova-tasks/0.1.3) `0.1.3` |
+| Crate | [`sova-tasks`](https://docs.rs/sova-tasks/0.1.4) `0.1.4` |
 | Plugin id | `tasks` |
 | Category | Data |
 
@@ -24,6 +24,8 @@ cargo add sova --features tasks
 | Feature | What you get |
 |---------|-------------|
 | `tasks` | Job queue, worker, scheduler, `tasks` CLI. |
+| `tasks-redis` | Redis `TaskStore` on `RedisPool`. |
+| `tasks-sql` | SQL `TaskStore` on `DbPool`. |
 
 ## Overview
 

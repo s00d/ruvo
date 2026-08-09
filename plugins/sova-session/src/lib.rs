@@ -277,6 +277,32 @@ impl SessionLayer {
         }
     }
 
+    /// SQL sessions — requires [`sova_db::Db`] installed first (`feature = "sql"`).
+    #[cfg(feature = "sql")]
+    pub fn sql(app: &App) -> Self {
+        let pool = app.try_state::<sova_db::DbPool>().unwrap_or_else(|| {
+            panic!("SessionLayer::sql requires Db plugin installed before session")
+        });
+        Self::from_store(Arc::new(SqlSessionStore::from_db_pool(pool.as_ref())))
+    }
+
+    /// Redis sessions — requires [`sova_redis::Redis`] installed first (`feature = "redis"`).
+    #[cfg(feature = "redis")]
+    pub fn redis(app: &App) -> Self {
+        let pool = app.try_state::<sova_redis::RedisPool>().unwrap_or_else(|| {
+            panic!("SessionLayer::redis requires Redis plugin installed before session")
+        });
+        Self::from_store(Arc::new(RedisSessionStore::from_redis_pool(pool.as_ref())))
+    }
+
+    /// Sessions on an installed [`sova_store::AppStore`] (namespaced `sess`).
+    pub fn from_app_store(app: &App) -> Self {
+        let store = app.try_state::<sova_store::AppStore>().unwrap_or_else(|| {
+            panic!("SessionLayer::from_app_store requires SharedStore / AppStore installed")
+        });
+        Self::new(store.namespaced("sess"))
+    }
+
     pub fn cookie_name(mut self, name: impl Into<String>) -> Self {
         self.cookie_name = name.into();
         self.cookie_name_explicit = true;

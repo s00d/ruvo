@@ -42,6 +42,14 @@ impl ResponseCache {
         }
     }
 
+    /// Use installed [`sova_store::AppStore`] (`rcache` namespace).
+    pub fn from_app(app: &App) -> Self {
+        let store = app.try_state::<sova_store::AppStore>().unwrap_or_else(|| {
+            panic!("ResponseCache::from_app requires SharedStore / AppStore installed first")
+        });
+        Self::new(store.namespaced("rcache"))
+    }
+
     pub fn ttl(mut self, ttl: Duration) -> Self {
         self.ttl = ttl;
         self

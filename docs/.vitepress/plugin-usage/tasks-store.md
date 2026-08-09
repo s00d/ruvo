@@ -1,21 +1,23 @@
-Construct a backend, pass into `Tasks::new`:
+Construct a backend, pass into `Tasks` (soft-wire helpers prefer pool from state):
+
+```rust
+use sova::{Db, Tasks};
+
+app.install(Db::from_env());
+app.install(Tasks::sql(&app).queues(["default"]).job(/* … */));
+
+// or:
+// app.install(Redis::from_env());
+// app.install(Tasks::redis(&app).job(/* … */));
+// app.install(Tasks::memory().job(/* … */));
+```
+
+Advanced (custom store):
 
 ```rust
 use std::sync::Arc;
-use sova::{Db, Redis, Tasks};
-
-app.install(Db::from_env());
-app.install(Redis::from_env());
-
 let pool = app.try_state::<sova::DbPool>().unwrap().as_ref().clone();
-// let rpool = app.try_state::<sova::RedisPool>().unwrap().as_ref().clone();
-
-let store = Arc::new(sova::tasks::Sql::from_db_pool(&pool));
-// let store = Arc::new(sova::tasks::Redis::from_redis_pool(&rpool));
-// let store = Arc::new(sova::tasks::Memory::new());
-// let store = Arc::new(sova::tasks::File::open("data/tasks").await?);
-
-app.install(Tasks::new(store).queues(["default"]).job(/* … */));
+app.install(Tasks::new(Arc::new(sova::tasks::Sql::from_db_pool(&pool))).job(/* … */));
 ```
 
 Features: `tasks-store`, `tasks-file`, `tasks-sql`, `tasks-redis`.

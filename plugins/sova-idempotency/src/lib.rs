@@ -37,6 +37,14 @@ impl Idempotency {
         }
     }
 
+    /// Use installed [`AppStore`] (`idem` namespace). Panics if SharedStore is missing.
+    pub fn from_app(app: &App) -> Self {
+        let store = app.try_state::<AppStore>().unwrap_or_else(|| {
+            panic!("Idempotency::from_app requires SharedStore / AppStore installed first")
+        });
+        Self::from_store(store.namespaced("idem"))
+    }
+
     pub fn ttl(mut self, ttl: Duration) -> Self {
         self.ttl = ttl;
         self

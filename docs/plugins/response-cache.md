@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-response-cache`](https://docs.rs/sova-response-cache/0.1.0) `0.1.0` |
+| Crate | [`sova-response-cache`](https://docs.rs/sova-response-cache/0.1.1) `0.1.1` |
 | Plugin id | `response-cache` |
 | Category | HTTP |
 

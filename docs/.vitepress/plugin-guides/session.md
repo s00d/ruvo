@@ -8,9 +8,11 @@
 ### Example
 
 ```rust
-app.install(SessionLayer::from_store(store));
-// or helper:
+app.install(SessionLayer::sql(&app)); // after Db
+// or:
 app.install(memory_sessions());
+app.install(SessionLayer::redis(&app)); // after Redis
+app.install(SessionLayer::from_app_store(&app)); // after SharedStore
 ```
 
 ### Config

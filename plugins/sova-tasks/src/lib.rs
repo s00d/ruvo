@@ -164,6 +164,33 @@ impl Tasks {
         }
     }
 
+    /// In-memory queue (tests / single process).
+    pub fn memory() -> Self {
+        Self::new(Arc::new(sova_tasks_store::MemoryStore::new()))
+    }
+
+    /// SQL queue — requires Db installed (`feature = "sql"`).
+    #[cfg(feature = "sql")]
+    pub fn sql(app: &sova_core::App) -> Self {
+        let pool = app.try_state::<sova_db::DbPool>().unwrap_or_else(|| {
+            panic!("Tasks::sql requires Db plugin installed first")
+        });
+        Self::new(Arc::new(sova_tasks_store::SqlTaskStore::from_db_pool(
+            pool.as_ref(),
+        )))
+    }
+
+    /// Redis queue — requires Redis installed (`feature = "redis"`).
+    #[cfg(feature = "redis")]
+    pub fn redis(app: &sova_core::App) -> Self {
+        let pool = app.try_state::<sova_redis::RedisPool>().unwrap_or_else(|| {
+            panic!("Tasks::redis requires Redis plugin installed first")
+        });
+        Self::new(Arc::new(sova_tasks_store::RedisTaskStore::from_redis_pool(
+            pool.as_ref(),
+        )))
+    }
+
     /// Single queue (shorthand for [`Self::queues`]).
     pub fn queue(mut self, q: impl Into<String>) -> Self {
         self.queues = vec![q.into()];

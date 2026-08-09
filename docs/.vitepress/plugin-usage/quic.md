@@ -1,13 +1,12 @@
 QUIC datagrams share `Tls` with HTTPS (reload updates both). Not in presets:
 
 ```rust
-use sova::{QuicDatagramService, Tls};
+use sova::QuicDatagramService;
 // handler: QuicDatagramHandler = Arc::new(|peer, data, conn| Box::pin(async move { … }));
 
-app.service(QuicDatagramService::from_tls(
-    quic_bind, tls.clone(), alpn, true, handler,
-)?);
-app.bind("0.0.0.0:3011").tls(tls)?.run().await?;
+QuicDatagramService::from_pem(quic_bind, "cert.pem", "key.pem", alpn, true, handler)?
+    .install(&mut app); // wires QUIC + App::use_tls
+app.listen(3011).await?;
 ```
 
 ```bash

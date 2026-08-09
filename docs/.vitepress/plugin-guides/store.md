@@ -3,13 +3,12 @@
 **Does:**
 - `KvStore` + `AppStore` / `SharedStore`
 - memory / file / sql / redis backends
-- `namespace(store, "sess")` for isolation
+- `namespace(store, "sess")` / `AppStore::namespaced` for isolation
 - Optional crypto (`store-crypto`)
 
 ### Example
 
 ```rust
-app.state(AppStore::memory());
-let sess = AppStore::memory().namespaced("sess");
-app.install(SharedStore::new(sess));
+app.install(Db::from_env());
+app.install(SharedStore::sql(&app)); // or ::memory() / ::redis(&app)
 ```

@@ -35,24 +35,24 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`fs`](/plugins/fs) | Data | `0.1.0` | Local filesystem with jail root (async CRUD + walk) | `fs` |
 | [`http`](/plugins/http) | Integrations | `0.1.1` | Outbound HTTP client with SSRF guards and named configs | `http-client` |
 | [`i18n`](/plugins/i18n) | Content | `0.1.2` | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |
-| [`idempotency`](/plugins/idempotency) | HTTP | `0.1.0` | Replay 2xx responses for Idempotency-Key on mutating methods | `idempotency` |
+| [`idempotency`](/plugins/idempotency) | HTTP | `0.1.1` | Replay 2xx responses for Idempotency-Key on mutating methods | `idempotency` |
 | [`mail`](/plugins/mail) | Content | `0.1.2` | Outbound email via lettre (SMTP / fake / file) | `mail`, `mail-markdown`, `mail-templates` |
 | [`meta`](/plugins/meta) | Content | `0.1.2` | Document meta, OG/Twitter, JSON-LD, and head inject | `meta`, `meta-i18n`, `meta-openapi`, `meta-store`, `meta-templates` |
 | [`notifications`](/plugins/notifications) | Realtime | `0.1.5` | DB inbox, channels with ACL, optional WS/mail | `notifications`, `notifications-auth`, `notifications-mail`, `notifications-templates`, `notifications-ws` |
 | [`observability`](/plugins/observability) | Ops | `0.1.2` | HTTP metrics, OpenTelemetry, Elasticsearch log shipping | `observability`, `observability-elasticsearch`, `observability-otel` |
 | [`openapi`](/plugins/openapi) | Content | `0.1.1` | OpenAPI 3.1 document + Scalar UI at mount path | `openapi` |
 | [`passport`](/plugins/passport) | Auth | `0.1.3` | Users + access/refresh JWT + personal access tokens | `passport`, `passport-jwt`, `passport-oauth`, `passport-session` |
-| [`quic`](/plugins/quic) | Realtime | `0.1.1` | QUIC datagrams BackgroundService helpers for Sova | `quic-udp` |
-| [`rate-limit`](/plugins/rate-limit) | HTTP | `0.1.2` | Per-key request rate limiting | `rate-limit` |
+| [`quic`](/plugins/quic) | Realtime | `0.1.2` | QUIC datagrams BackgroundService helpers for Sova | `quic-udp` |
+| [`rate-limit`](/plugins/rate-limit) | HTTP | `0.1.3` | Per-key request rate limiting | `rate-limit` |
 | [`redis`](/plugins/redis) | Data | `0.1.2` | Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues | `redis` |
-| [`response-cache`](/plugins/response-cache) | HTTP | `0.1.0` | Cache GET 200 responses in KvStore | `response-cache` |
-| [`session`](/plugins/session) | Auth | `0.1.3` | Cookie sessions backed by a SessionStore | `session`, `session-redis`, `session-sql` |
+| [`response-cache`](/plugins/response-cache) | HTTP | `0.1.1` | Cache GET 200 responses in KvStore | `response-cache` |
+| [`session`](/plugins/session) | Auth | `0.1.4` | Cookie sessions backed by a SessionStore | `session`, `session-redis`, `session-sql` |
 | [`shield`](/plugins/shield) | HTTP | `0.1.1` | Baseline security response headers (helmet-style) | `shield` |
 | [`sse`](/plugins/sse) | Realtime | `0.1.1` | Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive) | `sse-feed` |
 | [`static`](/plugins/static) | HTTP | `0.1.1` | Serve files from a directory under a mount path | `static-files` |
 | [`storage`](/plugins/storage) | Data | `0.1.1` | Object storage (local / memory / S3 / GCS / Azure) | `storage`, `storage-azure`, `storage-gcs`, `storage-memory`, `storage-s3` |
 | [`store`](/plugins/store) | Data | `0.1.2` | KvStore trait + memory / file / sql / redis backends for Sova | `store`, `store-crypto`, `store-file`, `store-redis`, `store-sql` |
-| [`tasks`](/plugins/tasks) | Data | `0.1.3` | Job worker, priorities, and optional cron/interval scheduler | `tasks` |
+| [`tasks`](/plugins/tasks) | Data | `0.1.4` | Job worker, priorities, and optional cron/interval scheduler | `tasks`, `tasks-redis`, `tasks-sql` |
 | [`tasks-store`](/plugins/tasks-store) | Data | `0.1.1` | TaskStore trait + memory / file / sql / redis backends | `tasks-file`, `tasks-redis`, `tasks-sql`, `tasks-store` |
 | [`templates`](/plugins/templates) | Content | `0.1.1` | MiniJinja HTML templates with optional autoreload | `templates` |
 | [`udp`](/plugins/udp) | Realtime | `0.1.1` | UDP BackgroundService helpers for Sova | `udp` |

@@ -1,10 +1,10 @@
 //! QUIC datagrams echo via BackgroundService.
 //!
-//! One [`Tls`] is cloned into QUIC and HTTPS so `reload()` updates both.
+//! [`QuicDatagramService::install`] attaches TLS to HTTPS as well — no second `.tls(...)`.
 
 use bytes::Bytes;
 use sova::prelude::*;
-use sova::{QuicDatagramService, Tls};
+use sova::QuicDatagramService;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
@@ -14,8 +14,6 @@ async fn main() -> Result<()> {
 
     // Certificate files must exist in current working directory.
     // Example: `cert.pem` + `key.pem`.
-    let tls = Tls::from_pem("cert.pem", "key.pem")?;
-
     let quic_bind: SocketAddr = "127.0.0.1:9999".parse().unwrap();
     let alpn = vec![b"sova_quic-udp".to_vec()];
 
@@ -25,14 +23,9 @@ async fn main() -> Result<()> {
         })
     });
 
-    app.service(QuicDatagramService::from_tls(
-        quic_bind,
-        tls.clone(),
-        alpn,
-        true,
-        handler,
-    )?);
-    app.get("/", || async { "quic datagrams echo" });
+    QuicDatagramService::from_pem(quic_bind, "cert.pem", "key.pem", alpn, true, handler)?
+        .install(&mut app);
 
-    app.bind("0.0.0.0:3011").tls(tls)?.run().await
+    app.get("/", || async { "quic datagrams echo" });
+    app.listen(3011).await
 }

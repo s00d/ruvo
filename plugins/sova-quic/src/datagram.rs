@@ -85,6 +85,14 @@ impl QuicDatagramService {
         self.preshared_token = token.map(|t| t.into_bytes());
         self
     }
+
+    /// Register as a [`BackgroundService`] and attach TLS to the app HTTPS listener.
+    ///
+    /// Prefer this over `app.service(…)` + `bind(…).tls(…)` — one `Tls` handle wires both.
+    pub fn install(self, app: &mut sova_core::App) {
+        app.use_tls((*self.tls).clone());
+        app.service(self);
+    }
 }
 
 impl BackgroundService for QuicDatagramService {

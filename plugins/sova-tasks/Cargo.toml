@@ -1,6 +1,6 @@
 [package]
 name = "sova-tasks"
-version = "0.1.3"
+version = "0.1.4"
 authors.workspace = true
 edition.workspace = true
 description = "Task worker / scheduler / HTTP enqueue for Sova"
@@ -12,10 +12,17 @@ readme = "README.md"
 keywords = ["http", "web", "framework", "async"]
 categories = ["web-programming::http-server", "network-programming"]
 
+[features]
+default = []
+sql = ["sova-tasks-store/sql", "dep:sova-db"]
+redis = ["sova-tasks-store/redis", "dep:sova-redis"]
+
 [dependencies]
 bytes = { workspace = true }
 sova-core = { workspace = true }
 sova-tasks-store = { workspace = true }
+sova-db = { workspace = true, optional = true, default-features = false }
+sova-redis = { workspace = true, optional = true }
 tokio = { workspace = true, features = ["sync", "time", "rt", "macros"] }
 tracing = { workspace = true }
 serde = { workspace = true }

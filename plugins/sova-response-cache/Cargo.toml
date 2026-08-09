@@ -1,6 +1,6 @@
 [package]
 name = "sova-response-cache"
-version = "0.1.0"
+version = "0.1.1"
 authors.workspace = true
 edition.workspace = true
 description = "HTTP GET response cache middleware for Sova"
