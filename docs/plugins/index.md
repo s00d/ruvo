@@ -23,7 +23,7 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 |--------|----------|---------|---------|----------|
 | [`activity`](/plugins/activity) | Ops | `0.1.2` | Audit / activity log (who changed what) | `activity` |
 | [`ai`](/plugins/ai) | Integrations | `0.1.0` | AISDK language models (chat, tools, stream, fake) | `ai`, `ai-anthropic`, `ai-full`, `ai-google`, `ai-openai`, `ai-prompt` |
-| [`auth`](/plugins/auth) | Auth | `0.1.6` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-mail`, `auth-vld` |
+| [`auth`](/plugins/auth) | Auth | `0.1.7` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-mail`, `auth-vld` |
 | [`compress`](/plugins/compress) | HTTP | `0.1.1` | gzip / deflate / brotli response compression | `compress` |
 | [`cookies`](/plugins/cookies) | HTTP | `0.1.1` | Parse Cookie header into request-local Cookies | `cookies` |
 | [`cors`](/plugins/cors) | HTTP | `0.1.1` | Cross-Origin Resource Sharing headers | `cors` |
@@ -33,6 +33,7 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`env`](/plugins/env) | HTTP | `0.1.1` | Cascade .env loading for Sova apps (dotenvy) | `env` |
 | [`http`](/plugins/http) | Integrations | `0.1.1` | Outbound HTTP client with SSRF guards and named configs | `http-client` |
 | [`i18n`](/plugins/i18n) | Content | `0.1.2` | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |
+| [`idempotency`](/plugins/idempotency) | HTTP | `0.1.0` | Replay 2xx responses for Idempotency-Key on mutating methods | `idempotency` |
 | [`mail`](/plugins/mail) | Content | `0.1.1` | Outbound email via lettre (SMTP / fake / file) | `mail`, `mail-markdown`, `mail-templates` |
 | [`meta`](/plugins/meta) | Content | `0.1.2` | Document meta, OG/Twitter, JSON-LD, and head inject | `meta`, `meta-i18n`, `meta-openapi`, `meta-store`, `meta-templates` |
 | [`notifications`](/plugins/notifications) | Realtime | `0.1.4` | DB inbox, channels with ACL, optional WS/mail | `notifications`, `notifications-auth`, `notifications-mail`, `notifications-templates`, `notifications-ws` |
@@ -42,6 +43,7 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`quic`](/plugins/quic) | Realtime | `0.1.1` | QUIC datagrams BackgroundService helpers for Sova | `quic-udp` |
 | [`rate-limit`](/plugins/rate-limit) | HTTP | `0.1.1` | Per-key request rate limiting | `rate-limit` |
 | [`redis`](/plugins/redis) | Data | `0.1.2` | Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues | `redis` |
+| [`response-cache`](/plugins/response-cache) | HTTP | `0.1.0` | Cache GET 200 responses in KvStore | `response-cache` |
 | [`session`](/plugins/session) | Auth | `0.1.2` | Cookie sessions backed by a SessionStore | `session`, `session-redis`, `session-sql` |
 | [`shield`](/plugins/shield) | HTTP | `0.1.1` | Baseline security response headers (helmet-style) | `shield` |
 | [`sse`](/plugins/sse) | Realtime | `0.1.1` | Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive) | `sse-feed` |
@@ -52,7 +54,7 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`tasks-store`](/plugins/tasks-store) | Data | `0.1.1` | TaskStore trait + memory / file / sql / redis backends | `tasks-file`, `tasks-redis`, `tasks-sql`, `tasks-store` |
 | [`templates`](/plugins/templates) | Content | `0.1.1` | MiniJinja HTML templates with optional autoreload | `templates` |
 | [`udp`](/plugins/udp) | Realtime | `0.1.1` | UDP BackgroundService helpers for Sova | `udp` |
-| [`vld`](/plugins/vld) | Auth | `0.1.3` | Request validation hooks and coverage check | `vld`, `vld-flash`, `vld-flash-templates`, `vld-form`, `vld-i18n`, `vld-openapi` |
+| [`vld`](/plugins/vld) | Auth | `0.1.4` | Request validation hooks and coverage check | `vld`, `vld-flash`, `vld-flash-templates`, `vld-form`, `vld-i18n`, `vld-openapi` |
 | [`ws`](/plugins/ws) | Realtime | `0.1.1` | WebSocket hub, origin allowlist, max message size | `ws` |
 | [`cli`](/plugins/cli) | Tooling | `0.1.1` | CLI ServerArgs / listen_args for Sova (local dev) | — |
 <!-- /generated:plugins-table -->

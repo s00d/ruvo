@@ -71,10 +71,27 @@ pub async fn create_note(db: &DbHandle, user_id: i64, title: &str, body: &str) -
     Ok(row.id)
 }
 
+#[allow(dead_code)]
 pub async fn delete_note(db: &DbHandle, user_id: i64, note_id: i64) -> Result<bool> {
     let res = note::Entity::delete_many()
         .filter(note::Column::Id.eq(note_id))
         .filter(note::Column::UserId.eq(user_id))
+        .exec(db)
+        .await
+        .map_err(|e| Error::Internal(e.to_string()))?;
+    Ok(res.rows_affected > 0)
+}
+
+pub async fn find_note(db: &DbHandle, note_id: i64) -> Result<Option<Note>> {
+    let row = note::Entity::find_by_id(note_id)
+        .one(db)
+        .await
+        .map_err(|e| Error::Internal(e.to_string()))?;
+    Ok(row.map(map_note))
+}
+
+pub async fn delete_note_by_id(db: &DbHandle, note_id: i64) -> Result<bool> {
+    let res = note::Entity::delete_by_id(note_id)
         .exec(db)
         .await
         .map_err(|e| Error::Internal(e.to_string()))?;

@@ -13,6 +13,8 @@
 /// Feature `cookies`: Parse `Cookie` header → `req.cookies()` + set-cookie helpers.
 /// Feature `compress`: gzip / deflate / brotli response compression.
 /// Feature `rate-limit`: Fixed-window rate limiting (memory or `KvStore`).
+/// Feature `idempotency`: Inbound `Idempotency-Key` replay for mutating methods.
+/// Feature `response-cache`: Cache public GET 200 responses in `KvStore`.
 /// Feature `session`: Cookie sessions + flash (`SessionLayer` / `memory_sessions`).
 /// Feature `session-sql`: Persist sessions in SQL via `DbPool`.
 /// Feature `session-redis`: Persist sessions in Redis via `RedisPool`.

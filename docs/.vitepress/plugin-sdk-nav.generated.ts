@@ -9,6 +9,8 @@ export const pluginSdkNav = [
   { text: 'Lifecycle & services', link: '/api/plugin-sdk/lifecycle' },
   { text: 'Checks & CLI', link: '/api/plugin-sdk/checks-cli' },
   { text: 'Routes & introspection', link: '/api/plugin-sdk/routes' },
+  { text: 'Extractors & Problem+', link: '/api/plugin-sdk/extractors' },
+  { text: 'Events', link: '/api/plugin-sdk/events' },
   { text: 'HTML & log hooks', link: '/api/plugin-sdk/html-hooks' },
   { text: 'Errors', link: '/api/plugin-sdk/errors' },
   { text: 'Recipes', link: '/api/plugin-sdk/recipes' },
@@ -36,6 +38,8 @@ export const pluginSdkSidebar = [
     { text: 'Lifecycle & services', link: '/api/plugin-sdk/lifecycle' },
     { text: 'Checks & CLI', link: '/api/plugin-sdk/checks-cli' },
     { text: 'Routes & introspection', link: '/api/plugin-sdk/routes' },
+    { text: 'Extractors & Problem+', link: '/api/plugin-sdk/extractors' },
+    { text: 'Events', link: '/api/plugin-sdk/events' },
     { text: 'HTML & log hooks', link: '/api/plugin-sdk/html-hooks' },
     { text: 'Errors', link: '/api/plugin-sdk/errors' }
     ],

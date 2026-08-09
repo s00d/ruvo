@@ -17,12 +17,15 @@ mod request_id;
 mod app;
 mod config;
 mod error;
+mod events;
+pub mod extract;
 mod handler;
 pub mod html;
 mod human;
 mod limits;
 mod middleware;
 mod plugin;
+pub mod problem;
 mod raw;
 mod request;
 mod response;
@@ -43,9 +46,11 @@ mod tls;
 pub use app::{App, BoundApp, CheckKind, CheckResult, Http, Server};
 pub use config::ConfigDoc;
 pub use error::{Error, IntoResponse, Result};
+pub use events::{Event, EventBus};
 pub use middleware::{
     after, around, before, logger, logger_skip_path, logger_skip_paths, map_html, with_state, Next,
 };
+pub use problem::{error_to_problem, problem_response, problem_with_errors};
 pub use plugin::{
     check_plugin_sdk, InstalledPlugin, Plugin, PluginMeta, PluginSdkVersion, SdkCompat,
     PLUGIN_SDK_VERSION,
@@ -85,9 +90,14 @@ pub mod extend {
         check_plugin_sdk, InstalledPlugin, PluginMeta, PluginSdkVersion, SdkCompat,
         PLUGIN_SDK_VERSION,
     };
+    pub use crate::events::{Event, EventBus};
+    pub use crate::extract::{
+        Extension, Form, FromRequest, FromRequestParts, Json as JsonExtractor, Path, Query, State,
+    };
     pub use crate::handler::{
         BoxFuture, ErrorResponse, FallibleHandler, Handler, IntoHandler,
     };
+    pub use crate::problem::{error_to_problem, problem_response, problem_with_errors};
     pub use crate::html::{
         find_ci, inject, inject_after_open_tag, inject_before, inject_body_end, inject_head,
         replace_between, replace_once, HtmlAnchor, HtmlInject,

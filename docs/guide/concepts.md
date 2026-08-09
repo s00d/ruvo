@@ -21,6 +21,10 @@ accept
 
 `App::build()` compiles routes once into a cheap-to-clone `Server`. Prefer `Server::handle` in tests so the matcher is not rebuilt per request.
 
+## Typed extractors
+
+Import from `sova::extract` (`Path`, `Query`, `Json`, `Form`, `State`, `Extension`). Classic `async fn(req: Request)` handlers remain supported. See [Plugin SDK → Extractors](/api/plugin-sdk/extractors).
+
 ## Custom middleware (onion)
 
 Signature: `(Request, Next) -> Response` where `Next` is `FnOnce(Request) -> Future<Response>`.

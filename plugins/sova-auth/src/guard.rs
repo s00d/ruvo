@@ -186,6 +186,22 @@ pub trait AuthExt {
     fn require_role(&self, slug: &str) -> Result<&CurrentUser>;
     fn password_confirmed(&self) -> bool;
 
+    /// Check a [`crate::Policy`] ability against `resource`.
+    fn can<P: crate::Policy<R> + Default, R>(&self, ability: crate::Ability, resource: &R) -> bool;
+
+    /// Like [`Self::can`], but returns [`Error::Forbidden`] on deny.
+    fn authorize<P: crate::Policy<R> + Default, R>(
+        &self,
+        ability: crate::Ability,
+        resource: &R,
+    ) -> Result<&CurrentUser>;
+
+    /// Custom predicate authorization.
+    fn authorize_with(
+        &self,
+        f: impl FnOnce(&CurrentUser) -> bool,
+    ) -> Result<&CurrentUser>;
+
     /// Programmatic login: rotate session, persist passport user id, set [`CurrentUser`].
     ///
     /// ```ignore
@@ -226,7 +242,7 @@ impl AuthExt for Request {
         if u.has_permission(slug) {
             Ok(u)
         } else {
-            Err(Error::custom(403, "Forbidden"))
+            Err(Error::Forbidden)
         }
     }
 
@@ -235,12 +251,38 @@ impl AuthExt for Request {
         if u.has_role(slug) {
             Ok(u)
         } else {
-            Err(Error::custom(403, "Forbidden"))
+            Err(Error::Forbidden)
         }
     }
 
     fn password_confirmed(&self) -> bool {
         is_password_confirmed(self)
+    }
+
+    fn can<P: crate::Policy<R> + Default, R>(&self, ability: crate::Ability, resource: &R) -> bool {
+        match self.current_user() {
+            Some(u) => crate::policy::can_ability::<P, R>(u, ability, resource),
+            None => false,
+        }
+    }
+
+    fn authorize<P: crate::Policy<R> + Default, R>(
+        &self,
+        ability: crate::Ability,
+        resource: &R,
+    ) -> Result<&CurrentUser> {
+        let u = self.require_current_user()?;
+        crate::policy::authorize_ability::<P, R>(u, ability, resource)?;
+        Ok(u)
+    }
+
+    fn authorize_with(&self, f: impl FnOnce(&CurrentUser) -> bool) -> Result<&CurrentUser> {
+        let u = self.require_current_user()?;
+        if f(u) {
+            Ok(u)
+        } else {
+            Err(Error::Forbidden)
+        }
     }
 
     fn login_user(&mut self, user: CurrentUser) {

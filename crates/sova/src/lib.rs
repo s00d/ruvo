@@ -16,13 +16,18 @@ pub use preset::WebApp;
 #[cfg(feature = "api")]
 pub use preset::ApiApp;
 pub use sova_core::{
-    ensure_request_id, logger, logger_skip_path, logger_skip_paths, request_id, with_state,
-    BackgroundService, Cell, CheckKind, CheckResult, ClientAddr, ConfigDoc, Error, FormData, Html,
-    Http, IntoResponse, Json, LogConfig, LogRotate, MatchedRoute, MatchedRouteCapture, NoContent,
-    Next, OnUpgrade, Plugin, PluginMeta, PluginSdkVersion, RateLimitIdentity, Redirect, Request,
-    RequestId, Response, Router, Server, Shutdown, Slot, Text, Upload, UploadRules,
-    PLUGIN_SDK_VERSION, referer_or,
+    ensure_request_id, error_to_problem, logger, logger_skip_path, logger_skip_paths, problem_response,
+    problem_with_errors, request_id, with_state, BackgroundService, Cell, CheckKind, CheckResult,
+    ClientAddr, ConfigDoc, Error, Event, EventBus, FormData, Html, Http, IntoResponse, Json,
+    LogConfig, LogRotate, MatchedRoute, MatchedRouteCapture, NoContent, Next, OnUpgrade, Plugin,
+    PluginMeta, PluginSdkVersion, RateLimitIdentity, Redirect, Request, RequestId, Response, Router,
+    Server, Shutdown, Slot, Text, Upload, UploadRules, PLUGIN_SDK_VERSION, referer_or,
 };
+/// Typed request extractors (`Path`, `Query`, `Json`, `State`, …).
+pub mod extract {
+    pub use sova_core::extract::*;
+}
+
 #[cfg(feature = "testing")]
 pub use sova_core::{ResponseAssert, TestClient};
 
@@ -73,6 +78,12 @@ pub use sova_compress::Compress;
 
 #[cfg(feature = "rate-limit")]
 pub use sova_rate_limit::{RateLimit, RateLimitKey};
+
+#[cfg(feature = "idempotency")]
+pub use sova_idempotency::Idempotency;
+
+#[cfg(feature = "response-cache")]
+pub use sova_response_cache::{ResponseCache, ResponseCacheHandle};
 
 #[cfg(feature = "session")]
 pub use sova_session::{
@@ -269,8 +280,8 @@ pub use sova_auth::{
     find_user_by_id, list_permissions, list_roles, load_current_user, make_verify_token,
     mark_email_verified, parse_verify_token, register_user, revoke_role, set_avatar, set_user_roles,
     sync_role_permissions, update_permission, update_role, user_ids_with_permission,
-    user_ids_with_role, AuthExt, AuthMigrator, CurrentUser, Feature as AuthFeature, Fortify,
-    FortifyPaths,
+    user_ids_with_role, Ability, AuthExt, AuthMigrator, CurrentUser, Feature as AuthFeature,
+    Fortify, FortifyPaths, Policy,
 };
 
 #[cfg(feature = "auth-mail")]

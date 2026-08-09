@@ -44,6 +44,10 @@ async fn main() -> Result<()> {
     let mut app = App::new();
     // Kitchen-sink lives under examples/cabinet — load its sova.toml explicitly.
     let _ = app.configure_from_path(root.join("sova.toml"));
+    let bus = app.events();
+    bus.listen::<modules::notes::NoteCreated, _>(|e| {
+        tracing::info!(note_id = e.note_id, user_id = e.user_id, "note.created");
+    });
     app.use_middleware(request_id());
     app.install(Observability::new());
     app.use_middleware(logger());

@@ -10,6 +10,9 @@ pub enum Error {
     #[error("unauthorized")]
     Unauthorized,
 
+    #[error("forbidden")]
+    Forbidden,
+
     #[error("bad request: {0}")]
     BadRequest(String),
 
@@ -50,6 +53,7 @@ impl Error {
         match self {
             Error::NotFound => Response::text("Not Found").status(404),
             Error::Unauthorized => Response::text("Unauthorized").status(401),
+            Error::Forbidden => Response::text("Forbidden").status(403),
             Error::BadRequest(msg) => Response::text(msg).status(400),
             Error::PayloadTooLarge => Response::text("Payload Too Large").status(413),
             Error::MethodNotAllowed => Response::text("Method Not Allowed").status(405),

@@ -80,4 +80,4 @@ Features: `store-sql`, `store-redis`, `store-file`, `store-crypto`.
 
 ## Related
 
-[`session`](/plugins/session) · [`redis`](/plugins/redis) · [`rate-limit`](/plugins/rate-limit) · [`csrf`](/plugins/csrf)
+[`session`](/plugins/session) · [`redis`](/plugins/redis) · [`rate-limit`](/plugins/rate-limit) · [`csrf`](/plugins/csrf) · [`idempotency`](/plugins/idempotency) · [`response-cache`](/plugins/response-cache)

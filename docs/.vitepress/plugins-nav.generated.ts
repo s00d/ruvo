@@ -9,7 +9,9 @@ export const pluginsNav = [
     { text: 'cors', link: '/plugins/cors' },
     { text: 'csrf', link: '/plugins/csrf' },
     { text: 'env', link: '/plugins/env' },
+    { text: 'idempotency', link: '/plugins/idempotency' },
     { text: 'rate-limit', link: '/plugins/rate-limit' },
+    { text: 'response-cache', link: '/plugins/response-cache' },
     { text: 'shield', link: '/plugins/shield' },
     { text: 'static', link: '/plugins/static' }
     ],
@@ -88,7 +90,9 @@ export const pluginsSidebar = [
     { text: 'cors', link: '/plugins/cors' },
     { text: 'csrf', link: '/plugins/csrf' },
     { text: 'env', link: '/plugins/env' },
+    { text: 'idempotency', link: '/plugins/idempotency' },
     { text: 'rate-limit', link: '/plugins/rate-limit' },
+    { text: 'response-cache', link: '/plugins/response-cache' },
     { text: 'shield', link: '/plugins/shield' },
     { text: 'static', link: '/plugins/static' }
     ],

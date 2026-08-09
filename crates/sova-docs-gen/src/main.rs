@@ -414,6 +414,18 @@ fn plugin_sdk_pages() -> &'static [SdkPage] {
             group: "Cookbook",
         },
         SdkPage {
+            slug: "extractors",
+            title: "Extractors & Problem+",
+            summary: "Path/Json/State handlers, EventBus, API problem+json errors.",
+            group: "Cookbook",
+        },
+        SdkPage {
+            slug: "events",
+            title: "Events",
+            summary: "Typed EventBus listen/dispatch for in-process hooks.",
+            group: "Cookbook",
+        },
+        SdkPage {
             slug: "html-hooks",
             title: "HTML & log hooks",
             summary: "HTML inject, logger_skip_path, add_log_event_hook for DevTools-style sinks.",
@@ -621,6 +633,9 @@ fn preferred_install_feature(slug: &str, feats: &[String]) -> Option<String> {
         "meta" => &["meta"],
         "vld" => &["vld"],
         "templates" => &["templates"],
+        "idempotency" => &["idempotency"],
+        "response-cache" => &["response-cache"],
+        "rate-limit" => &["rate-limit"],
         _ => &[],
     };
     for p in prefer {
@@ -633,7 +648,8 @@ fn preferred_install_feature(slug: &str, feats: &[String]) -> Option<String> {
 
 fn plugin_category(slug: &str) -> &'static str {
     match slug {
-        "shield" | "cors" | "csrf" | "compress" | "cookies" | "rate-limit" | "static" | "env" => {
+        "shield" | "cors" | "csrf" | "compress" | "cookies" | "rate-limit" | "idempotency"
+        | "response-cache" | "static" | "env" => {
             "HTTP"
         }
         "auth" | "passport" | "session" | "vld" => "Auth",
@@ -748,7 +764,7 @@ fn plugin_related(slug: &str) -> Option<&'static [&'static str]> {
         "notifications" => &["db", "ws", "mail", "auth"],
         "db" => &["auth", "tasks", "store", "notifications"],
         "redis" => &["store", "session", "tasks-store"],
-        "store" => &["session", "redis", "rate-limit", "csrf"],
+        "store" => &["session", "redis", "rate-limit", "csrf", "idempotency", "response-cache"],
         "tasks" => &["tasks-store", "db", "redis"],
         "tasks-store" => &["tasks", "redis", "db"],
         "storage" => &["static"],
@@ -770,6 +786,8 @@ fn plugin_related(slug: &str) -> Option<&'static [&'static str]> {
         "cors" => &["shield"],
         "compress" => &["static"],
         "rate-limit" => &["store", "redis"],
+        "idempotency" => &["store"],
+        "response-cache" => &["store", "idempotency"],
         "env" => &["cli"],
         "cli" => &["env", "db", "tasks"],
         _ => return None,

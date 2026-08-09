@@ -3,7 +3,7 @@ mod auth_routes;
 mod cabinet;
 mod fetch_demo;
 mod home;
-mod notes;
+pub mod notes;
 mod upload;
 mod ws;
 

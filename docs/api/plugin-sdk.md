@@ -25,6 +25,8 @@ How pages are built: guides in [`plugin-sdk-guides`](https://github.com/s00d/sov
 | [`Lifecycle & services`](/api/plugin-sdk/lifecycle) | on_startup / on_shutdown, pool pattern, BackgroundService, CLI mode. |
 | [`Checks & CLI`](/api/plugin-sdk/checks-cli) | register_check vs register_audit, probes, register_cli commands. |
 | [`Routes & introspection`](/api/plugin-sdk/routes) | Plugin routes, path helpers, RouteValue / MetaMap, match captures. |
+| [`Extractors & Problem+`](/api/plugin-sdk/extractors) | Path/Json/State handlers, EventBus, API problem+json errors. |
+| [`Events`](/api/plugin-sdk/events) | Typed EventBus listen/dispatch for in-process hooks. |
 | [`HTML & log hooks`](/api/plugin-sdk/html-hooks) | HTML inject, logger_skip_path, add_log_event_hook for DevTools-style sinks. |
 | [`Errors`](/api/plugin-sdk/errors) | Startup Err vs panic, ErrorResponse, soft degradation. |
 | [`Recipes`](/api/plugin-sdk/recipes) | Patterns copied from in-tree plugins (cookies→csrf, pools, tasks, store). |

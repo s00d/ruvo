@@ -188,6 +188,9 @@ impl ApiApp {
 
         self.inner.use_middleware(crate::request_id());
         self.inner.use_middleware(crate::logger());
+        self.inner.error_handler(|err| async move {
+            sova_core::error_to_problem(err)
+        });
         self.inner.install(Cors::new());
         self.inner.install(memory_sessions());
         self.inner.install(

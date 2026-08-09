@@ -55,7 +55,14 @@ async fn validate_rules_is_422_with_many_issues() {
     assert_eq!(res.status_code().as_u16(), 422);
     let body = String::from_utf8(res.body_bytes().unwrap().to_vec()).unwrap();
     assert!(body.contains("validation_failed"));
-    assert!(body.contains("issues"));
+    assert!(body.contains("errors"));
+    assert!(body.contains("\"status\":422") || body.contains("\"status\": 422"));
+    assert_eq!(
+        res.headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok()),
+        Some("application/problem+json")
+    );
 }
 
 #[tokio::test]

@@ -6,6 +6,7 @@ pub use bind::{Bind, BoundApp, Http};
 pub use hooks::Server;
 
 use crate::error::{Error, Result};
+use crate::events::EventBus;
 use crate::handler::BoxFuture;
 use crate::plugin::{
     check_plugin_sdk, InstalledPlugin, Plugin, SdkCompat, PLUGIN_SDK_VERSION,
@@ -517,6 +518,16 @@ impl App {
         self.on_shutdown
             .push(Arc::new(move || Box::pin(f())));
         self
+    }
+
+    /// Shared [`EventBus`] — inserts a default bus into app state on first use.
+    pub fn events(&mut self) -> EventBus {
+        if let Some(bus) = self.try_state::<EventBus>() {
+            return (*bus).clone();
+        }
+        let bus = EventBus::new();
+        self.state(bus.clone());
+        bus
     }
 
     /// Route map for debugging / startup banner.

@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-auth`](https://docs.rs/sova-auth/0.1.6) `0.1.6` |
+| Crate | [`sova-auth`](https://docs.rs/sova-auth/0.1.7) `0.1.7` |
 | Plugin id | `fortify` |
 | Category | Auth |
 
@@ -65,6 +65,29 @@ APP_NAME=MyApp
 ```
 
 No `[auth]` TOML section — features/paths are builder (`Fortify::new().features([...]).home(...)`).
+
+### Policies
+
+Resource-level authorize (owner / role / permission) without a registry middleware:
+
+```rust
+use sova::{Ability, AuthExt, Policy};
+
+#[derive(Default)]
+struct NotePolicy;
+impl Policy<Note> for NotePolicy {
+    fn view(&self, user: &CurrentUser, n: &Note) -> bool {
+        user.id == n.user_id || user.has_role("admin")
+    }
+    fn update(&self, user: &CurrentUser, n: &Note) -> bool { self.view(user, n) }
+    fn delete(&self, user: &CurrentUser, n: &Note) -> bool { self.view(user, n) }
+}
+
+// after loading the note:
+req.authorize::<NotePolicy, _>(Ability::Delete, &note)?;
+```
+
+Route-level `Fortify::permission("…")` remains for abilities without a loaded model.
 
 ## Quick start
 

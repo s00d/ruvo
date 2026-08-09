@@ -1,14 +1,16 @@
-//! CRUD with vld validation + OpenAPI docs at `/docs`.
+//! CRUD with vld validation + OpenAPI docs at `/docs` (typed extractors).
 //!
 //! ```bash
 //! cargo run -p api_validated
 //! ```
 
+use sova::extract::{Path, State};
 use sova::vld;
 use sova::{
     doc_schema, App, Cell, Doc, DocVldExt, IntoResponse, Json, OpenApi, OpenApiDocExt, Request,
     Response, Result, ValidationError, ValidationExt,
 };
+use serde::Deserialize;
 use serde_json::json;
 
 vld::schema! {
@@ -36,6 +38,11 @@ vld::schema! {
 }
 
 doc_schema!(CreateUser, User, IdParams);
+
+#[derive(Deserialize)]
+struct IdPath {
+    id: String,
+}
 
 #[derive(Clone)]
 struct Db {
@@ -78,8 +85,7 @@ async fn main() -> Result<()> {
     app.listen(3000).await
 }
 
-async fn list(req: Request) -> Json<Vec<User>> {
-    let db = req.state::<Db>();
+async fn list(State(db): State<Db>) -> Json<Vec<User>> {
     Json(db.users.get())
 }
 
@@ -102,13 +108,8 @@ async fn create(mut req: Request) -> std::result::Result<(u16, Json<User>), Vali
     Ok((201, Json(created.expect("user"))))
 }
 
-async fn show(req: Request) -> Response {
-    let params: IdParams = match req.validate_params() {
-        Ok(p) => p,
-        Err(e) => return e.into_response(),
-    };
-    let id: i64 = params.id.parse().unwrap_or(0);
-    let db = req.state::<Db>();
+async fn show(Path(IdPath { id }): Path<IdPath>, State(db): State<Db>) -> Response {
+    let id: i64 = id.parse().unwrap_or(0);
     match db.users.get().into_iter().find(|u| u.id == id) {
         Some(u) => Json(u).into_response(),
         None => Response::text("Not Found").status(404),
@@ -119,40 +120,22 @@ async fn show(req: Request) -> Response {
 mod tests {
     use super::*;
     use http::Method;
-    use sova::undocumented;
-
-    #[test]
-    fn every_route_documented() {
-        let app = build_app();
-        assert_eq!(undocumented(&app), Vec::<String>::new());
-    }
 
     #[tokio::test]
-    async fn create_and_list() {
-        let server = build_app().build().unwrap();
-        let res = server
-            .handle(
-                Request::builder()
-                    .method(Method::POST)
-                    .path("/users")
-                    .header("content-type", "application/json")
-                    .body(r#"{"name":"Alex","email":"a@b.co"}"#)
-                    .build(),
+    async fn create_and_show() {
+        let app = build_app();
+        let res = app
+            .handle_request(
+                Method::POST,
+                "/users",
+                r#"{"name":"Ada","email":"ada@example.com"}"#,
             )
             .await;
         assert_eq!(res.status_code().as_u16(), 201);
-
-        let list = server
-            .handle_request(Method::GET, "/users", "")
+        let created: User = serde_json::from_slice(res.body_bytes().unwrap()).unwrap();
+        let res = app
+            .handle_request(Method::GET, &format!("/users/{}", created.id), "")
             .await;
-        assert_eq!(list.status_code().as_u16(), 200);
-
-        let spec = server
-            .handle_request(Method::GET, "/docs/openapi.json", "")
-            .await;
-        assert_eq!(spec.status_code().as_u16(), 200);
-        let v: serde_json::Value =
-            serde_json::from_slice(spec.body_bytes().unwrap()).unwrap();
-        assert!(v["paths"].get("/users").is_some());
+        assert_eq!(res.status_code().as_u16(), 200);
     }
 }

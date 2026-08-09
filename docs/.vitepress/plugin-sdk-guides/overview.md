@@ -58,6 +58,8 @@ cargo sovax generate plugin my-thing
 | Startup, workers | [Lifecycle & services](/api/plugin-sdk/lifecycle) |
 | Ready probes + CLI | [Checks & CLI](/api/plugin-sdk/checks-cli) |
 | Routes + OpenAPI meta | [Routes & introspection](/api/plugin-sdk/routes) |
+| Extractors, EventBus, Problem+ | [Extractors & Problem+](/api/plugin-sdk/extractors) |
+| Typed events | [Events](/api/plugin-sdk/events) |
 | HTML inject / log skip / DevTools hooks | [HTML & log hooks](/api/plugin-sdk/html-hooks) |
 | Failures | [Errors](/api/plugin-sdk/errors) |
 | Real recipes from in-tree plugins | [Recipes](/api/plugin-sdk/recipes) |

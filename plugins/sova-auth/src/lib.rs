@@ -35,6 +35,7 @@ mod mail;
 mod migration;
 mod paths;
 mod plugin;
+mod policy;
 mod state;
 mod store;
 mod token;
@@ -55,6 +56,7 @@ pub use guard::AuthExt;
 pub use migration::AuthMigrator;
 pub use paths::FortifyPaths;
 pub use plugin::Fortify;
+pub use policy::{Ability, Policy};
 pub use store::{
     assign_role, create_permission, create_role, delete_permission, delete_role, find_user_by_email,
     find_user_by_id, list_permissions, list_roles, load_current_user, mark_email_verified,

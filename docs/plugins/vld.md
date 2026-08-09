@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-vld`](https://docs.rs/sova-vld/0.1.3) `0.1.3` |
+| Crate | [`sova-vld`](https://docs.rs/sova-vld/0.1.4) `0.1.4` |
 | Plugin id | `vld` |
 | Category | Auth |
 

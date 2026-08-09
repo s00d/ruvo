@@ -41,7 +41,7 @@ use std::cmp::Ordering;
 use std::fmt;
 
 /// Current Plugin SDK version (author-facing surface, not crate semver).
-pub const PLUGIN_SDK_VERSION: PluginSdkVersion = PluginSdkVersion::new(1, 0, 0);
+pub const PLUGIN_SDK_VERSION: PluginSdkVersion = PluginSdkVersion::new(1, 1, 0);
 
 /// Semantic version of the Plugin SDK (`major.minor.patch`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

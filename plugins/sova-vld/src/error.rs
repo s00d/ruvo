@@ -1,5 +1,5 @@
 use sova_core::extend::ErrorResponse;
-use sova_core::{Error, IntoResponse, Json, Request, Response};
+use sova_core::{Error, IntoResponse, Request, Response};
 use serde::Serialize;
 use vld::error::{IssueCode, PathSegment, ValidationIssue, VldError};
 
@@ -165,16 +165,11 @@ struct IssueBody {
     message: String,
 }
 
-#[derive(Serialize)]
-struct ErrorBody {
-    error: &'static str,
-    issues: Vec<IssueBody>,
-}
-
 impl IntoResponse for ValidationError {
     fn into_response(self) -> Response {
+        use sova_core::problem_with_errors;
         let status = self.status_code();
-        let issues = self
+        let errors: Vec<IssueBody> = self
             .0
             .issues
             .into_iter()
@@ -184,11 +179,7 @@ impl IntoResponse for ValidationError {
                 message: i.message,
             })
             .collect();
-        let body = ErrorBody {
-            error: "validation_failed",
-            issues,
-        };
-        Json(body).into_response().status(status)
+        problem_with_errors(status, "Validation Failed", "validation_failed", &errors)
     }
 }
 

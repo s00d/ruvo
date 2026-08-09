@@ -1,4 +1,5 @@
 use crate::error::{Error, IntoResponse, Result};
+use crate::extract::FromRequest;
 use crate::request::Request;
 use crate::response::Response;
 use std::future::Future;
@@ -102,6 +103,98 @@ impl IntoHandler<()> for FallibleHandler {
     fn into_handler(self) -> FallibleHandler {
         self
     }
+}
+
+macro_rules! impl_extract_handlers {
+    ($(($marker:ident, $($T:ident),+));+ $(;)?) => {
+        $(
+            pub struct $marker;
+            impl_extract_handlers!(@one $marker, $($T),+);
+        )+
+    };
+    (@one $marker:ident, $($T:ident),+) => {
+        impl<FnH, Fut, R, $($T),+> IntoHandler<($marker, $($T),+)> for FnH
+        where
+            FnH: Fn($($T),+) -> Fut + Send + Sync + 'static,
+            $($T: FromRequest + 'static,)+
+            Fut: Future<Output = R> + Send + 'static,
+            R: IntoResponse,
+        {
+            fn into_handler(self) -> FallibleHandler {
+                let handler = Arc::new(self);
+                Arc::new(move |mut req| {
+                    let handler = Arc::clone(&handler);
+                    Box::pin(async move {
+                        $(
+                            #[allow(non_snake_case)]
+                            let $T = $T::from_request(&mut req).await?;
+                        )+
+                        Ok(handler($($T),+).await.into_response())
+                    })
+                })
+            }
+        }
+
+        impl<FnH, Fut, R, $($T),+> IntoHandler<($marker, ResultMarker, $($T),+)> for FnH
+        where
+            FnH: Fn($($T),+) -> Fut + Send + Sync + 'static,
+            $($T: FromRequest + 'static,)+
+            Fut: Future<Output = Result<R>> + Send + 'static,
+            R: IntoResponse,
+        {
+            fn into_handler(self) -> FallibleHandler {
+                let handler = Arc::new(self);
+                Arc::new(move |mut req| {
+                    let handler = Arc::clone(&handler);
+                    Box::pin(async move {
+                        $(
+                            #[allow(non_snake_case)]
+                            let $T = $T::from_request(&mut req).await?;
+                        )+
+                        Ok(handler($($T),+).await?.into_response())
+                    })
+                })
+            }
+        }
+
+        impl<FnH, Fut, R, ErrE, $($T),+> IntoHandler<($marker, FallibleResponseMarker, ErrE, $($T),+)>
+            for FnH
+        where
+            FnH: Fn($($T),+) -> Fut + Send + Sync + 'static,
+            $($T: FromRequest + Send + 'static,)+
+            Fut: Future<Output = std::result::Result<R, ErrE>> + Send + 'static,
+            R: IntoResponse,
+            ErrE: ErrorResponse + Send + Sync + 'static,
+        {
+            fn into_handler(self) -> FallibleHandler {
+                let handler = Arc::new(self);
+                Arc::new(move |mut req| {
+                    let handler = Arc::clone(&handler);
+                    Box::pin(async move {
+                        $(
+                            #[allow(non_snake_case)]
+                            let $T = $T::from_request(&mut req).await?;
+                        )+
+                        match handler($($T),+).await {
+                            Ok(r) => Ok(r.into_response()),
+                            Err(e) => Ok(e.into_response()),
+                        }
+                    })
+                })
+            }
+        }
+    };
+}
+
+impl_extract_handlers! {
+    (Extract1, T1);
+    (Extract2, T1, T2);
+    (Extract3, T1, T2, T3);
+    (Extract4, T1, T2, T3, T4);
+    (Extract5, T1, T2, T3, T4, T5);
+    (Extract6, T1, T2, T3, T4, T5, T6);
+    (Extract7, T1, T2, T3, T4, T5, T6, T7);
+    (Extract8, T1, T2, T3, T4, T5, T6, T7, T8);
 }
 
 /// Wrap a fallible leaf so middleware chains see a plain [`Handler`].
