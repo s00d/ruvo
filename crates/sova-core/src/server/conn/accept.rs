@@ -324,7 +324,8 @@ pub(super) fn log_startup_banner(inner: &AppInner, addr: &str) {
         routes = inner.route_count,
         "sova listening"
     );
-    #[cfg(debug_assertions)]
+    // Keep available in release too (`RUST_LOG=debug`); was cfg(debug_assertions)-only
+    // which left `AppInner::explain` unread under `--release` and triggered warnings.
     tracing::debug!("routes:\n{}", inner.explain.trim_end());
 }
 
