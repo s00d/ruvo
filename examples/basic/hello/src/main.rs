@@ -27,6 +27,8 @@ fn render(template: &str, vars: &[(&str, &str)]) -> String {
 #[tokio::main]
 async fn main() -> Result<()> {
     let mut app = App::new();
+    // Load cwd `sova.toml` when present (Docker ships `/app/sova.toml`).
+    let _ = app.configure();
     app.state(AppConfig {
         app_name: "sova-hello".into(),
     });

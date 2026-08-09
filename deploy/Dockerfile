@@ -4,7 +4,7 @@
 #   docker build -f deploy/Dockerfile --build-arg EXAMPLE_PKG=hello --build-arg EXAMPLE_BIN=hello .
 #
 # Runtime listens on 0.0.0.0:3000 (app.listen).
-# Hello does not load sova.toml; the file is shipped for copy-paste into apps that call configure()/configure_from_path.
+# Demo `hello` calls configure() and loads /app/sova.toml when present.
 
 ARG RUST_IMAGE=rust:1-bookworm
 ARG RUNTIME_IMAGE=debian:bookworm-slim
