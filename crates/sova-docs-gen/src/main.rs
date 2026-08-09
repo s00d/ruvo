@@ -1,13 +1,15 @@
 //! Generate **static** VitePress markdown from Sova Rust sources.
 //!
-//! Per plugin page (`docs/plugins/<slug>.md`):
+//! ## Plugins (`docs/plugins/<slug>.md`)
 //! 1. Summary + crate / docs.rs / plugin id
 //! 2. Install (`cargo add`) + features table
 //! 3. Overview — `docs/.vitepress/plugin-guides/<slug>.md` if present, else crate `//!`
 //! 4. Quick start — `docs/.vitepress/plugin-usage/<slug>.md`
 //! 5. Examples + related plugins (hardcoded maps)
 //!
-//! Also: catalog table in `plugins/index.md`, grouped sidebar, Plugin SDK page.
+//! ## Plugin SDK (`docs/plugin-sdk/<slug>.md`)
+//! Guides in `docs/.vitepress/plugin-sdk-guides/` + ordered list in `plugin_sdk_pages()`.
+//! Also: catalog table, grouped sidebars, legacy `/api/plugin-sdk` stub.
 //!
 //! ```bash
 //! cargo run -p sova-docs-gen
@@ -342,19 +344,7 @@ export const pluginsSidebar = [\n  {{ text: 'Catalog', link: '/plugins/' }},\n\
         prune_plugin_pages(&w.docs.join("plugins"), &plugin_slugs)?;
     }
 
-    let plugin_sdk = extract_crate_docs(
-        &fs::read_to_string(root.join("crates/sova-core/src/plugin.rs"))
-            .map_err(|e| e.to_string())?,
-    )?;
-    w.emit(
-        "api/plugin-sdk.md",
-        &format!(
-            "---\ntitle: Plugin SDK\neditLink: false\n---\n\n# Plugin SDK\n\n\
-![Plugin SDK](/banners/plugin-sdk.svg)\n\n\
-> Auto-generated from `crates/sova-core/src/plugin.rs`. For writing plugins — app usage is under [Plugins](/plugins/).\n\n\
-{plugin_sdk}\n"
-        ),
-    )?;
+    generate_plugin_sdk(root, &mut w)?;
 
     if check {
         if w.stale {
@@ -370,6 +360,246 @@ export const pluginsSidebar = [\n  {{ text: 'Catalog', link: '/plugins/' }},\n\
         );
         Ok(false)
     }
+}
+
+/// Ordered Plugin SDK pages. Body from `docs/.vitepress/plugin-sdk-guides/<slug>.md`.
+fn plugin_sdk_pages() -> &'static [SdkPage] {
+    &[
+        SdkPage {
+            slug: "overview",
+            title: "Overview",
+            summary: "Mental model, import surfaces, and install checklist for plugin authors.",
+            group: "Start",
+        },
+        SdkPage {
+            slug: "plugin-trait",
+            title: "Plugin trait",
+            summary: "id, meta, requires, install, closure plugins, and SDK versioning.",
+            group: "Start",
+        },
+        SdkPage {
+            slug: "middleware",
+            title: "Middleware",
+            summary: "named, with_leaked, with_state, MwEntry — when to use each.",
+            group: "Cookbook",
+        },
+        SdkPage {
+            slug: "state",
+            title: "State & dependencies",
+            summary: "app.state, markers, Needs, hard requires vs soft has_plugin / try_state.",
+            group: "Cookbook",
+        },
+        SdkPage {
+            slug: "config",
+            title: "Config",
+            summary: "Toml unset-fill, env precedence, parse_duration / parse_bytes, features.",
+            group: "Cookbook",
+        },
+        SdkPage {
+            slug: "lifecycle",
+            title: "Lifecycle & services",
+            summary: "on_startup / on_shutdown, pool pattern, BackgroundService, CLI mode.",
+            group: "Cookbook",
+        },
+        SdkPage {
+            slug: "checks-cli",
+            title: "Checks & CLI",
+            summary: "register_check vs register_audit, probes, register_cli commands.",
+            group: "Cookbook",
+        },
+        SdkPage {
+            slug: "routes",
+            title: "Routes & introspection",
+            summary: "Plugin routes, path helpers, RouteValue / MetaMap, match captures.",
+            group: "Cookbook",
+        },
+        SdkPage {
+            slug: "html-hooks",
+            title: "HTML & log hooks",
+            summary: "HTML inject, logger_skip_path, add_log_event_hook for DevTools-style sinks.",
+            group: "Cookbook",
+        },
+        SdkPage {
+            slug: "errors",
+            title: "Errors",
+            summary: "Startup Err vs panic, ErrorResponse, soft degradation.",
+            group: "Cookbook",
+        },
+        SdkPage {
+            slug: "recipes",
+            title: "Recipes",
+            summary: "Patterns copied from in-tree plugins (cookies→csrf, pools, tasks, store).",
+            group: "Patterns",
+        },
+        SdkPage {
+            slug: "extend-api",
+            title: "extend API",
+            summary: "Symbol table for sova_core::extend — what it is and who uses it.",
+            group: "Reference",
+        },
+        SdkPage {
+            slug: "testing",
+            title: "Testing",
+            summary: "TestClient, tracing hooks, feature matrix tips.",
+            group: "Reference",
+        },
+    ]
+}
+
+struct SdkPage {
+    slug: &'static str,
+    title: &'static str,
+    summary: &'static str,
+    group: &'static str,
+}
+
+fn generate_plugin_sdk(root: &Path, w: &mut Writer) -> Result<(), String> {
+    let pages = plugin_sdk_pages();
+    let guides = w.docs.join(".vitepress/plugin-sdk-guides");
+    let mut slugs: Vec<&str> = Vec::new();
+
+    for page in pages {
+        let guide_path = guides.join(format!("{}.md", page.slug));
+        let body = fs::read_to_string(&guide_path).map_err(|e| {
+            format!(
+                "missing plugin-sdk guide {}: {e}",
+                guide_path.display()
+            )
+        })?;
+        let body = body.trim();
+        if body.is_empty() {
+            return Err(format!("empty plugin-sdk guide: {}", page.slug));
+        }
+
+        let mut md = format!(
+            "---\ntitle: {title}\neditLink: false\n---\n\n# {title}\n\n\
+{summary}\n\n\
+> Author guide — edit `docs/.vitepress/plugin-sdk-guides/{slug}.md`, then `pnpm docs:generate`.\n\n\
+{body}\n",
+            title = page.title,
+            summary = page.summary,
+            slug = page.slug,
+            body = body,
+        );
+
+        // Append rustdoc extract on the trait page.
+        if page.slug == "plugin-trait" {
+            let plugin_rs = fs::read_to_string(root.join("crates/sova-core/src/plugin.rs"))
+                .map_err(|e| e.to_string())?;
+            let rustdoc = extract_crate_docs(&plugin_rs)?;
+            if !rustdoc.trim().is_empty() {
+                md.push_str("\n## From `sova-core` rustdoc\n\n");
+                md.push_str(rustdoc.trim());
+                md.push('\n');
+            }
+        }
+
+        w.emit(&format!("plugin-sdk/{}.md", page.slug), &md)?;
+        slugs.push(page.slug);
+    }
+
+    // Index
+    let mut toc = String::from("| Page | Summary |\n|------|---------|\n");
+    for page in pages {
+        toc.push_str(&format!(
+            "| [`{}`](/plugin-sdk/{}) | {} |\n",
+            page.title, page.slug, page.summary
+        ));
+    }
+    let index = format!(
+        "---\ntitle: Plugin SDK\neditLink: false\n---\n\n# Plugin SDK\n\n\
+![Plugin SDK](/banners/plugin-sdk.svg)\n\n\
+Write `sova-*` plugins against `sova_core::extend` and the [`Plugin`](/plugin-sdk/plugin-trait) trait.\n\
+App users: use the [Plugins](/plugins/) catalog instead.\n\n\
+How pages are built: guides in [`plugin-sdk-guides`](https://github.com/s00d/sova/tree/master/docs/.vitepress/plugin-sdk-guides) → `sova-docs-gen` → `docs/plugin-sdk/*`.\n\n\
+## Pages\n\n\
+<!-- generated:plugin-sdk-toc -->\n\
+{toc}\
+<!-- /generated:plugin-sdk-toc -->\n\n\
+## Quick links\n\n\
+- Start: [Overview](/plugin-sdk/overview) · [Plugin trait](/plugin-sdk/plugin-trait)\n\
+- Cookbook: [Middleware](/plugin-sdk/middleware) · [State](/plugin-sdk/state) · [Recipes](/plugin-sdk/recipes)\n\
+- Reference: [extend API](/plugin-sdk/extend-api) · [Testing](/plugin-sdk/testing)\n\
+- Scaffold: `cargo sovax generate plugin <name>`\n"
+    );
+    w.emit("plugin-sdk/index.md", &index)?;
+
+    // Nav / sidebar TS
+    let mut by_group: BTreeMap<&str, Vec<&SdkPage>> = BTreeMap::new();
+    for page in pages {
+        by_group.entry(page.group).or_default().push(page);
+    }
+    let group_order = ["Start", "Cookbook", "Patterns", "Reference"];
+    let mut sidebar_blocks = Vec::new();
+    let mut nav_items = Vec::new();
+    for group in group_order {
+        let Some(items) = by_group.get(group) else {
+            continue;
+        };
+        let lines: Vec<String> = items
+            .iter()
+            .map(|p| {
+                format!(
+                    "    {{ text: '{}', link: '/plugin-sdk/{}' }}",
+                    p.title, p.slug
+                )
+            })
+            .collect();
+        sidebar_blocks.push(format!(
+            "  {{\n    text: '{group}',\n    collapsed: false,\n    items: [\n{}\n    ],\n  }}",
+            lines.join(",\n")
+        ));
+        for p in items {
+            nav_items.push(format!(
+                "  {{ text: '{}', link: '/plugin-sdk/{}' }}",
+                p.title, p.slug
+            ));
+        }
+    }
+    let nav_ts = format!(
+        "// Generated by sova-docs-gen — do not edit.\n\
+export const pluginSdkNav = [\n  {{ text: 'Index', link: '/plugin-sdk/' }},\n\
+{}\n\
+] as const\n\n\
+export const pluginSdkSidebar = [\n  {{ text: 'Plugin SDK', link: '/plugin-sdk/' }},\n\
+{}\n\
+]\n",
+        nav_items.join(",\n"),
+        sidebar_blocks.join(",\n")
+    );
+    w.emit(".vitepress/plugin-sdk-nav.generated.ts", &nav_ts)?;
+
+    // Redirect stub for old URL
+    w.emit(
+        "api/plugin-sdk.md",
+        "---\ntitle: Plugin SDK\neditLink: false\n---\n\n# Plugin SDK\n\n\
+Moved to a multi-page guide: **[Plugin SDK](/plugin-sdk/)**.\n\n\
+Start with [Overview](/plugin-sdk/overview) or the [Plugin trait](/plugin-sdk/plugin-trait).\n",
+    )?;
+
+    if !w.check {
+        prune_sdk_pages(&w.docs.join("plugin-sdk"), &slugs)?;
+    }
+    Ok(())
+}
+
+fn prune_sdk_pages(dir: &Path, keep: &[&str]) -> Result<(), String> {
+    if !dir.is_dir() {
+        return Ok(());
+    }
+    for ent in fs::read_dir(dir).map_err(|e| e.to_string())? {
+        let ent = ent.map_err(|e| e.to_string())?;
+        let name = ent.file_name().to_string_lossy().into_owned();
+        if name == "index.md" {
+            continue;
+        }
+        if let Some(stem) = name.strip_suffix(".md") {
+            if !keep.iter().any(|s| *s == stem) {
+                let _ = fs::remove_file(ent.path());
+            }
+        }
+    }
+    Ok(())
 }
 
 fn preferred_install_feature(slug: &str, feats: &[String]) -> Option<String> {

@@ -4,7 +4,7 @@
 
 # sova-docs-gen
 
-Generate VitePress plugin catalog + pages from Rust sources.
+Generate VitePress plugin catalog + Plugin SDK pages from Rust sources and guide markdown.
 
 ```bash
 pnpm docs:generate
@@ -15,7 +15,7 @@ cargo run -p sova-docs-gen -- --check
 
 Not published (`publish = false`).
 
-## Page recipe (per plugin)
+## Plugins — page recipe
 
 | Layer | Source | Becomes |
 |-------|--------|---------|
@@ -26,15 +26,37 @@ Not published (`publish = false`).
 | Examples / related | maps in `sova-docs-gen` | `## Examples` / `## Related` |
 | Nav | categories in gen | grouped sidebar |
 
-Also patches the catalog table in `docs/plugins/index.md` (`<!-- generated:plugins-table -->`) and writes `docs/api/plugin-sdk.md`.
+Also patches the catalog table in `docs/plugins/index.md` (`<!-- generated:plugins-table -->`).
 
-## Authoring
+**Never hand-edit** `docs/plugins/<slug>.md` — regenerate.
 
-1. **Guide** (`plugin-guides/`) — what / when / bullets / short example / config / pitfalls. Prefer this over long `//!` for VitePress.
+## Plugin SDK — page recipe
+
+| Layer | Source | Becomes |
+|-------|--------|---------|
+| Body | `docs/.vitepress/plugin-sdk-guides/<slug>.md` | `docs/plugin-sdk/<slug>.md` |
+| Index / TOC | ordered list in `sova-docs-gen` | `docs/plugin-sdk/index.md` |
+| Nav | groups Start / Cookbook / Patterns / Reference | `plugin-sdk-nav.generated.ts` |
+| Trait rustdoc | `crates/sova-core/src/plugin.rs` `//!` | appended on [Plugin trait](/plugin-sdk/plugin-trait) |
+| Legacy URL | — | `docs/api/plugin-sdk.md` stub → `/plugin-sdk/` |
+
+**Author guides** under `plugin-sdk-guides/`; do not hand-edit generated `docs/plugin-sdk/*.md` (except via regen).
+
+Page order / titles live in `plugin_sdk_pages()` inside `src/main.rs`.
+
+## Authoring plugins catalog
+
+1. **Guide** (`plugin-guides/`) — what / when / bullets / short example / config / pitfalls.
 2. **Usage** (`plugin-usage/`) — install wiring + handler snippets (code-first).
 3. **Features** — `/// Feature \`name\`: …` in `crates/sova/src/doc_features.rs`.
 4. **Crate rustdoc** — keep `//!` useful on docs.rs; guides win on the site when present.
-5. Never hand-edit `docs/plugins/<slug>.md` — regenerate.
+
+## Authoring Plugin SDK
+
+1. Edit the matching file in `docs/.vitepress/plugin-sdk-guides/`.
+2. To add a page: append an entry in `plugin_sdk_pages()` and create the guide file.
+3. Run `pnpm docs:generate`.
+4. Keep `plugin.rs` rustdoc short; long narrative belongs in VitePress.
 
 ## License
 

@@ -23,10 +23,13 @@ cargo add sova --features devtools
 
 | Feature | What you get |
 |---------|-------------|
-| `devtools` | Bar + session/mail/http/auth/db/tasks soft-hooks |
-| `devtools-store` | + Cache/KV (`sova.store`) |
-| `devtools-redis` | + Redis messaging traces |
-| `devtools-i18n` / `devtools-csrf` / `devtools-passport` / `devtools-rate-limit` | optional soft-hooks |
+| `devtools` | In-app DevTools bar (HTML inject + SSE timeline; auth/db/tasks soft-hooks). |
+| `devtools-csrf` | CSRF presence soft-hook. |
+| `devtools-i18n` | locale soft-hook on snapshots. |
+| `devtools-passport` | Passport `Authenticated` soft-hook. |
+| `devtools-rate-limit` | rate-limit header soft-hook marker. |
+| `devtools-redis` | `devtools-store` + Redis messaging traces. |
+| `devtools-store` | `devtools` + KvStore/Cache tracing (`sova.store`). |
 
 ## Overview
 
@@ -37,7 +40,7 @@ cargo add sova --features devtools
 - Collects per-request snapshot (correlated via `request_id`)
 - Site-wide live feed over SSE `GET /_devtools/events`
 - JSON: `/_devtools/requests`, `/_devtools/requests/:id`, `/_devtools/logs`, `/_devtools/config`
-- Soft hooks: session dump, FakeMail, sqlx/http tracing via `add_log_event_hook`
+- Soft hooks: session dump, FakeMail, route / rate-limit / encoding; sqlx / http / store / redis / tasks via `add_log_event_hook`
 - Mirrors console/`tracing` into Logs; skips `/_devtools` access logs via `logger_skip_path`
 - **Release builds:** hard-off unless `SOVA_DEVTOOLS=1`
 

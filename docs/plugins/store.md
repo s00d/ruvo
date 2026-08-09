@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-store`](https://docs.rs/sova-store/0.1.1) `0.1.1` |
+| Crate | [`sova-store`](https://docs.rs/sova-store/0.1.2) `0.1.2` |
 | Plugin id | `store` |
 | Category | Data |
 

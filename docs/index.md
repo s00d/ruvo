@@ -32,5 +32,5 @@ features:
       src: /icons/docs.svg
       alt: Docs
     title: Docs from code
-    details: Plugin pages from meta + guides + usage snippets; Plugin SDK for authors.
+    details: Plugin pages from meta + guides + usage snippets; multi-page Plugin SDK for authors.
 ---

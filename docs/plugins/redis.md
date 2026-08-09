@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-redis`](https://docs.rs/sova-redis/0.1.1) `0.1.1` |
+| Crate | [`sova-redis`](https://docs.rs/sova-redis/0.1.2) `0.1.2` |
 | Plugin id | `redis` |
 | Category | Data |
 

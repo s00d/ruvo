@@ -14,6 +14,8 @@ Each plugin page: **what / when**, features, overview, quick start, related link
 
 How pages are built: crate `//!` + optional [`plugin-guides`](https://github.com/s00d/sova/tree/master/docs/.vitepress/plugin-guides) / [`plugin-usage`](https://github.com/s00d/sova/tree/master/docs/.vitepress/plugin-usage) → `sova-docs-gen`.
 
+Writing a new plugin? See the [Plugin SDK](/plugin-sdk/) guide (same generator, guides under `plugin-sdk-guides/`).
+
 ## Catalog
 
 <!-- generated:plugins-table -->
@@ -27,7 +29,7 @@ How pages are built: crate `//!` + optional [`plugin-guides`](https://github.com
 | [`cors`](/plugins/cors) | HTTP | `0.1.1` | Cross-Origin Resource Sharing headers | `cors` |
 | [`csrf`](/plugins/csrf) | HTTP | `0.1.2` | Session double-submit CSRF (Laravel-style except/XSRF cookie) | `csrf` |
 | [`db`](/plugins/db) | Data | `0.1.3` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
-| [`devtools`](/plugins/devtools) | Ops | `0.1.3` | In-app debug bar (HTML inject, SSE timeline, request snapshots) | `devtools` |
+| [`devtools`](/plugins/devtools) | Ops | `0.1.3` | In-app debug bar (HTML inject, SSE timeline, request snapshots) | `devtools`, `devtools-csrf`, `devtools-i18n`, `devtools-passport`, `devtools-rate-limit`, `devtools-redis`, `devtools-store` |
 | [`env`](/plugins/env) | HTTP | `0.1.1` | Cascade .env loading for Sova apps (dotenvy) | `env` |
 | [`http`](/plugins/http) | Integrations | `0.1.1` | Outbound HTTP client with SSRF guards and named configs | `http-client` |
 | [`i18n`](/plugins/i18n) | Content | `0.1.2` | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |
@@ -39,14 +41,14 @@ How pages are built: crate `//!` + optional [`plugin-guides`](https://github.com
 | [`passport`](/plugins/passport) | Auth | `0.1.2` | Users + access/refresh JWT + personal access tokens | `passport`, `passport-jwt`, `passport-oauth`, `passport-session` |
 | [`quic`](/plugins/quic) | Realtime | `0.1.1` | QUIC datagrams BackgroundService helpers for Sova | `quic-udp` |
 | [`rate-limit`](/plugins/rate-limit) | HTTP | `0.1.1` | Per-key request rate limiting | `rate-limit` |
-| [`redis`](/plugins/redis) | Data | `0.1.1` | Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues | `redis` |
+| [`redis`](/plugins/redis) | Data | `0.1.2` | Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues | `redis` |
 | [`session`](/plugins/session) | Auth | `0.1.2` | Cookie sessions backed by a SessionStore | `session`, `session-redis`, `session-sql` |
 | [`shield`](/plugins/shield) | HTTP | `0.1.1` | Baseline security response headers (helmet-style) | `shield` |
 | [`sse`](/plugins/sse) | Realtime | `0.1.1` | Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive) | `sse-feed` |
 | [`static`](/plugins/static) | HTTP | `0.1.1` | Serve files from a directory under a mount path | `static-files` |
 | [`storage`](/plugins/storage) | Data | `0.1.1` | Object storage (local / memory / S3 / GCS / Azure) | `storage`, `storage-azure`, `storage-gcs`, `storage-memory`, `storage-s3` |
-| [`store`](/plugins/store) | Data | `0.1.1` | KvStore trait + memory / file / sql / redis backends for Sova | `store`, `store-crypto`, `store-file`, `store-redis`, `store-sql` |
-| [`tasks`](/plugins/tasks) | Data | `0.1.1` | Job worker, priorities, and optional cron/interval scheduler | `tasks` |
+| [`store`](/plugins/store) | Data | `0.1.2` | KvStore trait + memory / file / sql / redis backends for Sova | `store`, `store-crypto`, `store-file`, `store-redis`, `store-sql` |
+| [`tasks`](/plugins/tasks) | Data | `0.1.2` | Job worker, priorities, and optional cron/interval scheduler | `tasks` |
 | [`tasks-store`](/plugins/tasks-store) | Data | `0.1.1` | TaskStore trait + memory / file / sql / redis backends | `tasks-file`, `tasks-redis`, `tasks-sql`, `tasks-store` |
 | [`templates`](/plugins/templates) | Content | `0.1.1` | MiniJinja HTML templates with optional autoreload | `templates` |
 | [`udp`](/plugins/udp) | Realtime | `0.1.1` | UDP BackgroundService helpers for Sova | `udp` |

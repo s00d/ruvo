@@ -1,5 +1,8 @@
 //! Plugin extension trait and SDK metadata.
 //!
+//! Full VitePress guide: <https://s00d.github.io/sova/plugin-sdk/>
+//! (source: `docs/.vitepress/plugin-sdk-guides/`).
+//!
 //! # Writing a plugin
 //!
 //! A plugin is any type that implements [`Plugin`]. On install it typically:
@@ -31,47 +34,7 @@
 //!
 //! [`Plugin::meta`] returns human-readable info for CLI (`plugins`) and docs.
 //!
-//! # Examples
-//!
-//! ```rust,ignore
-//! use sova_core::extend::with_leaked;
-//! use sova_core::{App, Plugin, PluginMeta, Request, Response};
-//!
-//! struct HelloHeader;
-//!
-//! impl Plugin for HelloHeader {
-//!     fn id(&self) -> &'static str {
-//!         "hello-header"
-//!     }
-//!
-//!     fn meta(&self) -> PluginMeta {
-//!         PluginMeta::new("Hello Header")
-//!             .description("Adds an X-Hello response header")
-//!             .version(env!("CARGO_PKG_VERSION"))
-//!     }
-//!
-//!     fn install(self, app: &mut App) {
-//!         app.use_middleware(with_leaked((), |_s, req, next| async move {
-//!             let mut res = next(req).await;
-//!             res = res.header("x-hello", "sova");
-//!             res
-//!         }));
-//!     }
-//! }
-//!
-//! let mut app = App::new();
-//! app.install(HelloHeader);
-//! ```
-//!
-//! Closure plugins work without a named type:
-//!
-//! ```rust,ignore
-//! app.install(|app: &mut App| {
-//!     app.get("/healthz", || async { Response::text("ok") });
-//! });
-//! ```
-//!
-//! Scaffold a new crate with `cargo sovax generate plugin <name>`.
+//! Scaffold: `cargo sovax generate plugin <name>`.
 
 use crate::app::App;
 use std::cmp::Ordering;

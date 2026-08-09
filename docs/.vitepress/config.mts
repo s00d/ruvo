@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { pluginsNav, pluginsSidebar } from './plugins-nav.generated'
+import { pluginSdkNav, pluginSdkSidebar } from './plugin-sdk-nav.generated'
 
 // Local: `/`. GitHub Pages: set SOVA_DOCS_BASE=/sova/ in CI.
 const docsBase = process.env.SOVA_DOCS_BASE || '/'
@@ -35,7 +36,7 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Plugins', items: [...pluginsNav] },
-      { text: 'Plugin SDK', link: '/api/plugin-sdk' },
+      { text: 'Plugin SDK', items: [...pluginSdkNav] },
       { text: 'Examples', link: '/examples' },
       { text: 'Performance', link: '/guide/performance' },
       { text: 'GitHub', link: 'https://github.com/s00d/sova' },
@@ -55,10 +56,11 @@ export default defineConfig({
         },
       ],
       '/plugins/': [...pluginsSidebar],
+      '/plugin-sdk/': [...pluginSdkSidebar],
       '/api/': [
         {
           text: 'API',
-          items: [{ text: 'Plugin SDK', link: '/api/plugin-sdk' }],
+          items: [{ text: 'Plugin SDK (moved)', link: '/plugin-sdk/' }],
         },
       ],
     },
