@@ -93,9 +93,11 @@ fn csrf_from_html(body: &str) -> String {
 async fn registration_only_without_mail() {
     let dir = TempDir::new().unwrap();
     let url = format!("sqlite://{}?mode=rwc", dir.path().join("t.db").display());
-    std::env::set_var("DATABASE_URL", &url);
-    std::env::set_var("FORTIFY_SECRET", "smoke-secret-change-me");
-    std::env::set_var("SOVA_LOG", "off");
+    // SAFETY: isolated smoke process; env only for Fortify secret / log.
+    unsafe {
+        std::env::set_var("FORTIFY_SECRET", "smoke-secret-change-me");
+        std::env::set_var("SOVA_LOG", "off");
+    }
 
     // Migrations already unique-named; still apply via SchemaManager for a clean test DB.
     {
