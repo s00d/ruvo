@@ -110,13 +110,13 @@ impl Plugin for HelloHeader {
 }
 ```
 
-See also rustdoc on [`plugin.rs`](https://docs.rs/sova-core/latest/sova_core/trait.Plugin.html) and [Recipes](/plugin-sdk/recipes).
+See also rustdoc on [`plugin.rs`](https://docs.rs/sova-core/latest/sova_core/trait.Plugin.html) and [Recipes](/api/plugin-sdk/recipes).
 
 ## From `sova-core` rustdoc
 
 Plugin extension trait and SDK metadata.
 
- Full VitePress guide: <https://s00d.github.io/sova/plugin-sdk/>
+ Full VitePress guide: <https://s00d.github.io/sova/api/plugin-sdk.html>
  (source: `docs/.vitepress/plugin-sdk-guides/`).
 
  # Writing a plugin

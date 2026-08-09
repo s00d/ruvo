@@ -1,6 +1,6 @@
 //! Plugin extension trait and SDK metadata.
 //!
-//! Full VitePress guide: <https://s00d.github.io/sova/plugin-sdk/>
+//! Full VitePress guide: <https://s00d.github.io/sova/api/plugin-sdk.html>
 //! (source: `docs/.vitepress/plugin-sdk-guides/`).
 //!
 //! # Writing a plugin

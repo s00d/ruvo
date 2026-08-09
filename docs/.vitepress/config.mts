@@ -56,13 +56,7 @@ export default defineConfig({
         },
       ],
       '/plugins/': [...pluginsSidebar],
-      '/plugin-sdk/': [...pluginSdkSidebar],
-      '/api/': [
-        {
-          text: 'API',
-          items: [{ text: 'Plugin SDK (moved)', link: '/plugin-sdk/' }],
-        },
-      ],
+      '/api/': [...pluginSdkSidebar],
     },
     socialLinks: [{ icon: 'github', link: 'https://github.com/s00d/sova' }],
     search: { provider: 'local' },

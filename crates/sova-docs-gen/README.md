@@ -34,13 +34,12 @@ Also patches the catalog table in `docs/plugins/index.md` (`<!-- generated:plugi
 
 | Layer | Source | Becomes |
 |-------|--------|---------|
-| Body | `docs/.vitepress/plugin-sdk-guides/<slug>.md` | `docs/plugin-sdk/<slug>.md` |
-| Index / TOC | ordered list in `sova-docs-gen` | `docs/plugin-sdk/index.md` |
+| Index | ordered list in `sova-docs-gen` | `docs/api/plugin-sdk.md` → `/api/plugin-sdk` |
+| Body | `docs/.vitepress/plugin-sdk-guides/<slug>.md` | `docs/api/plugin-sdk/<slug>.md` |
 | Nav | groups Start / Cookbook / Patterns / Reference | `plugin-sdk-nav.generated.ts` |
-| Trait rustdoc | `crates/sova-core/src/plugin.rs` `//!` | appended on [Plugin trait](/plugin-sdk/plugin-trait) |
-| Legacy URL | — | `docs/api/plugin-sdk.md` stub → `/plugin-sdk/` |
+| Trait rustdoc | `crates/sova-core/src/plugin.rs` `//!` | appended on Plugin trait page |
 
-**Author guides** under `plugin-sdk-guides/`; do not hand-edit generated `docs/plugin-sdk/*.md` (except via regen).
+**Author guides** under `plugin-sdk-guides/`; do not hand-edit generated `docs/api/plugin-sdk*`.
 
 Page order / titles live in `plugin_sdk_pages()` inside `src/main.rs`.
 

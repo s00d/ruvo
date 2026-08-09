@@ -51,15 +51,15 @@ cargo sovax generate plugin my-thing
 
 | Topic | Page |
 |-------|------|
-| `Plugin` / `id` / `meta` / SDK versions | [Plugin trait](/plugin-sdk/plugin-trait) |
-| MW helpers | [Middleware](/plugin-sdk/middleware) |
-| State, markers, soft deps | [State & dependencies](/plugin-sdk/state) |
-| Toml / env | [Config](/plugin-sdk/config) |
-| Startup, workers | [Lifecycle & services](/plugin-sdk/lifecycle) |
-| Ready probes + CLI | [Checks & CLI](/plugin-sdk/checks-cli) |
-| Routes + OpenAPI meta | [Routes & introspection](/plugin-sdk/routes) |
-| HTML inject / log skip / DevTools hooks | [HTML & log hooks](/plugin-sdk/html-hooks) |
-| Failures | [Errors](/plugin-sdk/errors) |
-| Real recipes from in-tree plugins | [Recipes](/plugin-sdk/recipes) |
-| Full `extend` table | [extend API](/plugin-sdk/extend-api) |
-| Tests | [Testing](/plugin-sdk/testing) |
+| `Plugin` / `id` / `meta` / SDK versions | [Plugin trait](/api/plugin-sdk/plugin-trait) |
+| MW helpers | [Middleware](/api/plugin-sdk/middleware) |
+| State, markers, soft deps | [State & dependencies](/api/plugin-sdk/state) |
+| Toml / env | [Config](/api/plugin-sdk/config) |
+| Startup, workers | [Lifecycle & services](/api/plugin-sdk/lifecycle) |
+| Ready probes + CLI | [Checks & CLI](/api/plugin-sdk/checks-cli) |
+| Routes + OpenAPI meta | [Routes & introspection](/api/plugin-sdk/routes) |
+| HTML inject / log skip / DevTools hooks | [HTML & log hooks](/api/plugin-sdk/html-hooks) |
+| Failures | [Errors](/api/plugin-sdk/errors) |
+| Real recipes from in-tree plugins | [Recipes](/api/plugin-sdk/recipes) |
+| Full `extend` table | [extend API](/api/plugin-sdk/extend-api) |
+| Tests | [Testing](/api/plugin-sdk/testing) |

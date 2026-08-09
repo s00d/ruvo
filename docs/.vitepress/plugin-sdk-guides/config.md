@@ -20,7 +20,7 @@ Common order (db/redis style):
 1. Builder / pin URL
 2. Env (`DATABASE_URL`, `REDIS_URL`, …)
 3. Toml section
-4. Empty → **fail on startup** (see [Errors](/plugin-sdk/errors)), not silent no-op
+4. Empty → **fail on startup** (see [Errors](/api/plugin-sdk/errors)), not silent no-op
 
 ### Human-readable sizes & durations
 

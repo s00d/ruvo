@@ -99,4 +99,4 @@ impl Plugin for HelloHeader {
 }
 ```
 
-See also rustdoc on [`plugin.rs`](https://docs.rs/sova-core/latest/sova_core/trait.Plugin.html) and [Recipes](/plugin-sdk/recipes).
+See also rustdoc on [`plugin.rs`](https://docs.rs/sova-core/latest/sova_core/trait.Plugin.html) and [Recipes](/api/plugin-sdk/recipes).

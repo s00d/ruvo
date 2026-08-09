@@ -289,7 +289,7 @@ app.use_middleware(with_state(Hits(AtomicU64::new(0)), |hits, req, next| async m
 }));
 ```
 
-Plugin authors often use `sova::extend::with_leaked` for immutable config (see [Plugin SDK](/plugin-sdk/)). Label layers for `routes` / explain: `sova::extend::named("my-mw", …)`.
+Plugin authors often use `sova::extend::with_leaked` for immutable config (see [Plugin SDK](/api/plugin-sdk/)). Label layers for `routes` / explain: `sova::extend::named("my-mw", …)`.
 
 Order is onion: first `use_middleware` is outermost. Root stack runs **before** mount/route middleware.
 

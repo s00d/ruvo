@@ -68,4 +68,4 @@ Install capture **before** `next` so the router can fill it.
 
 ### `Needs` on routes
 
-See [State & dependencies](/plugin-sdk/state) — session uses `Needs::<CookieLayerPresent>` so session routes refuse to build without cookies MW.
+See [State & dependencies](/api/plugin-sdk/state) — session uses `Needs::<CookieLayerPresent>` so session routes refuse to build without cookies MW.
