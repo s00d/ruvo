@@ -1,5 +1,5 @@
 import { withMermaid } from 'vitepress-plugin-mermaid'
-import { pluginsNav, pluginsSidebar } from './plugins-nav.generated'
+import { pluginsSidebar } from './plugins-nav.generated'
 import { pluginSdkNav, pluginSdkSidebar } from './plugin-sdk-nav.generated'
 
 // Local: `/`. GitHub Pages: set SOVA_DOCS_BASE=/sova/ in CI.
@@ -35,7 +35,7 @@ export default withMermaid({
     siteTitle: 'Sova',
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
-      { text: 'Plugins', items: [...pluginsNav] },
+      { text: 'Plugins', link: '/plugins/' },
       { text: 'Plugin SDK', items: [...pluginSdkNav] },
       { text: 'Examples', link: '/examples' },
       { text: 'Performance', link: '/guide/performance' },
