@@ -2,6 +2,8 @@
 
 ![cargo-sovax](/banners/cargo-sovax.svg)
 
+![cargo sovax CLI](/banners/cargo-sovax-cli.gif)
+
 Install as `cargo-sovax`, run as **`cargo sovax …`** (Cargo subcommand).  
 Scaffolding, watch, build, and DB helpers for Sova apps.
 

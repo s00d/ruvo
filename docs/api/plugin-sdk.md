@@ -26,12 +26,12 @@ How pages are built: guides in [`plugin-sdk-guides`](https://github.com/s00d/sov
 | [`Checks & CLI`](/api/plugin-sdk/checks-cli) | register_check vs register_audit, probes, register_cli commands. |
 | [`Routes & introspection`](/api/plugin-sdk/routes) | Plugin routes, path helpers, RouteValue / MetaMap, match captures. |
 | [`Extractors & Problem+`](/api/plugin-sdk/extractors) | Path/Json/State handlers, EventBus, API problem+json errors. |
-| [`Events`](/api/plugin-sdk/events) | Typed EventBus listen/dispatch for in-process hooks. |
+| [`Events`](/api/plugin-sdk/events) | EventBus listen/dispatch + catalog of first-party plugin events. |
 | [`HTML & log hooks`](/api/plugin-sdk/html-hooks) | HTML inject, logger_skip_path, add_log_event_hook for DevTools-style sinks. |
 | [`Errors`](/api/plugin-sdk/errors) | Startup Err vs panic, ErrorResponse, soft degradation. |
 | [`Recipes`](/api/plugin-sdk/recipes) | Patterns copied from in-tree plugins (cookies→csrf, pools, tasks, store). |
 | [`extend API`](/api/plugin-sdk/extend-api) | Symbol table for sova_core::extend — what it is and who uses it. |
-| [`Testing`](/api/plugin-sdk/testing) | TestClient, tracing hooks, feature matrix tips. |
+| [`Testing`](/api/plugin-sdk/testing) | In-process TestClient, ResponseAssert, TestApp/sqlite, cookies, auth hooks, real examples. |
 <!-- /generated:plugin-sdk-toc -->
 
 ## Quick links

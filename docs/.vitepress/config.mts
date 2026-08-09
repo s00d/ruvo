@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 import { pluginsNav, pluginsSidebar } from './plugins-nav.generated'
 import { pluginSdkNav, pluginSdkSidebar } from './plugin-sdk-nav.generated'
 
@@ -6,7 +6,7 @@ import { pluginSdkNav, pluginSdkSidebar } from './plugin-sdk-nav.generated'
 const docsBase = process.env.SOVA_DOCS_BASE || '/'
 const ogImage = 'https://s00d.github.io/sova/og.png'
 
-export default defineConfig({
+export default withMermaid({
   title: 'Sova',
   description: 'Express-like HTTP framework for Rust',
   base: docsBase,
@@ -65,4 +65,6 @@ export default defineConfig({
       pattern: 'https://github.com/s00d/sova/edit/master/docs/:path',
     },
   },
+  // MermaidConfig — light theme; dark mode forced by the plugin when body has "dark".
+  mermaid: {},
 })

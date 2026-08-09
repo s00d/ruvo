@@ -422,7 +422,7 @@ fn plugin_sdk_pages() -> &'static [SdkPage] {
         SdkPage {
             slug: "events",
             title: "Events",
-            summary: "Typed EventBus listen/dispatch for in-process hooks.",
+            summary: "EventBus listen/dispatch + catalog of first-party plugin events.",
             group: "Cookbook",
         },
         SdkPage {
@@ -452,7 +452,7 @@ fn plugin_sdk_pages() -> &'static [SdkPage] {
         SdkPage {
             slug: "testing",
             title: "Testing",
-            summary: "TestClient, tracing hooks, feature matrix tips.",
+            summary: "In-process TestClient, ResponseAssert, TestApp/sqlite, cookies, auth hooks, real examples.",
             group: "Reference",
         },
     ]
