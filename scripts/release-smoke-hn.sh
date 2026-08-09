@@ -76,6 +76,7 @@ cargo run --quiet -- migrate
 echo "==> build"
 cargo build --quiet
 echo "==> register+guard via TestClient"
+mkdir -p tests
 cat > tests/smoke.rs <<'RS'
 use sova::{AuthFeature, AuthMigrator, Db, Fortify, Html, ResponseAssert, Router, TestClient};
 use sova::prelude::*;
@@ -96,26 +97,22 @@ async fn registration_only_without_mail() {
     std::env::set_var("FORTIFY_SECRET", "smoke-secret-change-me");
     std::env::set_var("SOVA_LOG", "off");
 
-    // Apply auth migrations the same way sova-testing does (file stem collisions).
+    // Migrations already unique-named; still apply via SchemaManager for a clean test DB.
     {
-        use sea_orm::{Database, Statement};
+        use sea_orm::Database;
         use sea_orm_migration::{MigratorTrait, SchemaManager};
         let conn = Database::connect(&url).await.unwrap();
         let schema = SchemaManager::new(&conn);
         for m in AuthMigrator::migrations() {
             m.up(&schema).await.unwrap();
         }
-        let _ = conn.execute(Statement::from_string(
-            sea_orm::DatabaseBackend::Sqlite,
-            "SELECT 1".into(),
-        )).await;
     }
 
     let mut app = App::web()
         .site("HN Smoke")
         .public_url("http://127.0.0.1:3000")
         .into_app();
-    app.install(Db::from_env().migrations::<AuthMigrator>());
+    app.install(Db::from_env().url(&url).migrations::<AuthMigrator>());
     app.install(
         Fortify::new()
             .features([AuthFeature::Registration])
