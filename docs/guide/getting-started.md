@@ -30,6 +30,8 @@ cargo sovax new ping-api --api
 
 Templates already pin `tokio` (and `serde` / `serde_json` for the API preset).
 
+For release builds and Docker, see [Production / Docker](/guide/production).
+
 Browse opt-in crates under [Plugins](/plugins/) — each page covers when to use it, features, and a quick start.
 
 ## Web app

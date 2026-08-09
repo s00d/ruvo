@@ -49,6 +49,7 @@ export default defineConfig({
             { text: 'Getting started', link: '/guide/getting-started' },
             { text: 'Concepts', link: '/guide/concepts' },
             { text: 'Configuration', link: '/guide/configuration' },
+            { text: 'Production / Docker', link: '/guide/production' },
             { text: 'DevTools', link: '/guide/devtools' },
             { text: 'cargo sovax', link: '/guide/cargo-sovax' },
             { text: 'Performance', link: '/guide/performance' },

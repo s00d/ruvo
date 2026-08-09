@@ -1,0 +1,20 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        EXAMPLE_PKG: hello
+        EXAMPLE_BIN: hello
+    ports:
+      - "3000:3000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      SOVA_ENV: production
+      RUST_LOG: info
+    # Optional: override baked-in /app/sova.toml for apps that load it via configure_from_path.
+    # volumes:
+    #   - ./sova.production.toml:/app/sova.toml:ro
+    restart: unless-stopped

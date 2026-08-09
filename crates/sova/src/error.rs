@@ -53,6 +53,13 @@ impl From<sova_storage::StorageError> for AppError {
     }
 }
 
+#[cfg(feature = "fs")]
+impl From<sova_fs::FsError> for AppError {
+    fn from(err: sova_fs::FsError) -> Self {
+        Self::Core(err.into())
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         match self {

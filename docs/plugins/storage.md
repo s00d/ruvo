@@ -128,4 +128,4 @@ SOVA_STORAGE_PATH=./storage
 
 ## Related
 
-[`static`](/plugins/static)
+[`static`](/plugins/static) · [`fs`](/plugins/fs)

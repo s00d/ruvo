@@ -30,8 +30,9 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`cors`](/plugins/cors) | HTTP | `0.1.1` | Cross-Origin Resource Sharing headers | `cors` |
 | [`csrf`](/plugins/csrf) | HTTP | `0.1.3` | Session double-submit CSRF (Laravel-style except/XSRF cookie) | `csrf` |
 | [`db`](/plugins/db) | Data | `0.1.3` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
-| [`devtools`](/plugins/devtools) | Ops | `0.1.5` | In-app debug bar (HTML inject, SSE timeline, request snapshots) | `devtools`, `devtools-acme`, `devtools-csrf`, `devtools-i18n`, `devtools-notifications`, `devtools-passport`, `devtools-rate-limit`, `devtools-redis`, `devtools-store` |
+| [`devtools`](/plugins/devtools) | Ops | `0.1.7` | In-app debug bar (HTML inject, SSE timeline, request snapshots) | `devtools`, `devtools-acme`, `devtools-csrf`, `devtools-fs`, `devtools-i18n`, `devtools-notifications`, `devtools-passport`, `devtools-rate-limit`, `devtools-redis`, `devtools-store` |
 | [`env`](/plugins/env) | HTTP | `0.1.1` | Cascade .env loading for Sova apps (dotenvy) | `env` |
+| [`fs`](/plugins/fs) | Data | `0.1.0` | Local filesystem with jail root (async CRUD + walk) | `fs` |
 | [`http`](/plugins/http) | Integrations | `0.1.1` | Outbound HTTP client with SSRF guards and named configs | `http-client` |
 | [`i18n`](/plugins/i18n) | Content | `0.1.2` | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |
 | [`idempotency`](/plugins/idempotency) | HTTP | `0.1.0` | Replay 2xx responses for Idempotency-Key on mutating methods | `idempotency` |

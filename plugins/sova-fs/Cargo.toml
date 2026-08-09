@@ -1,0 +1,23 @@
+[package]
+name = "sova-fs"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+description = "Local filesystem plugin for Sova (jail root, async CRUD, walk)"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/sova-fs"
+readme = "README.md"
+keywords = ["http", "web", "framework", "async", "filesystem"]
+categories = ["web-programming::http-server", "filesystem"]
+
+[dependencies]
+sova-core = { workspace = true }
+tokio = { workspace = true, features = ["fs", "io-util", "sync", "rt", "macros"] }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+tempfile = { workspace = true }
+sova-core = { workspace = true, features = ["testing"] }

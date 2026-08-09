@@ -62,4 +62,4 @@ Dotfiles denied by default. See `examples/web/static_files`.
 
 ## Related
 
-[`storage`](/plugins/storage) · [`templates`](/plugins/templates)
+[`storage`](/plugins/storage) · [`templates`](/plugins/templates) · [`fs`](/plugins/fs)

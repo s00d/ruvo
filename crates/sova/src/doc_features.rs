@@ -63,6 +63,7 @@
 /// Feature `storage-gcs`: Google Cloud Storage backend.
 /// Feature `storage-azure`: Azure Blob backend.
 /// Feature `storage-memory`: In-memory blob store (tests).
+/// Feature `fs`: Local filesystem jail (`req.fs()` — CRUD + walk).
 /// Feature `passport`: Auth strategies registry (JWT / PAT / OAuth).
 /// Feature `passport-session`: Session serialize/login for Passport.
 /// Feature `passport-jwt`: JWT access + refresh + personal access tokens.

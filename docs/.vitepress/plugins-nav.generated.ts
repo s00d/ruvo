@@ -30,6 +30,7 @@ export const pluginsNav = [
     text: 'Data & jobs',
     items: [
     { text: 'db', link: '/plugins/db' },
+    { text: 'fs', link: '/plugins/fs' },
     { text: 'redis', link: '/plugins/redis' },
     { text: 'storage', link: '/plugins/storage' },
     { text: 'store', link: '/plugins/store' },
@@ -114,6 +115,7 @@ export const pluginsSidebar = [
     collapsed: false,
     items: [
     { text: 'db', link: '/plugins/db' },
+    { text: 'fs', link: '/plugins/fs' },
     { text: 'redis', link: '/plugins/redis' },
     { text: 'storage', link: '/plugins/storage' },
     { text: 'store', link: '/plugins/store' },

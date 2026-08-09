@@ -257,6 +257,11 @@ pub use sova_storage::{
     StoredFile,
 };
 
+#[cfg(feature = "fs")]
+pub use sova_fs::{
+    DirCreated, FileRemoved, FileWritten, Fs, FsEntry, FsError, FsExt, FsMeta, FsPlugin,
+};
+
 #[cfg(feature = "passport")]
 pub use sova_passport::{
     local_strategy, passport_serialize, ApiTokenRevoked, Auth, AuthMw, Authenticated, Credentials,

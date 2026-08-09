@@ -1,6 +1,6 @@
 [package]
 name = "sova-devtools"
-version = "0.1.6"
+version = "0.1.7"
 authors.workspace = true
 edition.workspace = true
 description = "In-app DevTools bar for Sova (HTML inject, SSE timeline, request snapshots)"
@@ -28,6 +28,7 @@ redis = []
 rate-limit = ["dep:sova-rate-limit"]
 notifications = ["dep:sova-notifications"]
 acme = ["dep:sova-acme"]
+fs = ["dep:sova-fs"]
 
 [dependencies]
 sova-core = { workspace = true }
@@ -50,6 +51,7 @@ sova-passport = { workspace = true, optional = true }
 sova-rate-limit = { workspace = true, optional = true }
 sova-notifications = { workspace = true, optional = true }
 sova-acme = { workspace = true, optional = true }
+sova-fs = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

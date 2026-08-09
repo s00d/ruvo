@@ -382,6 +382,22 @@ pub fn wire_event_bus(app: &mut sova_core::App, hub: DevToolsHub) {
         });
     }
 
+    #[cfg(feature = "fs")]
+    {
+        let h = hub.clone();
+        bus.listen::<sova_fs::FileWritten, _>(move |e| {
+            h.emit("fs.file_written", json!({ "path": e.path }));
+        });
+        let h = hub.clone();
+        bus.listen::<sova_fs::FileRemoved, _>(move |e| {
+            h.emit("fs.file_removed", json!({ "path": e.path }));
+        });
+        let h = hub.clone();
+        bus.listen::<sova_fs::DirCreated, _>(move |e| {
+            h.emit("fs.dir_created", json!({ "path": e.path }));
+        });
+    }
+
     #[cfg(feature = "csrf")]
     {
         let h = hub.clone();
@@ -537,6 +553,8 @@ fn compile_features() -> Vec<&'static str> {
         v.push("notifications");
         #[cfg(feature = "acme")]
         v.push("acme");
+        #[cfg(feature = "fs")]
+        v.push("fs");
         v
     }
 }

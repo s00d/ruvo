@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-devtools`](https://docs.rs/sova-devtools/0.1.5) `0.1.5` |
+| Crate | [`sova-devtools`](https://docs.rs/sova-devtools/0.1.7) `0.1.7` |
 | Plugin id | `devtools` |
 | Category | Ops |
 
@@ -26,6 +26,7 @@ cargo add sova --features devtools
 | `devtools` | In-app DevTools bar (HTML inject + SSE timeline; auth/db/tasks soft-hooks). |
 | `devtools-acme` | — |
 | `devtools-csrf` | CSRF presence soft-hook. |
+| `devtools-fs` | — |
 | `devtools-i18n` | locale soft-hook on snapshots. |
 | `devtools-notifications` | — |
 | `devtools-passport` | Passport `Authenticated` soft-hook. |
