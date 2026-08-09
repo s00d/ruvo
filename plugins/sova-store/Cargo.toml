@@ -1,6 +1,6 @@
 [package]
 name = "sova-store"
-version = "0.1.3"
+version = "0.1.4"
 authors.workspace = true
 edition.workspace = true
 description = "KvStore trait + memory / file / sql / redis / redb backends for Sova"
@@ -46,3 +46,7 @@ redb = { workspace = true, optional = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }
 tempfile = { workspace = true }
 sova-db = { workspace = true, default-features = false, features = ["sqlite"] }
+
+[[example]]
+name = "mem_bench"
+path = "examples/mem_bench.rs"

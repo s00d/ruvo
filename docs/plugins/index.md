@@ -29,7 +29,7 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`cookies`](/plugins/cookies) | HTTP | `0.1.1` | Parse Cookie header into request-local Cookies | `cookies` |
 | [`cors`](/plugins/cors) | HTTP | `0.1.1` | Cross-Origin Resource Sharing headers | `cors` |
 | [`csrf`](/plugins/csrf) | HTTP | `0.1.3` | Session double-submit CSRF (Laravel-style except/XSRF cookie) | `csrf` |
-| [`db`](/plugins/db) | Data | `0.1.3` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
+| [`db`](/plugins/db) | Data | `0.1.4` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
 | [`devtools`](/plugins/devtools) | Ops | `0.1.7` | In-app debug bar (HTML inject, SSE timeline, request snapshots) | `devtools`, `devtools-acme`, `devtools-csrf`, `devtools-fs`, `devtools-i18n`, `devtools-notifications`, `devtools-passport`, `devtools-rate-limit`, `devtools-redis`, `devtools-store` |
 | [`env`](/plugins/env) | HTTP | `0.1.1` | Cascade .env loading for Sova apps (dotenvy) | `env` |
 | [`fs`](/plugins/fs) | Data | `0.1.0` | Local filesystem with jail root (async CRUD + walk) | `fs` |
@@ -44,16 +44,16 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`passport`](/plugins/passport) | Auth | `0.1.3` | Users + access/refresh JWT + personal access tokens | `passport`, `passport-jwt`, `passport-oauth`, `passport-session` |
 | [`quic`](/plugins/quic) | Realtime | `0.1.2` | QUIC datagrams BackgroundService helpers for Sova | `quic-udp` |
 | [`rate-limit`](/plugins/rate-limit) | HTTP | `0.1.3` | Per-key request rate limiting | `rate-limit` |
-| [`redis`](/plugins/redis) | Data | `0.1.2` | Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues | `redis` |
+| [`redis`](/plugins/redis) | Data | `0.1.3` | Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues | `redis` |
 | [`response-cache`](/plugins/response-cache) | HTTP | `0.1.1` | Cache GET 200 responses in KvStore | `response-cache` |
-| [`session`](/plugins/session) | Auth | `0.1.4` | Cookie sessions backed by a SessionStore | `session`, `session-redis`, `session-sql` |
+| [`session`](/plugins/session) | Auth | `0.1.5` | Cookie sessions backed by a SessionStore | `session`, `session-redis`, `session-sql` |
 | [`shield`](/plugins/shield) | HTTP | `0.1.1` | Baseline security response headers (helmet-style) | `shield` |
 | [`sse`](/plugins/sse) | Realtime | `0.1.1` | Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive) | `sse-feed` |
 | [`static`](/plugins/static) | HTTP | `0.1.1` | Serve files from a directory under a mount path | `static-files` |
-| [`storage`](/plugins/storage) | Data | `0.1.1` | Object storage (local / memory / S3 / GCS / Azure) | `storage`, `storage-azure`, `storage-gcs`, `storage-memory`, `storage-s3` |
-| [`store`](/plugins/store) | Data | `0.1.3` | KvStore trait + memory / file / sql / redis / redb backends for Sova | `store`, `store-crypto`, `store-file`, `store-redb`, `store-redis`, `store-sql` |
+| [`storage`](/plugins/storage) | Data | `0.1.2` | Object storage (local / memory / S3 / GCS / Azure) | `storage`, `storage-azure`, `storage-gcs`, `storage-memory`, `storage-s3` |
+| [`store`](/plugins/store) | Data | `0.1.4` | KvStore trait + memory / file / sql / redis / redb backends for Sova | `store`, `store-crypto`, `store-file`, `store-redb`, `store-redis`, `store-sql` |
 | [`tasks`](/plugins/tasks) | Data | `0.1.4` | Job worker, priorities, and optional cron/interval scheduler | `tasks`, `tasks-redis`, `tasks-sql` |
-| [`tasks-store`](/plugins/tasks-store) | Data | `0.1.1` | TaskStore trait + memory / file / sql / redis backends | `tasks-file`, `tasks-redis`, `tasks-sql`, `tasks-store` |
+| [`tasks-store`](/plugins/tasks-store) | Data | `0.1.2` | TaskStore trait + memory / file / sql / redis backends | `tasks-file`, `tasks-redis`, `tasks-sql`, `tasks-store` |
 | [`templates`](/plugins/templates) | Content | `0.1.1` | MiniJinja HTML templates with optional autoreload | `templates` |
 | [`udp`](/plugins/udp) | Realtime | `0.1.1` | UDP BackgroundService helpers for Sova | `udp` |
 | [`vld`](/plugins/vld) | Auth | `0.1.4` | Request validation hooks and coverage check | `vld`, `vld-flash`, `vld-flash-templates`, `vld-form`, `vld-i18n`, `vld-openapi` |

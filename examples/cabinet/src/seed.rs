@@ -10,7 +10,7 @@ pub async fn seed_demo(state: Arc<sova::extend::StateMap>) -> Result<(), Error> 
     let pool = state
         .get::<DbPool>()
         .ok_or_else(|| Error::Internal("DbPool missing".into()))?;
-    let conn = pool.get().await.map_err(Error::from)?;
+    let conn = pool.get().map_err(Error::from)?;
     let db = DbHandle::Conn(conn);
 
     let perms = list_permissions(&db).await?;

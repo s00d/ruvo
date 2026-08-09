@@ -42,7 +42,7 @@ impl SqlTaskStore {
     }
 
     pub async fn ensure_schema(&self) -> Result<(), DbErr> {
-        let conn = self.pool.get().await.map_err(|e| e.0)?;
+        let conn = self.pool.get().map_err(|e| e.0)?;
         self.ensure_schema_on(&conn).await?;
         self.schema_ready.store(true, Ordering::SeqCst);
         Ok(())
@@ -125,7 +125,7 @@ impl SqlTaskStore {
     }
 
     async fn conn(&self) -> Result<DatabaseConnection, DbErr> {
-        let conn = self.pool.get().await.map_err(|e| e.0)?;
+        let conn = self.pool.get().map_err(|e| e.0)?;
         if !self.schema_ready.load(Ordering::Acquire) {
             self.ensure_schema_on(&conn).await?;
             self.schema_ready.store(true, Ordering::Release);
@@ -632,7 +632,7 @@ mod tests {
     async fn mem_store() -> SqlTaskStore {
         let conn = Database::connect("sqlite::memory:").await.unwrap();
         let pool = DbPool::new();
-        pool.set(conn).await;
+        pool.set(conn);
         let store = SqlTaskStore::from_db_pool(&pool);
         store.ensure_schema().await.unwrap();
         store

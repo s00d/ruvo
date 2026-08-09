@@ -64,11 +64,11 @@ impl Plugin for Redis {
             let url = url.clone();
             let pool = pool_start.clone();
             async move {
-                pool.set_url(url.clone()).await;
+                pool.set_url(url.clone());
                 let conn = RedisPool::connect(&url)
                     .await
                     .map_err(|e| Error::Internal(format!("redis connect: {e}")))?;
-                pool.set(conn).await;
+                pool.set(conn);
                 Ok(())
             }
         });
@@ -77,7 +77,7 @@ impl Plugin for Redis {
         app.on_shutdown(move || {
             let pool = pool_stop.clone();
             async move {
-                pool.clear().await;
+                pool.clear();
             }
         });
 
@@ -85,7 +85,7 @@ impl Plugin for Redis {
         app.register_check("redis", move |_state| {
             let pool = pool_check.clone();
             async move {
-                let mut conn = pool.get().await.map_err(Error::from)?;
+                let mut conn = pool.get().map_err(Error::from)?;
                 let _: String = redis::cmd("PING")
                     .query_async(&mut conn)
                     .await

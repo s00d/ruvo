@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-db`](https://docs.rs/sova-db/0.1.3) `0.1.3` |
+| Crate | [`sova-db`](https://docs.rs/sova-db/0.1.4) `0.1.4` |
 | Plugin id | `db` |
 | Category | Data |
 

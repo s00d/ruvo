@@ -93,7 +93,7 @@ impl RedisPool {
     ) -> Result<i64, RedisError> {
         let started = std::time::Instant::now();
         let ch = channel.as_ref();
-        let mut conn = self.get().await?;
+        let mut conn = self.get()?;
         let res = conn
             .publish(ch, message.as_ref())
             .await
@@ -120,7 +120,7 @@ impl RedisPool {
         &self,
         channels: impl IntoIterator<Item = impl AsRef<str>>,
     ) -> Result<RedisSubscriber, RedisError> {
-        let url = self.url().await?;
+        let url = self.url()?;
         let client = redis::Client::open(url.as_str()).map_err(RedisError::from)?;
         let mut pubsub = client.get_async_pubsub().await.map_err(RedisError::from)?;
         let names: Vec<String> = channels
@@ -139,7 +139,7 @@ impl RedisPool {
         &self,
         patterns: impl IntoIterator<Item = impl AsRef<str>>,
     ) -> Result<RedisSubscriber, RedisError> {
-        let url = self.url().await?;
+        let url = self.url()?;
         let client = redis::Client::open(url.as_str()).map_err(RedisError::from)?;
         let mut pubsub = client.get_async_pubsub().await.map_err(RedisError::from)?;
         let names: Vec<String> = patterns
@@ -161,7 +161,7 @@ impl RedisPool {
     ) -> Result<i64, RedisError> {
         let started = std::time::Instant::now();
         let q = queue.as_ref();
-        let mut conn = self.get().await?;
+        let mut conn = self.get()?;
         let res = conn
             .lpush(q, message.as_ref())
             .await
@@ -184,7 +184,7 @@ impl RedisPool {
     pub async fn dequeue(&self, queue: impl AsRef<str>) -> Result<Option<Vec<u8>>, RedisError> {
         let started = std::time::Instant::now();
         let q = queue.as_ref();
-        let mut conn = self.get().await?;
+        let mut conn = self.get()?;
         let res: Result<Option<Vec<u8>>, RedisError> =
             conn.rpop(q, None).await.map_err(RedisError::from);
         let ok = res.is_ok();
@@ -213,7 +213,7 @@ impl RedisPool {
     ) -> Result<Option<(String, Vec<u8>)>, RedisError> {
         let started = std::time::Instant::now();
         let q = queue.as_ref();
-        let mut conn = self.get().await?;
+        let mut conn = self.get()?;
         let secs = timeout.as_secs() as f64 + f64::from(timeout.subsec_nanos()) / 1e9;
         let res: Result<Option<(String, Vec<u8>)>, RedisError> = redis::cmd("BRPOP")
             .arg(q)

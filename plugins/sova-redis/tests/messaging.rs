@@ -7,8 +7,8 @@ async fn pool() -> Option<RedisPool> {
     let url = std::env::var("REDIS_URL").ok()?;
     let conn = RedisPool::connect(&url).await.ok()?;
     let pool = RedisPool::new();
-    pool.set_url(url).await;
-    pool.set(conn).await;
+    pool.set_url(url);
+    pool.set(conn);
     Some(pool)
 }
 

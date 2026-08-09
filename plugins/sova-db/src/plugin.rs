@@ -142,7 +142,7 @@ impl Plugin for Db {
                 conn.ping()
                     .await
                     .map_err(|e| Error::Internal(format!("db ping: {e}")))?;
-                pool.set(conn).await;
+                pool.set(conn);
                 Ok(())
             }
         });
@@ -151,7 +151,7 @@ impl Plugin for Db {
         app.on_shutdown(move || {
             let pool = pool_stop.clone();
             async move {
-                pool.clear().await;
+                pool.clear();
             }
         });
 
@@ -161,7 +161,7 @@ impl Plugin for Db {
         app.register_check("db", move |_state| {
             let pool = pool_check.clone();
             async move {
-                let conn = pool.get().await.map_err(Error::from)?;
+                let conn = pool.get().map_err(Error::from)?;
                 conn.ping()
                     .await
                     .map_err(|e| Error::Internal(format!("db ping: {e}")))?;
@@ -175,7 +175,7 @@ impl Plugin for Db {
                 let pool = pool_cli.clone();
                 let migrate = Arc::clone(&migrate);
                 async move {
-                    let conn = pool.get().await.map_err(Error::from)?;
+                    let conn = pool.get().map_err(Error::from)?;
                     migrate(conn, args).await
                 }
             });

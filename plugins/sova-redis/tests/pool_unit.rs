@@ -5,15 +5,15 @@ use sova_redis::RedisPool;
 #[tokio::test]
 async fn url_set_get_and_errors() {
     let pool = RedisPool::new();
-    assert!(pool.url().await.is_err());
-    assert!(pool.get().await.is_err());
+    assert!(pool.url().is_err());
+    assert!(pool.get().is_err());
 
-    pool.set_url("redis://127.0.0.1:6379").await;
-    assert_eq!(pool.url().await.unwrap(), "redis://127.0.0.1:6379");
-    assert!(pool.get().await.is_err());
+    pool.set_url("redis://127.0.0.1:6379");
+    assert_eq!(pool.url().unwrap(), "redis://127.0.0.1:6379");
+    assert!(pool.get().is_err());
 
-    pool.clear().await;
-    assert!(pool.get().await.is_err());
+    pool.clear();
+    assert!(pool.get().is_err());
 }
 
 #[tokio::test]

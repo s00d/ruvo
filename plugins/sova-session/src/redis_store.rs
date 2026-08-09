@@ -46,7 +46,7 @@ impl RedisSessionStore {
         if user_id.is_empty() || sid.is_empty() {
             return;
         }
-        let Ok(mut conn) = self.pool.get().await else {
+        let Ok(mut conn) = self.pool.get() else {
             return;
         };
         let key = self.index_key(user_id);
@@ -59,7 +59,7 @@ impl RedisSessionStore {
         if user_id.is_empty() || sid.is_empty() {
             return;
         }
-        let Ok(mut conn) = self.pool.get().await else {
+        let Ok(mut conn) = self.pool.get() else {
             return;
         };
         let key = self.index_key(user_id);
@@ -70,7 +70,7 @@ impl RedisSessionStore {
 impl SessionStore for RedisSessionStore {
     fn load<'a>(&'a self, id: &'a str) -> BoxFuture<'a, Option<HashMap<String, String>>> {
         Box::pin(async move {
-            let mut conn = match self.pool.get().await {
+            let mut conn = match self.pool.get() {
                 Ok(c) => c,
                 Err(_) => return None,
             };
@@ -100,7 +100,7 @@ impl SessionStore for RedisSessionStore {
                 }
             }
 
-            let Ok(mut conn) = self.pool.get().await else {
+            let Ok(mut conn) = self.pool.get() else {
                 return;
             };
             let k = self.payload_key(id);
@@ -120,7 +120,7 @@ impl SessionStore for RedisSessionStore {
                 .load(id)
                 .await
                 .and_then(|d| d.get(SESSION_USER_KEY).filter(|s| !s.is_empty()).cloned());
-            let Ok(mut conn) = self.pool.get().await else {
+            let Ok(mut conn) = self.pool.get() else {
                 return;
             };
             let k = self.payload_key(id);
@@ -140,7 +140,7 @@ impl SessionStore for RedisSessionStore {
             if user_id.is_empty() {
                 return 0;
             }
-            let Ok(mut conn) = self.pool.get().await else {
+            let Ok(mut conn) = self.pool.get() else {
                 return 0;
             };
             let idx = self.index_key(user_id);

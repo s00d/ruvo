@@ -4,8 +4,7 @@ use sea_orm::{
     ConnectionTrait, DatabaseConnection, DatabaseTransaction, DbBackend, DbErr, ExecResult,
     QueryResult, Statement,
 };
-use std::sync::Arc;
-use tokio::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
 /// Shared pool handle filled during `on_startup`.
 #[derive(Clone, Default)]
@@ -18,20 +17,20 @@ impl DbPool {
         Self::default()
     }
 
-    pub async fn set(&self, conn: DatabaseConnection) {
-        *self.inner.write().await = Some(conn);
+    pub fn set(&self, conn: DatabaseConnection) {
+        *self.inner.write().unwrap() = Some(conn);
     }
 
-    pub async fn get(&self) -> Result<DatabaseConnection, DbError> {
+    pub fn get(&self) -> Result<DatabaseConnection, DbError> {
         self.inner
             .read()
-            .await
+            .unwrap()
             .clone()
             .ok_or_else(|| DbError(DbErr::Custom("database not connected".into())))
     }
 
-    pub async fn clear(&self) {
-        let _ = self.inner.write().await.take();
+    pub fn clear(&self) {
+        let _ = self.inner.write().unwrap().take();
     }
 }
 
@@ -85,6 +84,13 @@ impl ConnectionTrait for DbHandle {
         match self {
             Self::Conn(c) => c.query_all_raw(stmt).await,
             Self::Tx(t) => t.query_all_raw(stmt).await,
+        }
+    }
+
+    fn support_returning(&self) -> bool {
+        match self {
+            Self::Conn(c) => c.support_returning(),
+            Self::Tx(t) => t.support_returning(),
         }
     }
 }

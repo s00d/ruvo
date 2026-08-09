@@ -22,9 +22,8 @@ use std::collections::hash_map::DefaultHasher;
 use std::future::Future;
 use std::hash::{Hash, Hasher};
 use std::pin::Pin;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-use tokio::sync::Mutex;
 
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 
@@ -193,7 +192,7 @@ impl KvStore for MemoryStore {
         let key = key.to_string();
         Box::pin(async move {
             let started = Instant::now();
-            let mut map = shard.lock().await;
+            let mut map = shard.lock().unwrap();
             let now = Instant::now();
             let val = match map.get(&key) {
                 Some(e) if Self::alive(e, now) => Some(e.val.clone()),
@@ -226,7 +225,7 @@ impl KvStore for MemoryStore {
         Box::pin(async move {
             let started = Instant::now();
             let n = val.len() as u64;
-            let mut map = shard.lock().await;
+            let mut map = shard.lock().unwrap();
             map.insert(
                 key.clone(),
                 Entry {
@@ -251,7 +250,7 @@ impl KvStore for MemoryStore {
         let shard = Arc::clone(self.shard(key));
         let key = key.to_string();
         Box::pin(async move {
-            shard.lock().await.remove(&key);
+            shard.lock().unwrap().remove(&key);
         })
     }
 
@@ -259,7 +258,7 @@ impl KvStore for MemoryStore {
         let shard = Arc::clone(self.shard(key));
         let key = key.to_string();
         Box::pin(async move {
-            let mut map = shard.lock().await;
+            let mut map = shard.lock().unwrap();
             let now = Instant::now();
             let cur = match map.get(&key) {
                 Some(e) if Self::alive(e, now) => {
@@ -286,7 +285,7 @@ impl KvStore for MemoryStore {
         Box::pin(async move {
             let mut total = 0u64;
             for shard in shards {
-                let mut map = shard.lock().await;
+                let mut map = shard.lock().unwrap();
                 let keys: Vec<_> = map
                     .keys()
                     .filter(|k| k.starts_with(&prefix))

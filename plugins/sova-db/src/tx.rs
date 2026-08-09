@@ -50,7 +50,7 @@ pub(crate) fn inject_conn(pool: DbPool) -> impl sova_core::extend::IntoMwEntry {
     named(
         "db",
         sova_core::with_state(pool, |pool, mut req, next| async move {
-            match pool.get().await {
+            match pool.get() {
                 Ok(conn) => {
                     req.set(DbHandle::Conn(conn));
                     next(req).await

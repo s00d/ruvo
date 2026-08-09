@@ -60,7 +60,7 @@ impl KvStore for RedisStore {
     fn get<'a>(&'a self, key: &'a str) -> BoxFuture<'a, Option<Bytes>> {
         Box::pin(async move {
             let started = Instant::now();
-            let mut conn = match self.pool.get().await {
+            let mut conn = match self.pool.get() {
                 Ok(c) => c,
                 Err(_) => {
                     tracing::debug!(
@@ -117,7 +117,7 @@ impl KvStore for RedisStore {
         Box::pin(async move {
             let started = Instant::now();
             let n = val.len() as u64;
-            let Ok(mut conn) = self.pool.get().await else {
+            let Ok(mut conn) = self.pool.get() else {
                 tracing::debug!(
                     target: "sova.store",
                     op = "set",
@@ -157,7 +157,7 @@ impl KvStore for RedisStore {
     fn remove<'a>(&'a self, key: &'a str) -> BoxFuture<'a, ()> {
         Box::pin(async move {
             let started = Instant::now();
-            let Ok(mut conn) = self.pool.get().await else {
+            let Ok(mut conn) = self.pool.get() else {
                 tracing::debug!(
                     target: "sova.store",
                     op = "remove",
@@ -188,7 +188,7 @@ impl KvStore for RedisStore {
     fn incr<'a>(&'a self, key: &'a str, by: i64, ttl: Option<Duration>) -> BoxFuture<'a, u64> {
         Box::pin(async move {
             let started = Instant::now();
-            let Ok(mut conn) = self.pool.get().await else {
+            let Ok(mut conn) = self.pool.get() else {
                 tracing::debug!(
                     target: "sova.store",
                     op = "incr",
@@ -243,7 +243,7 @@ impl KvStore for RedisStore {
 
     fn clear_prefix<'a>(&'a self, prefix: &'a str) -> BoxFuture<'a, u64> {
         Box::pin(async move {
-            let Ok(mut conn) = self.pool.get().await else {
+            let Ok(mut conn) = self.pool.get() else {
                 return 0;
             };
             let pattern = format!("{}{}*", self.key_prefix, prefix);

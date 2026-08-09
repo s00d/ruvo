@@ -193,7 +193,9 @@ driver = "ftp"
 }
 
 #[tokio::test]
+#[allow(clippy::await_holding_lock)] // env mutex serializes SOVA_STORAGE_* across tests
 async fn install_health_check_and_req_storage_ext() {
+    let _guard = env_lock();
     clear_storage_env();
     let mut app = App::new();
     app.install(Storage::memory());

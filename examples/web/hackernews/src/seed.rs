@@ -10,7 +10,7 @@ pub async fn run(state: Arc<StateMap>) -> Result<()> {
     let pool = state
         .get::<DbPool>()
         .ok_or_else(|| sova::Error::Internal("DbPool missing for seed".into()))?;
-    let conn = pool.get().await?;
+    let conn = pool.get()?;
     let db = DbHandle::Conn(conn);
 
     let n = crate::entity::story::Entity::find()

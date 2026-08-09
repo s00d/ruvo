@@ -3,8 +3,7 @@
 use crate::{normalize_key, normalize_prefix, BlobStore, BoxFuture, PutOpts, StorageError};
 use bytes::Bytes;
 use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Default)]
 pub struct MemoryStore {
@@ -26,7 +25,7 @@ impl BlobStore for MemoryStore {
     ) -> BoxFuture<'a, Result<(), StorageError>> {
         Box::pin(async move {
             let key = normalize_key(key)?;
-            self.inner.lock().await.insert(key, data);
+            self.inner.lock().unwrap().insert(key, data);
             Ok(())
         })
     }
@@ -34,14 +33,14 @@ impl BlobStore for MemoryStore {
     fn get<'a>(&'a self, key: &'a str) -> BoxFuture<'a, Result<Option<Bytes>, StorageError>> {
         Box::pin(async move {
             let key = normalize_key(key)?;
-            Ok(self.inner.lock().await.get(&key).cloned())
+            Ok(self.inner.lock().unwrap().get(&key).cloned())
         })
     }
 
     fn delete<'a>(&'a self, key: &'a str) -> BoxFuture<'a, Result<(), StorageError>> {
         Box::pin(async move {
             let key = normalize_key(key)?;
-            self.inner.lock().await.remove(&key);
+            self.inner.lock().unwrap().remove(&key);
             Ok(())
         })
     }
@@ -49,14 +48,14 @@ impl BlobStore for MemoryStore {
     fn exists<'a>(&'a self, key: &'a str) -> BoxFuture<'a, Result<bool, StorageError>> {
         Box::pin(async move {
             let key = normalize_key(key)?;
-            Ok(self.inner.lock().await.contains_key(&key))
+            Ok(self.inner.lock().unwrap().contains_key(&key))
         })
     }
 
     fn list<'a>(&'a self, prefix: &'a str) -> BoxFuture<'a, Result<Vec<String>, StorageError>> {
         Box::pin(async move {
             let prefix = normalize_prefix(prefix)?;
-            let map = self.inner.lock().await;
+            let map = self.inner.lock().unwrap();
             let mut keys: Vec<String> = map
                 .keys()
                 .filter(|k| {

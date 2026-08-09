@@ -213,7 +213,6 @@ impl TaskStore for RedisTaskStore {
             let mut conn = self
                 .pool
                 .get()
-                .await
                 .map_err(|e| TaskError::Msg(e.to_string()))?;
 
             if let Some(ref dk) = opts.dedup_key {
@@ -279,7 +278,6 @@ impl TaskStore for RedisTaskStore {
             let mut conn = self
                 .pool
                 .get()
-                .await
                 .map_err(|e| TaskError::Msg(e.to_string()))?;
             let ids: Vec<String> = redis::Script::new(CLAIM_LUA)
                 .key(ready_key(queue))
@@ -312,7 +310,6 @@ impl TaskStore for RedisTaskStore {
             let mut conn = self
                 .pool
                 .get()
-                .await
                 .map_err(|e| TaskError::Msg(e.to_string()))?;
             let hk = hash_key(id);
             let status: Option<String> = conn
@@ -342,7 +339,6 @@ impl TaskStore for RedisTaskStore {
             let mut conn = self
                 .pool
                 .get()
-                .await
                 .map_err(|e| TaskError::Msg(e.to_string()))?;
             let Some(task) = Self::load_task(&mut conn, id).await? else {
                 return Err(TaskError::NotFound);
@@ -379,7 +375,6 @@ impl TaskStore for RedisTaskStore {
             let mut conn = self
                 .pool
                 .get()
-                .await
                 .map_err(|e| TaskError::Msg(e.to_string()))?;
             let Some(task) = Self::load_task(&mut conn, id).await? else {
                 return Err(TaskError::NotFound);
@@ -427,7 +422,6 @@ impl TaskStore for RedisTaskStore {
             let mut conn = self
                 .pool
                 .get()
-                .await
                 .map_err(|e| TaskError::Msg(e.to_string()))?;
             let n: u64 = redis::Script::new(REAP_LUA)
                 .key(LEASE_ZSET)
@@ -449,7 +443,6 @@ impl TaskStore for RedisTaskStore {
             let mut conn = self
                 .pool
                 .get()
-                .await
                 .map_err(|e| TaskError::Msg(e.to_string()))?;
             let mut ids: Vec<String> = conn
                 .smembers(all_key(queue))
@@ -491,11 +484,11 @@ mod tests {
             }
         };
         let pool = RedisPool::new();
-        pool.set(conn).await;
+        pool.set(conn);
         // Isolate from other DBs / runs.
         let store = RedisTaskStore::from_redis_pool(&pool);
         // Flush only our keys via a unique queue namespace is hard; use FLUSHDB only on test DB.
-        let mut c = pool.get().await.unwrap();
+        let mut c = pool.get().unwrap();
         let _: () = redis::cmd("FLUSHDB").query_async(&mut c).await.unwrap();
         conformance::run(Arc::new(store) as Arc<dyn TaskStore>).await;
     }

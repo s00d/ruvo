@@ -63,7 +63,7 @@ async fn guard_accepts_pat_and_jwt() {
         .await;
 
     let pool = app.try_state::<DbPool>().expect("DbPool").as_ref().clone();
-    let conn = pool.get().await.unwrap();
+    let conn = pool.get().unwrap();
     let db = DbHandle::Conn(conn);
     let user = register_user(&db, "bob@example.com", "secret123")
         .await

@@ -13,7 +13,7 @@ async fn sqlite_memory_install_startup_and_pool() {
 
     let state = app.run_startup().await.expect("run_startup");
     let pool = state.get::<DbPool>().expect("DbPool in state");
-    let conn = pool.get().await.expect("connected");
+    let conn = pool.get().expect("connected");
     conn.ping().await.expect("ping");
 
     let c = TestClient::tracked(app).await.unwrap();
@@ -34,7 +34,7 @@ async fn sqlite_tempfile_url() {
     app.install(Db::from_env().url(url));
     let state = app.run_startup().await.expect("run_startup tempfile");
     let pool = state.get::<DbPool>().expect("DbPool");
-    pool.get().await.expect("connected").ping().await.unwrap();
+    pool.get().expect("connected").ping().await.unwrap();
 }
 
 #[tokio::test]
@@ -53,10 +53,10 @@ url = "{url}"
 "#
     ))
     .unwrap();
-    app.install(Db::from_env().url(""));
+    app.install(Db::from_env());
     let state = app.run_startup().await.expect("toml url startup");
     let pool = state.get::<DbPool>().expect("DbPool");
-    pool.get().await.expect("connected").ping().await.unwrap();
+    pool.get().expect("connected").ping().await.unwrap();
 
     match prev {
         Some(v) => std::env::set_var("DATABASE_URL", v),

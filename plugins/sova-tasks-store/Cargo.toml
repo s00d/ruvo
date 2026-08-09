@@ -1,6 +1,6 @@
 [package]
 name = "sova-tasks-store"
-version = "0.1.1"
+version = "0.1.2"
 authors.workspace = true
 edition.workspace = true
 description = "TaskStore trait + memory / file / sql / redis backends"

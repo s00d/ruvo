@@ -105,7 +105,7 @@ mod sql_logout {
     async fn shared_sql() -> Arc<SqlSessionStore> {
         let conn = Database::connect("sqlite::memory:").await.unwrap();
         let pool = DbPool::new();
-        pool.set(conn).await;
+        pool.set(conn);
         let store = Arc::new(SqlSessionStore::from_db_pool(&pool));
         store.ensure_schema().await.unwrap();
         store
@@ -172,7 +172,7 @@ mod redis_logout {
         let url = std::env::var("REDIS_URL").ok()?;
         let conn = RedisPool::connect(&url).await.ok()?;
         let pool = RedisPool::new();
-        pool.set(conn).await;
+        pool.set(conn);
         // Unique prefix so parallel CI runs do not clash.
         let prefix = format!(
             "sova_test_sess_{}:",

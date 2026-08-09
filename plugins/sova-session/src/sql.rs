@@ -31,7 +31,7 @@ impl SqlSessionStore {
     }
 
     pub async fn ensure_schema(&self) -> Result<(), DbErr> {
-        let conn = self.pool.get().await.map_err(|e| e.0)?;
+        let conn = self.pool.get().map_err(|e| e.0)?;
         self.ensure_schema_on(&conn).await?;
         self.schema_ready.store(true, Ordering::SeqCst);
         Ok(())
@@ -89,7 +89,7 @@ impl SqlSessionStore {
     }
 
     async fn conn(&self) -> Result<DatabaseConnection, DbErr> {
-        let conn = self.pool.get().await.map_err(|e| e.0)?;
+        let conn = self.pool.get().map_err(|e| e.0)?;
         if !self.schema_ready.load(Ordering::Acquire) {
             self.ensure_schema_on(&conn).await?;
             self.schema_ready.store(true, Ordering::Release);

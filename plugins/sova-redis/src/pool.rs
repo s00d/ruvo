@@ -2,8 +2,7 @@ use crate::RedisError;
 use redis::aio::ConnectionManager;
 use redis::Client;
 use sova_core::Request;
-use std::sync::Arc;
-use tokio::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
 #[derive(Default)]
 struct PoolInner {
@@ -23,34 +22,34 @@ impl RedisPool {
     }
 
     /// Remember `REDIS_URL` so Pub/Sub can open a dedicated connection.
-    pub async fn set_url(&self, url: impl Into<String>) {
-        self.inner.write().await.url = Some(url.into());
+    pub fn set_url(&self, url: impl Into<String>) {
+        self.inner.write().unwrap().url = Some(url.into());
     }
 
-    pub async fn url(&self) -> Result<String, RedisError> {
+    pub fn url(&self) -> Result<String, RedisError> {
         self.inner
             .read()
-            .await
+            .unwrap()
             .url
             .clone()
             .ok_or_else(|| RedisError::msg("redis url not set"))
     }
 
-    pub async fn set(&self, conn: ConnectionManager) {
-        self.inner.write().await.conn = Some(conn);
+    pub fn set(&self, conn: ConnectionManager) {
+        self.inner.write().unwrap().conn = Some(conn);
     }
 
-    pub async fn get(&self) -> Result<ConnectionManager, RedisError> {
+    pub fn get(&self) -> Result<ConnectionManager, RedisError> {
         self.inner
             .read()
-            .await
+            .unwrap()
             .conn
             .clone()
             .ok_or_else(|| RedisError::msg("redis not connected"))
     }
 
-    pub async fn clear(&self) {
-        let mut g = self.inner.write().await;
+    pub fn clear(&self) {
+        let mut g = self.inner.write().unwrap();
         g.conn.take();
     }
 

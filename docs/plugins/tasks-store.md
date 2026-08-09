@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-tasks-store`](https://docs.rs/sova-tasks-store/0.1.1) `0.1.1` |
+| Crate | [`sova-tasks-store`](https://docs.rs/sova-tasks-store/0.1.2) `0.1.2` |
 | Plugin id | `tasks-store` |
 | Category | Data |
 
