@@ -78,7 +78,7 @@ app.install(Cors::new());
 app.install(|app| { app.get("/x", handler); });
 ```
 
-App-author patterns (routes, validate, auth): [Getting started](/guide/getting-started) and [Examples](/examples). Plugin authors: [Plugin SDK](/api/plugin-sdk/).
+App-author patterns (routes, validate, auth): [Getting started](/guide/getting-started) and [Examples](/examples). Plugin authors: [Plugin SDK](/api/plugin-sdk).
 
 ## Public surface
 

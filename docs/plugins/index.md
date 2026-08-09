@@ -14,7 +14,7 @@ Each plugin page: **what / when**, features, overview, quick start, related link
 
 How pages are built: crate `//!` + optional [`plugin-guides`](https://github.com/s00d/sova/tree/master/docs/.vitepress/plugin-guides) / [`plugin-usage`](https://github.com/s00d/sova/tree/master/docs/.vitepress/plugin-usage) → `sova-docs-gen`.
 
-Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk/) guide (same generator, guides under `plugin-sdk-guides/`).
+Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generator, guides under `plugin-sdk-guides/`).
 
 ## Catalog
 
