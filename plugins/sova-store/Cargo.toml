@@ -47,6 +47,3 @@ tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }
 tempfile = { workspace = true }
 sova-db = { workspace = true, default-features = false, features = ["sqlite"] }
 
-[[example]]
-name = "mem_bench"
-path = "examples/mem_bench.rs"
