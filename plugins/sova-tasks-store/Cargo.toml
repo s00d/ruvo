@@ -21,7 +21,7 @@ redis = ["dep:sova-redis", "dep:serde", "dep:serde_json", "dep:redis", "dep:base
 
 [dependencies]
 bytes = { workspace = true }
-tokio = { workspace = true, features = ["sync", "time", "rt", "macros"] }
+tokio = { workspace = true, features = ["sync", "time", "rt", "rt-multi-thread", "macros"] }
 thiserror = { workspace = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
