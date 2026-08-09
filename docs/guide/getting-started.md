@@ -29,6 +29,9 @@ cargo sovax new ping-api --api
 ```
 
 Templates already pin `tokio` (and `serde` / `serde_json` for the API preset).
+
+Browse opt-in crates under [Plugins](/plugins/) — each page covers when to use it, features, and a quick start.
+
 ## Web app
 
 `features = ["web"]`. Preset installs: `request_id`, `logger`, Cors, Shield, cookie sessions, Csrf, Static (`public/` → `/assets`), Templates (`views/`), Meta, Sitemap, Robots, health probes.

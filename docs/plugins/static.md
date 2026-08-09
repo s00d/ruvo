@@ -5,28 +5,61 @@ editLink: false
 
 # `static`
 
-**Serve files from a directory under a mount path** · crate `sova-static` `0.1.1` · id `static`
+**Serve files from a directory under a mount path**
+
+| | |
+|--|--|
+| Crate | [`sova-static`](https://docs.rs/sova-static/0.1.1) `0.1.1` |
+| Plugin id | `static` |
+| Category | HTTP |
+
+## Install
 
 ```bash
 cargo add sova --features static-files
 ```
 
+## Features
+
 | Feature | What you get |
 |---------|-------------|
-| `static-files` | Serve static assets via `sova_static`. |
+| `static-files` | Serve a directory under a URL mount (`Static`). |
 
-Static file routes as a regular [`Plugin`] — public `Router::get` + conditional headers.
+## Overview
 
-## Usage
+**When:** serve `public/` (or any dir) under a mount path. Already on `App::web()` as `/assets`.
 
-**`App::web()`** serves `public/` at `/assets` when the directory exists. Point elsewhere with builders:
+**Does:**
+- `mount` + `mount/*path` routes
+- `max_age`, `immutable`, index files, dotfile guard
+
+### Example
 
 ```rust
-let mut app = App::web()
-    .site("App")
-    .public_url("https://example.com")
-    .assets("public")
-    .assets_mount("/assets");
+app.install(Static::new("/assets", "public").max_age(Duration::from_secs(3600)));
 ```
 
-Only install `Static::new(...)` yourself when you skipped the web preset. Demo: `cargo run -p static_files`.
+## Quick start
+
+`App::web()` already mounts `public/` → `/assets`. Extra mount:
+
+```rust
+use sova::{App, Static};
+use std::time::Duration;
+
+app.install(
+    Static::new("/static", "assets")
+        .max_age(Duration::from_secs(86_400))
+        .immutable(true),
+);
+```
+
+Dotfiles denied by default. See `examples/web/static_files`.
+
+## Examples
+
+- `examples/web/static_files`
+
+## Related
+
+[`storage`](/plugins/storage) · [`templates`](/plugins/templates)

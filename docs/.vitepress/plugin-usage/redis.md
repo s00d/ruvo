@@ -1,10 +1,14 @@
-Shared Redis for store/session/tasks — install beside a preset:
+Shared Redis/Valkey pool — install once, reuse for store / session / tasks:
 
 ```rust
-let mut app = App::api().title("API").version("1.0").into_app();
+use sova::{App, Redis, RedisExt};
+
 app.install(Redis::from_env());
+
+app.get("/pub", |req| async move {
+    req.redis().publish("events", b"hello").await?;
+    Ok("ok")
+});
 ```
 
-```bash
-cargo run -p redis_demo
-```
+Env: `REDIS_URL` (or Valkey-compatible). Features that consume the pool: `store-redis`, `session-redis`, `tasks-redis`.

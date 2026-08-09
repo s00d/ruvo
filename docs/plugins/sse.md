@@ -5,19 +5,47 @@ editLink: false
 
 # `sse`
 
-**Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive)** · crate `sova-sse` `0.1.1` · id `sse`
+**Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive)**
+
+| | |
+|--|--|
+| Crate | [`sova-sse`](https://docs.rs/sova-sse/0.1.1) `0.1.1` |
+| Plugin id | `sse` |
+| Category | Realtime |
+
+## Install
 
 ```bash
 cargo add sova --features sse-feed
 ```
 
+## Features
+
 | Feature | What you get |
 |---------|-------------|
-| `sse-feed` | SSE channel helpers (`sova_sse`). |
+| `sse-feed` | SSE channel helpers (`SseChannel`, `sse_response`). |
 
-SSE channel helpers: fan-out, `Last-Event-ID`, keep-alive.
+## Overview
 
-## Usage
+**When:** Server-Sent Events streams to browsers.
+
+**Does:**
+- `SseChannel` + `SseEvent` (id / event / data)
+- `sse_response` with keep-alive + Last-Event-ID replay
+- No separate `Sse` plugin — `app.state(channel)`
+
+### Example
+
+```rust
+let channel = SseChannel::new(64);
+app.state(channel.clone());
+app.get("/events", |req: Request| async move {
+    let ch = req.state::<SseChannel>();
+    sse_response(&req, &ch, Duration::from_secs(15))
+});
+```
+
+## Quick start
 
 ```rust
 use sova::{sse_response, App, Request, Result, SseChannel, SseEvent};
@@ -51,3 +79,12 @@ There is no `Sse` plugin — use `SseChannel` + `app.state` (see `examples/realt
 ```bash
 cargo run -p sse_feed
 ```
+
+## Examples
+
+- `examples/realtime/sse`
+- `examples/realtime/sse_feed`
+
+## Related
+
+[`ws`](/plugins/ws)

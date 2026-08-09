@@ -5,19 +5,43 @@ editLink: false
 
 # `templates`
 
-**MiniJinja HTML templates with optional autoreload** · crate `sova-templates` `0.1.1` · id `templates`
+**MiniJinja HTML templates with optional autoreload**
+
+| | |
+|--|--|
+| Crate | [`sova-templates`](https://docs.rs/sova-templates/0.1.1) `0.1.1` |
+| Plugin id | `templates` |
+| Category | Content |
+
+## Install
 
 ```bash
 cargo add sova --features templates
 ```
 
+## Features
+
 | Feature | What you get |
 |---------|-------------|
-| `templates` | MiniJinja templates (`sova-templates`). |
+| `templates` | MiniJinja HTML templates (`req.render`). |
 
-Template engines for Sova (MiniJinja).
+## Overview
 
-## Usage
+**When:** MiniJinja HTML views. Already on `App::web()`.
+
+**Does:**
+- Render templates from `views/`
+- Optional autoreload in dev
+- Shared with mail templates feature
+
+### Example
+
+```rust
+app.install(Templates::new("views"));
+Ok(req.render("home.html", json!({ "title": "Hi" }))?)
+```
+
+## Quick start
 
 If `views/` exists, **`App::web()`** already installs MiniJinja. Handlers only render:
 
@@ -57,3 +81,11 @@ async fn home(req: Request) -> Response {
 ```
 
 Extra per-request helpers after the preset: `sova_templates::register_per_request(&mut app, "t", sova::template_fn)`. Do not reinstall Templates on top of `App::web()` (duplicate id). Demos: `templates`, `templates_i18n`.
+
+## Examples
+
+- `examples/web/templates`
+
+## Related
+
+[`mail`](/plugins/mail) · [`meta`](/plugins/meta) · [`i18n`](/plugins/i18n)

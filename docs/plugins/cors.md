@@ -5,19 +5,41 @@ editLink: false
 
 # `cors`
 
-**Cross-Origin Resource Sharing headers** · crate `sova-cors` `0.1.1` · id `cors`
+**Cross-Origin Resource Sharing headers**
+
+| | |
+|--|--|
+| Crate | [`sova-cors`](https://docs.rs/sova-cors/0.1.1) `0.1.1` |
+| Plugin id | `cors` |
+| Category | HTTP |
+
+## Install
 
 ```bash
 cargo add sova --features cors
 ```
 
+## Features
+
 | Feature | What you get |
 |---------|-------------|
-| `cors` | CORS middleware (`sova_cors`). |
+| `cors` | Cross-origin headers / preflight (`Cors`). |
 
-CORS plugin for Sova (Express [`cors`](https://expressjs.com/en/resources/middleware/cors.html)-style).
+## Overview
 
-## Usage
+**When:** browser clients on another origin call your API. Already on `App::api()` / `App::web()`.
+
+**Does:**
+- CORS preflight + response headers
+- Origin allowlist / mirror / credentials
+
+### Example
+
+```rust
+app.install(Cors::new().origins(["https://app.example.com"]).credentials(true));
+```
+
+## Quick start
 
 `App::web()` and `App::api()` already install Cors. **Do not** `install(Cors::…)` again — duplicate plugin ids fail at `build`. Customize with an explicit stack:
 
@@ -45,3 +67,7 @@ async fn main() -> Result<()> {
     app.run().await
 }
 ```
+
+## Related
+
+[`shield`](/plugins/shield)

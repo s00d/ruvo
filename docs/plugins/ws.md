@@ -5,19 +5,46 @@ editLink: false
 
 # `ws`
 
-**WebSocket hub, origin allowlist, max message size** · crate `sova-ws` `0.1.1` · id `ws`
+**WebSocket hub, origin allowlist, max message size**
+
+| | |
+|--|--|
+| Crate | [`sova-ws`](https://docs.rs/sova-ws/0.1.1) `0.1.1` |
+| Plugin id | `ws` |
+| Category | Realtime |
+
+## Install
 
 ```bash
 cargo add sova --features ws
 ```
 
+## Features
+
 | Feature | What you get |
 |---------|-------------|
-| `ws` | WebSocket upgrades (`sova_ws`). |
+| `ws` | WebSocket upgrade + rooms hub (`app.ws`). |
 
-WebSocket plugin for Sova (HTTP upgrade + rooms hub).
+## Overview
 
-## Usage
+**When:** WebSocket hubs (chat, live feeds).
+
+**Does:**
+- `app.install(Ws::new())` + `app.ws("/ws", handler)`
+- Rooms hub, origin allowlist, max message size
+- `session.join` / `hub().broadcast`
+
+### Example
+
+```rust
+app.install(Ws::new().origins(["https://example.com"]));
+app.ws("/ws", |mut session| async move {
+    let _room = session.join("chat");
+    while let Some(Ok(msg)) = session.recv().await { /* … */ }
+});
+```
+
+## Quick start
 
 Install Ws on the **web preset**, keep modules/static/meta from the stack:
 
@@ -58,3 +85,11 @@ async fn main() -> Result<()> {
 ```bash
 cargo run -p ws_chat
 ```
+
+## Examples
+
+- `examples/realtime/ws_chat`
+
+## Related
+
+[`sse`](/plugins/sse) · [`notifications`](/plugins/notifications)

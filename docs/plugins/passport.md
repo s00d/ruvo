@@ -5,27 +5,49 @@ editLink: false
 
 # `passport`
 
-**Users + access/refresh JWT + personal access tokens** · crate `sova-passport` `0.1.2` · id `passport`
+**Users + access/refresh JWT + personal access tokens**
+
+| | |
+|--|--|
+| Crate | [`sova-passport`](https://docs.rs/sova-passport/0.1.2) `0.1.2` |
+| Plugin id | `passport` |
+| Category | Auth |
+
+## Install
 
 ```bash
-cargo add sova --features passport,passport-jwt,passport-oauth,passport-session
+cargo add sova --features passport
 ```
+
+## Features
 
 | Feature | What you get |
 |---------|-------------|
-| `passport` | Auth strategies registry (`sova-passport`). |
-| `passport-jwt` | JWT access + refresh + PAT. |
+| `passport` | Auth strategies registry (JWT / PAT / OAuth). |
+| `passport-jwt` | JWT access + refresh + personal access tokens. |
 | `passport-oauth` | OAuth2 drivers (GitHub/Google/Apple/Custom). |
 | `passport-session` | Session serialize/login for Passport. |
 
-Passport-style authentication for Sova.
+## Overview
 
- - [`Passport`] — strategy registry, `authenticate`, session serialize/deserialize, login/logout
- - [`Auth`] / [`AuthMw`] — extract + verify strategies (Bearer, API key, JWT)
- - feature `jwt`: [`JwtAuth`] (users, refresh, migrate)
- - feature `oauth`: [`Oauth`] (OAuth2 code + PKCE)
+**When:** JWT access/refresh, personal access tokens, OAuth login.
 
-## Usage
+**Does:**
+- Users + refresh tokens + PAT (`svpat_…`)
+- `JwtAuth::guard` (Bearer JWT or PAT)
+- OAuth: GitHub / Google / Apple / Custom
+
+### Example
+
+```rust
+app.install(Passport::new().jwt(/* … */));
+api.use_middleware(JwtAuth::guard());
+```
+
+### Notes
+- OAuth env: `{NAME}_CLIENT_ID` / `{NAME}_CLIENT_SECRET`
+
+## Quick start
 
 Compose JWT/PAT (and OAuth) **onto `App::api()`** so you keep Cors, probes, and `/docs`.
 
@@ -64,3 +86,12 @@ cargo run -p api_jwt
 ```
 
 OAuth providers: `cargo run -p api_oauth`. API keys: `api_auth`. Session browser login: feature `passport-session` (often via Fortify).
+
+## Examples
+
+- `examples/api/api_jwt`
+- `examples/api/api_oauth`
+
+## Related
+
+[`auth`](/plugins/auth) · [`session`](/plugins/session) · [`db`](/plugins/db)

@@ -1,8 +1,13 @@
 //! Generate **static** VitePress markdown from Sova Rust sources.
 //!
-//! Plugins catalog table + one page per plugin under `docs/plugins/<slug>.md`.
-//! Optional hand-written usage: `docs/.vitepress/plugin-usage/<slug>.md` (appended as ## Usage).
-//! Plugin SDK page for authors. Nav/sidebar: `.vitepress/plugins-nav.generated.ts`.
+//! Per plugin page (`docs/plugins/<slug>.md`):
+//! 1. Summary + crate / docs.rs / plugin id
+//! 2. Install (`cargo add`) + features table
+//! 3. Overview — `docs/.vitepress/plugin-guides/<slug>.md` if present, else crate `//!`
+//! 4. Quick start — `docs/.vitepress/plugin-usage/<slug>.md`
+//! 5. Examples + related plugins (hardcoded maps)
+//!
+//! Also: catalog table in `plugins/index.md`, grouped sidebar, Plugin SDK page.
 //!
 //! ```bash
 //! cargo run -p sova-docs-gen
@@ -134,8 +139,6 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
     let plugins_dir = root.join("plugins");
     let mut plugin_slugs: Vec<String> = Vec::new();
     let mut plugin_index_rows: Vec<String> = Vec::new();
-    let mut nav_entries: Vec<String> = Vec::new();
-    nav_entries.push(r#"  { text: 'Catalog', link: '/plugins/' }"#.to_string());
 
     let mut entries: Vec<_> = fs::read_dir(&plugins_dir)
         .map_err(|e| e.to_string())?
@@ -213,39 +216,84 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
             crate_docs.lines().next().unwrap_or("").to_string()
         };
 
-        let feats_section = if facade_feats.is_empty() {
-            String::new()
-        } else {
-            let mut rows = String::from("| Feature | What you get |\n|---------|-------------|\n");
+        let install_feat = preferred_install_feature(&slug, &facade_feats);
+        let mut page = format!(
+            "---\ntitle: {slug}\neditLink: false\n---\n\n# `{slug}`\n\n\
+**{summary}**\n\n\
+| | |\n|--|--|\n\
+| Crate | [`{crate_name}`](https://docs.rs/{crate_name}/{version}) `{version}` |\n\
+| Plugin id | `{plugin_id}` |\n\
+| Category | {category} |\n",
+            category = plugin_category(&slug),
+        );
+
+        if let Some(feat) = &install_feat {
+            page.push_str(&format!(
+                "\n## Install\n\n```bash\ncargo add sova --features {feat}\n```\n"
+            ));
+        } else if crate_name == "sovax" {
+            page.push_str(
+                "\n## Install\n\n```bash\ncargo install cargo-sovax\n# or: cargo run -p sovax -- <cmd>\n```\n",
+            );
+        }
+
+        if !facade_feats.is_empty() {
+            let mut rows = String::from(
+                "\n## Features\n\n| Feature | What you get |\n|---------|-------------|\n",
+            );
             for f in &facade_feats {
                 let desc = feature_docs.get(f).map(String::as_str).unwrap_or("—");
                 rows.push_str(&format!("| `{f}` | {desc} |\n"));
             }
-            format!(
-                "\n```bash\ncargo add sova --features {}\n```\n\n{rows}",
-                facade_feats.join(",")
-            )
-        };
+            page.push_str(&rows);
+        }
 
-        let mut page = format!(
-            "---\ntitle: {slug}\neditLink: false\n---\n\n# `{slug}`\n\n\
-**{summary}** · crate `{crate_name}` `{version}` · id `{plugin_id}`\n"
-        );
-        page.push_str(&feats_section);
-        if !crate_docs.is_empty() {
-            page.push('\n');
-            page.push_str(&crate_docs);
+        let guide_path = w
+            .docs
+            .join(".vitepress/plugin-guides")
+            .join(format!("{slug}.md"));
+        let guide = fs::read_to_string(&guide_path)
+            .ok()
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty());
+        let overview = guide.unwrap_or_else(|| crate_docs.clone());
+        if !overview.is_empty() {
+            page.push_str("\n## Overview\n\n");
+            page.push_str(&overview);
             page.push('\n');
         }
-        let usage_path = w.docs.join(".vitepress/plugin-usage").join(format!("{slug}.md"));
+
+        let usage_path = w
+            .docs
+            .join(".vitepress/plugin-usage")
+            .join(format!("{slug}.md"));
         if let Ok(usage) = fs::read_to_string(&usage_path) {
             let usage = usage.trim();
             if !usage.is_empty() {
-                page.push_str("\n## Usage\n\n");
+                page.push_str("\n## Quick start\n\n");
                 page.push_str(usage);
                 page.push('\n');
             }
         }
+
+        if let Some(ex) = plugin_examples(&slug) {
+            page.push_str("\n## Examples\n\n");
+            for line in ex {
+                page.push_str(&format!("- `{line}`\n"));
+            }
+        }
+
+        if let Some(rel) = plugin_related(&slug) {
+            page.push_str("\n## Related\n\n");
+            page.push_str(
+                &rel.iter()
+                    .map(|s| format!("[`{s}`](/plugins/{s})"))
+                    .collect::<Vec<_>>()
+                    .join(" · "),
+            );
+            page.push('\n');
+        }
+
         w.emit(&format!("plugins/{slug}.md"), &page)?;
 
         let feats_cell = if facade_feats.is_empty() {
@@ -258,34 +306,29 @@ fn run(root: &Path, docs: &Path, check: bool) -> Result<bool, String> {
                 .join(", ")
         };
         let summary_cell = summary.replace('|', "\\|");
+        let cat = plugin_category(&slug);
         plugin_index_rows.push(format!(
-            "| [`{slug}`](/plugins/{slug}) | `{version}` | {summary_cell} | {feats_cell} |"
-        ));
-        nav_entries.push(format!(
-            "  {{ text: '{slug}', link: '/plugins/{slug}' }}"
+            "| [`{slug}`](/plugins/{slug}) | {cat} | `{version}` | {summary_cell} | {feats_cell} |"
         ));
         plugin_slugs.push(slug);
     }
 
     let plugins_table = format!(
-        "| Plugin | Version | Summary | Features |\n|--------|---------|---------|----------|\n{}",
+        "| Plugin | Category | Version | Summary | Features |\n|--------|----------|---------|---------|----------|\n{}",
         plugin_index_rows.join("\n")
     );
     w.patch_marker("plugins/index.md", "plugins-table", &plugins_table)?;
 
+    let sidebar = build_grouped_sidebar(&plugin_slugs);
+    let nav = build_grouped_nav(&plugin_slugs);
     let nav_ts = format!(
         "// Generated by sova-docs-gen — do not edit.\n\
-export const pluginsNav = [\n{}\n] as const\n\n\
-export const pluginsSidebar = [\n\
-  {{\n\
-    text: 'Plugins',\n\
-    collapsed: false,\n\
-    items: [\n{}\n\
-    ],\n\
-  }},\n\
-]\n",
-        nav_entries.join(",\n"),
-        nav_entries.join(",\n"),
+export const pluginsNav = [\n  {{ text: 'Catalog', link: '/plugins/' }},\n\
+{nav}\n\
+] as const\n\n\
+export const pluginsSidebar = [\n  {{ text: 'Catalog', link: '/plugins/' }},\n\
+{sidebar}\n\
+]\n"
     );
     w.emit(".vitepress/plugins-nav.generated.ts", &nav_ts)?;
 
@@ -327,6 +370,183 @@ export const pluginsSidebar = [\n\
         );
         Ok(false)
     }
+}
+
+fn preferred_install_feature(slug: &str, feats: &[String]) -> Option<String> {
+    let prefer: &[&str] = match slug {
+        "http" => &["http-client"],
+        "static" => &["static-files"],
+        "sse" => &["sse-feed"],
+        "quic" => &["quic-udp"],
+        "ai" => &["ai-openai", "ai"],
+        "auth" => &["auth"],
+        "passport" => &["passport"],
+        "db" => &["db"],
+        "mail" => &["mail"],
+        "session" => &["session"],
+        "store" => &["store"],
+        "storage" => &["storage"],
+        "tasks" => &["tasks"],
+        "tasks-store" => &["tasks-store"],
+        "notifications" => &["notifications"],
+        "observability" => &["observability"],
+        "i18n" => &["i18n"],
+        "meta" => &["meta"],
+        "vld" => &["vld"],
+        "templates" => &["templates"],
+        _ => &[],
+    };
+    for p in prefer {
+        if feats.iter().any(|f| f == p) {
+            return Some((*p).to_string());
+        }
+    }
+    feats.first().cloned()
+}
+
+fn plugin_category(slug: &str) -> &'static str {
+    match slug {
+        "shield" | "cors" | "csrf" | "compress" | "cookies" | "rate-limit" | "static" | "env" => {
+            "HTTP"
+        }
+        "auth" | "passport" | "session" | "vld" => "Auth",
+        "db" | "redis" | "store" | "storage" | "tasks" | "tasks-store" => "Data",
+        "templates" | "mail" | "i18n" | "meta" | "openapi" => "Content",
+        "ws" | "sse" | "udp" | "quic" | "notifications" => "Realtime",
+        "observability" | "activity" => "Ops",
+        "http" | "ai" => "Integrations",
+        "cli" => "Tooling",
+        _ => "Other",
+    }
+}
+
+fn plugin_category_order() -> &'static [(&'static str, &'static str)] {
+    &[
+        ("HTTP", "HTTP & middleware"),
+        ("Auth", "Auth & validation"),
+        ("Data", "Data & jobs"),
+        ("Content", "Content & mail"),
+        ("Realtime", "Realtime"),
+        ("Ops", "Observability"),
+        ("Integrations", "Integrations"),
+        ("Tooling", "Tooling"),
+        ("Other", "Other"),
+    ]
+}
+
+fn build_grouped_sidebar(slugs: &[String]) -> String {
+    build_grouped_blocks(slugs, 2, true)
+}
+
+fn build_grouped_nav(slugs: &[String]) -> String {
+    // Top-nav: nested category menus (no `collapsed` — that's sidebar-only).
+    build_grouped_blocks(slugs, 2, false)
+}
+
+fn build_grouped_blocks(slugs: &[String], indent: usize, collapsed: bool) -> String {
+    let pad = " ".repeat(indent);
+    let mut by_cat: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+    for s in slugs {
+        by_cat.entry(plugin_category(s)).or_default().push(s.as_str());
+    }
+    let mut blocks = Vec::new();
+    for (cat, title) in plugin_category_order() {
+        let Some(items) = by_cat.get(cat) else {
+            continue;
+        };
+        if items.is_empty() {
+            continue;
+        }
+        let mut sorted = items.clone();
+        sorted.sort();
+        let lines: Vec<String> = sorted
+            .iter()
+            .map(|s| format!("{pad}  {{ text: '{s}', link: '/plugins/{s}' }}"))
+            .collect();
+        let head = if collapsed {
+            format!("{pad}{{\n{pad}  text: '{title}',\n{pad}  collapsed: false,\n{pad}  items: [")
+        } else {
+            format!("{pad}{{\n{pad}  text: '{title}',\n{pad}  items: [")
+        };
+        blocks.push(format!(
+            "{head}\n{}\n{pad}  ],\n{pad}}}",
+            lines.join(",\n")
+        ));
+    }
+    blocks.join(",\n")
+}
+
+fn plugin_examples(slug: &str) -> Option<&'static [&'static str]> {
+    Some(match slug {
+        "ai" => &["examples/api/api_ai"],
+        "auth" => &[
+            "examples/cabinet",
+            "examples/web/hackernews",
+            "examples/api/api_auth",
+            "examples/basic/auth",
+        ],
+        "passport" => &["examples/api/api_jwt", "examples/api/api_oauth"],
+        "db" => &["examples/api/crud", "examples/cabinet"],
+        "tasks" => &["examples/misc/tasks"],
+        "redis" => &["examples/misc/redis"],
+        "storage" => &["examples/misc/storage", "examples/web/upload"],
+        "sse" => &["examples/realtime/sse", "examples/realtime/sse_feed"],
+        "ws" => &["examples/realtime/ws_chat"],
+        "quic" => &["examples/net/quic_udp_echo"],
+        "udp" => &["examples/net/udp_echo"],
+        "i18n" => &["examples/web/i18n", "examples/web/templates_i18n"],
+        "meta" => &["examples/web/meta_blog"],
+        "static" => &["examples/web/static_files"],
+        "templates" => &["examples/web/templates"],
+        "vld" => &["examples/api/api_validated"],
+        "openapi" => &["examples/api/api_preset"],
+        "cli" => &["examples/basic/cli"],
+        "http" => &["examples/cabinet"],
+        "mail" => &["examples/cabinet"],
+        "session" => &["examples/cabinet", "examples/web/hackernews"],
+        "notifications" => &["examples/cabinet"],
+        "observability" => &["examples/misc/bench_loaded"],
+        _ => return None,
+    })
+}
+
+fn plugin_related(slug: &str) -> Option<&'static [&'static str]> {
+    Some(match slug {
+        "auth" => &["passport", "session", "db", "mail", "activity"],
+        "passport" => &["auth", "session", "db"],
+        "session" => &["cookies", "csrf", "store", "redis", "auth"],
+        "csrf" => &["session", "cookies"],
+        "cookies" => &["session", "csrf"],
+        "mail" => &["auth", "notifications", "templates"],
+        "notifications" => &["db", "ws", "mail", "auth"],
+        "db" => &["auth", "tasks", "store", "notifications"],
+        "redis" => &["store", "session", "tasks-store"],
+        "store" => &["session", "redis", "rate-limit", "csrf"],
+        "tasks" => &["tasks-store", "db", "redis"],
+        "tasks-store" => &["tasks", "redis", "db"],
+        "storage" => &["static"],
+        "static" => &["storage", "templates"],
+        "templates" => &["mail", "meta", "i18n"],
+        "meta" => &["templates", "i18n", "openapi"],
+        "i18n" => &["templates", "vld", "meta"],
+        "vld" => &["openapi", "i18n", "auth"],
+        "openapi" => &["vld", "meta"],
+        "ws" => &["sse", "notifications"],
+        "sse" => &["ws"],
+        "udp" => &["quic"],
+        "quic" => &["udp"],
+        "http" => &["ai"],
+        "ai" => &["http", "sse"],
+        "observability" => &["activity"],
+        "activity" => &["auth", "observability"],
+        "shield" => &["cors", "csrf"],
+        "cors" => &["shield"],
+        "compress" => &["static"],
+        "rate-limit" => &["store", "redis"],
+        "env" => &["cli"],
+        "cli" => &["env", "db", "tasks"],
+        _ => return None,
+    })
 }
 
 fn prune_plugin_pages(plugins_docs: &Path, keep: &[String]) -> Result<(), String> {

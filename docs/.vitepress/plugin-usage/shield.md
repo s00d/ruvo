@@ -1,6 +1,14 @@
-**`App::web()`** already installs Shield. **Do not** reinstall — duplicate `shield` id fails at `build`. For a custom CSP/stack, build with `App::new()` and install Shield once:
+**`App::web()`** already installs Shield. **Do not** reinstall — duplicate `shield` id fails at build.
+
+Custom stack:
 
 ```rust
+use sova::{App, Shield};
+
 let mut app = App::new();
-app.install(Shield::new() /* builders when you need them */);
+app.install(
+    Shield::new()
+        .frame("DENY")
+        // .csp("default-src 'self'") when you need CSP
+);
 ```

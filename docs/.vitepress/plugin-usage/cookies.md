@@ -1,13 +1,18 @@
-Pulled in by **session / csrf / i18n-cookie**. On `App::web()` you already have a cookie jar via sessions:
+Parse cookies on every request; set cookies on the response:
 
 ```rust
-use sova::Cookies;
+use sova::{App, CookieBuilder, CookieLayer, Cookies, ResponseCookieExt};
 
-async fn handler(req: Request) -> impl IntoResponse {
-    let jar = req.get::<Cookies>().expect("cookies middleware");
-    let locale = jar.get("locale");
-    // …
-}
+let mut app = App::new();
+app.install(CookieLayer);
+
+app.get("/", |req| async move {
+    let theme = req
+        .get::<Cookies>()
+        .and_then(|c| c.get("theme").map(str::to_owned))
+        .unwrap_or_else(|| "light".into());
+    Ok(sova::Response::text(theme).cookie(CookieBuilder::new("theme", "dark")))
+});
 ```
 
-You rarely install `CookieLayer` alone.
+Sessions use cookies under the hood — prefer [session](/plugins/session) for signed session cookies.

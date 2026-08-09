@@ -5,39 +5,64 @@ editLink: false
 
 # `redis`
 
-**Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues** · crate `sova-redis` `0.1.1` · id `redis`
+**Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues**
+
+| | |
+|--|--|
+| Crate | [`sova-redis`](https://docs.rs/sova-redis/0.1.1) `0.1.1` |
+| Plugin id | `redis` |
+| Category | Data |
+
+## Install
 
 ```bash
 cargo add sova --features redis
 ```
 
+## Features
+
 | Feature | What you get |
 |---------|-------------|
-| `redis` | Shared Redis/Valkey pool (`sova_redis`). |
+| `redis` | Shared Redis/Valkey pool (cache, pub/sub, queues). |
 
-Shared Redis / Valkey pool for Sova (`KvStore`, tasks, cache, pub/sub, list queues).
+## Overview
 
-```rust
- app.install(Redis::from_env());
- let pool = app.try_state::<RedisPool>().unwrap().as_ref().clone();
- pool.publish("events", b"hello").await?;
- let mut sub = pool.subscribe(["events"]).await?;
- while let Some(msg) = sub.next().await {
-     println!("{}: {:?}", msg.channel, msg.payload_str());
- }
- pool.enqueue("jobs", b"payload").await?;
- let item = pool.dequeue("jobs").await?;
- ```
+**When:** shared Redis/Valkey for cache, sessions, tasks, pub/sub, queues.
 
-## Usage
+**Does:**
+- `Redis::from_env()` → `RedisPool` in state
+- publish / subscribe / enqueue / dequeue
+- Backs `store-redis`, `session-redis`, `tasks-redis`
 
-Shared Redis for store/session/tasks — install beside a preset:
+### Example
 
 ```rust
-let mut app = App::api().title("API").version("1.0").into_app();
 app.install(Redis::from_env());
+let pool = req.redis();
+pool.publish("events", b"hello").await?;
 ```
 
-```bash
-cargo run -p redis_demo
+## Quick start
+
+Shared Redis/Valkey pool — install once, reuse for store / session / tasks:
+
+```rust
+use sova::{App, Redis, RedisExt};
+
+app.install(Redis::from_env());
+
+app.get("/pub", |req| async move {
+    req.redis().publish("events", b"hello").await?;
+    Ok("ok")
+});
 ```
+
+Env: `REDIS_URL` (or Valkey-compatible). Features that consume the pool: `store-redis`, `session-redis`, `tasks-redis`.
+
+## Examples
+
+- `examples/misc/redis`
+
+## Related
+
+[`store`](/plugins/store) · [`session`](/plugins/session) · [`tasks-store`](/plugins/tasks-store)

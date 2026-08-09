@@ -5,30 +5,47 @@ editLink: false
 
 # `storage`
 
-**Object storage (local / memory / S3 / GCS / Azure)** · crate `sova-storage` `0.1.1` · id `storage`
+**Object storage (local / memory / S3 / GCS / Azure)**
+
+| | |
+|--|--|
+| Crate | [`sova-storage`](https://docs.rs/sova-storage/0.1.1) `0.1.1` |
+| Plugin id | `storage` |
+| Category | Data |
+
+## Install
 
 ```bash
-cargo add sova --features storage,storage-azure,storage-gcs,storage-memory,storage-s3
+cargo add sova --features storage
 ```
+
+## Features
 
 | Feature | What you get |
 |---------|-------------|
-| `storage` | Object storage (`sova_storage`). |
+| `storage` | Object storage (`req.storage()` — local / cloud). |
 | `storage-azure` | Azure Blob backend. |
 | `storage-gcs` | Google Cloud Storage backend. |
 | `storage-memory` | In-memory blob store (tests). |
 | `storage-s3` | S3 / R2 / MinIO backend. |
 
-Object storage for Sova — local disk, memory, S3/R2/MinIO, GCS, Azure.
+## Overview
 
- Upload pipeline:
+**When:** object storage (local disk, memory, S3, GCS, Azure).
+
+**Does:**
+- `Storage::from_env()?` → `req.storage()`
+- `put` / `get` / `delete` (+ upload helper)
+- Driver via features + env
+
+### Example
+
 ```rust
- file.validate(&UploadRules::new().max_bytes(2_000_000).extensions(["png", "jpg"]))?;
- let stored = req.storage().store(&file, "avatars").await?;
- // stored.key / stored.url
- ```
+app.install(Storage::from_env()?);
+req.storage().put("avatars/1.png", bytes, PutOpts::default()).await?;
+```
 
-## Usage
+## Quick start
 
 Object storage for uploads. Add on the **web preset** (multipart feature for files):
 
@@ -72,3 +89,12 @@ async fn avatar(mut req: Request) -> Result<Redirect> {
 cargo run -p upload
 cargo run -p storage_demo
 ```
+
+## Examples
+
+- `examples/misc/storage`
+- `examples/web/upload`
+
+## Related
+
+[`static`](/plugins/static)

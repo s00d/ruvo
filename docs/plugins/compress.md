@@ -5,34 +5,56 @@ editLink: false
 
 # `compress`
 
-**gzip / deflate / brotli response compression** · crate `sova-compress` `0.1.1` · id `compress`
+**gzip / deflate / brotli response compression**
+
+| | |
+|--|--|
+| Crate | [`sova-compress`](https://docs.rs/sova-compress/0.1.1) `0.1.1` |
+| Plugin id | `compress` |
+| Category | HTTP |
+
+## Install
 
 ```bash
 cargo add sova --features compress
 ```
 
+## Features
+
 | Feature | What you get |
 |---------|-------------|
-| `compress` | gzip/deflate/brotli (`sova-compress`). |
+| `compress` | gzip / deflate / brotli response compression. |
 
-Response compression for Sova (Express [`compression`](https://expressjs.com/en/resources/middleware/compression.html)-style).
+## Overview
 
- Supports `br`, `gzip`, and `deflate`. Bodies are buffered then compressed
- (not streamed chunk-by-chunk).
+**When:** shrink HTML/JSON/static responses (gzip / deflate / brotli).
 
-```rust
- app.install(Compress::new().threshold(1024).level(6));
- ```
+**Does:**
+- Negotiates encoding from `Accept-Encoding`
+- Buffered body compression (not chunk-streamed)
+- Threshold + level + custom filter
 
-## Usage
-
-Optional response compression on top of a preset:
+### Example
 
 ```rust
-let mut app = App::web()
-    .site("App")
-    .public_url("https://example.com")
-    .into_app();
-app.install(Compress::new());
-app.run().await
+app.install(Compress::new().threshold(1024).level(6));
 ```
+
+## Quick start
+
+```rust
+use sova::{App, Compress};
+
+let mut app = App::api().title("API").version("1.0").into_app();
+app.install(
+    Compress::new()
+        .threshold(1024) // skip tiny bodies
+        .level(6),
+);
+```
+
+Negotiates `br` / `gzip` / `deflate` from `Accept-Encoding`. Bodies are buffered then compressed.
+
+## Related
+
+[`static`](/plugins/static)

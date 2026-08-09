@@ -5,27 +5,49 @@ editLink: false
 
 # `store`
 
-**KvStore trait + memory / file / sql / redis backends for Sova** · crate `sova-store` `0.1.1` · id `store`
+**KvStore trait + memory / file / sql / redis backends for Sova**
+
+| | |
+|--|--|
+| Crate | [`sova-store`](https://docs.rs/sova-store/0.1.1) `0.1.1` |
+| Plugin id | `store` |
+| Category | Data |
+
+## Install
 
 ```bash
-cargo add sova --features store,store-crypto,store-file,store-redis,store-sql
+cargo add sova --features store
 ```
+
+## Features
 
 | Feature | What you get |
 |---------|-------------|
-| `store` | KvStore + Cache (`sova_store`). |
-| `store-crypto` | XChaCha20-Poly1305 wrapper for KvStore. |
-| `store-file` | File-backed KvStore. |
-| `store-redis` | Redis KvStore on `RedisPool`. |
-| `store-sql` | SQL KvStore on `DbPool`. |
+| `store` | `KvStore` + `Cache` (sessions, CSRF, rate-limit, …). |
+| `store-crypto` | XChaCha20-Poly1305 wrapper for `KvStore`. |
+| `store-file` | File-backed `KvStore`. |
+| `store-redis` | Redis `KvStore` on `RedisPool`. |
+| `store-sql` | SQL `KvStore` on `DbPool`. |
 
-Byte-oriented key-value store for Sova plugins (sessions, cache, CSRF, rate-limit).
+## Overview
 
- Trait is stable (memory + file + sql + redis backends).
- Enable feature `unstable-store` for backwards-compatible feature flags.
- **Not in sova-core** — wire with `app.state(store.namespace("sess"))`.
+**When:** byte KV for sessions, CSRF, rate-limit, cache.
 
-## Usage
+**Does:**
+- `KvStore` + `AppStore` / `SharedStore`
+- memory / file / sql / redis backends
+- `namespace(store, "sess")` for isolation
+- Optional crypto (`store-crypto`)
+
+### Example
+
+```rust
+app.state(AppStore::memory());
+let sess = AppStore::memory().namespaced("sess");
+app.install(SharedStore::new(sess));
+```
+
+## Quick start
 
 Shared `KvStore` for rate-limit, cache, etc. Namespace with `sova::store::namespace(store, "sess")` or `AppStore::namespaced`:
 
@@ -55,3 +77,7 @@ async fn main() -> Result<()> {
 ```
 
 Features: `store-sql`, `store-redis`, `store-file`, `store-crypto`.
+
+## Related
+
+[`session`](/plugins/session) · [`redis`](/plugins/redis) · [`rate-limit`](/plugins/rate-limit) · [`csrf`](/plugins/csrf)

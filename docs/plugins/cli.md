@@ -5,15 +5,38 @@ editLink: false
 
 # `cli`
 
-**CLI ServerArgs / listen_args for Sova (local dev)** · crate `sovax` `0.1.1` · id `cli`
+**CLI ServerArgs / listen_args for Sova (local dev)**
 
-Optional CLI helpers for local development (`--log-level`, file logging).
- This crate pulls in `clap` — enable only when you want argv parsing.
+| | |
+|--|--|
+| Crate | [`sovax`](https://docs.rs/sovax/0.1.1) `0.1.1` |
+| Plugin id | `cli` |
+| Category | Tooling |
 
- Project scaffolding (`cargo sovax new` / `dev` / `db`) is the separate
- binary crate `cargo-sovax`, not this library.
+## Install
 
-## Usage
+```bash
+cargo install cargo-sovax
+# or: cargo run -p sovax -- <cmd>
+```
+
+## Overview
+
+**When:** local CLI (`cargo sovax`) — new apps, db migrate, tasks.
+
+**Does:**
+- `ServerArgs` / `listen_args` for apps
+- Scaffold: `cargo sovax new …`
+- Subcommands for db / tasks
+
+### Example
+
+```bash
+cargo install cargo-sovax
+cargo sovax new blog --web
+```
+
+## Quick start
 
 > **Not** the project scaffolder. For `cargo sovax new` / `dev` / `db`, see [cargo-sovax](/guide/cargo-sovax).
 
@@ -36,3 +59,11 @@ async fn main() -> Result<()> {
 ```
 
 `app.run()` also exposes framework commands (`routes`, `migrate`, `tasks`, …) depending on installed plugins.
+
+## Examples
+
+- `examples/basic/cli`
+
+## Related
+
+[`env`](/plugins/env) · [`db`](/plugins/db) · [`tasks`](/plugins/tasks)

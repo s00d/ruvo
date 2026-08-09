@@ -1,11 +1,14 @@
-**`App::web()`** serves `public/` at `/assets` when the directory exists. Point elsewhere with builders:
+`App::web()` already mounts `public/` → `/assets`. Extra mount:
 
 ```rust
-let mut app = App::web()
-    .site("App")
-    .public_url("https://example.com")
-    .assets("public")
-    .assets_mount("/assets");
+use sova::{App, Static};
+use std::time::Duration;
+
+app.install(
+    Static::new("/static", "assets")
+        .max_age(Duration::from_secs(86_400))
+        .immutable(true),
+);
 ```
 
-Only install `Static::new(...)` yourself when you skipped the web preset. Demo: `cargo run -p static_files`.
+Dotfiles denied by default. See `examples/web/static_files`.

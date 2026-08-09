@@ -5,48 +5,58 @@ editLink: false
 
 # `auth`
 
-**Register/login, verify, reset, 2FA, profile, roles** · crate `sova-auth` `0.1.6` · id `fortify`
+**Register/login, verify, reset, 2FA, profile, roles**
+
+| | |
+|--|--|
+| Crate | [`sova-auth`](https://docs.rs/sova-auth/0.1.6) `0.1.6` |
+| Plugin id | `fortify` |
+| Category | Auth |
+
+## Install
 
 ```bash
-cargo add sova --features auth,auth-activity,auth-mail,auth-vld
+cargo add sova --features auth
 ```
+
+## Features
 
 | Feature | What you get |
 |---------|-------------|
-| `auth` | Fortify (register/login/verify/reset/2FA/RBAC). |
+| `auth` | Fortify — register/login/verify/reset/2FA/RBAC. |
 | `auth-activity` | Fortify mutations write activity events. |
-| `auth-mail` | Email verify/reset templates (`mail-templates` + Fortify mail helpers). |
+| `auth-mail` | Email verify/reset (needs `mail` + Fortify mail helpers). |
 | `auth-vld` | Fortify forms wired to `vld` flash/form. |
 
-Fortify-style authentication for Sova (register, verify, reset, 2FA, RBAC).
+## Overview
 
- Builds on [`sova_passport`] (session login) + [`sova_db`]. Enable feature `mail`
- (and install [`sova_mail::Mail`]) for email verification / password reset.
+**When:** register / login / verify / reset / 2FA / profile / roles (Fortify-style).
+
+**Does:**
+- Web forms + JSON API mounts
+- Feature flags: Registration, ResetPasswords, EmailVerification, TwoFactor, …
+- `Fortify::guard()` for protected routers
+- `req.login_user` / `req.logout_user`
+- Optional mail + activity
+
+### Example
 
 ```rust
- use sova_auth::{AuthMigrator, Feature, Fortify};
- // Facade re-exports the same enum as `AuthFeature`.
- // Fortify::new() enables Registration only; add mail-backed features explicitly.
+app.install(Db::from_env().migrations::<AuthMigrator>());
+app.install(Mail::from_env()); // only if Reset / Verify
+app.install(
+  Fortify::new()
+    .features([AuthFeature::Registration, AuthFeature::ResetPasswords])
+    .home("/cabinet"),
+);
+cabinet.use_middleware(Fortify::guard());
+```
 
- app.install(Db::from_env().migrations::<AuthMigrator>());
- app.install(memory_sessions());
- app.install(Mail::from_env()); // required for ResetPasswords / EmailVerification
- app.install(
-   Fortify::new()
-     .features([Feature::Registration, Feature::ResetPasswords, /* … */])
-     .api_mount("/api/auth")
-     .login_redirect("/login")
-     .home("/cabinet"),
- );
- cabinet.use_middleware(Fortify::guard());
+### Notes
+- Needs **db + session**
+- Add **mail** only for email-backed features (`auth-mail`)
 
- // Programmatic login (impersonation / seed / admin switch):
- let cu = load_current_user(db, id).await?.unwrap();
- req.login_user(cu);   // regenerates session + passport:user
- req.logout_user();
- ```
-
-## Usage
+## Quick start
 
 Fortify sits **on the web preset** (sessions, csrf, templates already there). Add Db + Fortify; add **Mail only** when enabling `EmailVerification` or `ResetPasswords`.
 
@@ -131,3 +141,14 @@ pub fn register(app: &mut App) {
 Programmatic login (seed / impersonation): `req.login_user(cu)` / `req.logout_user()`.
 
 See `examples/web/hackernews` (Registration-only) and `examples/cabinet` (full stack).
+
+## Examples
+
+- `examples/cabinet`
+- `examples/web/hackernews`
+- `examples/api/api_auth`
+- `examples/basic/auth`
+
+## Related
+
+[`passport`](/plugins/passport) · [`session`](/plugins/session) · [`db`](/plugins/db) · [`mail`](/plugins/mail) · [`activity`](/plugins/activity)

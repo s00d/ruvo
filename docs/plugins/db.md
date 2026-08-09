@@ -5,26 +5,52 @@ editLink: false
 
 # `db`
 
-**SeaORM pool, migrate CLI, optional seed CLI** · crate `sova-db` `0.1.3` · id `db`
+**SeaORM pool, migrate CLI, optional seed CLI**
+
+| | |
+|--|--|
+| Crate | [`sova-db`](https://docs.rs/sova-db/0.1.3) `0.1.3` |
+| Plugin id | `db` |
+| Category | Data |
+
+## Install
 
 ```bash
-cargo add sova --features db,db-mysql,db-sqlite
+cargo add sova --features db
 ```
+
+## Features
 
 | Feature | What you get |
 |---------|-------------|
-| `db` | SeaORM pool (`sova-db`; postgres by default). |
+| `db` | SeaORM pool (`req.db()`; postgres by default). |
 | `db-mysql` | MySQL backend for `sova-db`. |
 | `db-sqlite` | SQLite backend for `sova-db`. |
 
-SeaORM database plugin for Sova (postgres / sqlite / mysql via Cargo features).
+## Overview
+
+**When:** SeaORM pool + migrate/seed CLI.
+
+**Does:**
+- `Db::from_env().migrations::<Migrator>()`
+- `req.db()` in handlers
+- postgres (default) / mysql / sqlite features
+- `cargo sovax db migrate|seed`
+
+### Example
 
 ```rust
- app.install(Db::from_env().migrations::<Migrator>());
- let u = User::find_by_id(id).one(req.db()).await?;
- ```
+app.install(Db::from_env().migrations::<Migrator>());
+let u = User::find_by_id(id).one(req.db()).await?;
+```
 
-## Usage
+### Config
+
+```bash
+DATABASE_URL=postgres://postgres@localhost/sova
+```
+
+## Quick start
 
 Install Db **on top of** a preset (or cabinet-style app). Migrations run through `app.run()` / `cargo sovax db`.
 
@@ -85,3 +111,12 @@ cargo run -p crud
 ```
 
 Compose migrators in one `MigratorTrait` (see cabinet). Features: `db-sqlite`, `db-mysql`.
+
+## Examples
+
+- `examples/api/crud`
+- `examples/cabinet`
+
+## Related
+
+[`auth`](/plugins/auth) · [`tasks`](/plugins/tasks) · [`store`](/plugins/store) · [`notifications`](/plugins/notifications)

@@ -1,10 +1,12 @@
-Optional response compression on top of a preset:
-
 ```rust
-let mut app = App::web()
-    .site("App")
-    .public_url("https://example.com")
-    .into_app();
-app.install(Compress::new());
-app.run().await
+use sova::{App, Compress};
+
+let mut app = App::api().title("API").version("1.0").into_app();
+app.install(
+    Compress::new()
+        .threshold(1024) // skip tiny bodies
+        .level(6),
+);
 ```
+
+Negotiates `br` / `gzip` / `deflate` from `Accept-Encoding`. Bodies are buffered then compressed.

@@ -32,5 +32,5 @@ features:
       src: /icons/docs.svg
       alt: Docs
     title: Docs from code
-    details: Plugins catalog + per-plugin pages from rustdoc; Plugin SDK for authors.
+    details: Plugin pages from meta + guides + usage snippets; Plugin SDK for authors.
 ---

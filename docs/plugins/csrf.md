@@ -5,28 +5,45 @@ editLink: false
 
 # `csrf`
 
-**Session double-submit CSRF (Laravel-style except/XSRF cookie)** · crate `sova-csrf` `0.1.2` · id `csrf`
+**Session double-submit CSRF (Laravel-style except/XSRF cookie)**
+
+| | |
+|--|--|
+| Crate | [`sova-csrf`](https://docs.rs/sova-csrf/0.1.2) `0.1.2` |
+| Plugin id | `csrf` |
+| Category | HTTP |
+
+## Install
 
 ```bash
 cargo add sova --features csrf
 ```
 
+## Features
+
 | Feature | What you get |
 |---------|-------------|
-| `csrf` | Session double-submit CSRF (`sova_csrf`; needs `session`). |
+| `csrf` | Double-submit CSRF + XSRF cookie (needs `session`). |
 
-CSRF protection via session double-submit (Laravel-style).
+## Overview
 
- Install after sessions. Mutating requests are checked for a matching token in
- (order): `X-CSRF-TOKEN` → `X-XSRF-TOKEN` → query field →
- `application/x-www-form-urlencoded` body field.
- Multipart bodies are left to handlers ([`CsrfExt::verify_csrf`]) unless the
- header/query carries the token.
+**When:** cookie-session web apps (Laravel-style double-submit). Already on `App::web()`.
 
- With [`Csrf::xsrf_cookie`] (default on), each response also gets a readable
- `XSRF-TOKEN` cookie so SPA clients (axios) can send `X-XSRF-TOKEN`.
+**Does:**
+- Issues CSRF / XSRF cookies
+- Validates mutating requests
+- Except paths for APIs / webhooks
 
-## Usage
+### Example
+
+```rust
+app.install(Csrf::new().except(["/webhooks/*"]));
+```
+
+### Notes
+- Needs session middleware
+
+## Quick start
 
 **`App::web()`** already installs CSRF after sessions. Use the token in forms / SPA bootstrap:
 
@@ -68,3 +85,7 @@ let mut app = App::new();
 app.install(memory_sessions());
 app.install(Csrf::new().except("/_tasks/*").except("/api/webhooks/*"));
 ```
+
+## Related
+
+[`session`](/plugins/session) · [`cookies`](/plugins/cookies)

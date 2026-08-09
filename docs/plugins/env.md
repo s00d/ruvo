@@ -5,28 +5,41 @@ editLink: false
 
 # `env`
 
-**Cascade .env loading for Sova apps (dotenvy)** · crate `sova-env` `0.1.1` · id `env`
+**Cascade .env loading for Sova apps (dotenvy)**
+
+| | |
+|--|--|
+| Crate | [`sova-env`](https://docs.rs/sova-env/0.1.1) `0.1.1` |
+| Plugin id | `env` |
+| Category | HTTP |
+
+## Install
 
 ```bash
 cargo add sova --features env
 ```
 
+## Features
+
 | Feature | What you get |
 |---------|-------------|
-| `env` | Cascade `.env*` loader (`sova-env`). |
+| `env` | Cascade `.env*` loader. |
 
-Explicit `.env` cascade for Sova applications.
+## Overview
 
- Call [`load`] at the top of `main` before reading configuration.
- Real process environment variables always win over file values.
+**When:** load `.env` / cascade env files before config.
 
- File order (later overrides earlier):
- 1. `.env.{dev|prod|test}` (short alias of the active mode)
- 2. `.env.{mode}` when mode is the long name (`development` / `production`)
- 3. `.env.local` (skipped in `test`)
- 4. `.env` (final overlay)
+**Does:**
+- dotenvy cascade for Sova apps
+- Safe to install early in `main`
 
-## Usage
+### Example
+
+```rust
+app.install(Env::default());
+```
+
+## Quick start
 
 **`App::web()` / `App::api()`** load env via the `env` feature when the preset starts. Prefer `ServerArgs` + `configure()` / `sova.toml` over ad-hoc dotenv calls.
 
@@ -45,3 +58,7 @@ app.run().await
 ```
 
 See [Configuration](/guide/configuration).
+
+## Related
+
+[`cli`](/plugins/cli)

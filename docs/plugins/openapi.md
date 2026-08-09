@@ -5,21 +5,41 @@ editLink: false
 
 # `openapi`
 
-**OpenAPI 3.1 document + Scalar UI at mount path** · crate `sova-openapi` `0.1.1` · id `openapi`
+**OpenAPI 3.1 document + Scalar UI at mount path**
+
+| | |
+|--|--|
+| Crate | [`sova-openapi`](https://docs.rs/sova-openapi/0.1.1) `0.1.1` |
+| Plugin id | `openapi` |
+| Category | Content |
+
+## Install
 
 ```bash
 cargo add sova --features openapi
 ```
 
+## Features
+
 | Feature | What you get |
 |---------|-------------|
-| `openapi` | OpenAPI 3.1 + Scalar UI (`sova-openapi`). |
+| `openapi` | OpenAPI 3.1 document + Scalar UI. |
 
-OpenAPI 3.1 document building and Scalar docs UI.
+## Overview
 
- Does **not** depend on `vld` — schemas are plain [`serde_json::Value`].
+**When:** OpenAPI 3.1 + Scalar UI for APIs.
 
-## Usage
+**Does:**
+- Document from routes / vld schemas
+- UI at mount path
+
+### Example
+
+```rust
+app.install(OpenApi::new().mount("/docs"));
+```
+
+## Quick start
 
 **`App::api()`** already mounts OpenAPI + Scalar at `/docs` (JSON at `/docs/openapi.json`). Your job is schemas + `.doc(...)` on routes — not `OpenApi::new(...)`.
 
@@ -75,3 +95,11 @@ async fn create(
 ```
 
 Runnable: `cargo run -p api_preset`. Only install `OpenApi` yourself when you intentionally skip `App::api()`.
+
+## Examples
+
+- `examples/api/api_preset`
+
+## Related
+
+[`vld`](/plugins/vld) · [`meta`](/plugins/meta)

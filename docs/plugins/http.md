@@ -5,19 +5,43 @@ editLink: false
 
 # `http`
 
-**Outbound HTTP client with SSRF guards and named configs** · crate `sova-http` `0.1.1` · id `http`
+**Outbound HTTP client with SSRF guards and named configs**
+
+| | |
+|--|--|
+| Crate | [`sova-http`](https://docs.rs/sova-http/0.1.1) `0.1.1` |
+| Plugin id | `http` |
+| Category | Integrations |
+
+## Install
 
 ```bash
 cargo add sova --features http-client
 ```
 
+## Features
+
 | Feature | What you get |
 |---------|-------------|
-| `http-client` | Outbound HTTP (`sova_http`). |
+| `http-client` | Outbound HTTP client + SSRF guards (`req.http()`). |
 
-Outbound HTTP client for Sova — request-bound deadline, tracing, fake transport.
+## Overview
 
-## Usage
+**When:** call upstream HTTP APIs from handlers (with SSRF guards).
+
+**Does:**
+- `OutboundHttp` plugin + `req.http()`
+- Named clients / configs, request-bound deadline, tracing
+- Fake transport for tests
+
+### Example
+
+```rust
+app.install(OutboundHttp::new());
+let upstream = req.http().get("https://example.com/api").send().await?;
+```
+
+## Quick start
 
 Outbound HTTP client on top of any app:
 
@@ -34,3 +58,11 @@ async fn proxy(req: Request) -> Result<impl IntoResponse> {
 ```
 
 SSRF guards / named configs — see crate docs. Cabinet: `OutboundHttp` + fetch demo module.
+
+## Examples
+
+- `examples/cabinet`
+
+## Related
+
+[`ai`](/plugins/ai)

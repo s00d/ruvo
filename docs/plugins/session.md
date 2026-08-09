@@ -5,28 +5,46 @@ editLink: false
 
 # `session`
 
-**Cookie sessions backed by a SessionStore** · crate `sova-session` `0.1.2` · id `session`
+**Cookie sessions backed by a SessionStore**
+
+| | |
+|--|--|
+| Crate | [`sova-session`](https://docs.rs/sova-session/0.1.2) `0.1.2` |
+| Plugin id | `session` |
+| Category | Auth |
+
+## Install
 
 ```bash
-cargo add sova --features session,session-redis,session-sql
+cargo add sova --features session
 ```
+
+## Features
 
 | Feature | What you get |
 |---------|-------------|
-| `session` | Cookie sessions + flash (`sova_session`). |
+| `session` | Cookie sessions + flash (`SessionLayer` / `memory_sessions`). |
 | `session-redis` | Persist sessions in Redis via `RedisPool`. |
 | `session-sql` | Persist sessions in SQL via `DbPool`. |
 
-Cookie-backed sessions for Sova (Express [`express-session`](https://expressjs.com/en/resources/middleware/session.html)-style).
+## Overview
 
- Flash helpers ([`Session::flash`], [`Session::take`]) store one-shot values for the next
- request (status messages, validation errors, old form input).
+**When:** cookie sessions. Already on `App::web()` (memory).
 
- Persistence is [`SessionStore`]: [`KvSessionStore`], [`SqlSessionStore`], or
- [`RedisSessionStore`]. Logout others/all:
- [`SessionExt::logout_other_sessions`] / [`SessionExt::logout_all_sessions`].
+**Does:**
+- Session cookie + `SessionStore` backends
+- memory / redis / sql features
+- Required by CSRF + Fortify
 
-## Usage
+### Example
+
+```rust
+app.install(SessionLayer::from_store(store));
+// or helper:
+app.install(memory_sessions());
+```
+
+## Quick start
 
 Cookie sessions are part of **`App::web()`** and **`App::api()`** (`memory_sessions`). Read/write in handlers — do **not** install a second `SessionLayer` on top of a preset (duplicate `session` id fails at `build`):
 
@@ -69,3 +87,12 @@ app.install(SessionLayer::from_store(Arc::new(
 ```
 
 Features: `session-sql`, `session-redis`.
+
+## Examples
+
+- `examples/cabinet`
+- `examples/web/hackernews`
+
+## Related
+
+[`cookies`](/plugins/cookies) · [`csrf`](/plugins/csrf) · [`store`](/plugins/store) · [`redis`](/plugins/redis) · [`auth`](/plugins/auth)
