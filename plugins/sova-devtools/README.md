@@ -24,9 +24,9 @@ UI lives in `ui/` (Vite + Vue 3 + Tailwind CSS + Vue Router + Pinia + TypeScript
 
 **Playground (UI only):** `npm --prefix plugins/sova-devtools/ui run playground` — viewport 375/768/1280 + mock fixtures.
 
-**Shipped (lite):** custom EventBus feed (`hub.emit` + auth/mail forwards), RSS memory sampler (~2s, Linux RSS).
+**Shipped:** custom EventBus feed (`hub.emit` + auth/mail forwards), memory profiler v2 (cross-platform RSS, peak/min summary, live SSE).
 
-**Backlog (Rust collectors):** AJAX XHR timeline, OTel deep link, jemalloc flamegraph.
+**Backlog:** AJAX XHR timeline, OTel deep link, jemalloc flamegraph.
 
 **Embedding model**
 

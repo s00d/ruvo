@@ -63,8 +63,8 @@ cargo run -p devtools_demo
 | **Mail** | FakeMail / last messages (with `mail` feature) |
 | **Jobs** | Task enqueue / worker (`sova.tasks`) |
 | **Auth** | Session keys + user / email / roles (redacted) |
-| **Events** | Custom `hub.emit` + forwarded auth/mail EventBus events |
-| **Memory** | Process RSS samples (~2s; Linux `/proc`) |
+| **Events** | Custom `hub.emit` + forwarded domain EventBus (auth/mail/csrf/session/tasks/…) |
+| **Memory** | Process RSS sparkline + current/peak/min (Linux + macOS; ~2s) |
 | **Config** | Profile + compiled DevTools feature flags |
 
 ### What comes from where
@@ -81,7 +81,7 @@ cargo run -p devtools_demo
 | Outbound HTTP | `http.client` spans | `http-client` + `sova-devtools/http` |
 | Mail | FakeMail bag + `MailSent` EventBus | `mail` |
 | Custom events | `DevToolsHub::emit` / auth EventBus | always (hub) / `auth` |
-| Memory RSS | background sampler | always when DevTools enabled |
+| Memory RSS | background sampler (cross-platform) | always when DevTools enabled |
 | Cache / KV | `tracing` `target: "sova.store"` | `devtools-store` (instrumented store) |
 | Redis pub/queue | `target: "sova.redis"` | `devtools-redis` |
 | Jobs | `target: "sova.tasks"` | `devtools` (tasks) |

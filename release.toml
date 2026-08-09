@@ -22,6 +22,7 @@
 
 # After first wave, publish scaffolding too:
 #   cargo publish -p cargo-sovax
+# Also: sova-acme (needs sova-core with tls), then sova-devtools, then facade `sova`.
 # `sova-docs-gen` stays publish = false.
 # In-app CLI helpers: crate `sovax`. Scaffolding binary: `cargo-sovax` → `cargo sovax`.
 #

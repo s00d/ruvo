@@ -2,6 +2,7 @@ import type {
   CustomEvent,
   LogLine,
   MemorySample,
+  MemorySummary,
   RequestMeta,
   RequestSnapshot,
 } from "./types";
@@ -40,8 +41,34 @@ export async function fetchCustomEvents(api: string): Promise<CustomEvent[]> {
   return (await r.json()) as CustomEvent[];
 }
 
-export async function fetchMemory(api: string): Promise<MemorySample[]> {
+export async function fetchMemory(api: string): Promise<MemorySummary> {
+  const empty: MemorySummary = {
+    samples: [],
+    current: null,
+    peak: null,
+    min: null,
+  };
   const r = await fetch(`${api}/memory`);
-  if (!r.ok) return [];
-  return (await r.json()) as MemorySample[];
+  if (!r.ok) return empty;
+  const body = await r.json();
+  // Compat: older servers returned a bare sample array.
+  if (Array.isArray(body)) {
+    const samples = body as MemorySample[];
+    const rss = samples
+      .map((s) => s.rss_bytes)
+      .filter((v): v is number => v != null);
+    return {
+      samples,
+      current: rss[0] ?? null,
+      peak: rss.length ? Math.max(...rss) : null,
+      min: rss.length ? Math.min(...rss) : null,
+    };
+  }
+  const s = body as MemorySummary;
+  return {
+    samples: s.samples ?? [],
+    current: s.current ?? null,
+    peak: s.peak ?? null,
+    min: s.min ?? null,
+  };
 }

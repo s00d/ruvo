@@ -21,7 +21,7 @@ mod redact;
 mod routes;
 
 pub use collector::{DevToolsBag, HttpLine, LogLine, QueryLine, RequestSnapshot};
-pub use hub::{CustomEvent, DevToolsHub, MemorySample};
+pub use hub::{CustomEvent, DevToolsHub, MemorySample, MemorySummary};
 pub use inject::{inject_body, DEVTOOLS_MARKER};
 pub use plugin::DevTools;
 

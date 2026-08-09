@@ -128,6 +128,15 @@ export interface CustomEvent {
 export interface MemorySample {
   ts_ms: number;
   rss_bytes: number | null;
+  rss_peak_bytes?: number | null;
+  available_bytes?: number | null;
+}
+
+export interface MemorySummary {
+  samples: MemorySample[];
+  current: number | null;
+  peak: number | null;
+  min: number | null;
 }
 
 export function statusTone(status: number): "ok" | "warn" | "err" {
