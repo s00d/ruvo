@@ -21,7 +21,7 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 <!-- generated:plugins-table -->
 | Plugin | Category | Version | Summary | Features |
 |--------|----------|---------|---------|----------|
-| [`acme`](/plugins/acme) | HTTP | `0.1.0` | Let's Encrypt HTTP-01 certificates with TLS hot-reload | `acme` |
+| [`acme`](/plugins/acme) | HTTP | `0.1.1` | Let's Encrypt HTTP-01 certificates with TLS hot-reload | `acme` |
 | [`activity`](/plugins/activity) | Ops | `0.1.2` | Audit / activity log (who changed what) | `activity` |
 | [`ai`](/plugins/ai) | Integrations | `0.1.0` | AISDK language models (chat, tools, stream, fake) | `ai`, `ai-anthropic`, `ai-full`, `ai-google`, `ai-openai`, `ai-prompt` |
 | [`auth`](/plugins/auth) | Auth | `0.1.8` | Register/login, verify, reset, 2FA, profile, roles | `auth`, `auth-activity`, `auth-mail`, `auth-vld` |
