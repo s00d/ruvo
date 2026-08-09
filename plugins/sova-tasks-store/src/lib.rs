@@ -14,7 +14,7 @@ use bytes::Bytes;
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::{Duration, SystemTime};
 
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
@@ -110,6 +110,13 @@ pub struct MemoryStore {
     inner: Arc<Mutex<Inner>>,
 }
 
+fn lock_inner(inner: &Mutex<Inner>) -> MutexGuard<'_, Inner> {
+    match inner.try_lock() {
+        Ok(g) => g,
+        Err(_) => tokio::task::block_in_place(|| inner.lock().unwrap()),
+    }
+}
+
 impl MemoryStore {
     pub fn new() -> Self {
         Self::default()
@@ -119,7 +126,7 @@ impl MemoryStore {
 impl TaskStore for MemoryStore {
     fn enqueue<'a>(&'a self, opts: EnqueueOpts) -> BoxFuture<'a, Result<String, TaskError>> {
         Box::pin(async move {
-            let mut g = self.inner.lock().unwrap();
+            let mut g = lock_inner(&self.inner);
             if let Some(ref dk) = opts.dedup_key {
                 if let Some(existing) = g.dedup.get(dk) {
                     return Ok(existing.clone());
@@ -155,7 +162,7 @@ impl TaskStore for MemoryStore {
         limit: usize,
     ) -> BoxFuture<'a, Result<Vec<Task>, TaskError>> {
         Box::pin(async move {
-            let mut g = self.inner.lock().unwrap();
+            let mut g = lock_inner(&self.inner);
             let now = SystemTime::now();
             let mut ids: Vec<_> = g
                 .tasks
@@ -188,7 +195,7 @@ impl TaskStore for MemoryStore {
         lease: Duration,
     ) -> BoxFuture<'a, Result<(), TaskError>> {
         Box::pin(async move {
-            let mut g = self.inner.lock().unwrap();
+            let mut g = lock_inner(&self.inner);
             let t = g.tasks.get_mut(id).ok_or(TaskError::NotFound)?;
             if t.status != TaskStatus::Running {
                 return Err(TaskError::Msg("not running".into()));
@@ -200,7 +207,7 @@ impl TaskStore for MemoryStore {
 
     fn complete<'a>(&'a self, id: &'a str) -> BoxFuture<'a, Result<(), TaskError>> {
         Box::pin(async move {
-            let mut g = self.inner.lock().unwrap();
+            let mut g = lock_inner(&self.inner);
             let t = g.tasks.get_mut(id).ok_or(TaskError::NotFound)?;
             t.status = TaskStatus::Done;
             t.lease_until = None;
@@ -218,7 +225,7 @@ impl TaskStore for MemoryStore {
         retry_at: Option<SystemTime>,
     ) -> BoxFuture<'a, Result<(), TaskError>> {
         Box::pin(async move {
-            let mut g = self.inner.lock().unwrap();
+            let mut g = lock_inner(&self.inner);
             let t = g.tasks.get_mut(id).ok_or(TaskError::NotFound)?;
             if let Some(at) = retry_at {
                 t.status = TaskStatus::Pending;
@@ -239,7 +246,7 @@ impl TaskStore for MemoryStore {
 
     fn reap<'a>(&'a self, now: SystemTime) -> BoxFuture<'a, Result<u64, TaskError>> {
         Box::pin(async move {
-            let mut g = self.inner.lock().unwrap();
+            let mut g = lock_inner(&self.inner);
             let mut n = 0u64;
             for t in g.tasks.values_mut() {
                 if t.status == TaskStatus::Running {
@@ -263,7 +270,7 @@ impl TaskStore for MemoryStore {
         limit: usize,
     ) -> BoxFuture<'a, Result<Vec<Task>, TaskError>> {
         Box::pin(async move {
-            let g = self.inner.lock().unwrap();
+            let g = lock_inner(&self.inner);
             let mut v: Vec<_> = g
                 .tasks
                 .values()
