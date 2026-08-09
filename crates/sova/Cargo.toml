@@ -1,6 +1,6 @@
 [package]
 name = "sova"
-version = "0.1.11"
+version = "0.1.12"
 authors.workspace = true
 edition.workspace = true
 description = "Express-like HTTP framework for Rust"
@@ -58,6 +58,12 @@ http-client = ["dep:sova-http"]
 mail = ["dep:sova-mail"]
 mail-templates = ["mail", "templates", "sova-mail/templates"]
 mail-markdown = ["mail", "sova-mail/markdown"]
+ai = ["dep:sova-ai"]
+ai-openai = ["ai", "sova-ai/openai"]
+ai-anthropic = ["ai", "sova-ai/anthropic"]
+ai-google = ["ai", "sova-ai/google"]
+ai-full = ["ai", "sova-ai/full"]
+ai-prompt = ["ai", "sova-ai/prompt"]
 storage = ["dep:sova-storage"]
 storage-s3 = ["storage", "sova-storage/s3"]
 storage-gcs = ["storage", "sova-storage/gcs"]
@@ -146,6 +152,7 @@ sova-db = { workspace = true, optional = true }
 sova-redis = { workspace = true, optional = true }
 sova-http = { workspace = true, optional = true }
 sova-mail = { workspace = true, optional = true }
+sova-ai = { workspace = true, optional = true }
 sova-storage = { workspace = true, optional = true }
 sova-passport = { workspace = true, optional = true }
 sova-auth = { workspace = true, optional = true }

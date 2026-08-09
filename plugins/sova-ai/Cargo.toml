@@ -1,0 +1,45 @@
+[package]
+name = "sova-ai"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+description = "AISDK-powered language models for Sova (chat, tools, stream, fake)"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/sova-ai"
+readme = "README.md"
+keywords = ["http", "web", "framework", "async", "ai"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[features]
+default = []
+# Provider / capability passthrough (aisdk feature names).
+openai = ["aisdk/openai"]
+anthropic = ["aisdk/anthropic"]
+google = ["aisdk/google"]
+groq = ["aisdk/groq"]
+openrouter = ["aisdk/openrouter"]
+xai = ["aisdk/xai"]
+deepseek = ["aisdk/deepseek"]
+mistral = ["aisdk/mistral"]
+openaicompatible = ["aisdk/openaicompatible"]
+prompt = ["aisdk/prompt"]
+full = ["aisdk/full"]
+
+[dependencies]
+sova-core = { workspace = true }
+aisdk = { workspace = true }
+async-trait = { workspace = true }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+http = { workspace = true }
+sova-core = { workspace = true, features = ["testing"] }
+serde_json = { workspace = true }

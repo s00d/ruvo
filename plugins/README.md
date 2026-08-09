@@ -10,6 +10,7 @@ Opt-in domain plugins for Sova. Prefer enabling them through facade features on 
 | Crate | Version | Description | Docs |
 |-------|---------|-------------|------|
 | [`sova-activity`](./sova-activity/) | `0.1.2` | Laravel-style activity / audit log for Sova | [guide](https://s00d.github.io/sova/plugins/activity) |
+| [`sova-ai`](./sova-ai/) | `0.1.0` | AISDK language models for Sova (chat, tools, stream, fake) | [guide](https://s00d.github.io/sova/plugins/ai) |
 | [`sova-auth`](./sova-auth/) | `0.1.6` | Fortify-style authentication for Sova (register, 2FA, reset, roles) | [guide](https://s00d.github.io/sova/plugins/auth) |
 | [`sova-compress`](./sova-compress/) | `0.1.1` | Response compression plugin for Sova | [guide](https://s00d.github.io/sova/plugins/compress) |
 | [`sova-cookies`](./sova-cookies/) | `0.1.1` | Cookie parsing plugin for Sova | [guide](https://s00d.github.io/sova/plugins/cookies) |

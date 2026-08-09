@@ -49,6 +49,12 @@
 /// Feature `mail`: SMTP / fake / file mailer (`sova_mail`).
 /// Feature `mail-templates`: MiniJinja mail bodies / Mailable views.
 /// Feature `mail-markdown`: Markdown mail bodies.
+/// Feature `ai`: AISDK language models (`sova_ai`).
+/// Feature `ai-openai`: OpenAI provider via aisdk.
+/// Feature `ai-anthropic`: Anthropic provider via aisdk.
+/// Feature `ai-google`: Google provider via aisdk.
+/// Feature `ai-full`: All aisdk providers (`aisdk/full`).
+/// Feature `ai-prompt`: File-based aisdk prompt templates.
 /// Feature `storage`: Object storage (`sova_storage`).
 /// Feature `storage-s3`: S3 / R2 / MinIO backend.
 /// Feature `storage-gcs`: Google Cloud Storage backend.

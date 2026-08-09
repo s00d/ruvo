@@ -221,6 +221,16 @@ pub use sova_mail::{
     SmtpBuilder,
 };
 
+#[cfg(feature = "ai")]
+pub use sova_ai::{Ai, AiBound, AiClient, AiError, AiExt, FakeAi, SharedModel};
+
+/// AISDK re-exports and agent helpers (`LanguageModelRequest`, `tool!`, …).
+#[cfg(feature = "ai")]
+pub mod ai {
+    pub use sova_ai::prelude::*;
+    pub use sova_ai::aisdk;
+}
+
 #[cfg(feature = "storage")]
 pub use sova_storage::{
     AppStorage, BlobStore, LocalStore, MemoryStore, PutOpts, Storage, StorageError, StorageExt,

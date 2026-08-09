@@ -2,6 +2,7 @@
 export const pluginsNav = [
   { text: 'Catalog', link: '/plugins/' },
   { text: 'activity', link: '/plugins/activity' },
+  { text: 'ai', link: '/plugins/ai' },
   { text: 'auth', link: '/plugins/auth' },
   { text: 'compress', link: '/plugins/compress' },
   { text: 'cookies', link: '/plugins/cookies' },
@@ -42,6 +43,7 @@ collapsed: false,
 items: [
   { text: 'Catalog', link: '/plugins/' },
   { text: 'activity', link: '/plugins/activity' },
+  { text: 'ai', link: '/plugins/ai' },
   { text: 'auth', link: '/plugins/auth' },
   { text: 'compress', link: '/plugins/compress' },
   { text: 'cookies', link: '/plugins/cookies' },

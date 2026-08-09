@@ -1,0 +1,16 @@
+[package]
+name = "api_ai"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "api_ai"
+path = "src/main.rs"
+
+[dependencies]
+sova = { workspace = true, features = ["ai"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tracing = { workspace = true }
