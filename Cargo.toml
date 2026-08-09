@@ -40,7 +40,7 @@ sova-i18n = { version = "0.1.2", path = "plugins/sova-i18n" }
 sova-mail = { version = "0.1.1", path = "plugins/sova-mail" }
 sova-meta = { version = "0.1.2", path = "plugins/sova-meta", default-features = false }
 sova-notifications = { version = "0.1.4", path = "plugins/sova-notifications" }
-sova-observability = { version = "0.1.1", path = "plugins/sova-observability", default-features = false }
+sova-observability = { version = "0.1.2", path = "plugins/sova-observability", default-features = false }
 sova-openapi = { version = "0.1.1", path = "plugins/sova-openapi" }
 sova-passport = { version = "0.1.2", path = "plugins/sova-passport" }
 sova-quic = { version = "0.1.1", path = "plugins/sova-quic" }
