@@ -3,6 +3,10 @@
 All notable changes to the Sova workspace are recorded here.
 Versions refer to the published crates on [crates.io](https://crates.io/crates/sova).
 
+## 0.1.13 — 2026-08-09
+
+- `sova-core` **0.1.6**: release builds no longer warn on unread `AppInner::explain` (debug route map always available)
+
 ## 0.1.12 — 2026-08-09
 
 - New plugin **`sova-ai` 0.1.0**: AISDK wrapper — `app.install(Ai::…)`, `req.ai()`, stream SSE, `FakeAi` for tests
