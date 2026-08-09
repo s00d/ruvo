@@ -24,7 +24,7 @@ homepage = "https://s00d.github.io/sova/"
 [workspace.dependencies]
 # Workspace crates (version+path so `cargo publish` can resolve)
 sova-core = { version = "0.1.3", path = "crates/sova-core" }
-sova = { version = "0.1.7", path = "crates/sova" }
+sova = { version = "0.1.8", path = "crates/sova" }
 sova-testing = { version = "0.1.2", path = "crates/sova-testing", default-features = false }
 sova-activity = { version = "0.1.2", path = "plugins/sova-activity" }
 sova-auth = { version = "0.1.4", path = "plugins/sova-auth", default-features = false }
