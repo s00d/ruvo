@@ -103,10 +103,56 @@ App-author patterns (routes, validate, auth): [Getting started](/guide/getting-s
 
 ## Share (`Cell` / `Slot`)
 
-- `Cell<T: Clone>` — counters / flags
-- `Slot<T>` — ownership handoff for sockets/streams
+Cross-task sharing without inventing channels for every demo: two small handles in `sova-core` (re-exported as `sova::Cell` / `sova::Slot`).
 
-See [`examples/misc/share_demo`](https://github.com/s00d/sova/tree/master/examples/misc/share_demo).
+| Type | When | API |
+|------|------|-----|
+| **`Cell<T: Clone>`** | Counters, flags, config snapshots | `get` / `set` / `update` / `changed().await` |
+| **`Slot<T>`** | **One owned value** — TCP socket, stream, file handle (anything **not** `Clone`) | `put` / `try_take` / `take().await` |
+
+Both are cheap [`Clone`] handles (`Arc` inside). Wire once on the app, read from handlers via `req.state::<Cell<_>>()` / `req.state::<Slot<_>>()`:
+
+```rust
+use sova::{App, BackgroundService, Cell, Request, Slot, Shutdown};
+use tokio::net::{TcpListener, TcpStream};
+
+let inbox = Slot::<TcpStream>::new();
+let handed = Cell::new(0u64);
+app.state(inbox.clone());
+app.state(handed.clone());
+
+// BackgroundService accepts raw TCP and hands the stream to HTTP:
+// inbox.put(stream);
+
+app.post("/grab", |req: Request| async move {
+    let inbox = req.state::<Slot<TcpStream>>();
+    let stream = inbox.take().await; // waits until BackgroundService put()s a socket
+    // read/write `stream`, build Response
+    Ok(sova::Json(serde_json::json!({ "ok": true })))
+});
+```
+
+**Why `Slot`?** REST handlers and `BackgroundService` tasks do not share stack frames. You cannot return a live `TcpStream` from a background accept loop through JSON. `Slot` is a single-item mailbox: the service **`put`s** ownership, the handler **`take`s** it — no REST round-trip, no `Arc<Mutex<TcpStream>>` for one consumer.
+
+**`Slot` semantics:** at most one unread value; a new `put` **replaces** (drops) the previous one. Not a queue — use `tokio::sync::mpsc` if you need buffering.
+
+**`Cell` semantics:** last value wins; `changed().await` blocks until the next `set`/`update` (handy for “wait for background flag” without polling).
+
+Typical uses:
+
+- Raw TCP / UDP socket accepted in a service → HTTP handler upgrades or proxies it
+- QUIC datagram pipe, custom protocol bridge
+- Shared live counters visible on a status route (`rest_api`, `api_preset` use `Cell` for in-memory lists)
+
+Full runnable demo:
+
+```bash
+cargo run -p share_demo
+# terminal 2:  nc 127.0.0.1 9090
+# terminal 3:  curl -X POST http://127.0.0.1:3020/grab
+```
+
+See [`examples/misc/share_demo`](https://github.com/s00d/sova/tree/master/examples/misc/share_demo). For **many clients** and broadcast chat, prefer [`ws`](/plugins/ws) or [`sse`](/plugins/sse) instead of rolling your own fan-out.
 
 ## Logging
 

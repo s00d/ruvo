@@ -35,7 +35,7 @@ Authoritative import path for plugin crates: `sova_core::extend::…` (facade re
 | `request_id`, `RequestId`, `ensure_request_id` | Correlation | core MW; plugins read via extensions / `current_request_id` |
 | `Deadline`, `MaxBody`, `RequestTimeout`, `tighten_deadline` | Limits | http tests / clients |
 | `Bind` | Listen helpers | tests / advanced bind |
-| `Cell`, `Slot` | Share cells | rarely in plugins (mail has its own slot type) |
+| `Cell`, `Slot` | Cross-task share (`sova_core::share`) | `share_demo`, in-memory APIs |
 | `after`, `before`, `around`, `map_html` | Response MW helpers | available; plugins often custom-inject |
 | `RawHandler`, `IntoRawHandler` | Escape hatch handlers | niche |
 | `FormData`, `RequestBuilder`, `Upload`, `UploadRules` | Request building | uploads / tests |
@@ -54,3 +54,12 @@ Authoritative import path for plugin crates: `sova_core::extend::…` (facade re
 ### Unused ≠ forbidden
 
 `Cell` / `Slot` / `map_html` are part of the supported SDK even if few plugins use them today. Prefer documented helpers over inventing parallel utilities.
+
+### Share handles (`Cell` / `Slot`)
+
+Re-exported from the crate root (`sova::Cell`, `sova::Slot`) and `sova_core::extend`.
+
+- **`Cell<T: Clone>`** — shared value + `changed()` watch (counters, flags).
+- **`Slot<T>`** — single-item ownership transfer (`put` / `take`); ideal for handing a `TcpStream` from a `BackgroundService` to an HTTP handler.
+
+Guide: [Concepts → Share](/guide/concepts#share-cell-slot). Example: [`share_demo`](https://github.com/s00d/sova/tree/master/examples/misc/share_demo).

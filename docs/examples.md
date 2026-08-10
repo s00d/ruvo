@@ -325,6 +325,27 @@ async fn main() -> Result<()> {
 cargo run -p ws_chat
 ```
 
+## Cross-task socket handoff (`Cell` / `Slot`)
+
+When a background task accepts a **non-`Clone`** resource (TCP socket, stream) and an HTTP handler must take ownership — without REST serialization or `Arc<Mutex<_>>` for a single consumer — use core [`Cell`](/guide/concepts#share-cell-slot) and [`Slot`](/guide/concepts#share-cell-slot):
+
+```rust
+use sova::{App, BackgroundService, Cell, Json, Request, Response, Result, Slot};
+use tokio::net::{TcpListener, TcpStream};
+
+// BackgroundService binds 127.0.0.1:9090, inbox.put(stream) on accept.
+// POST /grab → inbox.take().await → read/write peer → JSON stats.
+// Cell<u64> counts successful handoffs for GET /.
+```
+
+```bash
+cargo run -p share_demo
+nc 127.0.0.1 9090          # connect raw TCP
+curl -X POST http://127.0.0.1:3020/grab
+```
+
+[`examples/misc/share_demo`](https://github.com/s00d/sova/tree/master/examples/misc/share_demo) — full source. For broadcast to many WebSocket clients, use [`ws_chat`](#websocket-room) instead.
+
 ## Cabinet (full product stack)
 
 Fortify, DB, mail, storage, tasks, notifications, OpenAPI, WS — modules + guarded `/cabinet`. Study [`examples/cabinet`](https://github.com/s00d/sova/tree/master/examples/cabinet) when presets alone are not enough.
@@ -364,5 +385,7 @@ Layout: `app.rs` (preset + Db + Fortify) → `modules/{feed,submit,item}` → `e
 | Web | `hackernews`, `templates`, `templates_i18n`, `upload`, `static_files`, `i18n`, `meta_blog` | Prefer `hackernews` / `App::web()` |
 | Basic | `hello`, `blog`, `auth`, `rest_api` | Older `App::new()` style |
 | Realtime | `ws_chat`, `sse`, `sse_feed` | |
+| Cross-task I/O | `share_demo` | `Cell` / `Slot` — socket handoff to HTTP ([concepts](/guide/concepts#share-cell-slot)) |
 | Jobs | `tasks` | |
+| Misc | `redis`, `redb`, `storage`, `fs_demo`, `bench_loaded` | |
 | Full app | `cabinet` | |

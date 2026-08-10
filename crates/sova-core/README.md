@@ -6,7 +6,7 @@
 
 # sova-core
 
-Core HTTP primitives for Sova (App, Router, Request, Response).
+Core HTTP primitives for Sova (App, Router, Request, Response). Includes [`Cell`](https://docs.rs/sova-core/latest/sova_core/struct.Cell.html) / [`Slot`](https://docs.rs/sova-core/latest/sova_core/struct.Slot.html) for cross-task socket and stream handoff.
 
 Part of [Sova](https://crates.io/crates/sova) — Express-like HTTP for Rust.
 
