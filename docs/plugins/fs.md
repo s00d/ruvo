@@ -11,7 +11,7 @@ editLink: false
 |--|--|
 | Crate | [`sova-fs`](https://docs.rs/sova-fs/0.1.0) `0.1.0` |
 | Plugin id | `fs` |
-| Category | Data |
+| Category | Storage |
 
 ## Install
 

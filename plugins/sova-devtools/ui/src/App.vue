@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Toolbar from "./components/Toolbar.vue";
 import TabNav from "./components/TabNav.vue";
+import TabSidebar from "./components/TabSidebar.vue";
 import Skeleton from "./components/Skeleton.vue";
 import RequestList from "./components/RequestList.vue";
 import { isTabId } from "./router";
@@ -112,8 +113,9 @@ onBeforeUnmount(() => {
         :class="dragging ? '!bg-[var(--dt-accent)]' : ''"
       />
     </div>
-    <TabNav />
+    <TabNav v-if="!store.useSidebarNav" />
     <div class="flex min-h-0 flex-1 flex-col md:flex-row">
+      <TabSidebar v-if="store.useSidebarNav" />
       <aside
         class="dt-scroll max-h-[40%] shrink-0 overflow-auto border-b border-[var(--dt-border)] md:max-h-none md:w-[min(32%,280px)] md:border-b-0 md:border-r"
       >

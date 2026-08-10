@@ -1,6 +1,12 @@
-/** Laravel-style double-submit token from readable `XSRF-TOKEN` cookie. */
+/** Laravel-style double-submit token from readable `XSRF-TOKEN` cookie or config API. */
 
 const XSRF_COOKIE = "XSRF-TOKEN";
+
+let cachedToken: string | null = null;
+
+export function setCsrfToken(token: string | null | undefined) {
+  cachedToken = token?.trim() ? token.trim() : null;
+}
 
 export function readXsrfToken(): string | null {
   if (typeof document === "undefined") return null;
@@ -20,7 +26,7 @@ export function readXsrfToken(): string | null {
 }
 
 export function csrfHeaders(): Record<string, string> {
-  const token = readXsrfToken();
+  const token = readXsrfToken() ?? cachedToken;
   if (!token) return {};
   return {
     "X-XSRF-TOKEN": token,
@@ -28,17 +34,20 @@ export function csrfHeaders(): Record<string, string> {
   };
 }
 
-/** Prime `XSRF-TOKEN` via a safe GET when the iframe loaded without one. */
+/** Prime CSRF via GET `/_devtools/config` (sets cookie + JSON token). */
 export async function ensureCsrfHeaders(
   api: string,
 ): Promise<Record<string, string>> {
-  let headers = csrfHeaders();
-  if (Object.keys(headers).length || !api) return headers;
+  if (!api) return csrfHeaders();
+  if (Object.keys(csrfHeaders()).length) return csrfHeaders();
   try {
-    await fetch(`${api}/config`, { credentials: "same-origin" });
+    const r = await fetch(`${api}/config`, { credentials: "same-origin" });
+    if (r.ok) {
+      const body = (await r.json()) as { csrf_token?: string };
+      if (body.csrf_token) setCsrfToken(body.csrf_token);
+    }
   } catch {
     /* ignore */
   }
-  headers = csrfHeaders();
-  return headers;
+  return csrfHeaders();
 }

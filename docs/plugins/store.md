@@ -11,7 +11,7 @@ editLink: false
 |--|--|
 | Crate | [`sova-store`](https://docs.rs/sova-store/0.1.6) `0.1.6` |
 | Plugin id | `store` |
-| Category | Data |
+| Category | Storage |
 
 ## Install
 

@@ -655,11 +655,12 @@ fn plugin_category(slug: &str) -> &'static str {
         "shield" | "cors" | "csrf" | "compress" | "cookies" | "rate-limit" | "idempotency"
         | "response-cache" | "static" | "env" | "acme" => "HTTP",
         "auth" | "passport" | "session" | "vld" => "Auth",
-        "db" | "redis" | "store" | "storage" | "fs" | "tasks" | "tasks-store" => "Data",
+        "db" | "store" | "storage" | "fs" => "Storage",
+        "redis" | "rabbit" | "tasks" | "tasks-store" => "Messaging",
         "templates" | "mail" | "i18n" | "meta" | "openapi" => "Content",
         "ws" | "sse" | "udp" | "quic" | "notifications" => "Realtime",
         "observability" | "activity" | "devtools" => "Ops",
-        "http" | "ai" | "graphql" | "grpc" | "rabbit" => "Integrations",
+        "http" | "ai" | "graphql" | "grpc" => "APIs",
         "cli" => "Tooling",
         _ => "Other",
     }
@@ -669,11 +670,12 @@ fn plugin_category_order() -> &'static [(&'static str, &'static str)] {
     &[
         ("HTTP", "HTTP & middleware"),
         ("Auth", "Auth & validation"),
-        ("Data", "Data & jobs"),
+        ("Storage", "Storage & SQL"),
+        ("Messaging", "Messaging & jobs"),
         ("Content", "Content & mail"),
         ("Realtime", "Realtime"),
         ("Ops", "Observability"),
-        ("Integrations", "Integrations"),
+        ("APIs", "Outbound APIs"),
         ("Tooling", "Tooling"),
         ("Other", "Other"),
     ]

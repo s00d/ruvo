@@ -52,13 +52,25 @@ cargo run -p devtools_demo
 
 ### Tabs
 
+In **New tab** / shell mode (`/_devtools/app`) tabs are grouped in the left sidebar:
+
+| Group | Tabs |
+|-------|------|
+| **Inspect** | Request, Timeline |
+| **Storage** | DB, Cache, Jobs |
+| **Messaging** | Redis, Rabbit |
+| **APIs** | HTTP, GraphQL, gRPC |
+| **Runtime** | Logs, Mail, Auth, Events, Memory, Config |
+
+The dock iframe keeps a compact horizontal tab bar (space-constrained).
+
 | Tab | Contents |
 |-----|----------|
 | **Request** | Method, path, status, duration, route / locale / CSRF / rate-limit / encoding |
 | **Timeline** | Recent requests (SSE); click to load a snapshot |
 | **DB** | SQL queries for the selected request (bindings redacted) |
 | **Cache** | AppStore / Cache ops (`sova.store`) + KV console |
-| **Redis** | Redis ops (`sova.redis`) + Redis console |
+| **Redis** | Redis ops (`sova.redis`) + Redis console (Messaging group) |
 | **Logs** | `tracing` / console lines (per-request + site-wide) |
 | **HTTP** | HTTP client (replay) + outbound client traces |
 | **Mail** | FakeMail / last messages (with `mail` feature) |
@@ -187,7 +199,7 @@ With the `console` feature (included in facade `devtools` / `devtools-console`),
 | **Events** tab | Emit custom event | `POST /_devtools/actions/events` |
 | **Auth** tab | Session list/set/del/regenerate | `POST /_devtools/actions/session` (`devtools-console-session`) |
 
-Console POST requests must include CSRF token + cookies when the app uses the web preset (`X-XSRF-TOKEN` from `XSRF-TOKEN` cookie). The DevTools UI handles this automatically.
+Console POST requests must include CSRF token + cookies when the app uses the web preset. The UI loads `csrf_token` from `GET /_devtools/config` on boot and sends `X-XSRF-TOKEN` on every console action.
 
 The **HTTP** tab combines a Postman-like client (method/path, query params, headers, body, response, history) with outbound trace lines for the selected request. Double-click a request in the timeline → prefill + navigate to HTTP.
 

@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
 import { fetchConfig, fetchLogs, fetchSnap, fetchTimeline } from "../api";
+import { ensureCsrfHeaders } from "../csrf";
 import {
   CHANNEL,
   loadPanelH,
@@ -16,8 +17,10 @@ import {
 import {
   isTabVisible,
   TAB_META,
+  buildVisibleTabGroups,
   visibleTabMeta,
   type DevToolsConfig,
+  type VisibleTabGroup,
 } from "../tabs";
 import type {
   CustomEvent,
@@ -118,6 +121,14 @@ export const useDevToolsStore = defineStore("devtools", () => {
 
   const visibleTabs = computed(() =>
     visibleTabMeta(devtoolsConfig.value, isPlayground.value),
+  );
+
+  const visibleTabGroups = computed((): VisibleTabGroup[] =>
+    buildVisibleTabGroups(devtoolsConfig.value, isPlayground.value),
+  );
+
+  const useSidebarNav = computed(
+    () => isShell.value || isPlayground.value,
   );
 
   const sqlTotalMs = computed(() => sumMs(current.value?.queries));
@@ -408,8 +419,11 @@ export const useDevToolsStore = defineStore("devtools", () => {
     connectSse();
     window.addEventListener("keydown", onKeydown);
     if (!playground.value) {
-      void loadConfig();
-      void refresh();
+      void (async () => {
+        await loadConfig();
+        await ensureCsrfHeaders(api.value);
+        await refresh();
+      })();
     }
   }
 
@@ -443,6 +457,8 @@ export const useDevToolsStore = defineStore("devtools", () => {
     statusBuckets,
     tabBadges,
     visibleTabs,
+    visibleTabGroups,
+    useSidebarNav,
     devtoolsConfig,
     loadConfig,
     toggle,

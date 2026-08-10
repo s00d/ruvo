@@ -11,7 +11,7 @@ editLink: false
 |--|--|
 | Crate | [`sova-tasks-store`](https://docs.rs/sova-tasks-store/0.1.4) `0.1.4` |
 | Plugin id | `tasks-store` |
-| Category | Data |
+| Category | Messaging |
 
 ## Install
 

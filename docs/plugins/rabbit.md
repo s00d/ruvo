@@ -11,7 +11,7 @@ editLink: false
 |--|--|
 | Crate | [`sova-rabbit`](https://docs.rs/sova-rabbit/0.1.1) `0.1.1` |
 | Plugin id | `rabbit` |
-| Category | Integrations |
+| Category | Messaging |
 
 ## Install
 

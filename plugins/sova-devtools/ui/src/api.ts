@@ -6,7 +6,7 @@ import type {
   RequestMeta,
   RequestSnapshot,
 } from "./types";
-import { ensureCsrfHeaders } from "./csrf";
+import { ensureCsrfHeaders, setCsrfToken } from "./csrf";
 
 const fetchInit: RequestInit = { credentials: "same-origin" };
 
@@ -29,7 +29,9 @@ export async function fetchTimeline(api: string): Promise<RequestMeta[]> {
 export async function fetchConfig(api: string): Promise<unknown> {
   const r = await fetch(`${api}/config`, fetchInit);
   if (!r.ok) return {};
-  return r.json();
+  const body = (await r.json()) as { csrf_token?: string };
+  if (body.csrf_token) setCsrfToken(body.csrf_token);
+  return body;
 }
 
 export async function fetchLogs(api: string): Promise<LogLine[]> {

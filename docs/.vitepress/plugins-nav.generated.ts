@@ -27,13 +27,19 @@ export const pluginsNav = [
     ],
   },
   {
-    text: 'Data & jobs',
+    text: 'Storage & SQL',
     items: [
     { text: 'db', link: '/plugins/db' },
     { text: 'fs', link: '/plugins/fs' },
-    { text: 'redis', link: '/plugins/redis' },
     { text: 'storage', link: '/plugins/storage' },
-    { text: 'store', link: '/plugins/store' },
+    { text: 'store', link: '/plugins/store' }
+    ],
+  },
+  {
+    text: 'Messaging & jobs',
+    items: [
+    { text: 'rabbit', link: '/plugins/rabbit' },
+    { text: 'redis', link: '/plugins/redis' },
     { text: 'tasks', link: '/plugins/tasks' },
     { text: 'tasks-store', link: '/plugins/tasks-store' }
     ],
@@ -67,13 +73,12 @@ export const pluginsNav = [
     ],
   },
   {
-    text: 'Integrations',
+    text: 'Outbound APIs',
     items: [
     { text: 'ai', link: '/plugins/ai' },
     { text: 'graphql', link: '/plugins/graphql' },
     { text: 'grpc', link: '/plugins/grpc' },
-    { text: 'http', link: '/plugins/http' },
-    { text: 'rabbit', link: '/plugins/rabbit' }
+    { text: 'http', link: '/plugins/http' }
     ],
   },
   {
@@ -114,14 +119,21 @@ export const pluginsSidebar = [
     ],
   },
   {
-    text: 'Data & jobs',
+    text: 'Storage & SQL',
     collapsed: false,
     items: [
     { text: 'db', link: '/plugins/db' },
     { text: 'fs', link: '/plugins/fs' },
-    { text: 'redis', link: '/plugins/redis' },
     { text: 'storage', link: '/plugins/storage' },
-    { text: 'store', link: '/plugins/store' },
+    { text: 'store', link: '/plugins/store' }
+    ],
+  },
+  {
+    text: 'Messaging & jobs',
+    collapsed: false,
+    items: [
+    { text: 'rabbit', link: '/plugins/rabbit' },
+    { text: 'redis', link: '/plugins/redis' },
     { text: 'tasks', link: '/plugins/tasks' },
     { text: 'tasks-store', link: '/plugins/tasks-store' }
     ],
@@ -158,14 +170,13 @@ export const pluginsSidebar = [
     ],
   },
   {
-    text: 'Integrations',
+    text: 'Outbound APIs',
     collapsed: false,
     items: [
     { text: 'ai', link: '/plugins/ai' },
     { text: 'graphql', link: '/plugins/graphql' },
     { text: 'grpc', link: '/plugins/grpc' },
-    { text: 'http', link: '/plugins/http' },
-    { text: 'rabbit', link: '/plugins/rabbit' }
+    { text: 'http', link: '/plugins/http' }
     ],
   },
   {

@@ -11,7 +11,7 @@ editLink: false
 |--|--|
 | Crate | [`sova-http`](https://docs.rs/sova-http/0.1.1) `0.1.1` |
 | Plugin id | `http` |
-| Category | Integrations |
+| Category | APIs |
 
 ## Install
 

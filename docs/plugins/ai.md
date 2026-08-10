@@ -11,7 +11,7 @@ editLink: false
 |--|--|
 | Crate | [`sova-ai`](https://docs.rs/sova-ai/0.1.0) `0.1.0` |
 | Plugin id | `ai` |
-| Category | Integrations |
+| Category | APIs |
 
 ## Install
 

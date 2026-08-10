@@ -23,6 +23,16 @@ import type { TabId } from "./types";
 export type DevToolsConfig = {
   features?: string[];
   mounts?: Record<string, unknown>;
+  /** Session CSRF token (when `devtools-csrf` / web preset). */
+  csrf_token?: string;
+};
+
+export type TabGroupId = "inspect" | "storage" | "messaging" | "apis" | "runtime";
+
+export type TabGroup = {
+  id: TabGroupId;
+  label: string;
+  tabIds: TabId[];
 };
 
 export type TabMeta = {
@@ -91,6 +101,41 @@ export const TAB_META: TabMeta[] = [
   { id: "memory", label: "Memory", icon: Cpu },
   { id: "config", label: "Config", icon: FileJson },
 ];
+
+/** Sidebar groups (shell / new-tab layout). Redis lives with brokers, not SQL/cache. */
+export const TAB_GROUPS: TabGroup[] = [
+  { id: "inspect", label: "Inspect", tabIds: ["request", "timeline"] },
+  { id: "storage", label: "Storage", tabIds: ["db", "cache", "jobs"] },
+  { id: "messaging", label: "Messaging", tabIds: ["redis", "rabbit"] },
+  { id: "apis", label: "APIs", tabIds: ["http", "graphql", "grpc"] },
+  {
+    id: "runtime",
+    label: "Runtime",
+    tabIds: ["logs", "mail", "auth", "events", "memory", "config"],
+  },
+];
+
+export type VisibleTabGroup = TabGroup & { tabs: TabMeta[] };
+
+export function buildVisibleTabGroups(
+  cfg: DevToolsConfig | null,
+  isPlayground: boolean,
+): VisibleTabGroup[] {
+  const visibleIds = new Set(
+    visibleTabMeta(cfg, isPlayground).map((t) => t.id),
+  );
+  const byId = Object.fromEntries(TAB_META.map((t) => [t.id, t])) as Record<
+    TabId,
+    TabMeta
+  >;
+  return TAB_GROUPS.map((g) => ({
+    ...g,
+    tabs: g.tabIds
+      .filter((id) => visibleIds.has(id))
+      .map((id) => byId[id])
+      .filter(Boolean),
+  })).filter((g) => g.tabs.length > 0);
+}
 
 /** Tab visibility is compile-time / mount only — never hides tabs when trace data is empty. */
 export function isTabVisible(

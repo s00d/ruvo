@@ -11,7 +11,7 @@ editLink: false
 |--|--|
 | Crate | [`sova-graphql`](https://docs.rs/sova-graphql/0.1.2) `0.1.2` |
 | Plugin id | `graphql` |
-| Category | Integrations |
+| Category | APIs |
 
 ## Install
 

@@ -11,7 +11,7 @@ editLink: false
 |--|--|
 | Crate | [`sova-grpc`](https://docs.rs/sova-grpc/0.1.2) `0.1.2` |
 | Plugin id | `grpc` |
-| Category | Integrations |
+| Category | APIs |
 
 ## Install
 

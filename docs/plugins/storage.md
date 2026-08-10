@@ -11,7 +11,7 @@ editLink: false
 |--|--|
 | Crate | [`sova-storage`](https://docs.rs/sova-storage/0.1.4) `0.1.4` |
 | Plugin id | `storage` |
-| Category | Data |
+| Category | Storage |
 
 ## Install
 

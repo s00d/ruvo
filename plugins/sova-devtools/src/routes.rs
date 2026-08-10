@@ -54,9 +54,21 @@ pub fn mount(app: &mut sova_core::App, hub: DevToolsHub) {
     });
 
     let hub_cfg = hub.clone();
-    app.get("/_devtools/config", move |_req: Request| {
+    app.get("/_devtools/config", move |req: Request| {
         let hub = hub_cfg.clone();
-        async move { Response::json(&hub.config_json()) }
+        async move {
+            let mut cfg = hub.config_json();
+            #[cfg(feature = "csrf")]
+            if let Some(obj) = cfg.as_object_mut() {
+                if let Some(t) = req.get::<sova_csrf::CsrfToken>() {
+                    obj.insert(
+                        "csrf_token".to_string(),
+                        serde_json::Value::String(t.0.clone()),
+                    );
+                }
+            }
+            Response::json(&cfg)
+        }
     });
 
     app.get("/_devtools/app", |_req: Request| async move {

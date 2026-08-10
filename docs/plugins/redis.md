@@ -11,7 +11,7 @@ editLink: false
 |--|--|
 | Crate | [`sova-redis`](https://docs.rs/sova-redis/0.1.4) `0.1.4` |
 | Plugin id | `redis` |
-| Category | Data |
+| Category | Messaging |
 
 ## Install
 
