@@ -160,11 +160,25 @@ See [`examples/misc/share_demo`](https://github.com/s00d/sova/tree/master/exampl
 
 | Control | Default |
 |---------|---------|
-| `RUST_LOG` | `sova=info,sova.store=debug,sova.tasks=debug,sova.redis=debug,sova.grpc=debug,sova.rabbit=debug,sova.graphql=debug` |
+| `RUST_LOG` | built-in filter below (override with env) |
 | `SOVA_LOG=off` | skip install |
 | `SOVA_LOG_STDOUT` | `1` |
 | `SOVA_LOG_FILE` | unset |
 | `SOVA_LOG_ROTATE` | `size` |
+
+When `RUST_LOG` is unset, Sova uses:
+
+```text
+sova=info,
+sova.store=debug,
+sova.tasks=debug,
+sova.redis=debug,
+sova.grpc=debug,
+sova.rabbit=debug,
+sova.graphql=debug
+```
+
+DevTools tabs (Cache, Jobs, Redis, GraphQL, gRPC, Rabbit) emit at DEBUG; the base app stays at INFO. Set `RUST_LOG=sova=info` to quiet plugin traces, or `RUST_LOG=debug` for everything.
 
 ## Stability
 
