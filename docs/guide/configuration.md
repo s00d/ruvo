@@ -74,6 +74,29 @@ max_connections = 32
 trust_proxy = true
 ```
 
+## Server limits
+
+Keys under `[server]` or `[<profile>.server]` map to `App` builder methods (human-readable sizes/durations):
+
+| Toml key | Builder | Default role |
+|----------|---------|--------------|
+| `max_body` | `max_body_size` | Request body cap (`"2mb"`, `"10 MiB"`) |
+| `max_connections` | `max_connections` | Concurrent TCP connections |
+| `max_upgraded_connections` | `max_upgraded_connections` | WebSocket / HTTP upgrade slots |
+| `max_concurrent_streams` | `max_concurrent_streams` | HTTP/2 multiplexing |
+| `max_headers` | `max_headers` | Header count limit |
+| `max_buf_size` | `max_buf_size` | Read buffer |
+| `request_timeout` | `request_timeout` | Overall handler budget |
+| `header_read_timeout` | `header_read_timeout` | Time to read headers |
+| `idle_timeout` | `idle_timeout` | Idle connection close |
+| `drain_timeout` | `drain_timeout` | Grace period on shutdown |
+| `keep_alive` | `keep_alive` | HTTP/1 keep-alive |
+| `trust_proxy` | `trust_proxy` | `X-Forwarded-Proto` / host behind proxy |
+
+Code-only knobs (not in toml today): `cli_mode`, `service_in_cli`, `reuseport` (feature `listen-reuseport`).
+
+See [Concepts → Server tuning](/guide/concepts#server-tuning) for upgrades, streaming, and `AppDispatch`.
+
 ## Profile
 
 `SOVA_PROFILE` → else `SOVA_ENV` → else `development` (debug) / `production` (release).

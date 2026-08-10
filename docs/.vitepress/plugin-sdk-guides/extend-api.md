@@ -52,3 +52,18 @@ Re-exported from the crate root (`sova::Cell`, `sova::Slot`) and `sova_core::ext
 - **`Slot<T>`** — single-item ownership transfer (`put` / `take`); ideal for handing a `TcpStream` from a `BackgroundService` to an HTTP handler.
 
 Guide: [Concepts → Share](/guide/concepts#share-cell-slot). Example: [`share_demo`](https://github.com/s00d/sova/tree/master/examples/misc/share_demo).
+
+### App-author core (guide)
+
+Features below are documented for application developers in [Concepts](/guide/concepts), not only in this SDK table:
+
+| Area | Concepts section |
+|------|------------------|
+| SSE / file streaming | [Streaming responses](/guide/concepts#streaming-responses) |
+| Upgrades / WS budget | [HTTP upgrades](/guide/concepts#http-upgrades-websocket) |
+| `EventBus` | [In-process events](/guide/concepts#in-process-events) |
+| Problem Details / Accept | [Errors & content negotiation](/guide/concepts#errors-content-negotiation) |
+| `MaxBody` / timeouts | [Route metadata & limits](/guide/concepts#route-metadata-limits) |
+| `AppDispatch` | [In-process dispatch](/guide/concepts#in-process-dispatch) |
+| Checks / CLI hooks | [Checks, audits & custom CLI](/guide/concepts#checks-audits-custom-cli) |
+| Server knobs | [Server tuning](/guide/concepts#server-tuning) |

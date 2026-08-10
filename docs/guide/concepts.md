@@ -154,6 +154,222 @@ cargo run -p share_demo
 
 See [`examples/misc/share_demo`](https://github.com/s00d/sova/tree/master/examples/misc/share_demo). For **many clients** and broadcast chat, prefer [`ws`](/plugins/ws) or [`sse`](/plugins/sse) instead of rolling your own fan-out.
 
+## Streaming responses
+
+Core supports buffered and **streaming** bodies without a plugin:
+
+| API | Use |
+|-----|-----|
+| `Response::sse(stream)` | Server-Sent Events (`text/event-stream`) |
+| `Response::stream(body)` | Arbitrary chunked body |
+| `Response::from_reader_stream(s)` | File/IO stream → HTTP |
+| `Response::file(path).await` | Safe local file (path traversal blocked) |
+| `Response::file_in(dir, rel).await` | File under a directory root |
+| `Response::download(path).await` | File + `Content-Disposition: attachment` |
+| `.attachment(filename)` | Force download name on any response |
+
+Minimal SSE (no `sova-sse` plugin):
+
+```rust
+use futures_util::stream;
+use sova::Response;
+
+Response::sse(stream::iter(vec![
+    Ok::<_, std::convert::Infallible>("hello\n".into()),
+    Ok("world\n".into()),
+]))
+```
+
+For named channels, replay, and keepalive comments use the [`sse`](/plugins/sse) plugin instead.
+
+## Request bodies & uploads
+
+| API | Notes |
+|-----|-------|
+| `req.bytes().await` | Buffer whole body (respects `body_limit`) |
+| `req.json::<T>().await` | JSON decode |
+| `req.form::<T>().await` | `application/x-www-form-urlencoded` |
+| `req.into_body_stream()` | Take body as `HttpBody` stream (once) |
+| `Upload` / `UploadRules` | Multipart fields + size/MIME limits ([getting started → uploads](/guide/getting-started#forms-flash-uploads)) |
+| `FormData` | Low-level multipart access |
+
+`Request::builder()` builds synthetic requests for tests and in-process dispatch.
+
+## HTTP upgrades (WebSocket, …)
+
+On upgrade requests the core stashes Hyper’s `OnUpgrade` on the request:
+
+```rust
+if let Some(up) = req.on_upgrade()? {
+    let (io, permit) = up.upgrade().await?;
+    // keep `permit` alive for the connection lifetime
+    tokio::spawn(async move { /* protocol on `io` */ });
+}
+```
+
+- `App::max_upgraded_connections(n)` — cap concurrent upgraded connections; budget exhausted → **503** + `Retry-After`.
+- Prefer normal routes + `req.on_upgrade()` over `Router::raw` (escape hatch for pre-parse access).
+
+Plugins [`ws`](/plugins/ws) wrap this; core owns the budget and permit.
+
+## In-process events
+
+Typed sync event bus (no Redis required for same-process fan-out):
+
+```rust
+use sova::{Event, EventBus};
+
+#[derive(Clone)]
+struct OrderPaid { id: u64 }
+
+impl Event for OrderPaid {
+    fn name(&self) -> &'static str { "order.paid" }
+}
+
+let bus = app.events();
+bus.listen::<OrderPaid, _>(|e| tracing::info!(id = e.id, "paid"));
+// later, in a handler:
+bus.dispatch(OrderPaid { id: 42 });
+```
+
+Listeners run **synchronously** in the dispatching task — spawn from the listener for async work. Plugins (mail, auth, tasks, …) publish their own event types; see [Plugin SDK → Events](/api/plugin-sdk/events).
+
+## Errors & content negotiation
+
+| Preset / context | Error shape |
+|------------------|-------------|
+| `App::api()` | `application/problem+json` ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)) |
+| `App::web()` | Negotiates via `Accept`: HTML error page → Problem Details → plain text |
+| Router 404/405 | Same Accept-aware builder |
+
+Helpers: `problem_response`, `error_to_problem`, `problem_with_errors` (validation arrays). Catchers and `Error::custom(status, msg)` integrate through `IntoResponse`.
+
+Web HTML errors: `html_error_page`, `negotiate_error_format`, `error_response_for_accept` (also used internally for 404/405).
+
+## Route metadata & limits
+
+Attach per-route or router-default values with `.with(...)`:
+
+```rust
+use sova::extend::{MaxBody, RequestTimeout};
+
+router
+    .post("/upload", handler)
+    .with(MaxBody::mib(32))
+    .with(RequestTimeout::from_secs(120));
+```
+
+| Type | Effect |
+|------|--------|
+| `MaxBody` | Override body size for this route |
+| `RequestTimeout` | Per-route handler budget |
+| `Deadline` | Absolute instant (advanced) |
+
+After match, handlers read overlay metadata via `req.route_meta::<T>()` or capture types `MatchedRoute` / `MatchedRouteCapture` (pattern + params). Plugins use `RouteValue` + `MetaMap` for OpenAPI, VLD, meta tags — see [Plugin SDK → Routes](/api/plugin-sdk/routes).
+
+Human sizes/durations in toml and builders: `parse_bytes("10mb")`, `parse_duration("7d")` (`sova_core::extend`).
+
+## In-process dispatch
+
+`AppDispatch` replays HTTP through the compiled router **inside** the running process (no TCP):
+
+```rust
+app.state(AppDispatch::default());
+// after listen — DevTools console, integration tests:
+// dispatch.try_dispatch(req) → same stack as a real hit
+```
+
+Required for DevTools HTTP replay ([devtools guide](/guide/devtools)). `None` before the server starts.
+
+## Checks, audits & custom CLI
+
+| Hook | When it runs |
+|------|----------------|
+| `register_check(name, f)` | `GET /ready`, `cargo run -- check` (Ready) |
+| `register_audit(name, f)` | `cargo run -- check` only (Audit) |
+| `register_cli(name, f)` | Custom subcommands (`migrate`, `seed`, …) |
+
+`app.with_probes()` registers `/healthz` + `/ready`. `CheckKind::Ready` vs `Audit` filters which hooks run.
+
+## Request context helpers
+
+| Symbol | Role |
+|--------|------|
+| `ClientAddr` | Peer socket (`req.get::<ClientAddr>()`) |
+| `RateLimitIdentity` | Stable key for rate-limit plugins |
+| `RequestId` / `current_request_id()` | Correlation id (middleware + tracing) |
+| `referer_or(req, fallback)` | Safe back-link for redirects |
+| `req.scheme()` / `host()` / `is_secure()` | URL parts (`trust_proxy` affects scheme) |
+| `req.deadline_remaining()` | Time left under route/app timeout |
+
+Skip noisy paths in access logs: `logger_skip_path`, `logger_skip_paths`, `logger_should_skip`.
+
+## Middleware building blocks
+
+Beyond hand-written `(req, next)`:
+
+| Helper | Role |
+|--------|------|
+| `before(name, f)` | Run before handler only |
+| `after(name, f)` | Mutate response after handler |
+| `around(name, before, after)` | Both |
+| `map_html(name, f)` | Transform buffered HTML responses |
+| `named(name, mw)` | Label for `routes` / `explain()` output |
+
+HTML injection utilities (`inject_head`, `inject_body_end`, `HtmlInject`, …) live in `sova::html` / `extend` — used by [meta](/plugins/meta) and [devtools](/plugins/devtools).
+
+## Log event hooks
+
+Plugins and DevTools can observe every `tracing` event:
+
+```rust
+sova::add_log_event_hook(Arc::new(|rec: LogRecord| {
+    // rec.target, rec.level, rec.fields, …
+}));
+```
+
+`set_log_event_hook` replaces all hooks; `add_log_event_hook` stacks. DevTools uses this for the Logs / Cache / Jobs tabs.
+
+## DevTools config registry
+
+Plugins push runtime mount info for the DevTools Config tab:
+
+```rust
+app.state(DevToolsConfigRegistry::default());
+// in plugin install:
+registry.set("graphql", json!({ "api": "/graphql", "graphiql": "/graphiql" }));
+```
+
+Merged into `GET /_devtools/config` → `mounts` object.
+
+## Server tuning
+
+Set in code or `[server]` / `[production.server]` in `sova.toml` ([Configuration](/guide/configuration#server-limits)):
+
+| Knob | Purpose |
+|------|---------|
+| `max_body` / `max_body_size` | Default request body cap |
+| `max_connections` | Concurrent TCP accepts |
+| `max_upgraded_connections` | WebSocket / upgrade budget |
+| `max_concurrent_streams` | HTTP/2 stream limit |
+| `request_timeout` | Handler + read budget |
+| `idle_timeout` / `drain_timeout` | Connection lifecycle |
+| `trust_proxy` | Honor `X-Forwarded-*` for scheme/host |
+| `keep_alive` | HTTP/1 keep-alive |
+
+TLS: `App::tls(config)` / `BoundApp::serve()` with `sova` feature `tls`. `BoundApp` = `app.bind(addr).http(...).run()`.
+
+Debug route map: `app.explain()` or `cargo run -- routes`.
+
+## Testing without HTTP
+
+```rust
+let server = app.build()?;
+let res = server.handle_request(Method::GET, "/ping", "").await;
+```
+
+Integration tests: `TestClient` + `ResponseAssert` ([Plugin SDK → Testing](/api/plugin-sdk/testing)). Prefer `Server::handle` over `App::handle` (avoids recompile per request).
+
 ## Logging
 
 `listen` / `run` install a default `tracing` subscriber (`LogConfig::from_env`).

@@ -384,7 +384,7 @@ Layout: `app.rs` (preset + Db + Fortify) → `modules/{feed,submit,item}` → `e
 | API | `api_preset`, `api_validated`, `crud`, `api_jwt`, `api_oauth`, `api_auth` | Prefer `api_preset` as the template |
 | Web | `hackernews`, `templates`, `templates_i18n`, `upload`, `static_files`, `i18n`, `meta_blog` | Prefer `hackernews` / `App::web()` |
 | Basic | `hello`, `blog`, `auth`, `rest_api` | Older `App::new()` style |
-| Realtime | `ws_chat`, `sse`, `sse_feed` | |
+| Realtime | `ws_chat`, `sse`, `sse_feed` | Core also has `Response::sse` — see [concepts](/guide/concepts#streaming-responses) |
 | Cross-task I/O | `share_demo` | `Cell` / `Slot` — socket handoff to HTTP ([concepts](/guide/concepts#share-cell-slot)) |
 | Jobs | `tasks` | |
 | Misc | `redis`, `redb`, `storage`, `fs_demo`, `bench_loaded` | |

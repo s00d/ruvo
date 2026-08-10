@@ -522,7 +522,7 @@ fn generate_plugin_sdk(root: &Path, w: &mut Writer) -> Result<(), String> {
         "---\ntitle: Plugin SDK\neditLink: false\n---\n\n# Plugin SDK\n\n\
 ![Plugin SDK](/banners/plugin-sdk.svg)\n\n\
 Write `sova-*` plugins against `sova_core::extend` and the [`Plugin`](/api/plugin-sdk/plugin-trait) trait.\n\
-App users: use the [Plugins](/plugins/) catalog instead.\n\n\
+App users: use the [Plugins](/plugins/) catalog and [Concepts](/guide/concepts) (core API: streaming, upgrades, events, limits, …).\n\n\
 How pages are built: guides in [`plugin-sdk-guides`](https://github.com/s00d/sova/tree/master/docs/.vitepress/plugin-sdk-guides) → `sova-docs-gen` → `docs/api/plugin-sdk*`.\n\n\
 ## Pages\n\n\
 <!-- generated:plugin-sdk-toc -->\n\
