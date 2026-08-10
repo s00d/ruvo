@@ -1,20 +1,23 @@
 //! Uniform JSON snapshot helpers (insta).
 
 /// Assert JSON snapshot with common redactions (`id`, timestamps).
+///
+/// Uses `$crate::insta` so callers of this crate (or the facade re-export) do not
+/// need a direct `insta` dependency.
 #[macro_export]
 macro_rules! assert_json_snapshot {
     ($name:expr, $value:expr) => {{
-        let mut settings = ::insta::Settings::clone_current();
+        let mut settings = $crate::insta::Settings::clone_current();
         $crate::with_json_redactions(&mut settings);
         settings.bind(|| {
-            ::insta::assert_json_snapshot!($name, $value);
+            $crate::insta::assert_json_snapshot!($name, $value);
         });
     }};
     ($value:expr) => {{
-        let mut settings = ::insta::Settings::clone_current();
+        let mut settings = $crate::insta::Settings::clone_current();
         $crate::with_json_redactions(&mut settings);
         settings.bind(|| {
-            ::insta::assert_json_snapshot!($value);
+            $crate::insta::assert_json_snapshot!($value);
         });
     }};
 }

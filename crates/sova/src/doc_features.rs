@@ -99,6 +99,6 @@
 /// Feature `devtools-csrf`: CSRF presence soft-hook.
 /// Feature `devtools-passport`: Passport `Authenticated` soft-hook.
 /// Feature `devtools-rate-limit`: rate-limit header soft-hook marker.
-/// Feature `testing`: Expose `App::run_startup` / `run_shutdown` for tests.
+/// Feature `testing`: `TestClient` / `ResponseAssert` + `sova-testing` harness (`TestApp`, sqlite, snapshots).
 /// Feature `listen-reuseport`: `SO_REUSEPORT` for graceful `cargo sovax dev`.
 pub(crate) fn _doc_features_anchor() {}

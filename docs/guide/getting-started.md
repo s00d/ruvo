@@ -344,7 +344,7 @@ Use a bare app only when you are **not** shipping a web/API product stack (tiny 
 
 ## Testing
 
-Enable facade feature `testing` (re-exports `TestClient`). Prefer **`TestClient::boot` / `tracked`** — both run `on_startup` (Db connect, etc.):
+Enable facade feature `testing` — `TestClient` / `ResponseAssert` **and** the harness (`TestApp`, sqlite tempfile, `assert_json_snapshot!`). Prefer **`TestClient::boot` / `tracked`** — both run `on_startup` (Db connect, etc.):
 
 ```rust
 use sova::TestClient;
@@ -357,7 +357,7 @@ async fn home_ok() {
 }
 ```
 
-`sova-testing::TestApp` also runs startup before returning the app.
+`TestApp` (same feature) also runs startup before returning the app. Plugin crates that avoid the facade can still use `sova-core` + `sova-testing` directly.
 
 Seed CLI accepts `Result<(), E: Into<Error>>` — facade `Result` / `AppError` works with `?`.
 

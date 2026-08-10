@@ -13,7 +13,7 @@ flowchart LR
 
 ## Enable the APIs
 
-Feature `testing` on `sova-core` (re-exported by facade `sova`):
+Feature `testing` on the facade pulls in core `TestClient` **and** the `sova-testing` harness (sqlite `TestApp`, snapshots). Plugin crates can keep depending on `sova-core` / `sova-testing` directly.
 
 ```toml
 # Plugin crate
@@ -21,7 +21,7 @@ Feature `testing` on `sova-core` (re-exported by facade `sova`):
 sova-core = { version = "0.1", features = ["testing"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
-# App using the facade
+# App using the facade — one feature, full surface
 [dev-dependencies]
 sova = { version = "0.1", features = ["testing"] }
 ```
@@ -33,8 +33,10 @@ What you get:
 | `TestClient` | In-process HTTP + cookie jar |
 | `ClientRequest` | Builder: `.header` / `.json` / `.form` / `.body` → `.await` |
 | `ResponseAssert` | `assert_status`, `json`, `json_value` |
+| `TestApp` / `SqliteTestDb` | Temp sqlite + migrator + `Db` install |
+| `assert_json_snapshot!` | insta + common id/timestamp redactions |
 
-Optional harness crate [`sova-testing`](https://docs.rs/sova-testing): sqlite tempfile, migrator, `TestApp`, JSON snapshots.
+Same types also live under `sova::testing::*`. The standalone crate [`sova-testing`](https://docs.rs/sova-testing) remains for plugins that must not depend on the facade.
 
 ---
 
@@ -168,19 +170,23 @@ In-tree helpers:
 
 ---
 
-## DB plugins: `sova-testing::TestApp`
+## DB plugins: `TestApp`
 
 Temp sqlite file + migrator + `Db` install + `run_startup`, without racing on a shared `DATABASE_URL` across parallel tests.
 
 ```toml
+# Apps
 [dev-dependencies]
-sova-testing = { version = "0.1", features = ["sqlite"] } # match crate features in Cargo.toml
+sova = { version = "0.1", features = ["testing"] }
+
+# Plugin crates (no facade)
+[dev-dependencies]
+sova-testing = { version = "0.1", features = ["sqlite"] }
 sova-core = { version = "0.1", features = ["testing"] }
 ```
 
 ```rust
-use sova_core::{Request, Response, ResponseAssert, Router, TestClient};
-use sova_testing::TestApp;
+use sova::{Request, Response, ResponseAssert, Router, TestApp, TestClient};
 
 #[tokio::test]
 async fn guarded_route() {
@@ -210,7 +216,7 @@ Keep `_db` alive for the whole test so the tempfile is not deleted early.
 JSON snapshots (insta + common id/timestamp redactions):
 
 ```rust
-use sova_testing::assert_json_snapshot;
+use sova::assert_json_snapshot;
 
 let res = c.get("/api/items").await;
 res.assert_status(200);
@@ -272,7 +278,7 @@ Keep rustdoc examples `ignore` (or feature-gated) when they need a runtime; this
 
 ## Checklist
 
-1. `features = ["testing"]` on `sova-core` / `sova`  
+1. `features = ["testing"]` on `sova` (apps) or `sova-core` (+ optional `sova-testing` for plugins)  
 2. Install plugins in production order  
 3. Prefer `boot`/`tracked` if startup matters; `new` for pure in-memory  
 4. Assert with `ResponseAssert`; use `body_bytes` / headers when needed  

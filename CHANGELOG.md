@@ -3,6 +3,11 @@
 All notable changes to the Sova workspace are recorded here.
 Versions refer to the published crates on [crates.io](https://crates.io/crates/sova).
 
+## 0.1.25 — 2026-08-10
+
+- Facade feature `testing` pulls in `sova-testing` (sqlite `TestApp`, snapshots) + `db-sqlite`; re-exports `TestApp`, `SqliteTestDb`, `assert_json_snapshot!`, module `sova::testing`
+- `sova-testing` **0.1.3**: `assert_json_snapshot!` resolves insta via `$crate` (works through facade re-export without a direct `insta` dep)
+
 ## 0.1.15 — 2026-08-09
 
 - `sova-devtools` **0.1.2**: HTML responses get `Cache-Control: no-store` (+ bridge `pageshow` reload) so browser Back is not silent bfcache

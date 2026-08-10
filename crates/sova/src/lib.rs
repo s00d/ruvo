@@ -31,7 +31,26 @@ pub mod extract {
 }
 
 #[cfg(feature = "testing")]
-pub use sova_core::{ResponseAssert, TestClient};
+pub use sova_core::{ClientRequest, ResponseAssert, TestClient};
+#[cfg(feature = "testing")]
+pub use sova_testing::{
+    apply_migrations, with_json_redactions, SqliteTestDb, TestApp, TestAppBuilder,
+};
+/// JSON snapshot helper (insta + common redactions). Prefer this over a bare `insta` call.
+#[cfg(feature = "testing")]
+pub use sova_testing::assert_json_snapshot;
+
+/// Integration-test surface: [`TestClient`], [`TestApp`], sqlite tempfile, snapshots.
+///
+/// Enable with `sova = { features = ["testing"] }` — no separate `sova-testing` dep needed
+/// for app crates. Plugin authors may still depend on `sova-core` / `sova-testing` directly.
+#[cfg(feature = "testing")]
+pub mod testing {
+    pub use sova_core::{ClientRequest, ResponseAssert, TestClient};
+    pub use sova_testing::{
+        apply_migrations, with_json_redactions, SqliteTestDb, TestApp, TestAppBuilder,
+    };
+}
 
 #[cfg(feature = "tls")]
 pub use sova_core::Tls;
