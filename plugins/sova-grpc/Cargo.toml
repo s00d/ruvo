@@ -1,0 +1,38 @@
+[package]
+name = "sova-grpc"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+description = "Connect-JSON unary RPC client (+ optional server) for Sova"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/sova-grpc"
+readme = "README.md"
+keywords = ["http", "web", "framework", "async", "grpc"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[features]
+default = ["client"]
+client = ["dep:reqwest"]
+server = []
+
+[dependencies]
+sova-core = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+bytes = { workspace = true }
+http = { workspace = true }
+reqwest = { workspace = true, optional = true, default-features = false, features = ["json", "rustls-tls"] }
+tokio = { workspace = true, features = ["net", "io-util", "sync", "macros"] }
+hyper = { workspace = true, features = ["server", "http1"] }
+http-body-util = { workspace = true }
+hyper-util = { workspace = true, features = ["tokio"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+sova-core = { workspace = true, features = ["testing"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }

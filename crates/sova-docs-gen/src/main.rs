@@ -622,6 +622,9 @@ fn preferred_install_feature(slug: &str, feats: &[String]) -> Option<String> {
         "sse" => &["sse-feed"],
         "quic" => &["quic-udp"],
         "ai" => &["ai-openai", "ai"],
+        "graphql" => &["graphql", "graphql-server"],
+        "grpc" => &["grpc"],
+        "rabbit" => &["rabbit"],
         "auth" => &["auth"],
         "passport" => &["passport"],
         "db" => &["db"],
@@ -662,7 +665,7 @@ fn plugin_category(slug: &str) -> &'static str {
         "templates" | "mail" | "i18n" | "meta" | "openapi" => "Content",
         "ws" | "sse" | "udp" | "quic" | "notifications" => "Realtime",
         "observability" | "activity" | "devtools" => "Ops",
-        "http" | "ai" => "Integrations",
+        "http" | "ai" | "graphql" | "grpc" | "rabbit" => "Integrations",
         "cli" => "Tooling",
         _ => "Other",
     }
@@ -812,6 +815,8 @@ fn linkify_handwritten_docs(w: &mut Writer) -> Result<(), String> {
 fn plugin_examples(slug: &str) -> Option<&'static [&'static str]> {
     Some(match slug {
         "ai" => &["examples/api/api_ai"],
+        "graphql" => &["examples/api/api_graphql"],
+        "grpc" => &["examples/api/api_grpc"],
         "auth" => &[
             "examples/cabinet",
             "examples/web/hackernews",
@@ -873,8 +878,11 @@ fn plugin_related(slug: &str) -> Option<&'static [&'static str]> {
         "udp" => &["quic"],
         "quic" => &["udp", "acme"],
         "acme" => &["quic"],
-        "http" => &["ai"],
+        "http" => &["ai", "graphql", "grpc"],
         "ai" => &["http", "sse"],
+        "graphql" => &["http", "grpc"],
+        "grpc" => &["http", "graphql"],
+        "rabbit" => &["redis", "tasks"],
         "observability" => &["activity"],
         "activity" => &["auth", "observability"],
         "shield" => &["cors", "csrf"],

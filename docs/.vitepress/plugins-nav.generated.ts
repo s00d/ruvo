@@ -70,7 +70,10 @@ export const pluginsNav = [
     text: 'Integrations',
     items: [
     { text: 'ai', link: '/plugins/ai' },
-    { text: 'http', link: '/plugins/http' }
+    { text: 'graphql', link: '/plugins/graphql' },
+    { text: 'grpc', link: '/plugins/grpc' },
+    { text: 'http', link: '/plugins/http' },
+    { text: 'rabbit', link: '/plugins/rabbit' }
     ],
   },
   {
@@ -159,7 +162,10 @@ export const pluginsSidebar = [
     collapsed: false,
     items: [
     { text: 'ai', link: '/plugins/ai' },
-    { text: 'http', link: '/plugins/http' }
+    { text: 'graphql', link: '/plugins/graphql' },
+    { text: 'grpc', link: '/plugins/grpc' },
+    { text: 'http', link: '/plugins/http' },
+    { text: 'rabbit', link: '/plugins/rabbit' }
     ],
   },
   {

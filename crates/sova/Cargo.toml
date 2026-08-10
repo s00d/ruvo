@@ -1,6 +1,6 @@
 [package]
 name = "sova"
-version = "0.1.25"
+version = "0.1.26"
 authors.workspace = true
 edition.workspace = true
 description = "Express-like HTTP framework for Rust"
@@ -150,7 +150,13 @@ observability = ["dep:sova-observability", "sova-observability/prometheus"]
 observability-otel = ["observability", "sova-observability/otel"]
 observability-elasticsearch = ["observability", "sova-observability/elasticsearch"]
 redis = ["dep:sova-redis"]
-# TestClient + ResponseAssert + harness (TestApp / sqlite / snapshots).
+# Outbound GraphQL client (+ optional server via plugin feature).
+graphql = ["dep:sova-graphql"]
+graphql-server = ["graphql", "sova-graphql/server"]
+# Connect-JSON unary RPC client (+ optional server bind).
+grpc = ["dep:sova-grpc"]
+# Raw AMQP / RabbitMQ broker.
+rabbit = ["dep:sova-rabbit"]
 testing = [
     "sova-core/testing",
     "dep:sova-testing",
@@ -201,6 +207,9 @@ sova-activity = { workspace = true, optional = true }
 sova-notifications = { workspace = true, optional = true }
 sova-meta = { workspace = true, optional = true }
 sova-observability = { workspace = true, optional = true }
+sova-graphql = { workspace = true, optional = true }
+sova-grpc = { workspace = true, optional = true }
+sova-rabbit = { workspace = true, optional = true }
 vld = { workspace = true, optional = true, default-features = true, features = ["serialize"] }
 serde = { workspace = true }
 serde_json = { workspace = true }

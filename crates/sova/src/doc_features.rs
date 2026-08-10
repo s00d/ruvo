@@ -100,5 +100,9 @@
 /// Feature `devtools-passport`: Passport `Authenticated` soft-hook.
 /// Feature `devtools-rate-limit`: rate-limit header soft-hook marker.
 /// Feature `testing`: `TestClient` / `ResponseAssert` + `sova-testing` harness (`TestApp`, sqlite, snapshots).
+/// Feature `graphql`: Outbound GraphQL client (`req.graphql()`, FakeGraphql).
+/// Feature `graphql-server`: `graphql` + async-graphql schema mount / GraphiQL.
+/// Feature `grpc`: Connect-JSON unary RPC client (`req.grpc()`, FakeGrpc).
+/// Feature `rabbit`: RabbitMQ / AMQP broker (`req.rabbit()`, FakeBroker).
 /// Feature `listen-reuseport`: `SO_REUSEPORT` for graceful `cargo sovax dev`.
 pub(crate) fn _doc_features_anchor() {}

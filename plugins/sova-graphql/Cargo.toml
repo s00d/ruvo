@@ -1,0 +1,37 @@
+[package]
+name = "sova-graphql"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+description = "GraphQL client (+ optional schema mount) for Sova"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/sova-graphql"
+readme = "README.md"
+keywords = ["http", "web", "framework", "async", "graphql"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[features]
+default = ["client"]
+# Outbound GraphQL client (primary).
+client = ["dep:reqwest"]
+# Mount async-graphql schema as HTTP endpoint (optional server).
+server = ["dep:async-graphql"]
+
+[dependencies]
+sova-core = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+bytes = { workspace = true }
+http = { workspace = true }
+reqwest = { workspace = true, optional = true, default-features = false, features = ["json", "rustls-tls"] }
+async-graphql = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+sova-core = { workspace = true, features = ["testing"] }
+serde_json = { workspace = true }
+async-graphql = { workspace = true }

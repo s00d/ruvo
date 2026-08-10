@@ -266,6 +266,23 @@ pub use sova_mail::{
 #[cfg(feature = "ai")]
 pub use sova_ai::{Ai, AiBound, AiClient, AiError, AiExt, FakeAi, SharedModel};
 
+#[cfg(feature = "graphql")]
+pub use sova_graphql::{
+    FakeGraphql, GraphQl, GraphQlBound, GraphQlClient, GraphQlExt, GraphqlCall, GraphqlError,
+    GraphqlResponse,
+};
+
+#[cfg(feature = "grpc")]
+pub use sova_grpc::{
+    FakeGrpc, Grpc, GrpcBound, GrpcClient, GrpcError, GrpcExt, GrpcCall,
+};
+
+#[cfg(feature = "rabbit")]
+pub use sova_rabbit::{
+    Broker, Delivery, Exchange, ExchangeKind, FakeBroker, QueueOpts, Rabbit, RabbitBound,
+    RabbitError, RabbitExt, SharedBroker,
+};
+
 /// AISDK re-exports and agent helpers (`LanguageModelRequest`, `tool!`, …).
 #[cfg(feature = "ai")]
 pub mod ai {

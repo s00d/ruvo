@@ -3,6 +3,14 @@
 All notable changes to the Sova workspace are recorded here.
 Versions refer to the published crates on [crates.io](https://crates.io/crates/sova).
 
+## 0.1.26 — 2026-08-10
+
+- New plugins (client-first): **`sova-graphql`**, **`sova-grpc`**, **`sova-rabbit`**
+  - `graphql` / `graphql-server`: outbound GraphQL + FakeGraphql; optional schema mount
+  - `grpc`: Connect-JSON unary client + FakeGrpc; optional server mount/bind
+  - `rabbit`: raw AMQP (lapin) + FakeBroker (publish/consume, ack/nack, DLQ)
+- Examples: `examples/api/api_graphql`, `examples/api/api_grpc`
+
 ## 0.1.25 — 2026-08-10
 
 - Facade feature `testing` pulls in `sova-testing` (sqlite `TestApp`, snapshots) + `db-sqlite`; re-exports `TestApp`, `SqliteTestDb`, `assert_json_snapshot!`, module `sova::testing`

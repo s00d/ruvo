@@ -65,4 +65,4 @@ SSRF guards / named configs — see crate docs. Cabinet: `OutboundHttp` + fetch 
 
 ## Related
 
-[`ai`](/plugins/ai)
+[`ai`](/plugins/ai) · [`graphql`](/plugins/graphql) · [`grpc`](/plugins/grpc)

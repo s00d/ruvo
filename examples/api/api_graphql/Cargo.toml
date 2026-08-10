@@ -1,0 +1,14 @@
+[package]
+name = "api_graphql"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "api_graphql"
+path = "src/main.rs"
+
+[dependencies]
+sova = { workspace = true, features = ["graphql"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+serde_json = { workspace = true }
