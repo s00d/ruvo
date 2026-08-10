@@ -1,9 +1,9 @@
 //! Identity keys + login throttle presets.
 
 use http::Method;
+use serde_json::json;
 use sova_core::{App, Plugin, RateLimitIdentity, Request, Response, Router, TestClient};
 use sova_rate_limit::{RateLimit, RateLimitKey};
-use serde_json::json;
 use std::time::Duration;
 
 #[tokio::test]
@@ -53,7 +53,12 @@ async fn login_preset_keys_by_email() {
             .header("content-type", "application/json")
             .json(&json!({ "email": "ada@example.com", "password": "x" }))
             .await;
-        assert_eq!(res.status_code().as_u16(), 200, "body={}", String::from_utf8_lossy(res.body_bytes().unwrap_or_default()));
+        assert_eq!(
+            res.status_code().as_u16(),
+            200,
+            "body={}",
+            String::from_utf8_lossy(res.body_bytes().unwrap_or_default())
+        );
     }
     let blocked = c
         .post("/login")

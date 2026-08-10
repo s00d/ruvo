@@ -5,8 +5,8 @@
 //! curl -H 'x-api-key: demo' http://127.0.0.1:3000/me
 //! ```
 
-use sova::{App, Auth, Json, Passport, PassportExt, Request, Result};
 use serde::Serialize;
+use sova::{App, Auth, Json, Passport, PassportExt, Request, Result};
 use std::collections::HashMap;
 use std::sync::Arc;
 

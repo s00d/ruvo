@@ -85,11 +85,7 @@ impl Plugin for Meta {
         // Unset-fill from `[meta]` — explicit builder values win.
         if let Some(doc) = app.config_doc() {
             if let Some(section) = doc.section("meta") {
-                if section
-                    .get("robots")
-                    .and_then(|v| v.as_str())
-                    == Some("block-all")
-                {
+                if section.get("robots").and_then(|v| v.as_str()) == Some("block-all") {
                     self.defaults.robots_block_all = true;
                 }
                 if self.defaults.public_url.is_none() {
@@ -112,11 +108,7 @@ impl Plugin for Meta {
                         self.defaults.default_image = Some(v.to_string());
                     }
                 }
-                if section
-                    .get("check")
-                    .and_then(|v| v.as_str())
-                    == Some("soft")
-                {
+                if section.get("check").and_then(|v| v.as_str()) == Some("soft") {
                     self.defaults.check_strict = false;
                 }
             }

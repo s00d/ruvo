@@ -68,13 +68,11 @@ pub fn mount(app: &mut sova_core::App, hub: DevToolsHub) {
     });
 
     app.get("/_devtools/assets/app.js", |_req: Request| async move {
-        Response::text(APP_JS)
-            .header("content-type", "application/javascript; charset=utf-8")
+        Response::text(APP_JS).header("content-type", "application/javascript; charset=utf-8")
     });
 
     app.get("/_devtools/assets/bridge.js", |_req: Request| async move {
-        Response::text(BRIDGE_JS)
-            .header("content-type", "application/javascript; charset=utf-8")
+        Response::text(BRIDGE_JS).header("content-type", "application/javascript; charset=utf-8")
     });
 
     let _ = Arc::new(hub);

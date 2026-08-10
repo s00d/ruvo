@@ -2,7 +2,7 @@
 
 #![cfg(feature = "testing")]
 
-use sova::{ResponseAssert, TestApp, TestClient, assert_json_snapshot};
+use sova::{assert_json_snapshot, ResponseAssert, TestApp, TestClient};
 
 #[tokio::test]
 async fn facade_testing_reexports_test_app_and_client() {

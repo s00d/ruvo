@@ -4,8 +4,8 @@ use http_body_util::Empty;
 use hyper::Request as HyperRequest;
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::TokioExecutor;
-use sova_core::{App,  Plugin};
 use sova_core::extend::Bind;
+use sova_core::{App, Plugin};
 use sova_ws::{Ws, WsRouteExt};
 
 #[tokio::test]
@@ -18,9 +18,7 @@ async fn websocket_upgrade_over_h2c_returns_426() {
     listener.set_nonblocking(true).unwrap();
     let addr = listener.local_addr().unwrap();
 
-    let server = tokio::spawn(async move {
-        app.bind(Bind::Listener(listener)).serve().await
-    });
+    let server = tokio::spawn(async move { app.bind(Bind::Listener(listener)).serve().await });
 
     tokio::time::sleep(std::time::Duration::from_millis(20)).await;
 
@@ -53,4 +51,3 @@ async fn websocket_upgrade_over_h2c_returns_426() {
 
     server.abort();
 }
-

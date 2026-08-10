@@ -2,9 +2,9 @@
 
 use crate::error::DbError;
 use crate::handle::DbHandle;
-use sova_core::Request;
 use sea_orm::{EntityTrait, FromQueryResult, PaginatorTrait, Select};
 use serde::Serialize;
+use sova_core::Request;
 
 const DEFAULT_PER_PAGE: u64 = 15;
 const MAX_PER_PAGE: u64 = 100;
@@ -34,10 +34,7 @@ impl PageParams {
     }
 
     pub fn from_request(req: &Request) -> Self {
-        let page = req
-            .query("page")
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(1);
+        let page = req.query("page").and_then(|s| s.parse().ok()).unwrap_or(1);
         let per_page = req
             .query("per_page")
             .and_then(|s| s.parse().ok())

@@ -59,8 +59,14 @@ async fn enqueue_dequeue_roundtrip() {
     pool.enqueue(&queue, b"one").await.unwrap();
     pool.enqueue(&queue, b"two").await.unwrap();
     // LPUSH + RPOP => FIFO: one then two
-    assert_eq!(pool.dequeue(&queue).await.unwrap().as_deref(), Some(b"one".as_slice()));
-    assert_eq!(pool.dequeue(&queue).await.unwrap().as_deref(), Some(b"two".as_slice()));
+    assert_eq!(
+        pool.dequeue(&queue).await.unwrap().as_deref(),
+        Some(b"one".as_slice())
+    );
+    assert_eq!(
+        pool.dequeue(&queue).await.unwrap().as_deref(),
+        Some(b"two".as_slice())
+    );
     assert_eq!(pool.dequeue(&queue).await.unwrap(), None);
 }
 

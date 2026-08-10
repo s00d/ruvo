@@ -35,11 +35,7 @@ impl FakeGraphql {
 
     /// When the query contains `needle`, respond with `{ "data": body }`.
     pub fn stub(self, needle: impl Into<String>, data: Value) -> Self {
-        self.inner
-            .lock()
-            .unwrap()
-            .stubs
-            .push((needle.into(), data));
+        self.inner.lock().unwrap().stubs.push((needle.into(), data));
         self
     }
 
@@ -72,8 +68,8 @@ impl GraphqlTransport for FakeGraphql {
         let this = self.clone();
         let url = url.to_string();
         Box::pin(async move {
-            let payload: Value = serde_json::from_slice(&body)
-                .map_err(|e| GraphqlError::Decode(e.to_string()))?;
+            let payload: Value =
+                serde_json::from_slice(&body).map_err(|e| GraphqlError::Decode(e.to_string()))?;
             let query = payload
                 .get("query")
                 .and_then(|v| v.as_str())

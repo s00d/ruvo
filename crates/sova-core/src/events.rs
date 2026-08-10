@@ -29,11 +29,13 @@ impl EventBus {
         F: Fn(&E) + Send + Sync + 'static,
     {
         let mut map = self.inner.lock().expect("EventBus");
-        map.entry(TypeId::of::<E>()).or_default().push(Arc::new(move |any| {
-            if let Some(e) = any.downcast_ref::<E>() {
-                f(e);
-            }
-        }));
+        map.entry(TypeId::of::<E>())
+            .or_default()
+            .push(Arc::new(move |any| {
+                if let Some(e) = any.downcast_ref::<E>() {
+                    f(e);
+                }
+            }));
     }
 
     /// Dispatch `event` to all listeners for `E` (registration order).

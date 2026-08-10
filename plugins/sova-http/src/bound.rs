@@ -1,9 +1,9 @@
 //! `req.http()` — client bound to inbound deadline and trace headers.
 
 use crate::client::{propagation_headers, HttpClient, NamedClient, PendingRequest};
-use sova_core::RequestId;
 use http::Method;
 use sova_core::Request;
+use sova_core::RequestId;
 
 /// Extension: outbound client with request context.
 pub trait HttpExt {

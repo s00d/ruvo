@@ -20,7 +20,7 @@
 //! DB: `sova.toml` `[db] url` (sqlite). Override with `DATABASE_URL`.
 
 use sova::{
-    App, Apple, AuthMigrator, Db, Driver, Github, Google, JwtAuth, JwtAuthExt, Json, Oauth,
+    App, Apple, AuthMigrator, Db, Driver, Github, Google, Json, JwtAuth, JwtAuthExt, Oauth,
     Request, Result, Router,
 };
 use std::path::PathBuf;

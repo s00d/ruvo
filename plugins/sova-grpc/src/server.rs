@@ -1,6 +1,7 @@
 //! Optional HTTP mount + BackgroundService bind for unary methods.
 
 use crate::error::GrpcError;
+use crate::error_envelope::{connect_error_json, grpc_error_to_connect, status_for_rpc_code};
 use crate::router::MethodRouter;
 use bytes::Bytes;
 use http_body_util::{BodyExt, Full};
@@ -28,29 +29,34 @@ pub(crate) fn mount_on_app(app: &mut App, router: MethodRouter) {
                 let body = match req.body().await {
                     Ok(b) => b,
                     Err(e) => {
-                        return Response::json(&serde_json::json!({
-                            "code": "invalid_argument",
-                            "message": format!("{e}"),
-                        }))
-                        .status(400);
+                        return connect_error_response(400, "invalid_argument", format!("{e}"));
                     }
                 };
-                match r.invoke_raw(&method_name, body).await {
+                let started = std::time::Instant::now();
+                let bytes_in = body.len() as u64;
+                let result = r.invoke_with_request(&method_name, req, body).await;
+                crate::trace::emit_server(
+                    &method_name,
+                    started.elapsed().as_secs_f64() * 1000.0,
+                    &result,
+                    bytes_in,
+                );
+                match result {
                     Ok(out) => Response::bytes(out, "application/json"),
-                    Err(GrpcError::NotFound(_)) => Response::json(&serde_json::json!({
-                        "code": "not_found",
-                        "message": method_name,
-                    }))
-                    .status(404),
-                    Err(e) => Response::json(&serde_json::json!({
-                        "code": "internal",
-                        "message": e.to_string(),
-                    }))
-                    .status(500),
+                    Err(e) => connect_error_from_grpc(&e),
                 }
             }
         });
     }
+}
+
+fn connect_error_from_grpc(err: &GrpcError) -> Response {
+    let (status, code, message) = grpc_error_to_connect(err);
+    connect_error_response(status, &code, message)
+}
+
+fn connect_error_response(status: u16, code: &str, message: impl Into<String>) -> Response {
+    Response::json(&connect_error_json(code, message)).status(status)
 }
 
 pub(crate) struct GrpcBindService {
@@ -69,11 +75,7 @@ impl BackgroundService for GrpcBindService {
         "grpc-bind"
     }
 
-    fn run(
-        self: Box<Self>,
-        _state: Arc<StateMap>,
-        shutdown: Shutdown,
-    ) -> BoxFuture<()> {
+    fn run(self: Box<Self>, _state: Arc<StateMap>, shutdown: Shutdown) -> BoxFuture<()> {
         Box::pin(async move {
             let listener = match TcpListener::bind(self.addr).await {
                 Ok(l) => l,
@@ -109,33 +111,50 @@ impl BackgroundService for GrpcBindService {
 
 async fn handle(router: MethodRouter, req: HyperRequest<Incoming>) -> HyperResponse<Full<Bytes>> {
     if req.method() != hyper::Method::POST {
-        return HyperResponse::builder()
-            .status(405)
-            .body(Full::new(Bytes::from_static(b"method not allowed")))
-            .unwrap();
+        return hyper_connect_error(405, "method_not_allowed", "method not allowed");
     }
     let path = req.uri().path().trim_start_matches('/').to_string();
     let collected = match req.into_body().collect().await {
         Ok(c) => c.to_bytes(),
         Err(e) => {
-            return json_status(400, &format!("body: {e}"));
+            return hyper_connect_error(400, "invalid_argument", format!("body: {e}"));
         }
     };
-    match router.invoke_raw(&path, collected).await {
+    let started = std::time::Instant::now();
+    let bytes_in = collected.len() as u64;
+    let result = router.invoke_raw(&path, collected).await;
+    crate::trace::emit_server(
+        &path,
+        started.elapsed().as_secs_f64() * 1000.0,
+        &result,
+        bytes_in,
+    );
+    match result {
         Ok(out) => HyperResponse::builder()
             .status(200)
             .header(http::header::CONTENT_TYPE, "application/json")
             .body(Full::new(out))
             .unwrap(),
-        Err(GrpcError::NotFound(m)) => json_status(404, &format!("not found: {m}")),
-        Err(e) => json_status(500, &e.to_string()),
+        Err(e) => {
+            let (status, code, message) = grpc_error_to_connect(&e);
+            hyper_connect_error(status, &code, message)
+        }
     }
 }
 
-fn json_status(status: u16, message: &str) -> HyperResponse<Full<Bytes>> {
-    let body = serde_json::json!({ "code": "error", "message": message });
+fn hyper_connect_error(
+    status: u16,
+    code: &str,
+    message: impl Into<String>,
+) -> HyperResponse<Full<Bytes>> {
+    let effective = if status == 400 && code != "invalid_argument" {
+        status_for_rpc_code(code)
+    } else {
+        status
+    };
+    let body = connect_error_json(code, message);
     HyperResponse::builder()
-        .status(status)
+        .status(effective)
         .header(http::header::CONTENT_TYPE, "application/json")
         .body(Full::new(Bytes::from(serde_json::to_vec(&body).unwrap())))
         .unwrap()

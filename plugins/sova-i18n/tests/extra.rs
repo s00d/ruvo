@@ -62,9 +62,7 @@ async fn plural_fn_missing_handler_and_all_json() {
     assert_eq!(res.body_bytes(), Some(b"many|missing.key".as_slice()));
     assert!(misses.load(Ordering::SeqCst) >= 1);
 
-    let all = app
-        .handle_request(Method::GET, "/_i18n/all.json", "")
-        .await;
+    let all = app.handle_request(Method::GET, "/_i18n/all.json", "").await;
     assert_eq!(all.status_code().as_u16(), 200);
     let body = String::from_utf8_lossy(all.body_bytes().unwrap());
     assert!(body.contains("greet") || body.contains("Hello"));
@@ -84,7 +82,9 @@ async fn set_locale_cookie_on_response() {
             .cookie("locale")
             .set_locale_cookie(true),
     );
-    app.get("/x", |req: Request| async move { Response::text(req.locale().to_string()) });
+    app.get("/x", |req: Request| async move {
+        Response::text(req.locale().to_string())
+    });
     app.run_startup().await.unwrap();
 
     let res = app
@@ -104,10 +104,7 @@ async fn set_locale_cookie_on_response() {
         .filter_map(|v| v.to_str().ok())
         .collect::<Vec<_>>()
         .join(";");
-    assert!(
-        set_cookie.contains("locale=de"),
-        "set-cookie={set_cookie}"
-    );
+    assert!(set_cookie.contains("locale=de"), "set-cookie={set_cookie}");
 }
 
 #[tokio::test]
@@ -120,9 +117,7 @@ async fn enable_all_json_false_hides_all() {
             .path_prefix(false)
             .enable_all_json(false),
     );
-    let all = app
-        .handle_request(Method::GET, "/_i18n/all.json", "")
-        .await;
+    let all = app.handle_request(Method::GET, "/_i18n/all.json", "").await;
     assert_eq!(all.status_code().as_u16(), 404);
 }
 

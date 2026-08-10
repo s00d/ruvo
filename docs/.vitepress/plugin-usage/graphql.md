@@ -1,11 +1,88 @@
-**Audience:** app authors calling remote GraphQL APIs (and optionally mounting a schema).
+**Audience:** app authors mounting a GraphQL API on Sova (and optionally calling remote APIs).
 
-Outbound client is the primary surface. Schema mount needs feature `server` / facade `graphql-server`.
+Facade: `graphql-server` = outbound client features + schema mount + GraphiQL + WebSocket subscriptions.
 
-## Client
+## Quick start: GraphQL server
 
 ```toml
-[dev-dependencies]
+sova = { version = "0.1", features = ["graphql-server"] }
+```
+
+```rust
+use async_graphql::{Context, EmptyMutation, EmptySubscription, Object, Schema};
+use sova::{App, GraphQl, GraphqlContext};
+
+struct Query;
+#[Object]
+impl Query {
+    async fn hello(&self) -> &str { "world" }
+
+    async fn value(&self, ctx: &Context<'_>) -> async_graphql::Result<i32> {
+        let sova = ctx.data::<GraphqlContext>()?;
+        Ok(*sova.state::<i32>())
+    }
+}
+
+let schema = Schema::build(Query, EmptyMutation, EmptySubscription).finish();
+app.install(
+    GraphQl::server(schema)
+        .path("/graphql")
+        .graphiql_path("/graphiql")
+        .graphiql(true)
+        .subscriptions("/graphql/ws"),
+);
+```
+
+Open `GET /graphiql` in the browser. API lives at `POST /graphql`.
+
+## Resolvers + app state
+
+Every request injects [`GraphqlContext`] (`ctx.data::<GraphqlContext>()`) with:
+
+- `state::<T>()` / `try_state::<T>()` — same types as `app.state(...)`
+- `authorization()` — optional `Authorization` header
+- `method()`, `path()`
+
+Server-only HTTP handlers use [`GraphqlServerExt::try_graphql_schema()`] to reach the mounted schema.
+
+## Subscriptions
+
+Default WebSocket path: `{api_path}/ws` (override with `.subscriptions("/graphql/ws")`).
+
+Uses `graphql-transport-ws` / `graphql-ws` protocols via `async-graphql` (not `sova-ws` hub).
+
+Auth note: browser WebSocket clients often pass tokens in `connection_init` payload or query string — validate in subscription resolvers via context.
+
+## Modes
+
+| Mode | Install | Handler API |
+|------|---------|-------------|
+| Client only | `GraphQl::client(url)` / `GraphQl::fake(...)` | `req.graphql()` |
+| Server only | `GraphQl::server(schema)` | mount — `try_graphql()` for outbound |
+| Composite (BFF) | `GraphQl::server(schema).with_client(url)` | mount + `req.graphql()` |
+
+Optional: `.allow_get_queries(true)`, `.sdl_path("/graphql/sdl")`, `.without_subscriptions()`.
+
+Example: [`examples/api/api_graphql_server`](https://github.com/s00d/sova/tree/master/examples/api/api_graphql_server).
+
+## DevTools
+
+With the [`devtools`](/guide/devtools) feature, GraphQL server operations show up automatically:
+
+| Surface | What you see |
+|---------|----------------|
+| **GraphQL tab** | Operation name, kind (`query` / `mutation`), duration, error count |
+| **Config tab** | Mounted paths (`api`, `graphiql`, `subscriptions`, `sdl`) |
+| **Events tab** | WebSocket upgrade events (`graphql.ws.upgrade`) |
+| **GraphiQL page** | Bottom DevTools bar (HTML inject) |
+
+Install DevTools **before or after** `GraphQl::server` — mount paths register via shared [`DevToolsConfigRegistry`].
+
+Combined demo: `cargo run -p devtools_demo` → `/graphiql` + GraphQL tab on `POST /graphql`.
+
+## GraphQL client (remote / tests)
+
+```toml
 sova = { version = "0.1", features = ["graphql", "testing"] }
 ```
 
@@ -16,28 +93,7 @@ use serde_json::json;
 let fake = FakeGraphql::new().stub("hello", json!({ "hello": "world" }));
 app.install(GraphQl::fake(fake));
 
-// handler:
 let data = req.graphql().query("query { hello }").data().await?;
 ```
 
-Live endpoint: `GraphQl::client("https://api.example.com/graphql")` or `[graphql] url=…` / `GRAPHQL_URL`.
-
-## Server (optional)
-
-```toml
-sova = { features = ["graphql-server"] }
-```
-
-```rust
-use async_graphql::{EmptyMutation, EmptySubscription, Object, Schema};
-use sova::GraphQl;
-
-struct Query;
-#[Object]
-impl Query {
-    async fn hello(&self) -> &str { "world" }
-}
-
-let schema = Schema::build(Query, EmptyMutation, EmptySubscription).finish();
-app.install(GraphQl::server(schema).path("/graphql").graphiql(true));
-```
+Live: `GraphQl::client("https://api.example.com/graphql")` or `[graphql] url=…` / `GRAPHQL_URL`.

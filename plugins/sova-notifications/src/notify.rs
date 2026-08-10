@@ -4,10 +4,10 @@ use crate::channel::{Channel, Via};
 use crate::entity;
 use crate::list::NotificationRow;
 use chrono::Utc;
-use sova_core::{Error, EventBus, Request, Result};
-use sova_db::{DbError, DbExt, DbHandle};
 use sea_orm::{ActiveModelTrait, Set};
 use serde_json::Value;
+use sova_core::{Error, EventBus, Request, Result};
+use sova_db::{DbError, DbExt, DbHandle};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -27,9 +27,9 @@ impl NotificationService {
     }
 
     pub fn ensure_channel(&self, slug: &str) -> Result<&Channel> {
-        self.channels.get(slug).ok_or_else(|| {
-            Error::BadRequest(format!("unknown notification channel `{slug}`"))
-        })
+        self.channels
+            .get(slug)
+            .ok_or_else(|| Error::BadRequest(format!("unknown notification channel `{slug}`")))
     }
 }
 
@@ -292,13 +292,7 @@ async fn send_mail(req: &Request, _user_id: i64, n: &Notify) {
     let text = n.body.clone().unwrap_or_else(|| n.title.clone());
     let html = format!("<p>{}</p>", html_escape(&text));
     let _ = client
-        .send(
-            Email::new()
-                .to(to)
-                .subject(&n.title)
-                .text(text)
-                .html(html),
-        )
+        .send(Email::new().to(to).subject(&n.title).text(text).html(html))
         .await;
 }
 

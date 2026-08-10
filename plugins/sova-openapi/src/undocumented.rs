@@ -25,12 +25,7 @@ fn undocumented_entries<'a>(
     let prefix = docs_prefix.trim_end_matches('/');
     let mut out = Vec::new();
     for entry in entries {
-        let RouteEntry::Http {
-            method,
-            path,
-            meta,
-        } = entry
-        else {
+        let RouteEntry::Http { method, path, meta } = entry else {
             continue;
         };
         if path == prefix || path.starts_with(&format!("{prefix}/")) {

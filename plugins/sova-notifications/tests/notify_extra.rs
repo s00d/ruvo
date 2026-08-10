@@ -1,10 +1,10 @@
 //! Notify builders: body, to(), unknown channel, Via::Mail, role audience.
 
+use serde_json::json;
 use sova_core::{Json, Request, ResponseAssert, TestClient};
 use sova_mail::Mail;
 use sova_notifications::{Channel, Notifications, NotificationsMigrator, Notify, Via};
 use sova_testing::TestApp;
-use serde_json::json;
 
 #[tokio::test]
 async fn notify_to_body_and_unknown_channel() {
@@ -65,11 +65,7 @@ async fn notify_to_body_and_unknown_channel() {
         let sent = fake.sent();
         assert_eq!(sent.len(), 1);
         assert_eq!(sent[0].to, vec!["u@example.com"]);
-        assert!(sent[0]
-            .html
-            .as_deref()
-            .unwrap()
-            .contains("&lt;") || sent[0].html.is_some());
+        assert!(sent[0].html.as_deref().unwrap().contains("&lt;") || sent[0].html.is_some());
     }
 
     c.post("/bad-channel").await.assert_status(400);
@@ -79,9 +75,9 @@ async fn notify_to_body_and_unknown_channel() {
 #[tokio::test]
 #[cfg(feature = "auth")]
 async fn notify_to_role_and_permission() {
+    use sea_orm_migration::MigratorTrait;
     use sova_auth::{assign_role, AuthMigrator, Feature, Fortify};
     use sova_session::memory_sessions;
-    use sea_orm_migration::MigratorTrait;
 
     struct Combined;
     #[async_trait::async_trait]

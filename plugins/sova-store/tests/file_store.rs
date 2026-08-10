@@ -34,9 +34,7 @@ async fn ttl_expires_and_survives_reopen_via_log() {
     let dir = tempfile::tempdir().unwrap();
     {
         let store = FileStore::open(dir.path()).await.unwrap();
-        store
-            .set("live", Bytes::from_static(b"ok"), None)
-            .await;
+        store.set("live", Bytes::from_static(b"ok"), None).await;
         store
             .set(
                 "soon",
@@ -62,14 +60,9 @@ async fn fsync_durability_and_snapshot_compaction() {
 
     for i in 0..260 {
         let key = format!("k{i}");
-        store
-            .set(&key, Bytes::from(format!("v{i}")), None)
-            .await;
+        store.set(&key, Bytes::from(format!("v{i}")), None).await;
     }
-    assert_eq!(
-        store.get("k0").await.as_deref(),
-        Some(b"v0".as_slice())
-    );
+    assert_eq!(store.get("k0").await.as_deref(), Some(b"v0".as_slice()));
     drop(store);
 
     assert!(dir.path().join("snapshot.bin").exists());

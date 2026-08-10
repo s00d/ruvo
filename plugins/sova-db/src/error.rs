@@ -1,6 +1,6 @@
+use sea_orm::{DbErr, SqlErr};
 use sova_core::extend::ErrorResponse;
 use sova_core::{Error, IntoResponse, Response};
-use sea_orm::{DbErr, SqlErr};
 
 /// Newtype around SeaORM [`DbErr`] mapped to HTTP via [`Error::Response`].
 #[derive(Debug)]

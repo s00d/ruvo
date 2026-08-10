@@ -1,8 +1,8 @@
 use http::Method;
-use sova_core::{App,  Request, Response};
 use sova_core::extend::Bind;
 #[cfg(feature = "testing")]
 use sova_core::Error;
+use sova_core::{App, Request, Response};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
@@ -137,7 +137,11 @@ async fn cli_mode_skips_background_services() {
     });
 
     tokio::time::sleep(std::time::Duration::from_millis(80)).await;
-    assert_eq!(flag.load(Ordering::SeqCst), 0, "cli_mode must skip services");
+    assert_eq!(
+        flag.load(Ordering::SeqCst),
+        0,
+        "cli_mode must skip services"
+    );
     let _ = tx.send(());
     let _ = tokio::time::timeout(std::time::Duration::from_secs(2), server)
         .await

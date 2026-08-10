@@ -20,7 +20,7 @@ use clap::Parser;
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
-use syn::{Expr, ImplItem, Item, Lit, Meta, visit::Visit};
+use syn::{visit::Visit, Expr, ImplItem, Item, Lit, Meta};
 use walkdir::WalkDir;
 
 /// GitHub tree base for in-repo example paths.
@@ -476,12 +476,8 @@ fn generate_plugin_sdk(root: &Path, w: &mut Writer) -> Result<(), String> {
 
     for page in pages {
         let guide_path = guides.join(format!("{}.md", page.slug));
-        let body = fs::read_to_string(&guide_path).map_err(|e| {
-            format!(
-                "missing plugin-sdk guide {}: {e}",
-                guide_path.display()
-            )
-        })?;
+        let body = fs::read_to_string(&guide_path)
+            .map_err(|e| format!("missing plugin-sdk guide {}: {e}", guide_path.display()))?;
         let body = body.trim();
         if body.is_empty() {
             return Err(format!("empty plugin-sdk guide: {}", page.slug));
@@ -657,9 +653,7 @@ fn preferred_install_feature(slug: &str, feats: &[String]) -> Option<String> {
 fn plugin_category(slug: &str) -> &'static str {
     match slug {
         "shield" | "cors" | "csrf" | "compress" | "cookies" | "rate-limit" | "idempotency"
-        | "response-cache" | "static" | "env" | "acme" => {
-            "HTTP"
-        }
+        | "response-cache" | "static" | "env" | "acme" => "HTTP",
         "auth" | "passport" | "session" | "vld" => "Auth",
         "db" | "redis" | "store" | "storage" | "fs" | "tasks" | "tasks-store" => "Data",
         "templates" | "mail" | "i18n" | "meta" | "openapi" => "Content",
@@ -698,7 +692,10 @@ fn build_grouped_blocks(slugs: &[String], indent: usize, collapsed: bool) -> Str
     let pad = " ".repeat(indent);
     let mut by_cat: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
     for s in slugs {
-        by_cat.entry(plugin_category(s)).or_default().push(s.as_str());
+        by_cat
+            .entry(plugin_category(s))
+            .or_default()
+            .push(s.as_str());
     }
     let mut blocks = Vec::new();
     for (cat, title) in plugin_category_order() {
@@ -719,10 +716,7 @@ fn build_grouped_blocks(slugs: &[String], indent: usize, collapsed: bool) -> Str
         } else {
             format!("{pad}{{\n{pad}  text: '{title}',\n{pad}  items: [")
         };
-        blocks.push(format!(
-            "{head}\n{}\n{pad}  ],\n{pad}}}",
-            lines.join(",\n")
-        ));
+        blocks.push(format!("{head}\n{}\n{pad}  ],\n{pad}}}", lines.join(",\n")));
     }
     blocks.join(",\n")
 }
@@ -815,8 +809,12 @@ fn linkify_handwritten_docs(w: &mut Writer) -> Result<(), String> {
 fn plugin_examples(slug: &str) -> Option<&'static [&'static str]> {
     Some(match slug {
         "ai" => &["examples/api/api_ai"],
-        "graphql" => &["examples/api/api_graphql"],
+        "graphql" => &[
+            "examples/api/api_graphql",
+            "examples/api/api_graphql_server",
+        ],
         "grpc" => &["examples/api/api_grpc"],
+        "rabbit" => &["examples/api/api_rabbit"],
         "auth" => &[
             "examples/cabinet",
             "examples/web/hackernews",
@@ -862,7 +860,14 @@ fn plugin_related(slug: &str) -> Option<&'static [&'static str]> {
         "notifications" => &["db", "ws", "mail", "auth"],
         "db" => &["auth", "tasks", "store", "notifications"],
         "redis" => &["store", "session", "tasks-store"],
-        "store" => &["session", "redis", "rate-limit", "csrf", "idempotency", "response-cache"],
+        "store" => &[
+            "session",
+            "redis",
+            "rate-limit",
+            "csrf",
+            "idempotency",
+            "response-cache",
+        ],
         "tasks" => &["tasks-store", "db", "redis"],
         "tasks-store" => &["tasks", "redis", "db"],
         "storage" => &["static", "fs"],
@@ -1068,8 +1073,7 @@ fn extract_crate_docs(src: &str) -> Result<String, String> {
         if let Meta::NameValue(nv) = &attr.meta {
             if nv.path.is_ident("doc") {
                 if let Expr::Lit(syn::ExprLit {
-                    lit: Lit::Str(s),
-                    ..
+                    lit: Lit::Str(s), ..
                 }) = &nv.value
                 {
                     lines.push(s.value());
@@ -1197,8 +1201,7 @@ fn first_str_return(stmts: &[syn::Stmt]) -> Option<String> {
         match st {
             syn::Stmt::Expr(
                 Expr::Lit(syn::ExprLit {
-                    lit: Lit::Str(s),
-                    ..
+                    lit: Lit::Str(s), ..
                 }),
                 _,
             ) => return Some(s.value()),
@@ -1219,8 +1222,7 @@ fn find_description_call(block: &syn::Block, out: &mut Option<String>) {
         fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
             if node.method == "description" {
                 if let Some(Expr::Lit(syn::ExprLit {
-                    lit: Lit::Str(s),
-                    ..
+                    lit: Lit::Str(s), ..
                 })) = node.args.first()
                 {
                     if self.0.is_none() {

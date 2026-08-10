@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-grpc`](https://docs.rs/sova-grpc/0.1.0) `0.1.0` |
+| Crate | [`sova-grpc`](https://docs.rs/sova-grpc/0.1.2) `0.1.2` |
 | Plugin id | `grpc` |
 | Category | Integrations |
 
@@ -50,6 +50,16 @@ Connect-JSON unary RPC for Sova — client first, optional server.
 
 **Audience:** app authors calling unary RPC over Connect-JSON (no tonic / `.proto` required).
 
+## Modes
+
+| Mode | Install | Handler API |
+|------|---------|-------------|
+| Client only | `Grpc::client(url)` / `Grpc::fake(...)` | `req.grpc()` |
+| Server only | `Grpc::server().unary(...)` | mount/bind only — use `req.try_grpc()` |
+| Composite | `Grpc::server().unary(...).client(url)` | serve + `req.grpc()` |
+
+Errors use a Connect-style JSON envelope: `{ "code", "message" }`.
+
 ## Client
 
 ```toml
@@ -88,7 +98,12 @@ app.install(
     Grpc::server()
         .unary("hello.Greeter/SayHello", |req: HelloIn| async move {
             Ok(HelloOut { message: format!("hi {}", req.name) })
-        }),
+        })
+        .unary_with_request("hello.Greeter/AuthHello", |http, req: HelloIn| async move {
+            let user = http.header("x-user").unwrap_or("anon");
+            Ok(HelloOut { message: format!("hi {} ({})", req.name, user) })
+        })
+        .client_from_env(),
 );
 ```
 

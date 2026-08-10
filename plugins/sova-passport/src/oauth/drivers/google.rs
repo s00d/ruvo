@@ -16,11 +16,7 @@ impl Google {
             authorization_url: "https://accounts.google.com/o/oauth2/v2/auth".into(),
             token_url: "https://oauth2.googleapis.com/token".into(),
             userinfo_url: "https://openidconnect.googleapis.com/v1/userinfo".into(),
-            scopes: vec![
-                "openid".into(),
-                "email".into(),
-                "profile".into(),
-            ],
+            scopes: vec!["openid".into(), "email".into(), "profile".into()],
             redirect_uri: None,
             profile_kind: ProfileKind::Google,
             auth_params: vec![

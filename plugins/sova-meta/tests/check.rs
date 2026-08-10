@@ -37,7 +37,12 @@ async fn audit_meta_profile(app: App, profile: Option<&str>) -> (bool, Option<St
 #[tokio::test]
 async fn soft_check_allows_missing_description() {
     let mut app = App::new();
-    app.install(Meta::new().soft_check().site_name("S").public_url("https://ex.com"));
+    app.install(
+        Meta::new()
+            .soft_check()
+            .site_name("S")
+            .public_url("https://ex.com"),
+    );
     app.get("/bare", |_r: Request| async { Response::text("ok") });
 
     let (ok, err) = audit_meta(app).await;
@@ -192,14 +197,10 @@ async fn robots_txt_route_ignored_by_title_check() {
         std::env::remove_var("SOVA_PROFILE");
         app.build().unwrap()
     };
-    let res = server
-        .handle_request(Method::GET, "/robots.txt", "")
-        .await;
+    let res = server.handle_request(Method::GET, "/robots.txt", "").await;
     assert_eq!(res.status_code().as_u16(), 200);
 
-    let results = app
-        .run_checks(server.state(), &[CheckKind::Audit])
-        .await;
+    let results = app.run_checks(server.state(), &[CheckKind::Audit]).await;
     let meta = results.iter().find(|r| r.name == "meta").unwrap();
     assert!(meta.ok, "{:?}", meta.error);
 }

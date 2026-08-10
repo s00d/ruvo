@@ -94,7 +94,10 @@ impl ResponseCache {
     pub fn middleware(self) -> MwEntry {
         named(
             "response-cache",
-            with_state(self, |rt, req, next| async move { run(rt, req, next).await }),
+            with_state(
+                self,
+                |rt, req, next| async move { run(rt, req, next).await },
+            ),
         )
     }
 
@@ -103,12 +106,7 @@ impl ResponseCache {
         let mut vary_vals: Vec<(String, String)> = self
             .vary
             .iter()
-            .map(|h| {
-                (
-                    h.clone(),
-                    req.header(h).unwrap_or("").to_string(),
-                )
-            })
+            .map(|h| (h.clone(), req.header(h).unwrap_or("").to_string()))
             .collect();
         vary_vals.sort_by(|a, b| a.0.cmp(&b.0));
         for (h, v) in vary_vals {
@@ -171,7 +169,8 @@ async fn run(rt: Arc<ResponseCache>, req: Request, next: sova_core::Next) -> Res
     let key = rt.cache_key(&req);
     if let Some(bytes) = rt.store.get(&key).await {
         if let Ok(cached) = serde_json::from_slice::<Cached>(&bytes) {
-            let mut res = Response::bytes(cached.body, "application/octet-stream").status(cached.status);
+            let mut res =
+                Response::bytes(cached.body, "application/octet-stream").status(cached.status);
             for (n, v) in cached.headers {
                 res = res.header(n, v);
             }
@@ -214,6 +213,8 @@ async fn run(rt: Arc<ResponseCache>, req: Request, next: sova_core::Next) -> Res
     if let Ok(raw) = serde_json::to_vec(&payload) {
         rt.store.set(&key, Bytes::from(raw), Some(rt.ttl)).await;
     }
-    res.header("x-cache", "MISS")
-        .header("cache-control", format!("public, max-age={}", rt.ttl.as_secs()))
+    res.header("x-cache", "MISS").header(
+        "cache-control",
+        format!("public, max-age={}", rt.ttl.as_secs()),
+    )
 }

@@ -478,7 +478,10 @@ mod tests {
         assert_eq!(res.status_code().as_u16(), 200);
         let body = String::from_utf8_lossy(res.body_bytes().unwrap()).into_owned();
         assert!(!body.is_empty());
-        assert_eq!(cookie_named(&res, "XSRF-TOKEN").as_deref(), Some(body.as_str()));
+        assert_eq!(
+            cookie_named(&res, "XSRF-TOKEN").as_deref(),
+            Some(body.as_str())
+        );
     }
 
     #[tokio::test]

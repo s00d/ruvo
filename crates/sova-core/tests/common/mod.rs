@@ -1,8 +1,8 @@
 //! Shared helpers for integration tests (real TCP listener).
 
 use bytes::Bytes;
-use sova_core::{App, };
 use sova_core::extend::Bind;
+use sova_core::App;
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
@@ -22,11 +22,11 @@ impl LiveServer {
         let (tx, rx) = oneshot::channel::<()>();
         let join = tokio::spawn(async move {
             app.bind(Bind::Listener(listener))
-            .shutdown(async move {
-                let _ = rx.await;
-            })
-            .serve()
-            .await
+                .shutdown(async move {
+                    let _ = rx.await;
+                })
+                .serve()
+                .await
         });
         tokio::time::sleep(std::time::Duration::from_millis(30)).await;
         Self {
@@ -71,5 +71,7 @@ fn parse_response(buf: &[u8]) -> (u16, Bytes) {
 }
 
 fn find_body(buf: &[u8]) -> Option<&[u8]> {
-    buf.windows(4).position(|w| w == b"\r\n\r\n").map(|i| &buf[i + 4..])
+    buf.windows(4)
+        .position(|w| w == b"\r\n\r\n")
+        .map(|i| &buf[i + 4..])
 }

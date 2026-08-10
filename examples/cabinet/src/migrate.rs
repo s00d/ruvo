@@ -1,8 +1,6 @@
 //! Cabinet migrator: Fortify auth + activity + notifications + notes.
 
-use sova::{
-    ActivityMigrator, AuthMigrator, MigrationTrait, MigratorTrait, NotificationsMigrator,
-};
+use sova::{ActivityMigrator, AuthMigrator, MigrationTrait, MigratorTrait, NotificationsMigrator};
 
 pub struct CabinetMigrator;
 

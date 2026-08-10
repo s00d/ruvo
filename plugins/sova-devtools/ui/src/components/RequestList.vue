@@ -2,9 +2,11 @@
 import { computed, ref } from "vue";
 import SearchField from "./SearchField.vue";
 import { useDevToolsStore } from "../stores/devtools";
+import { usePlaygroundStore } from "../stores/playground";
 import { statusTone } from "../types";
 
 const store = useDevToolsStore();
+const playground = usePlaygroundStore();
 const q = ref("");
 
 const maxMs = computed(() =>
@@ -49,6 +51,10 @@ const filtered = computed(() => {
             : 'border-l-transparent hover:bg-[var(--dt-surface-2)]'
         "
         @click="store.openSnap(m.id)"
+        @dblclick.prevent="
+          playground.prefill({ method: m.method, path: m.path });
+          store.setTab('http');
+        "
       >
         <div class="flex items-center gap-2">
           <span

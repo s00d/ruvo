@@ -144,7 +144,10 @@ mod tests {
     #[test]
     fn json_encodes() {
         let res = Json(serde_json::json!({"ok": true})).into_response();
-        assert_eq!(res.headers().get("content-type").unwrap(), "application/json");
+        assert_eq!(
+            res.headers().get("content-type").unwrap(),
+            "application/json"
+        );
         assert!(res.body_bytes().unwrap().windows(4).any(|w| w == b"true"));
     }
 

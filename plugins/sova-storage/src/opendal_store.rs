@@ -195,9 +195,7 @@ impl S3EnvConfig {
             .or_else(|| get("AWS_BUCKET"))
             .filter(|s| !s.is_empty())
             .ok_or_else(|| {
-                StorageError::Msg(
-                    "SOVA_STORAGE_BUCKET (or AWS_BUCKET) is required for s3".into(),
-                )
+                StorageError::Msg("SOVA_STORAGE_BUCKET (or AWS_BUCKET) is required for s3".into())
             })?;
 
         let endpoint = get("SOVA_STORAGE_ENDPOINT").filter(|s| !s.is_empty());
@@ -244,9 +242,7 @@ impl S3EnvConfig {
     pub fn build(self) -> Result<OpendalStore, StorageError> {
         use opendal::services::S3;
 
-        let mut builder = S3::default()
-            .bucket(&self.bucket)
-            .region(&self.region);
+        let mut builder = S3::default().bucket(&self.bucket).region(&self.region);
 
         if let Some(endpoint) = self.endpoint.as_deref() {
             builder = builder.endpoint(endpoint);
@@ -283,9 +279,8 @@ pub fn s3_from_env() -> Result<OpendalStore, StorageError> {
 pub fn gcs_from_env() -> Result<OpendalStore, StorageError> {
     use opendal::services::Gcs;
 
-    let bucket = env_get("SOVA_STORAGE_BUCKET").ok_or_else(|| {
-        StorageError::Msg("SOVA_STORAGE_BUCKET is required for gcs".into())
-    })?;
+    let bucket = env_get("SOVA_STORAGE_BUCKET")
+        .ok_or_else(|| StorageError::Msg("SOVA_STORAGE_BUCKET is required for gcs".into()))?;
 
     let mut builder = Gcs::default().bucket(&bucket);
     if let Some(cred) = env_get("GOOGLE_APPLICATION_CREDENTIALS") {

@@ -63,10 +63,7 @@ async fn translations_and_fallback_and_plural() {
                 .build(),
         )
         .await;
-    assert_eq!(
-        en.body_bytes(),
-        Some(b"About|Hello Ada|none|EN".as_slice())
-    );
+    assert_eq!(en.body_bytes(), Some(b"About|Hello Ada|none|EN".as_slice()));
     assert_eq!(
         en.headers()
             .get("content-language")
@@ -84,10 +81,7 @@ async fn translations_and_fallback_and_plural() {
                 .build(),
         )
         .await;
-    assert_eq!(
-        de.body_bytes(),
-        Some("Über|Hallo Ada|keine|EN".as_bytes())
-    );
+    assert_eq!(de.body_bytes(), Some("Über|Hallo Ada|keine|EN".as_bytes()));
 }
 
 #[test]
@@ -116,8 +110,7 @@ async fn page_scope_contains_root_and_override() {
     write_locales(dir.path());
     let mut app = App::new();
     app.install(
-        I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")])
-            .path_prefix(false),
+        I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")]).path_prefix(false),
     );
 
     app.get("/blog", |req: Request| async move {
@@ -134,11 +127,11 @@ async fn missing_key_returns_key() {
     let dir = tempfile::tempdir().unwrap();
     write_locales(dir.path());
     let mut app = App::new();
-    app.install(
-        I18n::new(dir.path(), vec![Locale::new("en")])
-            .path_prefix(false),
+    app.install(I18n::new(dir.path(), vec![Locale::new("en")]).path_prefix(false));
+    app.get(
+        "/m",
+        |req: Request| async move { Response::text(req.t("nope")) },
     );
-    app.get("/m", |req: Request| async move { Response::text(req.t("nope")) });
     let res = app.handle_request(Method::GET, "/m", "").await;
     assert_eq!(res.body_bytes(), Some(b"nope".as_slice()));
 
@@ -154,14 +147,9 @@ async fn etag_304_and_version_cache() {
     let dir = tempfile::tempdir().unwrap();
     write_locales(dir.path());
     let mut app = App::new();
-    app.install(
-        I18n::new(dir.path(), vec![Locale::new("en")])
-            .path_prefix(false),
-    );
+    app.install(I18n::new(dir.path(), vec![Locale::new("en")]).path_prefix(false));
 
-    let first = app
-        .handle_request(Method::GET, "/_i18n/en.json", "")
-        .await;
+    let first = app.handle_request(Method::GET, "/_i18n/en.json", "").await;
     assert_eq!(first.status_code().as_u16(), 200);
     let etag = first
         .headers()
@@ -185,8 +173,7 @@ async fn etag_304_and_version_cache() {
     let locales = app
         .handle_request(Method::GET, "/_i18n/locales.json", "")
         .await;
-    let v: serde_json::Value =
-        serde_json::from_slice(locales.body_bytes().unwrap()).unwrap();
+    let v: serde_json::Value = serde_json::from_slice(locales.body_bytes().unwrap()).unwrap();
     let version = v["version"].as_str().unwrap();
     let cached = app
         .handle_request(Method::GET, &format!("/_i18n/en.json?v={version}"), "")
@@ -205,8 +192,7 @@ async fn resolve_url_beats_query() {
     write_locales(dir.path());
     let mut app = App::new();
     app.install(
-        I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")])
-            .path_prefix(true),
+        I18n::new(dir.path(), vec![Locale::new("en"), Locale::new("de")]).path_prefix(true),
     );
     app.get("/de/x", |req: Request| async move {
         Response::text(req.locale().to_string())
@@ -222,10 +208,7 @@ async fn doc_and_i18n_scope_coexist() {
     let dir = tempfile::tempdir().unwrap();
     write_locales(dir.path());
     let mut app = App::new();
-    app.install(
-        I18n::new(dir.path(), vec![Locale::new("en")])
-            .path_prefix(false),
-    );
+    app.install(I18n::new(dir.path(), vec![Locale::new("en")]).path_prefix(false));
 
     app.get("/blog/:slug", |req: Request| async move {
         Response::text(req.t("title"))
@@ -282,7 +265,9 @@ async fn cookie_with_layer_ok() {
             .cookie("locale"),
     );
     app.run_startup().await.unwrap();
-    app.get("/x", |req: Request| async move { Response::text(req.locale().to_string()) });
+    app.get("/x", |req: Request| async move {
+        Response::text(req.locale().to_string())
+    });
     let res = app
         .handle(
             Request::builder()

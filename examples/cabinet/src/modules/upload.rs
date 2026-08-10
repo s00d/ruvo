@@ -4,9 +4,8 @@ use sova::{
 };
 
 pub fn mount(r: &mut Router) {
-    r.post("/avatar", upload_avatar).with(ValidateHook::wrap(|req| {
-        Box::pin(async move { Ok(req) })
-    }));
+    r.post("/avatar", upload_avatar)
+        .with(ValidateHook::wrap(|req| Box::pin(async move { Ok(req) })));
 }
 
 async fn upload_avatar(mut req: Request) -> Result<Response> {

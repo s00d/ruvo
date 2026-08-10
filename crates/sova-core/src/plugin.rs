@@ -85,7 +85,10 @@ pub enum SdkCompat {
     /// Exact match (or plugin == core).
     Ok,
     /// Same major; core is newer — plugin may miss new APIs later; warn only.
-    Warn { core: PluginSdkVersion, plugin: PluginSdkVersion },
+    Warn {
+        core: PluginSdkVersion,
+        plugin: PluginSdkVersion,
+    },
     /// Hard failure: major mismatch or plugin requires a newer core.
     Error(String),
 }

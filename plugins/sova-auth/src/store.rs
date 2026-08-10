@@ -2,11 +2,11 @@
 
 use crate::entity::{permission, permission_role, reset_token, role, role_user, user};
 use chrono::{Duration, Utc};
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
+use sha2::{Digest, Sha256};
 use sova_core::{Error, Result};
 use sova_db::{DbError, DbHandle};
 use sova_passport::{hash_password, verify_password};
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
-use sha2::{Digest, Sha256};
 
 /// Session principal for Fortify (web + API).
 #[derive(Clone, Debug, serde::Serialize)]
@@ -283,7 +283,12 @@ pub async fn set_avatar(db: &DbHandle, user_id: i64, path: Option<String>) -> Re
     Ok(())
 }
 
-pub async fn enable_2fa_secret(db: &DbHandle, user_id: i64, secret: &str, codes_json: &str) -> Result<()> {
+pub async fn enable_2fa_secret(
+    db: &DbHandle,
+    user_id: i64,
+    secret: &str,
+    codes_json: &str,
+) -> Result<()> {
     let Some(u) = find_user_by_id(db, user_id).await? else {
         return Err(Error::NotFound);
     };
@@ -344,7 +349,10 @@ pub async fn find_role(db: &DbHandle, id: i64) -> Result<Option<role::Model>> {
 }
 
 pub async fn find_permission(db: &DbHandle, id: i64) -> Result<Option<permission::Model>> {
-    permission::Entity::find_by_id(id).one(db).await.map_err(db_err)
+    permission::Entity::find_by_id(id)
+        .one(db)
+        .await
+        .map_err(db_err)
 }
 
 pub async fn role_permission_ids(db: &DbHandle, role_id: i64) -> Result<Vec<i64>> {

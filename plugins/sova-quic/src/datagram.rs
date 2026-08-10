@@ -100,11 +100,7 @@ impl BackgroundService for QuicDatagramService {
         &self.name
     }
 
-    fn run(
-        self: Box<Self>,
-        _state: Arc<StateMap>,
-        shutdown: Shutdown,
-    ) -> SovaBoxFuture<()> {
+    fn run(self: Box<Self>, _state: Arc<StateMap>, shutdown: Shutdown) -> SovaBoxFuture<()> {
         Box::pin(async move {
             let server_config = match build_server_config(&self.tls, self.alpn.clone(), true) {
                 Ok(v) => v,
@@ -294,9 +290,9 @@ impl QuicDatagramClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sova_core::extend::StateMap;
     use rcgen::generate_simple_self_signed;
     use rustls::pki_types::CertificateDer;
+    use sova_core::extend::StateMap;
     use std::fs;
     use tempfile::TempDir;
 
@@ -305,7 +301,10 @@ mod tests {
         sock.local_addr().expect("local addr")
     }
 
-    fn write_self_signed_pem(tmp: &TempDir, subject: &[&str]) -> (std::path::PathBuf, std::path::PathBuf, Vec<u8>) {
+    fn write_self_signed_pem(
+        tmp: &TempDir,
+        subject: &[&str],
+    ) -> (std::path::PathBuf, std::path::PathBuf, Vec<u8>) {
         let subject_alt_names: Vec<String> = subject.iter().map(|s| (*s).into()).collect();
         let cert = generate_simple_self_signed(subject_alt_names).expect("rcgen");
         let cert_pem = cert.cert.pem();
@@ -317,7 +316,9 @@ mod tests {
         fs::write(&key_path, key_pem).expect("write key");
 
         let mut rd = std::io::BufReader::new(fs::File::open(&cert_path).expect("open cert pem"));
-        let certs = rustls_pemfile::certs(&mut rd).collect::<std::result::Result<Vec<_>, _>>().expect("parse certs");
+        let certs = rustls_pemfile::certs(&mut rd)
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .expect("parse certs");
         let leaf: CertificateDer<'static> = certs.into_iter().next().expect("at least 1 cert");
 
         (cert_path, key_path, leaf.as_ref().to_vec())
@@ -394,7 +395,8 @@ mod tests {
 
         tokio::time::sleep(std::time::Duration::from_millis(50)).await;
 
-        let res = QuicDatagramClient::connect(client_bind, bind_addr, "localhost", client_alpn).await;
+        let res =
+            QuicDatagramClient::connect(client_bind, bind_addr, "localhost", client_alpn).await;
         assert!(res.is_err());
 
         let _ = tx.send(true);
@@ -473,8 +475,7 @@ mod tests {
         let handle = tokio::spawn(Box::new(svc).run(Arc::new(StateMap::new()), shutdown));
 
         tokio::time::sleep(std::time::Duration::from_millis(50)).await;
-        let _client =
-            QuicDatagramClient::connect(client_bind, bind_addr, "localhost", server_alpn)
+        let _client = QuicDatagramClient::connect(client_bind, bind_addr, "localhost", server_alpn)
             .await
             .unwrap();
 
@@ -511,22 +512,25 @@ mod tests {
         let handle = tokio::spawn(Box::new(svc).run(Arc::new(StateMap::new()), shutdown));
 
         tokio::time::sleep(std::time::Duration::from_millis(50)).await;
-        let client1 = QuicDatagramClient::connect(client_bind1, bind_addr, "localhost", server_alpn.clone())
-            .await
-            .unwrap();
+        let client1 =
+            QuicDatagramClient::connect(client_bind1, bind_addr, "localhost", server_alpn.clone())
+                .await
+                .unwrap();
         let peer1 = client1
             .peer_certificates()
             .and_then(|mut v| v.pop())
             .expect("peer cert");
 
-        let (_cert_path2, _key_path2, cert2_der) = write_self_signed_pem(&tmp, &["localhost", "127.0.0.1"]);
+        let (_cert_path2, _key_path2, cert2_der) =
+            write_self_signed_pem(&tmp, &["localhost", "127.0.0.1"]);
         fs::write(&cert_path, fs::read(_cert_path2).unwrap()).unwrap();
         fs::write(&key_path, fs::read(_key_path2).unwrap()).unwrap();
         tls.reload().unwrap();
 
-        let client2 = QuicDatagramClient::connect(client_bind2, bind_addr, "localhost", server_alpn)
-            .await
-            .unwrap();
+        let client2 =
+            QuicDatagramClient::connect(client_bind2, bind_addr, "localhost", server_alpn)
+                .await
+                .unwrap();
         let peer2 = client2
             .peer_certificates()
             .and_then(|mut v| v.pop())

@@ -20,10 +20,12 @@
 mod bound;
 mod client;
 mod error;
+mod error_envelope;
 mod fake;
 mod plugin;
 mod router;
 mod server;
+mod trace;
 mod transport;
 
 pub use bound::{GrpcBound, GrpcExt};

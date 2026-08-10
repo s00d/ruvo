@@ -15,13 +15,13 @@ pub use job::{parse_cron, priority, Job, Schedule};
 pub use schedule::every_slot;
 
 use bytes::Bytes;
-use job::Job as JobDef;
 use job::priority as prio;
-use sova_core::{App, Error, EventBus, IntoResponse, Plugin, Request, Response};
-use sova_tasks_store::{EnqueueOpts, Task, TaskError, TaskStatus, TaskStore};
+use job::Job as JobDef;
 use schedule::{ScheduledJob, TaskScheduler};
 use schedule_toml::{merge_schedules, parse_schedule_toml, schedule_label};
 use serde_json::Value;
+use sova_core::{App, Error, EventBus, IntoResponse, Plugin, Request, Response};
+use sova_tasks_store::{EnqueueOpts, Task, TaskError, TaskStatus, TaskStore};
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -172,9 +172,9 @@ impl Tasks {
     /// SQL queue — requires Db installed (`feature = "sql"`).
     #[cfg(feature = "sql")]
     pub fn sql(app: &sova_core::App) -> Self {
-        let pool = app.try_state::<sova_db::DbPool>().unwrap_or_else(|| {
-            panic!("Tasks::sql requires Db plugin installed first")
-        });
+        let pool = app
+            .try_state::<sova_db::DbPool>()
+            .unwrap_or_else(|| panic!("Tasks::sql requires Db plugin installed first"));
         Self::new(Arc::new(sova_tasks_store::SqlTaskStore::from_db_pool(
             pool.as_ref(),
         )))
@@ -183,9 +183,9 @@ impl Tasks {
     /// Redis queue — requires Redis installed (`feature = "redis"`).
     #[cfg(feature = "redis")]
     pub fn redis(app: &sova_core::App) -> Self {
-        let pool = app.try_state::<sova_redis::RedisPool>().unwrap_or_else(|| {
-            panic!("Tasks::redis requires Redis plugin installed first")
-        });
+        let pool = app
+            .try_state::<sova_redis::RedisPool>()
+            .unwrap_or_else(|| panic!("Tasks::redis requires Redis plugin installed first"));
         Self::new(Arc::new(sova_tasks_store::RedisTaskStore::from_redis_pool(
             pool.as_ref(),
         )))
@@ -305,9 +305,7 @@ impl Plugin for Tasks {
                     let msg = e.clone();
                     app.on_startup(move |_| {
                         let msg = msg.clone();
-                        async move {
-                            Err(Error::Internal(format!("tasks schedule toml: {msg}")))
-                        }
+                        async move { Err(Error::Internal(format!("tasks schedule toml: {msg}"))) }
                     });
                     Vec::new()
                 }
@@ -505,15 +503,9 @@ fn register_tasks_cli(app: &mut App, registry: TaskRegistry) {
                         })
                         .collect();
                     // Always print for list (CLI already interactive at process level).
-                    println!(
-                        "{:<24} {:<12} {:<8} SCHEDULE",
-                        "NAME", "QUEUE", "PRIO"
-                    );
+                    println!("{:<24} {:<12} {:<8} SCHEDULE", "NAME", "QUEUE", "PRIO");
                     for r in &rows {
-                        println!(
-                            "{:<24} {:<12} {:<8} {}",
-                            r[0], r[1], r[2], r[3]
-                        );
+                        println!("{:<24} {:<12} {:<8} {}", r[0], r[1], r[2], r[3]);
                     }
                     if rows.is_empty() {
                         println!("(no jobs registered)");
@@ -542,18 +534,16 @@ fn register_tasks_cli(app: &mut App, registry: TaskRegistry) {
                     Ok(())
                 }
                 "run" => {
-                    let name = args
-                        .get(1)
-                        .cloned()
-                        .ok_or_else(|| Error::Internal("usage: tasks run NAME [--json '{…}']".into()))?;
+                    let name = args.get(1).cloned().ok_or_else(|| {
+                        Error::Internal("usage: tasks run NAME [--json '{…}']".into())
+                    })?;
                     let mut data = Value::Object(Default::default());
                     if let Some(idx) = args.iter().position(|a| a == "--json") {
                         let raw = args.get(idx + 1).ok_or_else(|| {
                             Error::Internal("tasks run: --json requires a value".into())
                         })?;
-                        data = serde_json::from_str(raw).map_err(|e| {
-                            Error::Internal(format!("tasks run --json: {e}"))
-                        })?;
+                        data = serde_json::from_str(raw)
+                            .map_err(|e| Error::Internal(format!("tasks run --json: {e}")))?;
                     }
                     let Some(handler) = registry.handlers.get(&name) else {
                         return Err(Error::Internal(format!(
@@ -810,10 +800,8 @@ mod tests {
             retry_base: Duration::from_millis(50),
             events: None,
         });
-        let handle = tokio::spawn(worker.run(
-            Arc::new(sova_core::extend::StateMap::new()),
-            shutdown,
-        ));
+        let handle =
+            tokio::spawn(worker.run(Arc::new(sova_core::extend::StateMap::new()), shutdown));
 
         let deadline = tokio::time::Instant::now() + Duration::from_secs(3);
         while tokio::time::Instant::now() < deadline {

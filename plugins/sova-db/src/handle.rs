@@ -1,9 +1,9 @@
 use crate::DbError;
-use sova_core::Request;
 use sea_orm::{
     ConnectionTrait, DatabaseConnection, DatabaseTransaction, DbBackend, DbErr, ExecResult,
     QueryResult, Statement,
 };
+use sova_core::Request;
 use std::sync::{Arc, RwLock};
 
 /// Shared pool handle filled during `on_startup`.
@@ -60,31 +60,46 @@ impl ConnectionTrait for DbHandle {
     }
 
     async fn execute_raw(&self, stmt: Statement) -> Result<ExecResult, DbErr> {
-        match self {
+        let sql = stmt.sql.clone();
+        let started = std::time::Instant::now();
+        let result = match self {
             Self::Conn(c) => c.execute_raw(stmt).await,
             Self::Tx(t) => t.execute_raw(stmt).await,
-        }
+        };
+        crate::trace::log_query(&sql, started, result.is_ok());
+        result
     }
 
     async fn execute_unprepared(&self, sql: &str) -> Result<ExecResult, DbErr> {
-        match self {
+        let started = std::time::Instant::now();
+        let result = match self {
             Self::Conn(c) => c.execute_unprepared(sql).await,
             Self::Tx(t) => t.execute_unprepared(sql).await,
-        }
+        };
+        crate::trace::log_query(sql, started, result.is_ok());
+        result
     }
 
     async fn query_one_raw(&self, stmt: Statement) -> Result<Option<QueryResult>, DbErr> {
-        match self {
+        let sql = stmt.sql.clone();
+        let started = std::time::Instant::now();
+        let result = match self {
             Self::Conn(c) => c.query_one_raw(stmt).await,
             Self::Tx(t) => t.query_one_raw(stmt).await,
-        }
+        };
+        crate::trace::log_query(&sql, started, result.is_ok());
+        result
     }
 
     async fn query_all_raw(&self, stmt: Statement) -> Result<Vec<QueryResult>, DbErr> {
-        match self {
+        let sql = stmt.sql.clone();
+        let started = std::time::Instant::now();
+        let result = match self {
             Self::Conn(c) => c.query_all_raw(stmt).await,
             Self::Tx(t) => t.query_all_raw(stmt).await,
-        }
+        };
+        crate::trace::log_query(&sql, started, result.is_ok());
+        result
     }
 
     fn support_returning(&self) -> bool {

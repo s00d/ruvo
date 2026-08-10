@@ -2,10 +2,10 @@
 
 #![cfg(feature = "templates")]
 
+use serde_json::json;
 use sova_core::{App, Plugin, Request, Response};
 use sova_mail::{Mail, MailExt};
 use sova_templates::Templates;
-use serde_json::json;
 use tempfile::tempdir;
 
 #[tokio::test]

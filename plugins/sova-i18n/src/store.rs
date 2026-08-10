@@ -133,7 +133,10 @@ pub fn load_store(dir: &Path, locales: &[Locale]) -> sova_core::Result<Store> {
     let mut version_hasher = std::collections::hash_map::DefaultHasher::new();
 
     for loc in locales {
-        let root_tree = roots.get(&loc.code).cloned().unwrap_or_else(|| Value::Object(Map::new()));
+        let root_tree = roots
+            .get(&loc.code)
+            .cloned()
+            .unwrap_or_else(|| Value::Object(Map::new()));
         let root_scope = build_scope(&root_tree)?;
         root_scope.payload.hash(&mut version_hasher);
         scopes.insert(
@@ -182,9 +185,10 @@ fn read_json_object(path: &Path) -> sova_core::Result<Value> {
 fn build_scope(tree: &Value) -> sova_core::Result<Scope> {
     let mut flat = HashMap::new();
     flatten(tree, "", &mut flat);
-    let payload = Bytes::from(serde_json::to_vec(tree).map_err(|e| {
-        sova_core::Error::Internal(format!("i18n serialize: {e}"))
-    })?);
+    let payload = Bytes::from(
+        serde_json::to_vec(tree)
+            .map_err(|e| sova_core::Error::Internal(format!("i18n serialize: {e}")))?,
+    );
     let etag = etag_for(&payload);
     Ok(Scope {
         flat,
@@ -237,10 +241,7 @@ pub fn flatten(value: &Value, prefix: &str, out: &mut HashMap<Box<str>, Box<str>
                     }
                     Value::Object(_) => flatten(v, &key, out),
                     other => {
-                        out.insert(
-                            key.into_boxed_str(),
-                            other.to_string().into_boxed_str(),
-                        );
+                        out.insert(key.into_boxed_str(), other.to_string().into_boxed_str());
                     }
                 }
             }

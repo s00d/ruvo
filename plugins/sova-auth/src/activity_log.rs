@@ -2,9 +2,9 @@
 
 #![cfg(feature = "activity")]
 
+use serde_json::Value;
 use sova_activity::ActivityExt;
 use sova_core::Request;
-use serde_json::Value;
 
 pub async fn log_event(
     req: &Request,

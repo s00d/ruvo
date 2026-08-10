@@ -28,5 +28,8 @@ cookie = "my_sid"
         .iter()
         .filter_map(|v| v.to_str().ok())
         .any(|v| v.starts_with("my_sid=") || v.contains("my_sid="));
-    assert!(set_cookie, "expected Set-Cookie my_sid=… from [session] cookie");
+    assert!(
+        set_cookie,
+        "expected Set-Cookie my_sid=… from [session] cookie"
+    );
 }

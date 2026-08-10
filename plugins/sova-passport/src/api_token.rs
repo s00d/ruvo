@@ -3,10 +3,10 @@
 use crate::entity::{api_token, user};
 use crate::store::{find_user_by_id, hash_token, AuthUser};
 use chrono::{DateTime, Utc};
-use sova_core::{Error, EventBus, Result};
-use sova_db::{DbError, DbHandle};
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize};
+use sova_core::{Error, EventBus, Result};
+use sova_db::{DbError, DbHandle};
 
 pub const PAT_PREFIX: &str = "svpat_";
 
@@ -173,10 +173,7 @@ pub async fn revoke_api_token(
 }
 
 /// Validate PAT; returns user + token info if valid.
-pub async fn user_for_api_token(
-    db: &DbHandle,
-    raw: &str,
-) -> Result<(user::Model, ApiTokenInfo)> {
+pub async fn user_for_api_token(db: &DbHandle, raw: &str) -> Result<(user::Model, ApiTokenInfo)> {
     let prefix = pat_prefix(raw).ok_or(Error::Unauthorized)?;
     let hash = hash_token(raw);
     let candidates = api_token::Entity::find()

@@ -197,10 +197,7 @@ pub trait AuthExt {
     ) -> Result<&CurrentUser>;
 
     /// Custom predicate authorization.
-    fn authorize_with(
-        &self,
-        f: impl FnOnce(&CurrentUser) -> bool,
-    ) -> Result<&CurrentUser>;
+    fn authorize_with(&self, f: impl FnOnce(&CurrentUser) -> bool) -> Result<&CurrentUser>;
 
     /// Programmatic login: rotate session, persist passport user id, set [`CurrentUser`].
     ///
@@ -214,14 +211,10 @@ pub trait AuthExt {
     fn logout_user(&mut self);
 
     /// Kill every other device/session for the current user; keep this cookie.
-    fn logout_other_sessions(
-        &self,
-    ) -> impl std::future::Future<Output = Result<u64>> + Send;
+    fn logout_other_sessions(&self) -> impl std::future::Future<Output = Result<u64>> + Send;
 
     /// Kill all sessions for the current user, including this one.
-    fn logout_all_sessions(
-        &mut self,
-    ) -> impl std::future::Future<Output = Result<u64>> + Send;
+    fn logout_all_sessions(&mut self) -> impl std::future::Future<Output = Result<u64>> + Send;
 }
 
 impl AuthExt for Request {

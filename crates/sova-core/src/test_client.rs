@@ -216,7 +216,8 @@ impl ResponseAssert for Response {
             got,
             code,
             "unexpected status {got}, body: {:?}",
-            self.body_bytes().map(|b| String::from_utf8_lossy(b).into_owned())
+            self.body_bytes()
+                .map(|b| String::from_utf8_lossy(b).into_owned())
         );
         self
     }

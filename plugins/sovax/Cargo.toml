@@ -1,6 +1,6 @@
 [package]
 name = "sovax"
-version = "0.1.1"
+version = "0.1.2"
 authors.workspace = true
 edition.workspace = true
 description = "CLI ServerArgs / listen_args for Sova (local dev)"

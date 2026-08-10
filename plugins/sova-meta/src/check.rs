@@ -3,7 +3,9 @@
 use crate::defaults::MetaDefaults;
 use crate::page::MetaPage;
 use crate::robots::RobotsConfig;
-use crate::sitemap::{collect_entries, collect_entries_with, path_is_dynamic, CollectOpts, SitemapRegistry};
+use crate::sitemap::{
+    collect_entries, collect_entries_with, path_is_dynamic, CollectOpts, SitemapRegistry,
+};
 use http::Method;
 use sova_core::extend::{RouteEntry, RouteTable};
 use sova_core::{App, Error};
@@ -62,12 +64,7 @@ pub fn register_meta_check(app: &mut App) {
 fn check_titles(table: &RouteTable, defaults: &MetaDefaults) -> Result<(), Error> {
     let mut missing = Vec::new();
     for entry in &table.0 {
-        let RouteEntry::Http {
-            method,
-            path,
-            meta,
-        } = entry
-        else {
+        let RouteEntry::Http { method, path, meta } = entry else {
             continue;
         };
         if *method != Method::GET || path_is_dynamic(path) {
@@ -78,7 +75,10 @@ fn check_titles(table: &RouteTable, defaults: &MetaDefaults) -> Result<(), Error
         }
         #[cfg(feature = "openapi")]
         {
-            if meta.get::<sova_openapi::Doc>().is_some_and(|d| !d.is_skip()) {
+            if meta
+                .get::<sova_openapi::Doc>()
+                .is_some_and(|d| !d.is_skip())
+            {
                 continue;
             }
         }

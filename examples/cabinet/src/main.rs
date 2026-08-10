@@ -18,11 +18,11 @@ mod state;
 
 use migrate::CabinetMigrator;
 use sova::{
-    bearer_guard, logger, namespace, priority, store, tasks, with_flash, Activity, App,
-    AuthFeature, Channel, Compress, Cors, Csrf, Db, DbPool, Dispatch, Fortify, I18n, Job,
-    Locale, Mail, Meta, Notifications, OpenApi, OutboundHttp, Parser, RateLimit,
+    bearer_guard, logger, namespace, priority, request_id, store, tasks, with_flash, Activity, App,
+    AuthFeature, Channel, Compress, Cors, Csrf, Db, DbPool, Dispatch, Fortify, I18n, Job, Locale,
+    Mail, Meta, Notifications, Observability, OpenApi, OutboundHttp, Parser, RateLimit,
     RateLimitKey, Result, Robots, ServerArgs, SessionLayer, SharedStore, Shield, Sitemap, Static,
-    Storage, Tasks, Templates, Vld, Ws, Observability, request_id,
+    Storage, Tasks, Templates, Vld, Ws,
 };
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -35,8 +35,7 @@ async fn main() -> Result<()> {
     args.init_tracing();
 
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let public_url = std::env::var("PUBLIC_URL")
-        .unwrap_or_else(|_| "http://127.0.0.1:3000".into());
+    let public_url = std::env::var("PUBLIC_URL").unwrap_or_else(|_| "http://127.0.0.1:3000".into());
     let tasks_bearer =
         std::env::var("TASKS_BEARER").unwrap_or_else(|_| "cabinet-dev-secret".into());
 
@@ -83,9 +82,9 @@ async fn main() -> Result<()> {
     app.install(Shield::new());
     app.install(Compress::new());
     app.install(SharedStore::new(Arc::clone(&kv) as Arc<dyn sova::KvStore>));
-    app.install(SessionLayer::from_store(Arc::new(sova::SqlSessionStore::from_db_pool(
-        &db_pool,
-    ))));
+    app.install(SessionLayer::from_store(Arc::new(
+        sova::SqlSessionStore::from_db_pool(&db_pool),
+    )));
     // Session cookie auth: CSRF on forms + /api/auth; except tasks API.
     app.install(Csrf::new().except("/_tasks/*"));
     app.install(
@@ -117,9 +116,7 @@ async fn main() -> Result<()> {
     );
 
     let views = root.join("views");
-    let templates = with_flash(
-        Templates::minijinja(&views).per_request("t", sova::template_fn),
-    );
+    let templates = with_flash(Templates::minijinja(&views).per_request("t", sova::template_fn));
     app.install(templates);
 
     // site_name / title_template / public_url from [meta] in sova.toml (unset-fill).
@@ -210,12 +207,12 @@ async fn main() -> Result<()> {
             .api_mount("/api/auth")
             .after_register(|user, req| async move {
                 if let Some(tasks) = req.try_state::<sova::TaskBackend>() {
-                    let _ = tasks
-                        .dispatch(
-                            Dispatch::new("welcome_email")
-                                .data(serde_json::json!({ "email": user.email, "name": user.name })),
-                        )
-                        .await;
+                    let _ =
+                        tasks
+                            .dispatch(Dispatch::new("welcome_email").data(
+                                serde_json::json!({ "email": user.email, "name": user.name }),
+                            ))
+                            .await;
                 }
                 Ok(req)
             }),
@@ -229,9 +226,7 @@ async fn main() -> Result<()> {
 
     app.install(
         Notifications::new()
-            .channel(
-                Channel::new("orders").publish("notifications.orders.publish"),
-            )
+            .channel(Channel::new("orders").publish("notifications.orders.publish"))
             .channel(Channel::new("security"))
             .mount("/notifications")
             .guard(Fortify::guard())
@@ -242,6 +237,8 @@ async fn main() -> Result<()> {
     modules::register(&mut app);
     app.with_probes();
 
-    tracing::info!("cabinet demo — open {public_url} (after migrate+seed: demo@sova.local / demo1234)");
+    tracing::info!(
+        "cabinet demo — open {public_url} (after migrate+seed: demo@sova.local / demo1234)"
+    );
     app.run().await
 }

@@ -10,8 +10,12 @@ export type TabId =
   | "timeline"
   | "db"
   | "cache"
+  | "redis"
   | "logs"
   | "http"
+  | "graphql"
+  | "grpc"
+  | "rabbit"
   | "mail"
   | "jobs"
   | "auth"
@@ -68,9 +72,13 @@ export function loadUi(): UiState {
       open?: boolean;
       tab?: string;
     };
+    const tab =
+      parsed.tab === "playground"
+        ? "http"
+        : ((parsed.tab as TabId) || "request");
     return {
       open: Boolean(parsed.open),
-      tab: (parsed.tab as TabId) || "request",
+      tab,
     };
   } catch {
     return { ...DEFAULT_UI };

@@ -38,11 +38,14 @@ impl Plugin for CookieLayer {
 
     fn install(self, app: &mut App) {
         app.state(CookieLayerPresent);
-        app.use_middleware(named("cookies", |mut req: Request, next: Next| async move {
-            let parsed = parse_cookies(&req.headers);
-            req.set(parsed);
-            next(req).await
-        }));
+        app.use_middleware(named(
+            "cookies",
+            |mut req: Request, next: Next| async move {
+                let parsed = parse_cookies(&req.headers);
+                req.set(parsed);
+                next(req).await
+            },
+        ));
     }
 }
 
@@ -52,10 +55,7 @@ pub struct CookieLayerPresent;
 
 fn parse_cookies(headers: &HeaderMap) -> Cookies {
     let mut cookies = Cookies::default();
-    if let Some(raw) = headers
-        .get(header::COOKIE)
-        .and_then(|v| v.to_str().ok())
-    {
+    if let Some(raw) = headers.get(header::COOKIE).and_then(|v| v.to_str().ok()) {
         for part in raw.split(';') {
             if let Ok(c) = Cookie::parse(part.trim()) {
                 cookies

@@ -16,23 +16,19 @@ async fn main() -> Result<()> {
             .public_url("http://127.0.0.1:3000")
             .twitter_site("@sova"),
     );
-    app.install(
-        Sitemap::new().provider("/blog/:slug", |_ctx| async move {
-            Ok(vec![
-                sova::Entry::new("/blog/hello"),
-                sova::Entry::new("/blog/meta"),
-            ])
-        }),
-    );
+    app.install(Sitemap::new().provider("/blog/:slug", |_ctx| async move {
+        Ok(vec![
+            sova::Entry::new("/blog/hello"),
+            sova::Entry::new("/blog/meta"),
+        ])
+    }));
     app.install(Robots::new());
 
     app.get("/", |mut req: Request| async move {
         req.meta()
             .title("Home")
             .description("A tiny Sova blog with document meta.");
-        Html(
-            "<h1>Sova Blog</h1><p><a href=\"/blog/hello\">hello</a></p>".to_string(),
-        )
+        Html("<h1>Sova Blog</h1><p><a href=\"/blog/hello\">hello</a></p>".to_string())
     })
     .with(Meta::page().title("Home").description("Blog home"));
 
@@ -59,11 +55,7 @@ async fn main() -> Result<()> {
     });
 
     app.get("/about", || async { Html("<h1>About</h1>".to_string()) })
-        .with(
-            Meta::page()
-                .title("About")
-                .description("About this blog"),
-        );
+        .with(Meta::page().title("About").description("About this blog"));
 
     println!("meta blog on http://127.0.0.1:3000 — try /blog/hello, /sitemap.xml, /robots.txt");
     app.listen(3000).await

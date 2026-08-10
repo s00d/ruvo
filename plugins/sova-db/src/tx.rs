@@ -1,8 +1,8 @@
 use crate::handle::{DbHandle, DbPool};
 use crate::DbError;
+use sea_orm::TransactionTrait;
 use sova_core::extend::named;
 use sova_core::{Next, Request, Response};
-use sea_orm::TransactionTrait;
 use std::sync::Arc;
 
 /// Open a request-scoped transaction; commit on 2xx, otherwise rollback.

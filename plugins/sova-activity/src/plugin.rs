@@ -2,7 +2,7 @@
 
 use crate::list::{list_activity, ActivityFilter};
 use crate::record::ActivityLog;
-use sova_core::extend::{MwEntry, IntoMwEntry};
+use sova_core::extend::{IntoMwEntry, MwEntry};
 use sova_core::{App, Json, Plugin, Request, Result, Router};
 use sova_db::DbExt;
 

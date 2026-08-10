@@ -1,9 +1,9 @@
+use serde_json::json;
 use sova::vld;
 use sova::{
     doc_schema, CsrfExt, CurrentUser, HttpExt, Meta, RenderExt, Request, Response, Result, Router,
     ValidExt, ValidateRouteExt,
 };
-use serde_json::json;
 
 vld::schema! {
     #[derive(Debug, Clone)]
@@ -40,7 +40,9 @@ async fn form_post(req: Request) -> Result<Response> {
     let result = match req.http().get(&form.url).send().await {
         Ok(res) => {
             let status = res.status_u16();
-            let body = res.text().unwrap_or_else(|_| String::from("(unreadable body)"));
+            let body = res
+                .text()
+                .unwrap_or_else(|_| String::from("(unreadable body)"));
             let preview: String = body.chars().take(400).collect();
             json!({ "ok": true, "status": status, "preview": preview })
         }

@@ -36,7 +36,12 @@ mod m20260101_000001_create_users {
                                 .primary_key(),
                         )
                         .col(ColumnDef::new(Users::Name).string().not_null())
-                        .col(ColumnDef::new(Users::Email).string().not_null().unique_key())
+                        .col(
+                            ColumnDef::new(Users::Email)
+                                .string()
+                                .not_null()
+                                .unique_key(),
+                        )
                         .to_owned(),
                 )
                 .await

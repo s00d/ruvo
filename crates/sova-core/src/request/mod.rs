@@ -18,7 +18,9 @@ pub enum ReqBody {
     Bytes(Bytes),
     Stream(HttpBody),
     /// Consumed by a prior body reader (`by` names the consumer).
-    Taken { by: &'static str },
+    Taken {
+        by: &'static str,
+    },
 }
 
 /// Incoming HTTP request with Express-style helpers.
@@ -301,8 +303,7 @@ impl Request {
     where
         T: Default + Send + Sync + 'static,
     {
-        self.try_state()
-            .unwrap_or_else(|| Arc::new(T::default()))
+        self.try_state().unwrap_or_else(|| Arc::new(T::default()))
     }
 
     pub fn try_state<T>(&self) -> Option<Arc<T>>
@@ -354,8 +355,7 @@ impl Request {
 
     /// Remaining request budget from [`crate::limits::Deadline`], if set.
     pub fn deadline_remaining(&self) -> Option<std::time::Duration> {
-        self.get::<crate::limits::Deadline>()
-            .map(|d| d.remaining())
+        self.get::<crate::limits::Deadline>().map(|d| d.remaining())
     }
 }
 

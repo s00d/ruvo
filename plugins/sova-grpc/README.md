@@ -8,9 +8,15 @@ Connect-JSON unary RPC for Sova — **client first** (`req.grpc().call`), `FakeG
 
 No tonic / `.proto` required for v1 (serde JSON).
 
+**Guide:** [https://s00d.github.io/sova/plugins/grpc](https://s00d.github.io/sova/plugins/grpc)
+
+## Install
+
 ```bash
 cargo add sova --features grpc
 ```
+
+Server mount: `Grpc::server().unary(...).client(url)`.
 
 ## License
 

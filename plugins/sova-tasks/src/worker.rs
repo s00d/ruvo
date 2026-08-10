@@ -22,11 +22,7 @@ impl BackgroundService for TaskWorker {
         "tasks-worker"
     }
 
-    fn run(
-        self: Box<Self>,
-        _state: Arc<StateMap>,
-        shutdown: Shutdown,
-    ) -> BoxFuture<()> {
+    fn run(self: Box<Self>, _state: Arc<StateMap>, shutdown: Shutdown) -> BoxFuture<()> {
         Box::pin(async move {
             loop {
                 if shutdown.is_triggered() {
@@ -35,11 +31,7 @@ impl BackgroundService for TaskWorker {
                 let _ = self.store.reap(std::time::SystemTime::now()).await;
                 let mut got = false;
                 for q in &self.queues {
-                    match self
-                        .store
-                        .claim(q, &self.worker_id, self.lease, 1)
-                        .await
-                    {
+                    match self.store.claim(q, &self.worker_id, self.lease, 1).await {
                         Ok(batch) if !batch.is_empty() => {
                             got = true;
                             for task in batch {
@@ -125,10 +117,7 @@ impl TaskWorker {
                     None
                 } else {
                     let mult = task.attempts.max(1);
-                    Some(
-                        std::time::SystemTime::now()
-                            + retry_base.saturating_mul(mult),
-                    )
+                    Some(std::time::SystemTime::now() + retry_base.saturating_mul(mult))
                 };
                 let status = if retry_at.is_some() {
                     "retry"
@@ -204,10 +193,7 @@ mod tests {
     use std::sync::Mutex;
 
     fn payload(name: &str) -> Bytes {
-        Bytes::from(
-            serde_json::to_vec(&serde_json::json!({ "name": name, "data": {} }))
-                .unwrap(),
-        )
+        Bytes::from(serde_json::to_vec(&serde_json::json!({ "name": name, "data": {} })).unwrap())
     }
 
     async fn enqueue(store: &MemoryStore, queue: &str, name: &str) -> String {

@@ -1,6 +1,6 @@
+use serde::Serialize;
 use sova_core::extend::ErrorResponse;
 use sova_core::{Error, IntoResponse, Request, Response};
-use serde::Serialize;
 use vld::error::{IssueCode, PathSegment, ValidationIssue, VldError};
 
 /// Newtype so Sova can implement [`IntoResponse`] (orphan rule).
@@ -62,9 +62,9 @@ impl ValidationError {
 
     #[cfg(feature = "flash")]
     fn respond_flash(self, req: &Request) -> Response {
+        use serde_json::json;
         use sova_core::{FormData, Redirect};
         use sova_session::SessionExt;
-        use serde_json::json;
 
         let session = req.session();
         let mut errors = serde_json::Map::new();
@@ -88,10 +88,7 @@ impl ValidationError {
                         old.insert(k.clone(), json!(one));
                     }
                     many => {
-                        old.insert(
-                            k.clone(),
-                            json!(many.to_vec()),
-                        );
+                        old.insert(k.clone(), json!(many.to_vec()));
                     }
                 }
             }

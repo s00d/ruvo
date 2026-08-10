@@ -1,8 +1,6 @@
 //! Plugin SDK version gate and metadata.
 
-use sova_core::{
-    App, Plugin, PluginMeta, PluginSdkVersion, PLUGIN_SDK_VERSION,
-};
+use sova_core::{App, Plugin, PluginMeta, PluginSdkVersion, PLUGIN_SDK_VERSION};
 
 struct OkPlugin;
 

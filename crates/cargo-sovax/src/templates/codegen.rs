@@ -32,9 +32,7 @@ pub fn parse_fields(raw: &str) -> Result<Vec<FieldSpec>, String> {
         }
         let pieces: Vec<&str> = part.split(':').map(str::trim).collect();
         if pieces.len() < 2 {
-            return Err(format!(
-                "bad field `{part}` — expected name:type[:unique]"
-            ));
+            return Err(format!("bad field `{part}` — expected name:type[:unique]"));
         }
         let name = pieces[0].to_string();
         validate_ident(&name)?;
@@ -163,7 +161,10 @@ pub fn render_migration(mig_id: &str, table: &str, fields: &[FieldSpec]) -> Stri
     out.push_str("                    .if_not_exists()\n");
     out.push_str("                    .col(pk_auto(\"id\"))\n");
     for f in fields {
-        out.push_str(&format!("                    .col({})\n", migration_col_helper(f)));
+        out.push_str(&format!(
+            "                    .col({})\n",
+            migration_col_helper(f)
+        ));
     }
     out.push_str("                    .to_owned(),\n");
     out.push_str("            )\n");
@@ -243,7 +244,10 @@ pub fn ensure_seeds_registry(snake: &str) -> Result<(), String> {
         }
     }
     if mods.iter().any(|m| m == snake) {
-        return Err(format!("seed `{snake}` already registered in {}", path.display()));
+        return Err(format!(
+            "seed `{snake}` already registered in {}",
+            path.display()
+        ));
     }
     mods.push(snake.to_string());
 
@@ -623,7 +627,10 @@ pub fn ensure_jobs_registry(snake: &str) -> Result<(), String> {
         }
     }
     if mods.iter().any(|m| m == snake) {
-        return Err(format!("job `{snake}` already registered in {}", path.display()));
+        return Err(format!(
+            "job `{snake}` already registered in {}",
+            path.display()
+        ));
     }
     mods.push(snake.to_string());
 
@@ -758,7 +765,9 @@ pub fn render_web_handlers(name: &str, plural: &str, fields: Option<&[FieldSpec]
     out.push_str("use super::dto::{Form, IdParams};\n");
     out.push_str(&format!("use crate::entities::{name} as entity;\n"));
     out.push_str("use sova::{\n");
-    out.push_str("    ActiveModelTrait, CsrfExt, DbError, DbExt, EntityTrait, Error, IntoResponse,\n");
+    out.push_str(
+        "    ActiveModelTrait, CsrfExt, DbError, DbExt, EntityTrait, Error, IntoResponse,\n",
+    );
     out.push_str("    Redirect, RenderExt, Request, Response, Result, Set, ValidationExt,\n");
     out.push_str("};\n");
     out.push_str("use serde_json::json;\n\n");
@@ -1111,6 +1120,9 @@ mod tests {
     fn crud_dto_imports_vld() {
         let dto = render_crud_dto(None);
         assert!(dto.contains("use sova::vld;"), "{dto}");
-        assert!(dto.contains("doc_schema!(Create, Update, IdParams)"), "{dto}");
+        assert!(
+            dto.contains("doc_schema!(Create, Update, IdParams)"),
+            "{dto}"
+        );
     }
 }

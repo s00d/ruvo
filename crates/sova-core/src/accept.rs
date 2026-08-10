@@ -110,9 +110,7 @@ pub fn error_response_for_accept(accept: Option<&str>, err: Error) -> Response {
     if let Error::Response(res) = err {
         return *res;
     }
-    let accept = accept
-        .map(|s| s.to_string())
-        .or_else(current_accept);
+    let accept = accept.map(|s| s.to_string()).or_else(current_accept);
     match negotiate_error_format(accept.as_deref()) {
         ErrorFormat::Html => {
             let (status, title, detail) = error_title_detail(&err);

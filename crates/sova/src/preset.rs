@@ -68,13 +68,14 @@ impl WebApp {
         }
         self.installed = true;
 
-        use crate::{memory_sessions, Cors, Csrf, Meta, Robots, Shield, Sitemap, Static, Templates};
+        use crate::{
+            memory_sessions, Cors, Csrf, Meta, Robots, Shield, Sitemap, Static, Templates,
+        };
 
         self.inner.use_middleware(crate::request_id());
         self.inner.use_middleware(crate::logger());
-        self.inner.error_handler(|err| async move {
-            sova_core::error_response_for_accept(None, err)
-        });
+        self.inner
+            .error_handler(|err| async move { sova_core::error_response_for_accept(None, err) });
         self.inner.install(Cors::new());
         self.inner.install(Shield::new());
         self.inner.install(memory_sessions());
@@ -91,7 +92,9 @@ impl WebApp {
 
         let mut meta = Meta::new();
         if let Some(ref site) = self.site {
-            meta = meta.site_name(site.clone()).title_template(format!("{{}} — {site}"));
+            meta = meta
+                .site_name(site.clone())
+                .title_template(format!("{{}} — {site}"));
         }
         if let Some(ref url) = self.public_url {
             meta = meta.public_url(url.clone());
@@ -191,9 +194,8 @@ impl ApiApp {
 
         self.inner.use_middleware(crate::request_id());
         self.inner.use_middleware(crate::logger());
-        self.inner.error_handler(|err| async move {
-            sova_core::error_to_problem(err)
-        });
+        self.inner
+            .error_handler(|err| async move { sova_core::error_to_problem(err) });
         self.inner.install(Cors::new());
         self.inner.install(memory_sessions());
         self.inner.install(

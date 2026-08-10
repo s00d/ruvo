@@ -1,6 +1,6 @@
 //! MiniJinja templates loaded from files.
-use sova::{App, Request, Response, Result, RenderExt, Templates};
 use serde::Serialize;
+use sova::{App, RenderExt, Request, Response, Result, Templates};
 
 #[derive(Serialize)]
 struct Page {

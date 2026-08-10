@@ -57,12 +57,13 @@ cargo run -p devtools_demo
 | **Request** | Method, path, status, duration, route / locale / CSRF / rate-limit / encoding |
 | **Timeline** | Recent requests (SSE); click to load a snapshot |
 | **DB** | SQL queries for the selected request (bindings redacted) |
-| **Cache** | KvStore / Cache / Redis ops (`sova.store` / `sova.redis`) |
+| **Cache** | AppStore / Cache ops (`sova.store`) + KV console |
+| **Redis** | Redis ops (`sova.redis`) + Redis console |
 | **Logs** | `tracing` / console lines (per-request + site-wide) |
-| **HTTP** | Outbound client calls |
+| **HTTP** | HTTP client (replay) + outbound client traces |
 | **Mail** | FakeMail / last messages (with `mail` feature) |
 | **Jobs** | Task enqueue / worker (`sova.tasks`) |
-| **Auth** | Session keys + user / email / roles (redacted) |
+| **Auth** | Session keys + user / email / roles; Session console (edit keys) |
 | **Events** | Custom `hub.emit` + forwarded domain EventBus (auth/mail/csrf/session/tasks/…) |
 | **Memory** | Process RSS sparkline + current/peak/min (Linux + macOS; ~2s) |
 | **Config** | Profile + compiled DevTools feature flags |
@@ -171,9 +172,38 @@ npm --prefix plugins/sova-devtools/ui run playground
 
 ![Mobile](/devtools/playground-mobile.png)
 
+## Console (control panel)
+
+With the `console` feature (included in facade `devtools` / `devtools-console`), DevTools provides interactive consoles:
+
+| UI | Action domain | Endpoint |
+|----|---------------|----------|
+| **HTTP** tab | HTTP replay (app + external) + outbound traces | `POST /_devtools/actions/http` |
+| **Redis** tab | Redis GET/SET/DEL/TTL/SCAN/PUBLISH + SSE | `POST /_devtools/actions/redis`, `GET /_devtools/stream/redis` |
+| **Cache** tab | AppStore namespace ops | `POST /_devtools/actions/store` |
+| **GraphQL** tab | In-process schema execute | `POST /_devtools/actions/graphql` |
+| **Jobs** tab | Enqueue task | `POST /_devtools/actions/tasks` |
+| **Mail** tab | Fake compose | `POST /_devtools/actions/mail` |
+| **Events** tab | Emit custom event | `POST /_devtools/actions/events` |
+| **Auth** tab | Session list/set/del/regenerate | `POST /_devtools/actions/session` (`devtools-console-session`) |
+
+Console POST requests must include CSRF token + cookies when the app uses the web preset (`X-XSRF-TOKEN` from `XSRF-TOKEN` cookie). The DevTools UI handles this automatically.
+
+The **HTTP** tab combines a Postman-like client (method/path, query params, headers, body, response, history) with outbound trace lines for the selected request. Double-click a request in the timeline → prefill + navigate to HTTP.
+
+**Redis in demo:** `Redis::fake()` — in-memory, no Docker:
+
+```rust
+app.install(Redis::fake(FakeRedis::new()));
+app.state(AppDispatch::default());
+app.install(DevTools::new().console(true));
+```
+
+Facade: `devtools-console`, `devtools-console-redis`, `devtools-console-store`, `devtools-console-graphql`, `devtools-console-tasks`, `devtools-console-mail`, `devtools-console-http-external`, `devtools-console-events`, `devtools-console-rabbit`, `devtools-console-session`.
+
 ## Security notes
 
-- `/_devtools/*` is a **GET-only** debug surface — do not expose it on the public internet.
+- `/_devtools/*` is a **debug surface** (GET reads + POST console actions) — do not expose it on the public internet.
 - Release builds keep the plugin inert even if you forget to strip the feature from `Cargo.toml`.
 - Session values and SQL bindings are redacted/masked in the UI.
 - HTML pages that get the bar send `Cache-Control: no-store` so browser **Back** is not served from bfcache (otherwise no server hit → empty Timeline).

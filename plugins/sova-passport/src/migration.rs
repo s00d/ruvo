@@ -175,21 +175,13 @@ mod m20260308_000001_passport {
                                     .string()
                                     .not_null(),
                             )
-                            .col(
-                                ColumnDef::new(AuthOauthAccounts::AccessToken)
-                                    .text()
-                                    .null(),
-                            )
+                            .col(ColumnDef::new(AuthOauthAccounts::AccessToken).text().null())
                             .col(
                                 ColumnDef::new(AuthOauthAccounts::RefreshToken)
                                     .text()
                                     .null(),
                             )
-                            .col(
-                                ColumnDef::new(AuthOauthAccounts::ProfileJson)
-                                    .text()
-                                    .null(),
-                            )
+                            .col(ColumnDef::new(AuthOauthAccounts::ProfileJson).text().null())
                             .col(
                                 ColumnDef::new(AuthOauthAccounts::CreatedAt)
                                     .timestamp_with_time_zone()

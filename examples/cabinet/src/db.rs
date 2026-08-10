@@ -36,11 +36,7 @@ pub async fn list_notes(db: &DbHandle, user_id: i64, limit: u64) -> Result<Vec<N
     Ok(rows.into_iter().map(map_note).collect())
 }
 
-pub async fn paginate_notes(
-    db: &DbHandle,
-    user_id: i64,
-    params: PageParams,
-) -> Result<Page<Note>> {
+pub async fn paginate_notes(db: &DbHandle, user_id: i64, params: PageParams) -> Result<Page<Note>> {
     let page = note::Entity::find()
         .filter(note::Column::UserId.eq(user_id))
         .order_by_desc(note::Column::Id)

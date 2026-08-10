@@ -14,8 +14,7 @@ pub fn build_app() -> Result<App> {
 pub fn build_app_with_db(database_url: Option<&str>) -> Result<App> {
     let _ = sova::sova_env::load();
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let public_url =
-        std::env::var("PUBLIC_URL").unwrap_or_else(|_| "http://127.0.0.1:3000".into());
+    let public_url = std::env::var("PUBLIC_URL").unwrap_or_else(|_| "http://127.0.0.1:3000".into());
 
     let mut app = App::web()
         .site("Sova News")

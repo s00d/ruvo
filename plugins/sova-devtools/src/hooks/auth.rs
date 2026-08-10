@@ -36,6 +36,7 @@ pub fn collect_session_auth(
         }
         bag.set_auth(auth);
     } else {
+        #[cfg(any(feature = "auth", feature = "passport"))]
         fill_auth_without_session(
             bag,
             #[cfg(feature = "auth")]

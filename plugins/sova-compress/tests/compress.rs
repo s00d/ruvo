@@ -36,7 +36,9 @@ async fn compress_gzip_stream_body() {
         .build();
     let res = app.handle(req).await;
     assert_eq!(
-        res.headers().get("content-encoding").and_then(|v| v.to_str().ok()),
+        res.headers()
+            .get("content-encoding")
+            .and_then(|v| v.to_str().ok()),
         Some("gzip")
     );
     assert!(res
@@ -66,7 +68,9 @@ async fn prefers_brotli_over_gzip() {
         .build();
     let res = app.handle(req).await;
     assert_eq!(
-        res.headers().get("content-encoding").and_then(|v| v.to_str().ok()),
+        res.headers()
+            .get("content-encoding")
+            .and_then(|v| v.to_str().ok()),
         Some("br")
     );
 }
@@ -84,7 +88,9 @@ async fn respects_q_values() {
         .build();
     let res = app.handle(req).await;
     assert_eq!(
-        res.headers().get("content-encoding").and_then(|v| v.to_str().ok()),
+        res.headers()
+            .get("content-encoding")
+            .and_then(|v| v.to_str().ok()),
         Some("gzip")
     );
 }
@@ -174,7 +180,9 @@ async fn deflate_encoding() {
         )
         .await;
     assert_eq!(
-        res.headers().get("content-encoding").and_then(|v| v.to_str().ok()),
+        res.headers()
+            .get("content-encoding")
+            .and_then(|v| v.to_str().ok()),
         Some("deflate")
     );
 }

@@ -9,7 +9,37 @@ name = "devtools_demo"
 path = "src/main.rs"
 
 [dependencies]
-sova = { workspace = true, features = ["web", "devtools", "http-client"] }
+sova = { workspace = true, features = [
+  "web",
+  "devtools",
+  "devtools-console-redis",
+  "devtools-console-store",
+  "devtools-console-graphql",
+  "devtools-console-tasks",
+  "devtools-console-mail",
+  "devtools-console-http-external",
+  "devtools-console-events",
+  "devtools-console-grpc",
+  "devtools-console-rabbit",
+  "devtools-console-session",
+  "devtools-i18n",
+  "devtools-redis",
+  "store",
+  "tasks",
+  "db-sqlite",
+  "http-client",
+  "graphql-server",
+  "grpc",
+  "rabbit",
+  "redis",
+  "mail",
+  "i18n",
+  "session",
+] }
+async-graphql = { workspace = true }
+bytes = { workspace = true }
+sea-orm = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }
 tracing = { workspace = true }

@@ -1,12 +1,12 @@
 //! Activity log insert + list (sqlite).
 
+use serde_json::json;
 use sova_activity::{
     list_activity, Activity, ActivityEntry, ActivityExt, ActivityFilter, ActivityLog,
     ActivityMigrator,
 };
 use sova_core::{Json, Request, ResponseAssert, TestClient};
 use sova_testing::{SqliteTestDb, TestApp};
-use serde_json::json;
 
 #[tokio::test]
 async fn insert_and_list_by_subject() {

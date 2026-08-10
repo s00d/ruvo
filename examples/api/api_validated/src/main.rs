@@ -4,14 +4,14 @@
 //! cargo run -p api_validated
 //! ```
 
+use serde::Deserialize;
+use serde_json::json;
 use sova::extract::{Path, State};
 use sova::vld;
 use sova::{
     doc_schema, App, Cell, Doc, DocVldExt, IntoResponse, Json, OpenApi, OpenApiDocExt, Request,
     Response, Result, ValidationError, ValidationExt,
 };
-use serde::Deserialize;
-use serde_json::json;
 
 vld::schema! {
     #[derive(Debug, Clone, serde::Serialize)]
@@ -61,12 +61,10 @@ fn build_app() -> App {
     let mut app = App::new();
     app.state(Db::default());
 
-    app.get("/users", list).doc(
-        Doc::new().ok_schema(json!({
-            "type": "array",
-            "items": User::json_schema(),
-        })),
-    );
+    app.get("/users", list).doc(Doc::new().ok_schema(json!({
+        "type": "array",
+        "items": User::json_schema(),
+    })));
 
     app.post("/users", create)
         .doc(Doc::new().body::<CreateUser>().created::<User>());

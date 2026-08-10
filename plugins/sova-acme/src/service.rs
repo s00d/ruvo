@@ -32,11 +32,7 @@ impl BackgroundService for AcmeService {
         "acme"
     }
 
-    fn run(
-        self: Box<Self>,
-        _state: Arc<StateMap>,
-        shutdown: Shutdown,
-    ) -> BoxFuture<()> {
+    fn run(self: Box<Self>, _state: Arc<StateMap>, shutdown: Shutdown) -> BoxFuture<()> {
         Box::pin(async move {
             let (stop_tx, stop_rx) = watch::channel(false);
             let http_task = {
@@ -92,7 +88,10 @@ async fn maybe_issue(svc: &AcmeService, force: bool) {
 
     let should = force
         || placeholder
-        || meta.as_ref().map(|m| needs_renew(m, svc.renew_days)).unwrap_or(true);
+        || meta
+            .as_ref()
+            .map(|m| needs_renew(m, svc.renew_days))
+            .unwrap_or(true);
 
     if !should {
         return;

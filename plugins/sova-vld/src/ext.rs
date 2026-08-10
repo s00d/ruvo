@@ -1,7 +1,7 @@
 use crate::validate::{read_params_value, read_query_value};
 use crate::ValidationError;
-use sova_core::Request;
 use serde_json::Value;
+use sova_core::Request;
 use vld::schema::VldParse;
 
 /// Validate request body / query / path params with `vld` `schema!` types.

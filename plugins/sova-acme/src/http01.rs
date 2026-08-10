@@ -30,7 +30,11 @@ impl ChallengeMap {
     }
 
     pub fn get(&self, token: &str) -> Option<String> {
-        self.inner.lock().expect("challenge map").get(token).cloned()
+        self.inner
+            .lock()
+            .expect("challenge map")
+            .get(token)
+            .cloned()
     }
 }
 

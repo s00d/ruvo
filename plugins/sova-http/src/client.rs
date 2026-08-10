@@ -9,9 +9,9 @@ use crate::ssrf::SsrfPolicy;
 use crate::transport::{OutRequest, OutResponse, Transport};
 use bytes::Bytes;
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
+use serde::Serialize;
 use sova_core::extend::BoxFuture;
 use sova_core::{App, Plugin, Request};
-use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -102,10 +102,12 @@ impl NamedClient {
 
     fn resolve_url(&self, path: &str) -> Result<String, HttpError> {
         let cfg = self.cfg();
-        let base = cfg
-            .base_url
-            .as_deref()
-            .ok_or_else(|| HttpError::Other(format!("named http client `{}` missing base_url", self.name)))?;
+        let base = cfg.base_url.as_deref().ok_or_else(|| {
+            HttpError::Other(format!(
+                "named http client `{}` missing base_url",
+                self.name
+            ))
+        })?;
         if path.starts_with("http://") || path.starts_with("https://") {
             return Ok(path.to_string());
         }
@@ -140,7 +142,8 @@ impl NamedClient {
         let path = path.into();
         let url = self.resolve_url(&path).unwrap_or(path);
         let cfg = self.cfg();
-        let mut pending = PendingRequest::new(self.client.clone(), method, url, Some(self.name.clone()));
+        let mut pending =
+            PendingRequest::new(self.client.clone(), method, url, Some(self.name.clone()));
         if let Some(t) = cfg.timeout {
             pending.timeout = Some(t);
         }
@@ -204,8 +207,10 @@ impl PendingRequest {
         match serde_json::to_vec(body) {
             Ok(bytes) => {
                 self.body = Some(Bytes::from(bytes));
-                self.headers
-                    .insert(http::header::CONTENT_TYPE, HeaderValue::from_static("application/json"));
+                self.headers.insert(
+                    http::header::CONTENT_TYPE,
+                    HeaderValue::from_static("application/json"),
+                );
             }
             Err(e) => {
                 tracing::error!("json serialize: {e}");
@@ -246,9 +251,7 @@ impl PendingRequest {
     }
 
     fn effective_timeout(&self) -> Duration {
-        let base = self
-            .timeout
-            .unwrap_or(self.client.default_timeout);
+        let base = self.timeout.unwrap_or(self.client.default_timeout);
         match self.budget {
             Some(b) if b < base => b,
             _ => base,
@@ -316,14 +319,13 @@ impl PendingRequest {
                         let retryable = code == 429 || (500..600).contains(&code);
                         if retryable && attempt < max_retries {
                             attempt += 1;
-                            let delay = parse_retry_after(res.headers())
-                                .unwrap_or_else(|| {
-                                    full_jitter(
-                                        Duration::from_millis(100),
-                                        Duration::from_secs(2),
-                                        attempt,
-                                    )
-                                });
+                            let delay = parse_retry_after(res.headers()).unwrap_or_else(|| {
+                                full_jitter(
+                                    Duration::from_millis(100),
+                                    Duration::from_secs(2),
+                                    attempt,
+                                )
+                            });
                             self.client.breaker.record_failure(&host);
                             tokio::time::sleep(delay).await;
                             continue;
@@ -341,10 +343,7 @@ impl PendingRequest {
                             duration_ms = elapsed.as_millis() as u64,
                             "http.client error"
                         );
-                        let retryable = matches!(
-                            e,
-                            HttpError::Timeout | HttpError::Connect(_)
-                        );
+                        let retryable = matches!(e, HttpError::Timeout | HttpError::Connect(_));
                         if retryable && attempt < max_retries {
                             attempt += 1;
                             self.client.breaker.record_failure(&host);
@@ -431,7 +430,11 @@ impl Http {
         self
     }
 
-    pub fn stub_get(mut self, url: impl Into<String>, body: impl Into<crate::fake::StubBody>) -> Self {
+    pub fn stub_get(
+        mut self,
+        url: impl Into<String>,
+        body: impl Into<crate::fake::StubBody>,
+    ) -> Self {
         if let Some(f) = self.fake.take() {
             self.fake = Some(f.get(url, body));
         }

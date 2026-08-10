@@ -19,18 +19,18 @@ impl SharedStore {
     /// SQL KvStore — requires [`sova_db::Db`] installed first.
     #[cfg(feature = "store-sql")]
     pub fn sql(app: &App) -> Self {
-        let pool = app.try_state::<sova_db::DbPool>().unwrap_or_else(|| {
-            panic!("SharedStore::sql requires Db plugin installed first")
-        });
+        let pool = app
+            .try_state::<sova_db::DbPool>()
+            .unwrap_or_else(|| panic!("SharedStore::sql requires Db plugin installed first"));
         Self::new(Arc::new(sova_store::SqlStore::from_db_pool(pool.as_ref())))
     }
 
     /// Redis KvStore — requires [`sova_redis::Redis`] installed first.
     #[cfg(feature = "store-redis")]
     pub fn redis(app: &App) -> Self {
-        let pool = app.try_state::<sova_redis::RedisPool>().unwrap_or_else(|| {
-            panic!("SharedStore::redis requires Redis plugin installed first")
-        });
+        let pool = app
+            .try_state::<sova_redis::RedisPool>()
+            .unwrap_or_else(|| panic!("SharedStore::redis requires Redis plugin installed first"));
         Self::new(Arc::new(sova_store::RedisStore::from_redis_pool(
             pool.as_ref(),
         )))
@@ -40,12 +40,8 @@ impl SharedStore {
     #[cfg(feature = "store-redb")]
     pub fn redb(path: impl AsRef<std::path::Path>) -> Self {
         let path = path.as_ref();
-        let store = sova_store::RedbStore::open(path).unwrap_or_else(|e| {
-            panic!(
-                "SharedStore::redb failed to open {}: {e}",
-                path.display()
-            )
-        });
+        let store = sova_store::RedbStore::open(path)
+            .unwrap_or_else(|e| panic!("SharedStore::redb failed to open {}: {e}", path.display()));
         Self::new(Arc::new(store))
     }
 }

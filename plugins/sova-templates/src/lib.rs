@@ -2,8 +2,8 @@
 
 use minijinja::{path_loader, AutoEscape, Environment, Value};
 use minijinja_autoreload::AutoReloader;
-use sova_core::{App, Error, Plugin, Request, Response, Result};
 use serde::Serialize;
+use sova_core::{App, Error, Plugin, Request, Response, Result};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -114,8 +114,7 @@ impl TemplateEngine for MiniJinjaEngine {
             .get_template(name)
             .map_err(|e| missing_template_err(name, &e))?;
 
-        tmpl.render(ctx)
-            .map_err(|e| render_failed_err(name, &e))
+        tmpl.render(ctx).map_err(|e| render_failed_err(name, &e))
     }
 }
 
@@ -489,7 +488,10 @@ mod tests {
         let dir = tempdir().unwrap();
         std::fs::write(dir.path().join("home.html"), r#"<h1>{{ title }}</h1>"#).unwrap();
 
-        let mut app = install_app(dir.path(), Templates::minijinja(dir.path()).autoreload(false));
+        let mut app = install_app(
+            dir.path(),
+            Templates::minijinja(dir.path()).autoreload(false),
+        );
         app.get("/", |req: Request| async move {
             req.render(
                 "home.html",
@@ -566,7 +568,10 @@ mod tests {
         std::fs::create_dir_all(dir.path().join("blog")).unwrap();
         std::fs::write(dir.path().join("blog/post.html"), r#"<h1>{{ title }}</h1>"#).unwrap();
 
-        let mut app = install_app(dir.path(), Templates::minijinja(dir.path()).autoreload(false));
+        let mut app = install_app(
+            dir.path(),
+            Templates::minijinja(dir.path()).autoreload(false),
+        );
         app.get("/", |req: Request| async move {
             req.render("blog/post.html", serde_json::json!({ "title": "Post" }))
         });
@@ -581,7 +586,10 @@ mod tests {
         let dir = tempdir().unwrap();
         std::fs::write(dir.path().join("home.html"), "ok").unwrap();
 
-        let mut app = install_app(dir.path(), Templates::minijinja(dir.path()).autoreload(false));
+        let mut app = install_app(
+            dir.path(),
+            Templates::minijinja(dir.path()).autoreload(false),
+        );
         app.get("/", |req: Request| async move {
             match req.render("nope.html", serde_json::json!({})) {
                 Ok(r) => r,
@@ -605,7 +613,10 @@ mod tests {
         )
         .unwrap();
 
-        let mut app = install_app(dir.path(), Templates::minijinja(dir.path()).autoreload(false));
+        let mut app = install_app(
+            dir.path(),
+            Templates::minijinja(dir.path()).autoreload(false),
+        );
         app.get("/", |req: Request| async move {
             match req.render("bad.html", serde_json::json!({ "title": "x" })) {
                 Ok(r) => r,
@@ -630,7 +641,10 @@ mod tests {
         let path = dir.path().join("home.html");
         std::fs::write(&path, r#"<p>v1</p>"#).unwrap();
 
-        let mut app = install_app(dir.path(), Templates::minijinja(dir.path()).autoreload(true));
+        let mut app = install_app(
+            dir.path(),
+            Templates::minijinja(dir.path()).autoreload(true),
+        );
         app.get("/", |req: Request| async move {
             req.render("home.html", serde_json::json!({}))
         });

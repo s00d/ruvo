@@ -49,7 +49,6 @@ pub(crate) fn params_as<T: serde::de::DeserializeOwned>(req: &Request) -> Result
         .iter()
         .map(|(k, v)| (k.clone(), serde_json::Value::String(v.clone())))
         .collect();
-    serde_json::from_value(serde_json::Value::Object(map)).map_err(|e| {
-        Error::BadRequest(format!("path params: {e}"))
-    })
+    serde_json::from_value(serde_json::Value::Object(map))
+        .map_err(|e| Error::BadRequest(format!("path params: {e}")))
 }

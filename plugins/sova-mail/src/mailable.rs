@@ -219,11 +219,7 @@ impl Email {
 
 impl crate::client::MailClient {
     /// `compose().to(to).send_mail(mail)`.
-    pub async fn send_mail<M: Mailable>(
-        &self,
-        to: impl Into<String>,
-        mail: M,
-    ) -> Result<()> {
+    pub async fn send_mail<M: Mailable>(&self, to: impl Into<String>, mail: M) -> Result<()> {
         self.compose().to(to).send_mail(mail).await
     }
 }

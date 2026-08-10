@@ -173,7 +173,7 @@ pub struct LogConfig {
 impl Default for LogConfig {
     fn default() -> Self {
         Self {
-            filter: "sova=info".into(),
+            filter: "sova=info,sova.store=debug,sova.tasks=debug,sova.redis=debug,sova.grpc=debug,sova.rabbit=debug,sova.graphql=debug".into(),
             stdout: true,
             file: None,
             rotate: LogRotate::default(),
@@ -432,13 +432,16 @@ mod tests {
         }));
 
         let _guard = tracing::subscriber::set_default(
-            Registry::default().with(HookLayer).with(
-                EnvFilter::new("info"),
-            ),
+            Registry::default()
+                .with(HookLayer)
+                .with(EnvFilter::new("info")),
         );
         tracing::info!(request_id = "abc", "hello es");
         let records = got.lock().unwrap();
         assert!(!records.is_empty());
-        assert!(records.iter().any(|r| r.message.contains("hello es") || r.fields.iter().any(|(k,_)| k == "request_id")));
+        assert!(records
+            .iter()
+            .any(|r| r.message.contains("hello es")
+                || r.fields.iter().any(|(k, _)| k == "request_id")));
     }
 }

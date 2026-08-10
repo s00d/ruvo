@@ -51,9 +51,7 @@ pub async fn resolve(root: &Path, relative: &str) -> Result<PathBuf, FsError> {
             }
             Ok(canon)
         }
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            resolve_missing(root, lexical).await
-        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => resolve_missing(root, lexical).await,
         Err(e) => Err(e.into()),
     }
 }
@@ -78,10 +76,7 @@ async fn resolve_missing(root: &Path, lexical: PathBuf) -> Result<PathBuf, FsErr
                 return Ok(out);
             }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                let name = cur
-                    .file_name()
-                    .ok_or(FsError::Forbidden)?
-                    .to_os_string();
+                let name = cur.file_name().ok_or(FsError::Forbidden)?.to_os_string();
                 if !cur.pop() {
                     return Err(FsError::Forbidden);
                 }

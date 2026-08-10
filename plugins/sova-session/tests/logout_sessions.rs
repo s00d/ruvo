@@ -30,7 +30,9 @@ fn app_with_store(store: Arc<dyn sova_store::KvStore>) -> App {
 #[tokio::test]
 async fn logout_other_sessions_keeps_current() {
     let store = Arc::new(namespace(Arc::new(MemoryStore::new()), "sess"));
-    let a = TestClient::tracked(app_with_store(Arc::clone(&store) as _)).await.unwrap();
+    let a = TestClient::tracked(app_with_store(Arc::clone(&store) as _))
+        .await
+        .unwrap();
     let b = TestClient::tracked(app_with_store(store)).await.unwrap();
 
     a.get("/login").await;
@@ -48,7 +50,9 @@ async fn logout_other_sessions_keeps_current() {
 #[tokio::test]
 async fn logout_all_sessions_clears_current_too() {
     let store = Arc::new(namespace(Arc::new(MemoryStore::new()), "sess"));
-    let a = TestClient::tracked(app_with_store(Arc::clone(&store) as _)).await.unwrap();
+    let a = TestClient::tracked(app_with_store(Arc::clone(&store) as _))
+        .await
+        .unwrap();
     let b = TestClient::tracked(app_with_store(store)).await.unwrap();
 
     a.get("/login").await;
@@ -76,9 +80,9 @@ async fn memory_sessions_exports_store_handle() {
 #[cfg(feature = "sql")]
 mod sql_logout {
     use super::*;
+    use sea_orm::Database;
     use sova_db::DbPool;
     use sova_session::SqlSessionStore;
-    use sea_orm::Database;
 
     fn app_sql(store: Arc<SqlSessionStore>) -> App {
         let mut app = App::new();
@@ -114,13 +118,18 @@ mod sql_logout {
     #[tokio::test]
     async fn sql_logout_other_sessions() {
         let store = shared_sql().await;
-        let a = TestClient::tracked(app_sql(Arc::clone(&store))).await.unwrap();
+        let a = TestClient::tracked(app_sql(Arc::clone(&store)))
+            .await
+            .unwrap();
         let b = TestClient::tracked(app_sql(store)).await.unwrap();
 
         a.get("/login").await;
         b.get("/login").await;
 
-        assert_eq!(a.post("/logout-others").await.body_bytes(), Some(b"1".as_slice()));
+        assert_eq!(
+            a.post("/logout-others").await.body_bytes(),
+            Some(b"1".as_slice())
+        );
         assert_eq!(a.get("/mark").await.body_bytes(), Some(b"yes".as_slice()));
         assert_eq!(b.get("/mark").await.body_bytes(), Some(b"none".as_slice()));
     }
@@ -128,13 +137,18 @@ mod sql_logout {
     #[tokio::test]
     async fn sql_logout_all_sessions() {
         let store = shared_sql().await;
-        let a = TestClient::tracked(app_sql(Arc::clone(&store))).await.unwrap();
+        let a = TestClient::tracked(app_sql(Arc::clone(&store)))
+            .await
+            .unwrap();
         let b = TestClient::tracked(app_sql(store)).await.unwrap();
 
         a.get("/login").await;
         b.get("/login").await;
 
-        assert_eq!(a.post("/logout-all").await.body_bytes(), Some(b"2".as_slice()));
+        assert_eq!(
+            a.post("/logout-all").await.body_bytes(),
+            Some(b"2".as_slice())
+        );
         assert_eq!(a.get("/mark").await.body_bytes(), Some(b"none".as_slice()));
         assert_eq!(b.get("/mark").await.body_bytes(), Some(b"none".as_slice()));
     }
@@ -190,13 +204,18 @@ mod redis_logout {
             eprintln!("skip redis_logout_other_sessions: set REDIS_URL");
             return;
         };
-        let a = TestClient::tracked(app_redis(Arc::clone(&store))).await.unwrap();
+        let a = TestClient::tracked(app_redis(Arc::clone(&store)))
+            .await
+            .unwrap();
         let b = TestClient::tracked(app_redis(store)).await.unwrap();
 
         a.get("/login").await;
         b.get("/login").await;
 
-        assert_eq!(a.post("/logout-others").await.body_bytes(), Some(b"1".as_slice()));
+        assert_eq!(
+            a.post("/logout-others").await.body_bytes(),
+            Some(b"1".as_slice())
+        );
         assert_eq!(a.get("/mark").await.body_bytes(), Some(b"yes".as_slice()));
         assert_eq!(b.get("/mark").await.body_bytes(), Some(b"none".as_slice()));
     }
@@ -207,13 +226,18 @@ mod redis_logout {
             eprintln!("skip redis_logout_all_sessions: set REDIS_URL");
             return;
         };
-        let a = TestClient::tracked(app_redis(Arc::clone(&store))).await.unwrap();
+        let a = TestClient::tracked(app_redis(Arc::clone(&store)))
+            .await
+            .unwrap();
         let b = TestClient::tracked(app_redis(store)).await.unwrap();
 
         a.get("/login").await;
         b.get("/login").await;
 
-        assert_eq!(a.post("/logout-all").await.body_bytes(), Some(b"2".as_slice()));
+        assert_eq!(
+            a.post("/logout-all").await.body_bytes(),
+            Some(b"2".as_slice())
+        );
         assert_eq!(a.get("/mark").await.body_bytes(), Some(b"none".as_slice()));
         assert_eq!(b.get("/mark").await.body_bytes(), Some(b"none".as_slice()));
     }

@@ -2,9 +2,12 @@
 import { computed } from "vue";
 import {
   Activity,
+  Braces,
   Clock,
   Database,
+  Inbox,
   Network,
+  Radio,
   Server,
   TriangleAlert,
 } from "@lucide/vue";
@@ -14,11 +17,18 @@ import EmptyState from "../components/EmptyState.vue";
 import Pane from "../components/Pane.vue";
 import Waterfall from "../components/Waterfall.vue";
 import { useDevToolsStore } from "../stores/devtools";
+import { usePlaygroundStore } from "../stores/playground";
 import { fmtMs, statusTone } from "../types";
 
 const store = useDevToolsStore();
+const playground = usePlaygroundStore();
 const c = computed(() => store.current);
 const tone = computed(() => (c.value ? statusTone(c.value.status) : "ok"));
+
+const hasI18n = computed(() => {
+  const cfg = store.config as { features?: string[] } | null;
+  return cfg?.features?.includes("i18n") ?? false;
+});
 
 const otherMs = computed(() => {
   if (!c.value) return 0;
@@ -27,15 +37,21 @@ const otherMs = computed(() => {
     c.value.duration_ms -
       store.sqlTotalMs -
       store.httpTotalMs -
+      store.graphqlTotalMs -
+      store.grpcTotalMs -
+      store.rabbitTotalMs -
       store.cacheTotalMs,
   );
 });
 
 const segments = computed(() => [
   { label: "SQL", ms: store.sqlTotalMs, color: "var(--dt-info)" },
+  { label: "GraphQL", ms: store.graphqlTotalMs, color: "var(--dt-accent)" },
+  { label: "gRPC", ms: store.grpcTotalMs, color: "var(--dt-info)" },
+  { label: "Rabbit", ms: store.rabbitTotalMs, color: "var(--dt-warn)" },
   { label: "HTTP", ms: store.httpTotalMs, color: "var(--dt-warn)" },
   { label: "Cache", ms: store.cacheTotalMs, color: "var(--dt-ok)" },
-  { label: "App / other", ms: otherMs.value, color: "var(--dt-accent)" },
+  { label: "App / other", ms: otherMs.value, color: "var(--dt-muted)" },
 ]);
 
 const defs = computed(() => {
@@ -50,7 +66,9 @@ const defs = computed(() => {
       label: "route",
       value: route?.pattern || route?.path || "—",
     },
-    { label: "locale", value: c.value.locale || "—" },
+    ...(hasI18n.value
+      ? [{ label: "locale", value: c.value.locale || "—" }]
+      : []),
     {
       label: "csrf",
       value:
@@ -83,6 +101,18 @@ const captures = computed(() => {
   />
   <div v-else class="flex flex-col gap-3">
     <Pane title="Overview" :icon="Activity">
+      <template #actions>
+        <button
+          type="button"
+          class="rounded border border-[var(--dt-border)] px-2 py-0.5 text-[10px] text-[var(--dt-accent)] hover:bg-[var(--dt-surface-2)]"
+          @click="
+            playground.prefill({ method: c.method, path: c.path });
+            store.setTab('http');
+          "
+        >
+          Replay
+        </button>
+      </template>
       <div class="mb-3 flex flex-wrap gap-2">
         <Chip :value="c.method" tone="info" label="method" />
         <Chip :value="String(c.status)" :tone="tone" label="status" />
@@ -95,7 +125,7 @@ const captures = computed(() => {
       <DefList :items="captures" />
     </Pane>
 
-    <div class="grid grid-cols-2 gap-2 lg:grid-cols-5">
+    <div class="grid grid-cols-2 gap-2 lg:grid-cols-6">
       <Chip
         class="!flex w-full justify-start"
         label="duration"
@@ -115,6 +145,27 @@ const captures = computed(() => {
         label="cache"
         :value="`${(c.cache ?? []).length} · ${fmtMs(store.cacheTotalMs)}`"
         :icon="Server"
+      />
+      <Chip
+        class="!flex w-full justify-start"
+        label="graphql"
+        :value="`${(c.graphql ?? []).length} · ${fmtMs(store.graphqlTotalMs)}`"
+        :icon="Braces"
+        tone="info"
+      />
+      <Chip
+        class="!flex w-full justify-start"
+        label="grpc"
+        :value="`${(c.grpc ?? []).length} · ${fmtMs(store.grpcTotalMs)}`"
+        :icon="Radio"
+        tone="info"
+      />
+      <Chip
+        class="!flex w-full justify-start"
+        label="rabbit"
+        :value="`${(c.rabbit ?? []).length} · ${fmtMs(store.rabbitTotalMs)}`"
+        :icon="Inbox"
+        tone="info"
       />
       <Chip
         class="!flex w-full justify-start"

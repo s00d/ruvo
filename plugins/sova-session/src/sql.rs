@@ -1,11 +1,9 @@
 //! SQL-backed [`SessionStore`] (`sova_sessions` + `user_id` column).
 
 use super::store::{decode, encode, SessionStore, SESSION_USER_KEY};
+use sea_orm::{ConnectionTrait, DatabaseConnection, DbBackend, DbErr, Statement, Value};
 use sova_db::DbPool;
 use sova_store::BoxFuture;
-use sea_orm::{
-    ConnectionTrait, DatabaseConnection, DbBackend, DbErr, Statement, Value,
-};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;

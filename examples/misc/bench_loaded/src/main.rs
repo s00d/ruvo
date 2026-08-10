@@ -6,7 +6,6 @@ use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-
     let mut app = App::new();
     app.use_middleware(logger());
     app.install(Cors::new().origin("*"));

@@ -1,8 +1,8 @@
 //! App CLI: `migrate [up|down|status] [N]`.
 
-use sova_core::Error;
 use sea_orm::DatabaseConnection;
 use sea_orm_migration::MigratorTrait;
+use sova_core::Error;
 
 const USAGE: &str = "usage: migrate [up|down|status] [N]";
 
@@ -85,12 +85,18 @@ mod tests {
     #[test]
     fn parse_defaults_and_steps() {
         assert_eq!(parse_migrate_args(&s(&[])).unwrap(), MigrateCmd::Up(None));
-        assert_eq!(parse_migrate_args(&s(&["up"])).unwrap(), MigrateCmd::Up(None));
+        assert_eq!(
+            parse_migrate_args(&s(&["up"])).unwrap(),
+            MigrateCmd::Up(None)
+        );
         assert_eq!(
             parse_migrate_args(&s(&["up", "3"])).unwrap(),
             MigrateCmd::Up(Some(3))
         );
-        assert_eq!(parse_migrate_args(&s(&["down"])).unwrap(), MigrateCmd::Down(1));
+        assert_eq!(
+            parse_migrate_args(&s(&["down"])).unwrap(),
+            MigrateCmd::Down(1)
+        );
         assert_eq!(
             parse_migrate_args(&s(&["down", "2"])).unwrap(),
             MigrateCmd::Down(2)

@@ -225,10 +225,7 @@ pub fn logger() -> MwEntry {
         let method = req.method.as_str().to_string();
         let path = req.path.clone();
         let quiet = logger_should_skip(&path);
-        let user_agent = req
-            .header("user-agent")
-            .unwrap_or("-")
-            .to_string();
+        let user_agent = req.header("user-agent").unwrap_or("-").to_string();
         let peer = req
             .get::<crate::server::ClientAddr>()
             .map(|a| a.0.to_string())
@@ -334,14 +331,17 @@ mod tests {
             res = res.header("x-inner", "1");
             res
         };
-        let chain = build_chain(
-            &[outer.into_middleware(), inner.into_middleware()],
-            leaf,
-        );
+        let chain = build_chain(&[outer.into_middleware(), inner.into_middleware()], leaf);
         let res = chain(Request::new(Method::GET, "/")).await;
         assert_eq!(res.body_bytes(), Some(b"ok".as_slice()));
-        assert_eq!(res.headers.get("x-outer").map(|v| v.to_str().unwrap()), Some("1"));
-        assert_eq!(res.headers.get("x-inner").map(|v| v.to_str().unwrap()), Some("1"));
+        assert_eq!(
+            res.headers.get("x-outer").map(|v| v.to_str().unwrap()),
+            Some("1")
+        );
+        assert_eq!(
+            res.headers.get("x-inner").map(|v| v.to_str().unwrap()),
+            Some("1")
+        );
     }
 
     #[tokio::test]

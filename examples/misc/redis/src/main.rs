@@ -8,12 +8,12 @@
 //! # GET  /dequeue?queue=jobs
 //! ```
 
+use serde::{Deserialize, Serialize};
 use sova::prelude::*;
 use sova::{
     bearer_guard, store, tasks, AppStore, Cache, Job, Redis, RedisExt, RedisPool,
     RedisSessionStore, SessionLayer, SharedStore, Tasks,
 };
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::Duration;
 

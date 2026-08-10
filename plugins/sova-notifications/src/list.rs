@@ -2,13 +2,13 @@
 
 use crate::entity;
 use chrono::{DateTime, Utc};
-use sova_core::Result;
-use sova_db::{DbError, DbHandle};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder,
     QuerySelect, Set,
 };
 use serde::Serialize;
+use sova_core::Result;
+use sova_db::{DbError, DbHandle};
 
 #[derive(Debug, Clone, Default)]
 pub struct NotificationFilter {

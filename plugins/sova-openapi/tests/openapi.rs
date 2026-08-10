@@ -1,7 +1,7 @@
 use http::Method;
+use serde_json::json;
 use sova_core::{App, Request, Response};
 use sova_openapi::{build_document, undocumented, BuildOptions, Doc, OpenApi, OpenApiDocExt};
-use serde_json::json;
 
 #[tokio::test]
 async fn doc_stored_on_route_meta() {
@@ -137,9 +137,7 @@ async fn openapi_audit_fails_on_undocumented() {
     app.get("/a", |_r: Request| async { Response::text("a") });
     app.install(OpenApi::new("T", "1").mount("/docs"));
     let server = app.build().unwrap();
-    let results = app
-        .run_checks(server.state(), &[CheckKind::Audit])
-        .await;
+    let results = app.run_checks(server.state(), &[CheckKind::Audit]).await;
     assert!(
         results.iter().any(|r| r.name == "openapi" && !r.ok),
         "{results:?}"
@@ -182,7 +180,11 @@ fn build_document_covers_methods_query_and_status() {
         ),
         entry(Method::PUT, "/items/:id", Doc::new().ok_schema(json!({}))),
         entry(Method::PATCH, "/items/:id", Doc::new().ok_schema(json!({}))),
-        entry(Method::DELETE, "/items/:id", Doc::new().ok_schema(json!({}))),
+        entry(
+            Method::DELETE,
+            "/items/:id",
+            Doc::new().ok_schema(json!({})),
+        ),
         entry(Method::HEAD, "/items", Doc::new().ok_schema(json!({}))),
         entry(Method::OPTIONS, "/items", Doc::new().ok_schema(json!({}))),
         // Non-object query schema fallback.
@@ -210,5 +212,8 @@ fn build_document_covers_methods_query_and_status() {
     assert!(doc["paths"]["/items/{id}"]["delete"].is_object());
     assert!(doc["paths"]["/items"]["head"].is_object());
     assert!(doc["paths"]["/items"]["options"].is_object());
-    assert_eq!(doc["paths"]["/raw"]["get"]["parameters"][0]["name"], "query");
+    assert_eq!(
+        doc["paths"]["/raw"]["get"]["parameters"][0]["name"],
+        "query"
+    );
 }

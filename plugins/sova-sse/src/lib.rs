@@ -112,20 +112,12 @@ impl SseChannel {
 }
 
 /// Build an SSE [`Response`] with optional keep-alive comments.
-pub fn sse_response(
-    req: &Request,
-    channel: &SseChannel,
-    keep_alive: Duration,
-) -> Response {
-    let last_id = req
-        .header("last-event-id")
-        .map(|s| s.to_string());
+pub fn sse_response(req: &Request, channel: &SseChannel, keep_alive: Duration) -> Response {
+    let last_id = req.header("last-event-id").map(|s| s.to_string());
     let replay = channel.replay_after(last_id.as_deref());
     let rx = channel.subscribe();
 
-    let live = BroadcastStream::new(rx).filter_map(|r| async move {
-        r.ok()
-    });
+    let live = BroadcastStream::new(rx).filter_map(|r| async move { r.ok() });
 
     let replay_stream = stream::iter(replay);
     let events = replay_stream.chain(live);
@@ -211,6 +203,9 @@ mod tests {
             .expect("frame error");
         let chunk = frame.into_data().expect("data frame");
         let text = String::from_utf8_lossy(&chunk);
-        assert!(text.contains("keepalive"), "expected comment keepalive, got {text:?}");
+        assert!(
+            text.contains("keepalive"),
+            "expected comment keepalive, got {text:?}"
+        );
     }
 }

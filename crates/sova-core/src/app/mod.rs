@@ -1,16 +1,14 @@
 mod bind;
 mod hooks;
 
-pub(crate) use hooks::{AppInner, ListenParts, ShutdownHook, StartupHook};
 pub use bind::{Bind, BoundApp, Http};
 pub use hooks::Server;
+pub(crate) use hooks::{AppInner, ListenParts, ShutdownHook, StartupHook};
 
 use crate::error::{Error, Result};
 use crate::events::EventBus;
 use crate::handler::BoxFuture;
-use crate::plugin::{
-    check_plugin_sdk, InstalledPlugin, Plugin, SdkCompat, PLUGIN_SDK_VERSION,
-};
+use crate::plugin::{check_plugin_sdk, InstalledPlugin, Plugin, SdkCompat, PLUGIN_SDK_VERSION};
 use crate::request::Request;
 use crate::response::Response;
 use crate::router::Router;
@@ -28,8 +26,7 @@ use std::time::Duration;
 pub(crate) type CliCommandFn =
     Arc<dyn Fn(Arc<StateMap>, Vec<String>) -> BoxFuture<Result<()>> + Send + Sync>;
 
-pub(crate) type CheckFn =
-    Arc<dyn Fn(Arc<StateMap>) -> BoxFuture<Result<()>> + Send + Sync>;
+pub(crate) type CheckFn = Arc<dyn Fn(Arc<StateMap>) -> BoxFuture<Result<()>> + Send + Sync>;
 
 /// Kind of app check — readiness probes vs deploy-time audits.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -170,19 +167,16 @@ impl App {
         F: Fn(Arc<StateMap>) -> Fut + Send + Sync + 'static,
         Fut: std::future::Future<Output = Result<()>> + Send + 'static,
     {
-        self.checks
-            .lock()
-            .expect("checks lock")
-            .push((name, kind, Arc::new(move |state| Box::pin(f(state)))));
+        self.checks.lock().expect("checks lock").push((
+            name,
+            kind,
+            Arc::new(move |state| Box::pin(f(state))),
+        ));
         self
     }
 
     /// Run registered checks filtered by [`CheckKind`].
-    pub async fn run_checks(
-        &self,
-        state: Arc<StateMap>,
-        kinds: &[CheckKind],
-    ) -> Vec<CheckResult> {
+    pub async fn run_checks(&self, state: Arc<StateMap>, kinds: &[CheckKind]) -> Vec<CheckResult> {
         run_check_list(&self.checks, state, kinds).await
     }
 
@@ -203,8 +197,7 @@ impl App {
         self.get("/ready", move |req: Request| {
             let checks = Arc::clone(&checks);
             async move {
-                let results =
-                    run_check_list(&checks, req.states(), &[CheckKind::Ready]).await;
+                let results = run_check_list(&checks, req.states(), &[CheckKind::Ready]).await;
                 ready_response(&results)
             }
         });
@@ -214,7 +207,9 @@ impl App {
 
     pub fn max_body_size(&mut self, bytes: usize) -> &mut Self {
         self.max_body_size = bytes;
-        self.router.defaults.insert(crate::limits::MaxBody::bytes(bytes));
+        self.router
+            .defaults
+            .insert(crate::limits::MaxBody::bytes(bytes));
         self
     }
 
@@ -324,7 +319,10 @@ impl App {
         }
         match check_plugin_sdk(meta.sdk, PLUGIN_SDK_VERSION) {
             SdkCompat::Ok => {}
-            SdkCompat::Warn { core, plugin: declared } => {
+            SdkCompat::Warn {
+                core,
+                plugin: declared,
+            } => {
                 tracing::warn!(
                     plugin = plugin_id,
                     plugin_sdk = %declared,
@@ -393,28 +391,19 @@ impl App {
                     // `build()` already ran — plugin `requires()` are satisfied.
                     println!("ok plugins");
                     let results = self
-                        .run_checks(
-                            Arc::clone(&state),
-                            &[CheckKind::Ready, CheckKind::Audit],
-                        )
+                        .run_checks(Arc::clone(&state), &[CheckKind::Ready, CheckKind::Audit])
                         .await;
                     let mut failed = false;
                     for r in &results {
                         if r.ok {
                             println!("ok {}", r.name);
                         } else {
-                            println!(
-                                "fail {} — {}",
-                                r.name,
-                                r.error.as_deref().unwrap_or("")
-                            );
+                            println!("fail {} — {}", r.name, r.error.as_deref().unwrap_or(""));
                             failed = true;
                         }
                     }
                     if failed {
-                        return Err(Error::Internal(
-                            "one or more checks failed".into(),
-                        ));
+                        return Err(Error::Internal("one or more checks failed".into()));
                     }
                     println!("ok");
                     true
@@ -520,8 +509,7 @@ impl App {
         F: Fn() -> Fut + Send + Sync + 'static,
         Fut: std::future::Future<Output = ()> + Send + 'static,
     {
-        self.on_shutdown
-            .push(Arc::new(move || Box::pin(f())));
+        self.on_shutdown.push(Arc::new(move || Box::pin(f())));
         self
     }
 

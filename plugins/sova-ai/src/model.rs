@@ -1,8 +1,7 @@
 //! Type-erased [`LanguageModel`](aisdk::core::LanguageModel) handle stored in [`crate::AiClient`].
 
 use aisdk::core::capabilities::{
-    ReasoningSupport, StructuredOutputSupport, TextInputSupport, TextOutputSupport,
-    ToolCallSupport,
+    ReasoningSupport, StructuredOutputSupport, TextInputSupport, TextOutputSupport, ToolCallSupport,
 };
 use aisdk::core::language_model::{
     LanguageModel, LanguageModelOptions, LanguageModelResponse, LanguageModelStreamChunk,
@@ -21,8 +20,10 @@ type ProviderStream =
 #[async_trait]
 trait DynModel: Send + Sync + fmt::Debug {
     fn name(&self) -> String;
-    async fn generate_text(&self, options: LanguageModelOptions)
-        -> AisdkResult<LanguageModelResponse>;
+    async fn generate_text(
+        &self,
+        options: LanguageModelOptions,
+    ) -> AisdkResult<LanguageModelResponse>;
     async fn stream_text(&self, options: LanguageModelOptions) -> AisdkResult<ProviderStream>;
 }
 

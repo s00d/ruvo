@@ -20,9 +20,7 @@ impl TestDb {
             match Arc::try_unwrap(arc) {
                 Ok(tx) => tx.rollback().await.map_err(DbError)?,
                 Err(_) => {
-                    return Err(DbError(DbErr::Custom(
-                        "test transaction still held".into(),
-                    )));
+                    return Err(DbError(DbErr::Custom("test transaction still held".into())));
                 }
             }
         }

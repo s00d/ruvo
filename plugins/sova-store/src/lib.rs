@@ -17,8 +17,8 @@ mod redis;
 mod sql;
 
 use bytes::Bytes;
-use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
+use std::collections::HashMap;
 use std::future::Future;
 use std::hash::{Hash, Hasher};
 use std::pin::Pin;
@@ -316,7 +316,11 @@ pub mod conformance {
 
     async fn get_set_ttl(store: Arc<dyn KvStore>) {
         store
-            .set("a", Bytes::from_static(b"1"), Some(Duration::from_millis(50)))
+            .set(
+                "a",
+                Bytes::from_static(b"1"),
+                Some(Duration::from_millis(50)),
+            )
             .await;
         assert_eq!(store.get("a").await.as_deref(), Some(b"1".as_slice()));
         tokio::time::sleep(Duration::from_millis(80)).await;
@@ -374,22 +378,13 @@ mod tests {
         let store = MemoryStore::with_shards(4);
         for i in 0..32 {
             store
-                .set(
-                    &format!("shard:{i}"),
-                    Bytes::from_static(b"v"),
-                    None,
-                )
+                .set(&format!("shard:{i}"), Bytes::from_static(b"v"), None)
                 .await;
         }
-        store
-            .set("other:1", Bytes::from_static(b"z"), None)
-            .await;
+        store.set("other:1", Bytes::from_static(b"z"), None).await;
         assert_eq!(store.clear_prefix("shard:").await, 32);
         assert!(store.get("shard:0").await.is_none());
-        assert_eq!(
-            store.get("other:1").await.as_deref(),
-            Some(b"z".as_slice())
-        );
+        assert_eq!(store.get("other:1").await.as_deref(), Some(b"z".as_slice()));
     }
 
     #[tokio::test]

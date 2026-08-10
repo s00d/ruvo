@@ -11,6 +11,7 @@ mod migrate_cli;
 mod page;
 mod plugin;
 mod test_db;
+mod trace;
 mod tx;
 
 pub use error::DbError;

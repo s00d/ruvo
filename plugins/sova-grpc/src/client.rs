@@ -15,7 +15,11 @@ struct HttpTransport {
 impl GrpcTransport for HttpTransport {
     fn call(&self, base: &str, method: &str, body: Bytes) -> BoxFuture<Result<Bytes, GrpcError>> {
         let client = self.client.clone();
-        let url = format!("{}/{}", base.trim_end_matches('/'), method.trim_start_matches('/'));
+        let url = format!(
+            "{}/{}",
+            base.trim_end_matches('/'),
+            method.trim_start_matches('/')
+        );
         Box::pin(async move {
             let res = client
                 .post(url)
@@ -31,9 +35,16 @@ impl GrpcTransport for HttpTransport {
                 .await
                 .map_err(|e| GrpcError::Transport(e.to_string()))?;
             if !(200..300).contains(&status) {
+                let body_str = String::from_utf8_lossy(&bytes).into_owned();
+                if let Some(parsed) = crate::error_envelope::parse_connect_error(&body_str) {
+                    return Err(GrpcError::Rpc {
+                        code: parsed.code,
+                        message: parsed.message,
+                    });
+                }
                 return Err(GrpcError::Http {
                     status,
-                    body: String::from_utf8_lossy(&bytes).into_owned(),
+                    body: body_str,
                 });
             }
             Ok(bytes)
@@ -81,14 +92,23 @@ impl GrpcClient {
         Req: Serialize,
         Res: DeserializeOwned,
     {
-        let body = Bytes::from(
-            serde_json::to_vec(req).map_err(|e| GrpcError::Decode(e.to_string()))?,
-        );
+        let body =
+            Bytes::from(serde_json::to_vec(req).map_err(|e| GrpcError::Decode(e.to_string()))?);
         let bytes = self.transport.call(&self.base, method, body).await?;
         serde_json::from_slice(&bytes).map_err(|e| GrpcError::Decode(e.to_string()))
     }
 
     pub async fn call_raw(&self, method: &str, body: Bytes) -> Result<Bytes, GrpcError> {
-        self.transport.call(&self.base, method, body).await
+        let started = std::time::Instant::now();
+        let bytes_in = body.len() as u64;
+        let result = self.transport.call(&self.base, method, body).await;
+        crate::trace::emit_client(
+            method,
+            &self.base,
+            started.elapsed().as_secs_f64() * 1000.0,
+            &result,
+            bytes_in,
+        );
+        result
     }
 }

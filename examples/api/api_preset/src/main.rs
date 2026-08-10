@@ -4,13 +4,13 @@
 //! cargo run -p api_preset
 //! ```
 
+use serde::Deserialize;
 use sova::extract::{Json as ReqJson, State};
 use sova::vld;
 use sova::{
     doc_schema, App, AppStore, Cell, Doc, DocVldExt, Idempotency, Json, KvStore, OpenApiDocExt,
     ResponseCache, SharedStore,
 };
-use serde::Deserialize;
 use std::sync::Arc;
 
 vld::schema! {
@@ -44,13 +44,16 @@ async fn main() -> sova::Result<()> {
     let store = AppStore::memory();
     let mut app = App::api().title("Ping API").version("1.0");
     app.state(Hits::default());
-    app.install(SharedStore::new(Arc::clone(&store.inner) as Arc<dyn KvStore>));
+    app.install(SharedStore::new(
+        Arc::clone(&store.inner) as Arc<dyn KvStore>
+    ));
     app.install(Idempotency::from_store(Arc::clone(&store.inner)));
     app.install(
         ResponseCache::new(Arc::clone(&store.inner)).ttl(std::time::Duration::from_secs(30)),
     );
 
-    app.post("/ping", ping).doc(Doc::new().body::<Ping>().ok::<Ping>());
+    app.post("/ping", ping)
+        .doc(Doc::new().body::<Ping>().ok::<Ping>());
     app.get("/hits", hits);
 
     println!("api on :3000 — docs at /docs; POST /ping with Idempotency-Key");

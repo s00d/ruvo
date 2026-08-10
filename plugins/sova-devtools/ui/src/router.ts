@@ -9,8 +9,12 @@ import RequestView from "./views/RequestView.vue";
 import TimelineView from "./views/TimelineView.vue";
 import DbView from "./views/DbView.vue";
 import CacheView from "./views/CacheView.vue";
+import RedisView from "./views/RedisView.vue";
 import LogsView from "./views/LogsView.vue";
 import HttpView from "./views/HttpView.vue";
+import GraphqlView from "./views/GraphqlView.vue";
+import GrpcView from "./views/GrpcView.vue";
+import RabbitView from "./views/RabbitView.vue";
 import MailView from "./views/MailView.vue";
 import JobsView from "./views/JobsView.vue";
 import AuthView from "./views/AuthView.vue";
@@ -27,8 +31,13 @@ const routes: RouteRecordRaw[] = [
   { path: "/timeline", name: "timeline", component: TimelineView },
   { path: "/db", name: "db", component: DbView },
   { path: "/cache", name: "cache", component: CacheView },
+  { path: "/redis", name: "redis", component: RedisView },
   { path: "/logs", name: "logs", component: LogsView },
   { path: "/http", name: "http", component: HttpView },
+  { path: "/playground", redirect: "/http" },
+  { path: "/graphql", name: "graphql", component: GraphqlView },
+  { path: "/grpc", name: "grpc", component: GrpcView },
+  { path: "/rabbit", name: "rabbit", component: RabbitView },
   { path: "/mail", name: "mail", component: MailView },
   { path: "/jobs", name: "jobs", component: JobsView },
   { path: "/auth", name: "auth", component: AuthView },

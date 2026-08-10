@@ -314,9 +314,7 @@ mod tests {
         let path = dir.path().join("persist.redb");
         {
             let store = RedbStore::open(&path).unwrap();
-            store
-                .set("k", Bytes::from_static(b"v"), None)
-                .await;
+            store.set("k", Bytes::from_static(b"v"), None).await;
         }
         let store = RedbStore::open(&path).unwrap();
         assert_eq!(store.get("k").await.as_deref(), Some(b"v".as_slice()));

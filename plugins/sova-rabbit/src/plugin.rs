@@ -4,7 +4,8 @@ use crate::broker::{Broker, Exchange, QueueOpts, SharedBroker};
 use crate::error::RabbitError;
 use crate::fake::FakeBroker;
 use bytes::Bytes;
-use sova_core::{App, Plugin, Request};
+use serde_json::json;
+use sova_core::{App, DevToolsConfigRegistry, Error, Plugin, Request};
 use std::sync::Arc;
 
 #[cfg(feature = "lapin")]
@@ -22,7 +23,11 @@ enum Mode {
 impl Rabbit {
     pub fn from_env() -> Self {
         Self {
-            mode: Mode::Url(std::env::var("AMQP_URL").or_else(|_| std::env::var("RABBITMQ_URL")).unwrap_or_default()),
+            mode: Mode::Url(
+                std::env::var("AMQP_URL")
+                    .or_else(|_| std::env::var("RABBITMQ_URL"))
+                    .unwrap_or_default(),
+            ),
         }
     }
 
@@ -66,8 +71,19 @@ impl Plugin for Rabbit {
             Mode::Fake(fake) => {
                 let broker: SharedBroker = Arc::new(fake);
                 app.state(broker);
+                register_devtools_mount(app, "fake");
             }
             Mode::Url(url) => {
+                if url.is_empty() {
+                    app.on_startup(|_state| async {
+                        Err(Error::Internal(
+                            "rabbit url is empty; set AMQP_URL / RABBITMQ_URL or [rabbitmq] url in sova.toml"
+                                .into(),
+                        ))
+                    });
+                    return;
+                }
+                register_devtools_mount(app, "live");
                 #[cfg(feature = "lapin")]
                 {
                     let broker = LapinBroker::new(url);
@@ -82,11 +98,26 @@ impl Plugin for Rabbit {
                 #[cfg(not(feature = "lapin"))]
                 {
                     let _ = url;
-                    tracing::error!("sova-rabbit built without `lapin` feature");
+                    app.on_startup(|_state| async {
+                        Err(Error::Internal(
+                            "sova-rabbit built without `lapin` feature; enable `sova/rabbit` or `sova-rabbit/lapin`"
+                                .into(),
+                        ))
+                    });
                 }
             }
         }
     }
+}
+
+fn register_devtools_mount(app: &mut App, mode: &str) {
+    if app.try_state::<DevToolsConfigRegistry>().is_none() {
+        app.state(DevToolsConfigRegistry::default());
+    }
+    let reg = app
+        .try_state::<DevToolsConfigRegistry>()
+        .expect("DevToolsConfigRegistry");
+    reg.set("rabbit", json!({ "mode": mode }));
 }
 
 pub trait RabbitExt {
@@ -144,10 +175,8 @@ impl RabbitBound {
             .await
     }
 
-    pub async fn consume_one(
-        &self,
-        queue: &str,
-    ) -> Result<Option<crate::Delivery>, RabbitError> {
+    /// Poll one message (tests / scripts). For workers prefer [`RabbitConsumer`].
+    pub async fn consume_one(&self, queue: &str) -> Result<Option<crate::Delivery>, RabbitError> {
         self.broker.consume_one(queue).await
     }
 
@@ -163,11 +192,8 @@ impl RabbitBound {
         self.declare_exchange(&ex).await?;
         self.declare_queue(dlq, &QueueOpts::durable()).await?;
         self.bind(dlq, dlx, routing_key).await?;
-        self.declare_queue(
-            queue,
-            &QueueOpts::durable().with_dlq(dlx, routing_key),
-        )
-        .await?;
+        self.declare_queue(queue, &QueueOpts::durable().with_dlq(dlx, routing_key))
+            .await?;
         Ok(())
     }
 }

@@ -1,11 +1,11 @@
 //! Offline Fortify JSON API coverage (`/api/auth/*`).
 
+use serde_json::{json, Value};
 use sova_auth::{assign_role, AuthMigrator, Feature, Fortify};
 use sova_core::{ClientRequest, ResponseAssert, TestClient};
 use sova_mail::{FakeMail, Mail};
 use sova_session::memory_sessions;
 use sova_testing::{SqliteTestDb, TestApp};
-use serde_json::{json, Value};
 use totp_rs::{Algorithm, Secret, TOTP};
 
 const SECRET: &str = "test-fortify-secret-fortify-api!!";

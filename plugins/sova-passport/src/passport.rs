@@ -9,8 +9,7 @@ use std::sync::Arc;
 const DEFAULT_SESSION_KEY: &str = "passport:user";
 
 type SerializeFn = Arc<dyn Fn(&Request) -> BoxFuture<Result<Option<String>>> + Send + Sync>;
-type DeserializeFn =
-    Arc<dyn Fn(String, Request) -> BoxFuture<Result<Request>> + Send + Sync>;
+type DeserializeFn = Arc<dyn Fn(String, Request) -> BoxFuture<Result<Request>> + Send + Sync>;
 
 /// Marker that a principal id was established (session and/or strategy).
 #[derive(Clone, Debug)]

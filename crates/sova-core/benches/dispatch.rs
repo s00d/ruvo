@@ -88,9 +88,7 @@ fn bench_handle_minimal(c: &mut Criterion) {
     });
     g.bench_function("param", |b| {
         b.to_async(&rt).iter(|| async {
-            let res = server
-                .handle_request(Method::GET, "/users/42", "")
-                .await;
+            let res = server.handle_request(Method::GET, "/users/42", "").await;
             black_box(res.status_code())
         })
     });
@@ -116,7 +114,12 @@ fn bench_handle_realistic(c: &mut Criterion) {
         ("api_user", Method::GET, "/api/users/42", ""),
         ("search_query", Method::GET, "/search?q=sova", ""),
         ("api_404", Method::GET, "/api/missing", ""),
-        ("echo_json", Method::POST, "/api/echo", r#"{"hello":"world"}"#),
+        (
+            "echo_json",
+            Method::POST,
+            "/api/echo",
+            r#"{"hello":"world"}"#,
+        ),
     ];
 
     for (name, method, path, body) in cases {

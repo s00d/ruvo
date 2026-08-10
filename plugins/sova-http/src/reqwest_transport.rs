@@ -90,10 +90,7 @@ impl ReqwestTransport {
     }
 }
 
-async fn read_limited(
-    res: reqwest::Response,
-    max: usize,
-) -> Result<Bytes, HttpError> {
+async fn read_limited(res: reqwest::Response, max: usize) -> Result<Bytes, HttpError> {
     let mut out = Vec::new();
     let mut stream = res.bytes_stream();
     while let Some(chunk) = stream.next().await {

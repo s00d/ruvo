@@ -1,9 +1,9 @@
 //! Parse `[schedule.<job>]` from [`sova_core::ConfigDoc`].
 
 use crate::job::{parse_cron, Schedule};
+use serde_json::Value;
 use sova_core::extend::parse_duration;
 use sova_core::ConfigDoc;
-use serde_json::Value;
 use std::collections::HashMap;
 use std::time::Duration;
 
@@ -17,9 +17,7 @@ pub(crate) struct TomlSchedule {
 }
 
 /// Entries under `[schedule]` / `[schedule.name]` (nested tables keyed by job name).
-pub(crate) fn parse_schedule_toml(
-    doc: &ConfigDoc,
-) -> Result<Vec<TomlSchedule>, String> {
+pub(crate) fn parse_schedule_toml(doc: &ConfigDoc) -> Result<Vec<TomlSchedule>, String> {
     let Some(section) = doc.section("schedule") else {
         return Ok(Vec::new());
     };
@@ -33,12 +31,11 @@ pub(crate) fn parse_schedule_toml(
         let cron = t.get("cron").and_then(|v| v.as_str());
         let every = t.get("every").and_then(|v| v.as_str());
         let schedule = match (cron, every) {
-            (Some(expr), None) => Schedule::Cron(
-                parse_cron(expr).map_err(|e| format!("schedule.{name} cron: {e}"))?,
-            ),
+            (Some(expr), None) => {
+                Schedule::Cron(parse_cron(expr).map_err(|e| format!("schedule.{name} cron: {e}"))?)
+            }
             (None, Some(s)) => {
-                let d = parse_duration(s)
-                    .map_err(|e| format!("schedule.{name} every: {e}"))?;
+                let d = parse_duration(s).map_err(|e| format!("schedule.{name} every: {e}"))?;
                 if d.is_zero() {
                     return Err(format!("schedule.{name} every must be non-zero"));
                 }
@@ -50,15 +47,10 @@ pub(crate) fn parse_schedule_toml(
                 ));
             }
             (None, None) => {
-                return Err(format!(
-                    "schedule.{name}: missing cron= or every="
-                ));
+                return Err(format!("schedule.{name}: missing cron= or every="));
             }
         };
-        let queue = t
-            .get("queue")
-            .and_then(|v| v.as_str())
-            .map(str::to_string);
+        let queue = t.get("queue").and_then(|v| v.as_str()).map(str::to_string);
         let priority = t.get("priority").and_then(|v| {
             v.as_integer()
                 .map(|i| i as i32)

@@ -1,0 +1,47 @@
+name: rust
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'crates/**'
+      - 'plugins/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/rust.yml'
+  pull_request:
+    paths:
+      - 'crates/**'
+      - 'plugins/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/rust.yml'
+
+concurrency:
+  group: rust-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Test new plugins
+        run: cargo test -p sova-graphql --features server -p sova-grpc -p sova-rabbit
+
+      - name: Check facade features
+        run: |
+          cargo check -p sova --features graphql,grpc,rabbit
+          cargo check -p sova --features graphql-server
+
+      - name: Clippy (plugins + facade)
+        run: |
+          cargo clippy -p sova-graphql --features server -p sova-grpc -p sova-rabbit -- -D warnings
+          cargo clippy -p sova --features graphql,grpc,rabbit,graphql-server -- -D warnings

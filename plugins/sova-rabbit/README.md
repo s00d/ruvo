@@ -4,7 +4,20 @@
 
 # sova-rabbit
 
-Raw RabbitMQ / AMQP for Sova: publish / consume, exchange+routing, ack/nack, DLQ helpers, `FakeBroker`.
+Raw RabbitMQ / AMQP for Sova: publish / consume, exchange+routing, ack/nack, DLQ helpers, `FakeBroker`, `RabbitConsumer` worker.
+
+**Guide:** [https://s00d.github.io/sova/plugins/rabbit](https://s00d.github.io/sova/plugins/rabbit)
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| `lapin` (default) | Live AMQP via lapin |
+| (none) | FakeBroker only — used when lapin disabled |
+
+Facade `sova/rabbit` enables `lapin`.
+
+## Install
 
 ```bash
 cargo add sova --features rabbit

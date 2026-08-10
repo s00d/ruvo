@@ -104,9 +104,7 @@ async fn explicit_head_and_options() {
     let head = app.handle_request(Method::HEAD, "/x", "").await;
     assert_eq!(head.status_code().as_u16(), 200);
     assert_eq!(
-        head.headers()
-            .get("x-head")
-            .and_then(|v| v.to_str().ok()),
+        head.headers().get("x-head").and_then(|v| v.to_str().ok()),
         Some("1")
     );
 
@@ -142,9 +140,7 @@ async fn percent_decodes_params() {
     app.get("/u/:name", |req: Request| async move {
         Response::text(req.param("name").unwrap_or("").to_string())
     });
-    let res = app
-        .handle_request(Method::GET, "/u/John%20Doe", "")
-        .await;
+    let res = app.handle_request(Method::GET, "/u/John%20Doe", "").await;
     assert_eq!(res.body_bytes().unwrap(), b"John Doe");
 }
 
@@ -200,9 +196,7 @@ async fn app_handle_injects_state() {
         Response::text(req.state::<u32>().to_string())
     });
     assert_eq!(
-        app.handle_request(Method::GET, "/n", "")
-            .await
-            .body_bytes(),
+        app.handle_request(Method::GET, "/n", "").await.body_bytes(),
         Some(b"42".as_slice())
     );
 }

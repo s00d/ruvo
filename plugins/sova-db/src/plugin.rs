@@ -1,10 +1,10 @@
 use crate::handle::DbPool;
 use crate::migrate_cli::run_migrate;
 use crate::tx::inject_conn;
-use sova_core::extend::StateMap;
-use sova_core::{App, Error, Plugin};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use sea_orm_migration::MigratorTrait;
+use sova_core::extend::StateMap;
+use sova_core::{App, Error, Plugin};
 use std::future::Future;
 use std::path::Path;
 use std::pin::Pin;
@@ -20,9 +20,7 @@ type MigrateFn = Arc<
 >;
 
 type SeedFn = Arc<
-    dyn Fn(Arc<StateMap>) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send>>
-        + Send
-        + Sync,
+    dyn Fn(Arc<StateMap>) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send>> + Send + Sync,
 >;
 
 /// SeaORM pool plugin (backend selected by URL + Cargo features).
@@ -168,6 +166,7 @@ impl Plugin for Db {
         let url = self.url.clone();
         let pool_start = pool.clone();
         let sqlx_logging = self.sqlx_logging;
+        crate::trace::set_sql_trace(sqlx_logging);
         let migrate_boot = self
             .migrate_on_startup
             .then(|| self.migrate.clone())
@@ -250,7 +249,14 @@ fn resolve_sqlite_url(url: &str, source_dir: Option<&Path>) -> String {
         return url.to_string();
     };
     let rest = match url.strip_prefix("sqlite:") {
-        Some(r) if !r.starts_with('/') && !r.starts_with("//") && r != ":memory:" && !r.starts_with(":memory:") => r,
+        Some(r)
+            if !r.starts_with('/')
+                && !r.starts_with("//")
+                && r != ":memory:"
+                && !r.starts_with(":memory:") =>
+        {
+            r
+        }
         _ => return url.to_string(),
     };
     // `sqlite:hn.db?mode=rwc` or `sqlite:./data/x.db?mode=rwc`

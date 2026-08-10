@@ -1,9 +1,9 @@
 //! Client-first gRPC fake tests.
 
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use sova_core::{App, Request, ResponseAssert, TestClient};
 use sova_grpc::{FakeGrpc, Grpc, GrpcExt};
-use serde_json::json;
 
 #[derive(Serialize, Deserialize)]
 struct HelloIn {
@@ -17,21 +17,13 @@ struct HelloOut {
 
 #[tokio::test]
 async fn fake_client_call() {
-    let fake = FakeGrpc::new().stub_json(
-        "hello.Greeter/SayHello",
-        json!({ "message": "hi bob" }),
-    );
+    let fake = FakeGrpc::new().stub_json("hello.Greeter/SayHello", json!({ "message": "hi bob" }));
     let mut app = App::new();
     app.install(Grpc::fake(fake.clone()));
     app.get("/ping", |req: Request| async move {
         let out: HelloOut = req
             .grpc()
-            .call(
-                "hello.Greeter/SayHello",
-                &HelloIn {
-                    name: "bob".into(),
-                },
-            )
+            .call("hello.Greeter/SayHello", &HelloIn { name: "bob".into() })
             .await
             .unwrap();
         sova_core::Json(json!({ "message": out.message }))
@@ -58,9 +50,7 @@ async fn server_mount_unary_http() {
     let c = TestClient::new(app).unwrap();
     let res = c
         .post("/hello.Greeter/SayHello")
-        .json(&HelloIn {
-            name: "ann".into(),
-        })
+        .json(&HelloIn { name: "ann".into() })
         .await;
     res.assert_status(200);
     assert_eq!(res.json_value()["message"], "hi ann");

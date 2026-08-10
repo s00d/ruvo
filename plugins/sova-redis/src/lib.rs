@@ -13,11 +13,13 @@
 //! ```
 
 mod error;
+mod fake;
 mod messaging;
 mod plugin;
 mod pool;
 
 pub use error::RedisError;
+pub use fake::{FakeRedis, FakeSubscriber};
 pub use messaging::{RedisMessage, RedisSubscriber};
 pub use plugin::Redis;
 pub use pool::{RedisExt, RedisPool};

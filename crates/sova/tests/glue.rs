@@ -1,7 +1,7 @@
 //! Facade glue tests — plugin coverage lives in each plugin crate.
 
-use sova::{App, Request, Response};
 use http::Method;
+use sova::{App, Request, Response};
 
 #[tokio::test]
 async fn facade_reexports_core_handle() {

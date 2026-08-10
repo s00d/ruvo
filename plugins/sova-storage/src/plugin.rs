@@ -294,8 +294,8 @@ impl Storage {
             "local" => {
                 #[cfg(feature = "local")]
                 {
-                    let path = std::env::var("SOVA_STORAGE_PATH")
-                        .unwrap_or_else(|_| "./storage".into());
+                    let path =
+                        std::env::var("SOVA_STORAGE_PATH").unwrap_or_else(|_| "./storage".into());
                     Ok(Self::local(path))
                 }
                 #[cfg(not(feature = "local"))]

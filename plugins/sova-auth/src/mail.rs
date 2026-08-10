@@ -1,9 +1,9 @@
 //! Mail helpers for verify / reset ([`Mailable`](sova_mail::Mailable) + templates).
 
-use sova_core::{Request, Result};
-use sova_mail::{Content, Envelope, MailExt, Mailable};
 #[cfg(feature = "templates")]
 use serde_json::json;
+use sova_core::{Request, Result};
+use sova_mail::{Content, Envelope, MailExt, Mailable};
 
 /// Email-verification message.
 pub struct VerifyEmailMail {
@@ -34,11 +34,7 @@ impl Mailable for VerifyEmailMail {
         );
         #[cfg(feature = "templates")]
         if self.prefer_view {
-            return Content::view_with_text(
-                "mail/verify.html",
-                json!({ "link": self.link }),
-                text,
-            );
+            return Content::view_with_text("mail/verify.html", json!({ "link": self.link }), text);
         }
         Content::html_with_text(html, text)
     }
@@ -72,11 +68,7 @@ impl Mailable for ResetPasswordMail {
         );
         #[cfg(feature = "templates")]
         if self.prefer_view {
-            return Content::view_with_text(
-                "mail/reset.html",
-                json!({ "link": self.link }),
-                text,
-            );
+            return Content::view_with_text("mail/reset.html", json!({ "link": self.link }), text);
         }
         Content::html_with_text(html, text)
     }

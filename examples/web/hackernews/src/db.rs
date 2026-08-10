@@ -2,12 +2,8 @@
 
 use crate::entity::{comment, story, vote};
 use chrono::Utc;
-use sea_orm::{
-    ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
-};
-use sova::{
-    find_user_by_id, ActiveModelTrait, DbError, DbHandle, Result, Set,
-};
+use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect};
+use sova::{find_user_by_id, ActiveModelTrait, DbError, DbHandle, Result, Set};
 
 #[derive(Clone, Debug, serde::Serialize)]
 pub struct StoryRow {

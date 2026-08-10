@@ -38,9 +38,7 @@ async fn crud_and_walk() {
     assert!(tree.len() >= 3);
 
     fs.copy("notes/a.txt", "notes/a.copy.txt").await.unwrap();
-    fs.rename("notes/a.copy.txt", "notes/a2.txt")
-        .await
-        .unwrap();
+    fs.rename("notes/a.copy.txt", "notes/a2.txt").await.unwrap();
     fs.append("notes/a2.txt", b"!").await.unwrap();
     assert_eq!(fs.read_to_string("notes/a2.txt").await.unwrap(), "hi!");
 

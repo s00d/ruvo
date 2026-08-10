@@ -119,12 +119,8 @@ impl Delivery {
 pub trait Broker: Send + Sync {
     async fn declare_exchange(&self, exchange: &Exchange) -> Result<(), RabbitError>;
     async fn declare_queue(&self, name: &str, opts: &QueueOpts) -> Result<(), RabbitError>;
-    async fn bind(
-        &self,
-        queue: &str,
-        exchange: &str,
-        routing_key: &str,
-    ) -> Result<(), RabbitError>;
+    async fn bind(&self, queue: &str, exchange: &str, routing_key: &str)
+        -> Result<(), RabbitError>;
 
     async fn publish(
         &self,
@@ -133,7 +129,7 @@ pub trait Broker: Send + Sync {
         body: Bytes,
     ) -> Result<(), RabbitError>;
 
-    /// Blocking-ish consume of next message (tests / simple workers).
+    /// Poll one message (tests / simple workers). Prefer [`crate::RabbitConsumer`] for long-running apps.
     async fn consume_one(&self, queue: &str) -> Result<Option<Delivery>, RabbitError>;
 }
 

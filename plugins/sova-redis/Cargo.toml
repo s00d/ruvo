@@ -1,6 +1,6 @@
 [package]
 name = "sova-redis"
-version = "0.1.3"
+version = "0.1.4"
 authors.workspace = true
 edition.workspace = true
 description = "Shared Redis/Valkey pool plugin for Sova"

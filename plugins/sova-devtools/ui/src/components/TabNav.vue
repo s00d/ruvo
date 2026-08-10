@@ -1,16 +1,12 @@
 <script setup lang="ts">
-import { useRouter } from "vue-router";
 import Icon from "./Icon.vue";
-import { TAB_META } from "../tabs";
 import { useDevToolsStore } from "../stores/devtools";
 import type { TabId } from "../types";
 
 const store = useDevToolsStore();
-const router = useRouter();
 
 function go(id: TabId) {
   store.setTab(id);
-  void router.push({ name: id });
 }
 </script>
 
@@ -21,7 +17,7 @@ function go(id: TabId) {
     aria-label="DevTools tabs"
   >
     <button
-      v-for="t in TAB_META"
+      v-for="t in store.visibleTabs"
       :key="t.id"
       type="button"
       role="tab"

@@ -1,11 +1,11 @@
 //! Fortify login route uses RateLimit::login (429 after N attempts).
 
+use serde_json::json;
 use sova_auth::{AuthMigrator, Feature, Fortify};
 use sova_core::TestClient;
 use sova_mail::Mail;
 use sova_session::memory_sessions;
 use sova_testing::TestApp;
-use serde_json::json;
 
 #[tokio::test]
 async fn login_throttle_returns_429() {

@@ -67,7 +67,8 @@ impl Project {
             .parent()
             .ok_or_else(|| "invalid Cargo.toml path".to_string())?
             .to_path_buf();
-        let workspace_dir = find_workspace_root(&package_dir).unwrap_or_else(|| package_dir.clone());
+        let workspace_dir =
+            find_workspace_root(&package_dir).unwrap_or_else(|| package_dir.clone());
 
         let manifest = fs::read_to_string(&package_manifest).map_err(|e| e.to_string())?;
         let package_name = parse_package_name(&manifest)?;

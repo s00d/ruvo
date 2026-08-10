@@ -1,6 +1,6 @@
 [package]
 name = "sova-grpc"
-version = "0.1.0"
+version = "0.1.2"
 authors.workspace = true
 edition.workspace = true
 description = "Connect-JSON unary RPC client (+ optional server) for Sova"
@@ -15,7 +15,6 @@ categories = ["web-programming::http-server", "network-programming"]
 [features]
 default = ["client"]
 client = ["dep:reqwest"]
-server = []
 
 [dependencies]
 sova-core = { workspace = true }

@@ -3,8 +3,8 @@
 use crate::overlay::MetaOverlay;
 use crate::schema::ToJsonLd;
 use crate::{resolve_meta, ResolvedMeta};
-use sova_core::Request;
 use serde_json::Value;
+use sova_core::Request;
 
 pub trait MetaExt {
     fn meta(&mut self) -> &MetaOverlay;

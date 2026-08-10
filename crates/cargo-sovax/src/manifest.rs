@@ -217,8 +217,11 @@ fn ensure_stub_entities_migrations() -> Result<(), String> {
     fs::create_dir_all("src/entities").map_err(io_err)?;
     let entities_mod = Path::new("src/entities/mod.rs");
     if !entities_mod.exists() {
-        fs::write(entities_mod, "// Entity modules appear here after `cargo sovax generate model`.\n")
-            .map_err(io_err)?;
+        fs::write(
+            entities_mod,
+            "// Entity modules appear here after `cargo sovax generate model`.\n",
+        )
+        .map_err(io_err)?;
     }
     fs::create_dir_all("src/migrations").map_err(io_err)?;
     let mig_mod = Path::new("src/migrations/mod.rs");

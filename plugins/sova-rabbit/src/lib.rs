@@ -9,13 +9,16 @@
 //! ```
 
 mod broker;
+mod consumer;
 mod error;
 mod fake;
 mod plugin;
 #[cfg(feature = "lapin")]
 mod real;
+mod trace;
 
 pub use broker::{Broker, Delivery, Exchange, ExchangeKind, QueueOpts, SharedBroker};
+pub use consumer::RabbitConsumer;
 pub use error::RabbitError;
 pub use fake::FakeBroker;
 pub use plugin::{Rabbit, RabbitBound, RabbitExt};

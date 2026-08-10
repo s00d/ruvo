@@ -137,8 +137,9 @@ impl Tls {
         if let Some(parent) = self.key_path.parent() {
             let _ = std::fs::create_dir_all(parent);
         }
-        std::fs::write(&self.cert_path, cert_pem)
-            .map_err(|e| Error::Internal(format!("write cert {}: {e}", self.cert_path.display())))?;
+        std::fs::write(&self.cert_path, cert_pem).map_err(|e| {
+            Error::Internal(format!("write cert {}: {e}", self.cert_path.display()))
+        })?;
         std::fs::write(&self.key_path, key_pem)
             .map_err(|e| Error::Internal(format!("write key {}: {e}", self.key_path.display())))?;
         Ok(())
@@ -168,7 +169,8 @@ impl Tls {
         std::fs::create_dir_all(&dir).map_err(|e| Error::Internal(format!("dev-tls dir: {e}")))?;
         let cert_path = dir.join("cert.pem");
         let key_path = dir.join("key.pem");
-        std::fs::write(&cert_path, cert_pem).map_err(|e| Error::Internal(format!("dev-tls: {e}")))?;
+        std::fs::write(&cert_path, cert_pem)
+            .map_err(|e| Error::Internal(format!("dev-tls: {e}")))?;
         std::fs::write(&key_path, key_pem).map_err(|e| Error::Internal(format!("dev-tls: {e}")))?;
         Self::from_pem(&cert_path, &key_path)
     }
@@ -288,15 +290,12 @@ fn certified_key_from_parts(
     key_path: Option<&Path>,
 ) -> Result<CertifiedKey> {
     let provider = rustls::crypto::ring::default_provider();
-    let signing_key = provider
-        .key_provider
-        .load_private_key(key)
-        .map_err(|e| {
-            let where_ = key_path
-                .map(|p| format!(" {}", p.display()))
-                .unwrap_or_default();
-            Error::Internal(format!("load private key{where_}: {e}"))
-        })?;
+    let signing_key = provider.key_provider.load_private_key(key).map_err(|e| {
+        let where_ = key_path
+            .map(|p| format!(" {}", p.display()))
+            .unwrap_or_default();
+        Error::Internal(format!("load private key{where_}: {e}"))
+    })?;
     Ok(CertifiedKey::new(certs, signing_key))
 }
 
@@ -417,8 +416,14 @@ mod tests {
 
         let after = tls.resolver.current.load_full();
         assert!(!Arc::ptr_eq(&before, &after));
-        assert_eq!(std::fs::read_to_string(dir.path().join("cert.pem")).unwrap(), cert_pem);
-        assert_eq!(std::fs::read_to_string(dir.path().join("key.pem")).unwrap(), key_pem);
+        assert_eq!(
+            std::fs::read_to_string(dir.path().join("cert.pem")).unwrap(),
+            cert_pem
+        );
+        assert_eq!(
+            std::fs::read_to_string(dir.path().join("key.pem")).unwrap(),
+            key_pem
+        );
     }
 
     #[tokio::test]

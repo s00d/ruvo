@@ -42,7 +42,9 @@ fn owner_can_delete() {
     req.set(user(1, &[], &[]));
     let note = Note { user_id: 1 };
     assert!(req.can::<NotePolicy, _>(Ability::Delete, &note));
-    assert!(req.authorize::<NotePolicy, _>(Ability::Delete, &note).is_ok());
+    assert!(req
+        .authorize::<NotePolicy, _>(Ability::Delete, &note)
+        .is_ok());
 }
 
 #[test]
@@ -51,7 +53,9 @@ fn stranger_denied() {
     req.set(user(2, &[], &[]));
     let note = Note { user_id: 1 };
     assert!(!req.can::<NotePolicy, _>(Ability::Delete, &note));
-    let err = req.authorize::<NotePolicy, _>(Ability::Delete, &note).unwrap_err();
+    let err = req
+        .authorize::<NotePolicy, _>(Ability::Delete, &note)
+        .unwrap_err();
     assert!(matches!(err, sova_core::Error::Forbidden));
 }
 
@@ -60,11 +64,15 @@ fn admin_or_manage_ok() {
     let note = Note { user_id: 1 };
     let mut admin = Request::builder().path("/").build();
     admin.set(user(9, &["admin"], &[]));
-    assert!(admin.authorize::<NotePolicy, _>(Ability::View, &note).is_ok());
+    assert!(admin
+        .authorize::<NotePolicy, _>(Ability::View, &note)
+        .is_ok());
 
     let mut mgr = Request::builder().path("/").build();
     mgr.set(user(8, &[], &["notes.manage"]));
-    assert!(mgr.authorize::<NotePolicy, _>(Ability::Delete, &note).is_ok());
+    assert!(mgr
+        .authorize::<NotePolicy, _>(Ability::Delete, &note)
+        .is_ok());
 }
 
 #[test]

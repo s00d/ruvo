@@ -2,10 +2,10 @@
 
 use crate::entity;
 use chrono::{DateTime, Utc};
-use sova_core::Result;
-use sova_db::{DbError, DbHandle};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use serde::Serialize;
+use sova_core::Result;
+use sova_db::{DbError, DbHandle};
 
 #[derive(Debug, Clone, Default)]
 pub struct ActivityFilter {

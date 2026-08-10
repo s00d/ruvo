@@ -15,22 +15,30 @@ const router = useRouter();
 const dragging = ref(false);
 let startY = 0;
 let startH = 0;
+/** Skip route → store sync while store drives router.replace. */
+const routeSync = ref(false);
+let stopAfterEach: (() => void) | null = null;
+
+stopAfterEach = router.afterEach(() => {
+  routeSync.value = false;
+});
 
 watch(
-  () => route.name,
-  (name) => {
-    if (isTabId(name) && store.tab !== name) {
-      store.setTab(name);
-    }
+  () => store.tab,
+  (tab) => {
+    if (!isTabId(tab) || route.name === tab) return;
+    routeSync.value = true;
+    void router.replace({ name: tab });
   },
   { immediate: true },
 );
 
 watch(
-  () => store.tab,
-  (tab) => {
-    if (route.name !== tab) {
-      void router.push({ name: tab });
+  () => route.name,
+  (name) => {
+    if (routeSync.value) return;
+    if (isTabId(name) && store.tab !== name) {
+      store.setTab(name);
     }
   },
 );
@@ -77,6 +85,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("pointermove", onResizeMove);
   window.removeEventListener("pointerup", onResizeEnd);
+  stopAfterEach?.();
 });
 </script>
 
@@ -110,15 +119,17 @@ onBeforeUnmount(() => {
       >
         <RequestList />
       </aside>
-      <main class="dt-scroll min-h-0 min-w-0 flex-1 overflow-auto p-3">
-        <Skeleton v-if="store.loading" :rows="5" :cols="2" />
-        <div
-          v-else-if="store.error"
-          class="rounded-[var(--dt-radius)] border border-[var(--dt-err)] bg-[var(--dt-surface)] p-3 text-[var(--dt-err)]"
-        >
-          {{ store.error }}
+      <main class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div class="dt-scroll min-h-0 flex-1 overflow-auto p-3">
+          <Skeleton v-if="store.loading" :rows="5" :cols="2" />
+          <div
+            v-else-if="store.error"
+            class="rounded-[var(--dt-radius)] border border-[var(--dt-err)] bg-[var(--dt-surface)] p-3 text-[var(--dt-err)]"
+          >
+            {{ store.error }}
+          </div>
+          <RouterView v-else />
         </div>
-        <RouterView v-else />
       </main>
     </div>
   </div>

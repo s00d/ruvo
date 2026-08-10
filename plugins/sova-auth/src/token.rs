@@ -2,8 +2,8 @@
 
 use crate::store::{hash_token, random_token};
 use hmac::{Hmac, Mac};
-use sova_core::{Error, Result};
 use sha2::Sha256;
+use sova_core::{Error, Result};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 type HmacSha256 = Hmac<Sha256>;
@@ -16,8 +16,7 @@ pub fn now_secs() -> u64 {
 }
 
 pub fn sign_payload(secret: &str, payload: &str) -> String {
-    let mut mac =
-        HmacSha256::new_from_slice(secret.as_bytes()).expect("HMAC key length");
+    let mut mac = HmacSha256::new_from_slice(secret.as_bytes()).expect("HMAC key length");
     mac.update(payload.as_bytes());
     hex_encode(mac.finalize().into_bytes())
 }
@@ -31,7 +30,10 @@ fn constant_eq(a: &[u8], b: &[u8]) -> bool {
     if a.len() != b.len() {
         return false;
     }
-    a.iter().zip(b.iter()).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
+    a.iter()
+        .zip(b.iter())
+        .fold(0u8, |acc, (x, y)| acc | (x ^ y))
+        == 0
 }
 
 fn hex_encode(bytes: impl AsRef<[u8]>) -> String {

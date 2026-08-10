@@ -4,16 +4,23 @@ use crate::client::GrpcClient;
 use crate::fake::FakeGrpc;
 use crate::router::MethodRouter;
 use crate::server::{mount_on_app, GrpcBindService};
-use sova_core::{App, Plugin};
+use serde_json::json;
+use sova_core::{App, DevToolsConfigRegistry, Plugin};
 use std::net::SocketAddr;
 
 enum Mode {
-    Client { base: String },
-    Fake { fake: FakeGrpc },
+    Client {
+        base: String,
+    },
+    Fake {
+        fake: FakeGrpc,
+    },
     Server {
         router: MethodRouter,
         bind: Option<SocketAddr>,
         mount: bool,
+        client_base: Option<String>,
+        client_from_env: bool,
     },
 }
 
@@ -40,6 +47,8 @@ impl Grpc {
             router: MethodRouter::new(),
             bind: None,
             mount: true,
+            client_base: None,
+            client_from_env: false,
         }
     }
 }
@@ -48,6 +57,8 @@ pub struct GrpcServerBuilder {
     router: MethodRouter,
     bind: Option<SocketAddr>,
     mount: bool,
+    client_base: Option<String>,
+    client_from_env: bool,
 }
 
 impl GrpcServerBuilder {
@@ -59,6 +70,30 @@ impl GrpcServerBuilder {
         Fut: std::future::Future<Output = Result<Res, crate::GrpcError>> + Send + 'static,
     {
         self.router.unary(method, f);
+        self
+    }
+
+    /// Unary handler with access to the incoming HTTP [`sova_core::Request`].
+    pub fn unary_with_request<Req, Res, F, Fut>(self, method: impl Into<String>, f: F) -> Self
+    where
+        Req: serde::de::DeserializeOwned + Send + 'static,
+        Res: serde::Serialize + Send + 'static,
+        F: Fn(sova_core::Request, Req) -> Fut + Send + Sync + 'static,
+        Fut: std::future::Future<Output = Result<Res, crate::GrpcError>> + Send + 'static,
+    {
+        self.router.unary_with_request(method, f);
+        self
+    }
+
+    /// Also install an outbound client (BFF: serve + call remote RPC).
+    pub fn client(mut self, base: impl Into<String>) -> Self {
+        self.client_base = Some(base.into());
+        self
+    }
+
+    /// Outbound client base URL from `GRPC_URL`.
+    pub fn client_from_env(mut self) -> Self {
+        self.client_from_env = true;
         self
     }
 
@@ -81,6 +116,8 @@ impl GrpcServerBuilder {
                 router: self.router,
                 bind: self.bind,
                 mount: self.mount,
+                client_base: self.client_base,
+                client_from_env: self.client_from_env,
             },
         }
     }
@@ -113,10 +150,21 @@ impl Plugin for Grpc {
                         }
                     }
                 }
-                if let Mode::Server { bind, .. } = &mut self.mode {
+                if let Mode::Server {
+                    bind,
+                    client_base,
+                    client_from_env,
+                    ..
+                } = &mut self.mode
+                {
                     if bind.is_none() {
                         if let Some(b) = section.get("bind").and_then(|v| v.as_str()) {
                             *bind = b.parse().ok();
+                        }
+                    }
+                    if client_base.is_none() && !*client_from_env {
+                        if let Some(u) = section.get("client_url").and_then(|v| v.as_str()) {
+                            *client_base = Some(u.to_string());
                         }
                     }
                 }
@@ -130,26 +178,72 @@ impl Plugin for Grpc {
                 } else {
                     base
                 };
-                app.state(GrpcClient::http(base));
+                app.state(GrpcClient::http(base.clone()));
+                register_devtools_mount(app, &base, &[], None);
             }
             Mode::Fake { fake } => {
                 app.state(GrpcClient::with_fake("fake://grpc", fake));
+                register_devtools_mount(app, "fake://grpc", &[], None);
             }
             Mode::Server {
                 router,
                 bind,
                 mount,
+                client_base,
+                client_from_env,
             } => {
+                let outbound = if client_from_env {
+                    std::env::var("GRPC_URL").unwrap_or_default()
+                } else {
+                    client_base.unwrap_or_default()
+                };
+                if !outbound.is_empty() {
+                    app.state(GrpcClient::http(outbound.clone()));
+                }
+                let methods = router.methods();
                 app.state(router.clone());
                 if mount {
                     mount_on_app(app, router.clone());
                 }
+                let bind_label = bind.map(|a| a.to_string());
                 if let Some(addr) = bind {
                     app.service(GrpcBindService::new(addr, router));
                 }
+                register_devtools_mount(
+                    app,
+                    if outbound.is_empty() {
+                        "in-process"
+                    } else {
+                        &outbound
+                    },
+                    &methods,
+                    bind_label,
+                );
             }
         }
     }
+}
+
+fn register_devtools_mount(
+    app: &mut App,
+    client_base: &str,
+    methods: &[String],
+    bind: Option<String>,
+) {
+    if app.try_state::<DevToolsConfigRegistry>().is_none() {
+        app.state(DevToolsConfigRegistry::default());
+    }
+    let reg = app
+        .try_state::<DevToolsConfigRegistry>()
+        .expect("DevToolsConfigRegistry");
+    reg.set(
+        "grpc",
+        json!({
+            "client_base": client_base,
+            "methods": methods,
+            "bind": bind,
+        }),
+    );
 }
 
 // Allow `app.install(Grpc::server().unary(...))` without `.build()`

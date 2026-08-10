@@ -1,11 +1,19 @@
 //! `DevTools` plugin entry.
 
-use crate::collector::{CacheLine, HttpLine, JobLine, LogLine, QueryLine, now_ms, truncate_key};
+use crate::collector::{
+    now_ms, truncate_key, CacheLine, GraphqlLine, GrpcLine, HttpLine, JobLine, LogLine, QueryLine,
+    RabbitLine,
+};
+#[cfg(feature = "console")]
+use crate::console::{DevToolsConsole, DEFAULT_BODY_LIMIT};
 use crate::hub::DevToolsHub;
 use crate::middleware;
 use crate::redact::redact_sql_bindings;
 use crate::routes;
-use sova_core::{add_log_event_hook, App, LogRecord, Plugin, PluginMeta};
+use serde_json::json;
+use sova_core::{
+    add_log_event_hook, App, AppDispatch, DevToolsConfigRegistry, LogRecord, Plugin, PluginMeta,
+};
 use std::sync::Arc;
 
 /// In-app DevTools (HTML inject + SSE timeline). Disabled unless development / env.
@@ -13,6 +21,12 @@ pub struct DevTools {
     enabled: Option<bool>,
     request_cap: usize,
     log_cap: usize,
+    #[cfg(feature = "console")]
+    console: Option<bool>,
+    #[cfg(feature = "console")]
+    allow_dangerous: bool,
+    #[cfg(feature = "console")]
+    console_external: bool,
 }
 
 impl Default for DevTools {
@@ -27,6 +41,12 @@ impl DevTools {
             enabled: None,
             request_cap: 100,
             log_cap: 500,
+            #[cfg(feature = "console")]
+            console: None,
+            #[cfg(feature = "console")]
+            allow_dangerous: false,
+            #[cfg(feature = "console")]
+            console_external: false,
         }
     }
 
@@ -45,6 +65,27 @@ impl DevTools {
 
     pub fn log_cap(mut self, n: usize) -> Self {
         self.log_cap = n;
+        self
+    }
+
+    /// Enable control panel actions (HTTP console, Redis, …). Default on in debug.
+    #[cfg(feature = "console")]
+    pub fn console(mut self, on: bool) -> Self {
+        self.console = Some(on);
+        self
+    }
+
+    /// Allow dangerous Redis ops (FLUSH*, CONFIG, …).
+    #[cfg(feature = "console")]
+    pub fn allow_dangerous(mut self, on: bool) -> Self {
+        self.allow_dangerous = on;
+        self
+    }
+
+    /// Allow HTTP console to call external URLs (not implemented in v1).
+    #[cfg(feature = "console")]
+    pub fn console_external(mut self, on: bool) -> Self {
+        self.console_external = on;
         self
     }
 }
@@ -149,6 +190,15 @@ impl Plugin for DevTools {
         // Plugin list is not public on App — leave empty / fill from toml later.
         hub.set_config_info(Vec::new(), profile);
 
+        let reg = app
+            .try_state::<DevToolsConfigRegistry>()
+            .unwrap_or_else(|| {
+                app.state(DevToolsConfigRegistry::default());
+                app.try_state::<DevToolsConfigRegistry>()
+                    .expect("DevToolsConfigRegistry")
+            });
+        hub.set_config_registry((*reg).clone());
+
         wire_log_hook(hub.clone());
 
         crate::hub::wire_event_bus(app, hub.clone());
@@ -156,9 +206,25 @@ impl Plugin for DevTools {
 
         app.state(hub.clone());
         middleware::install(app, hub.clone());
+
+        #[cfg(feature = "console")]
+        {
+            let console_on = self.console.unwrap_or(true);
+            if app.try_state::<AppDispatch>().is_none() {
+                app.state(AppDispatch::default());
+            }
+            let console = DevToolsConsole::new(
+                console_on,
+                self.allow_dangerous,
+                self.console_external,
+                DEFAULT_BODY_LIMIT,
+            );
+            app.state(console.clone());
+            crate::actions::mount(app, hub.clone(), console);
+        }
+
         routes::mount(app, hub);
 
-        // CSRF / security: document that /_devtools/* is GET-only debug surface.
         tracing::info!("devtools: enabled (bar on text/html, SSE /_devtools/events)");
     }
 }
@@ -176,9 +242,7 @@ fn wire_log_hook(hub: DevToolsHub) {
             }
         }
 
-        let request_id = field(&rec, "request_id").or_else(|| {
-            sova_core::current_request_id()
-        });
+        let request_id = field(&rec, "request_id").or_else(sova_core::current_request_id);
 
         let target = rec.target.as_str();
 
@@ -221,13 +285,153 @@ fn wire_log_hook(hub: DevToolsHub) {
             let msg = format!(
                 "[{}] {} {}",
                 target.trim_start_matches("sova."),
-                field(&rec, "op").or_else(|| field(&rec, "cmd")).unwrap_or_default(),
+                field(&rec, "op")
+                    .or_else(|| field(&rec, "cmd"))
+                    .unwrap_or_default(),
                 truncate_key(&key, 80)
             );
             let log = LogLine {
                 level: rec.level.clone(),
                 target: rec.target.clone(),
                 message: msg,
+                request_id: request_id.clone(),
+                at_ms: now_ms(),
+            };
+            open_bags::with_open(request_id.as_deref(), |bag| bag.push_log(log.clone()));
+            hub.push_log(log);
+            return;
+        }
+
+        if target.starts_with("sova.graphql") {
+            if target == "sova.graphql.ws" {
+                let event = field(&rec, "event").unwrap_or_else(|| "ws".into());
+                hub.emit(
+                    format!("graphql.ws.{event}"),
+                    json!({
+                        "protocol": field(&rec, "protocol"),
+                        "path": field(&rec, "path"),
+                    }),
+                );
+                let log = LogLine {
+                    level: rec.level.clone(),
+                    target: rec.target.clone(),
+                    message: format!("[graphql.ws] {event}"),
+                    request_id: request_id.clone(),
+                    at_ms: now_ms(),
+                };
+                open_bags::with_open(request_id.as_deref(), |bag| bag.push_log(log.clone()));
+                hub.push_log(log);
+                return;
+            }
+
+            let operation = field(&rec, "operation").unwrap_or_else(|| "(anonymous)".into());
+            let kind = field(&rec, "kind").unwrap_or_else(|| "query".into());
+            let duration_ms = field(&rec, "duration_ms")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0.0);
+            let errors = field(&rec, "errors")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0);
+            let auth = field(&rec, "auth").and_then(|s| match s.as_str() {
+                "true" | "1" => Some(true),
+                "false" | "0" => Some(false),
+                _ => None,
+            });
+            let line = GraphqlLine {
+                operation: operation.clone(),
+                kind: kind.clone(),
+                duration_ms,
+                errors,
+                auth,
+            };
+            attach_graphql_to_open(request_id.as_deref(), line);
+            let log = LogLine {
+                level: rec.level.clone(),
+                target: rec.target.clone(),
+                message: format!("[graphql] {kind} {operation} ({duration_ms}ms)"),
+                request_id: request_id.clone(),
+                at_ms: now_ms(),
+            };
+            open_bags::with_open(request_id.as_deref(), |bag| bag.push_log(log.clone()));
+            hub.push_log(log);
+            return;
+        }
+
+        if target.starts_with("sova.grpc") {
+            let method = field(&rec, "method").unwrap_or_default();
+            let base = field(&rec, "base").unwrap_or_default();
+            let direction = field(&rec, "direction").unwrap_or_else(|| "client".into());
+            let duration_ms = field(&rec, "duration_ms")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0.0);
+            let ok = field(&rec, "ok")
+                .and_then(|s| match s.as_str() {
+                    "true" | "1" => Some(true),
+                    "false" | "0" => Some(false),
+                    _ => None,
+                })
+                .unwrap_or(true);
+            let status = field(&rec, "status").and_then(|s| s.parse().ok());
+            let error = field(&rec, "error");
+            let bytes_in = field(&rec, "bytes_in").and_then(|s| s.parse().ok());
+            let bytes_out = field(&rec, "bytes_out").and_then(|s| s.parse().ok());
+            let line = GrpcLine {
+                method: method.clone(),
+                base: base.clone(),
+                direction: direction.clone(),
+                duration_ms,
+                ok,
+                status,
+                error: error.clone(),
+                bytes_in,
+                bytes_out,
+            };
+            attach_grpc_to_open(request_id.as_deref(), line);
+            let status_label = if ok { "ok" } else { "err" };
+            let log = LogLine {
+                level: rec.level.clone(),
+                target: rec.target.clone(),
+                message: format!("[grpc] {direction} {method} ({duration_ms}ms) {status_label}"),
+                request_id: request_id.clone(),
+                at_ms: now_ms(),
+            };
+            open_bags::with_open(request_id.as_deref(), |bag| bag.push_log(log.clone()));
+            hub.push_log(log);
+            return;
+        }
+
+        if target.starts_with("sova.rabbit") {
+            let op = field(&rec, "op").unwrap_or_else(|| "op".into());
+            let exchange = field(&rec, "exchange");
+            let routing_key = field(&rec, "routing_key");
+            let queue = field(&rec, "queue");
+            let bytes = field(&rec, "bytes").and_then(|s| s.parse().ok());
+            let duration_ms = field(&rec, "duration_ms")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0.0);
+            let ok = field(&rec, "ok")
+                .and_then(|s| match s.as_str() {
+                    "true" | "1" => Some(true),
+                    "false" | "0" => Some(false),
+                    _ => None,
+                })
+                .unwrap_or(true);
+            let error = field(&rec, "error");
+            let line = RabbitLine {
+                op: op.clone(),
+                exchange: exchange.clone(),
+                routing_key: routing_key.clone(),
+                queue: queue.clone(),
+                bytes,
+                duration_ms,
+                ok,
+                error: error.clone(),
+            };
+            attach_rabbit_to_open(request_id.as_deref(), line);
+            let log = LogLine {
+                level: rec.level.clone(),
+                target: rec.target.clone(),
+                message: format!("[rabbit] {op} ({duration_ms}ms)"),
                 request_id: request_id.clone(),
                 at_ms: now_ms(),
             };
@@ -270,6 +474,7 @@ fn wire_log_hook(hub: DevToolsHub) {
         }
 
         let is_sql = target.starts_with("sqlx::query")
+            || target.starts_with("sova.db")
             || target.contains("sea_orm")
             || rec.message.contains("SELECT")
             || rec.message.contains("INSERT")
@@ -402,4 +607,16 @@ fn attach_query_to_open(request_id: Option<&str>, q: QueryLine) {
 
 fn attach_http_to_open(request_id: Option<&str>, h: HttpLine) {
     open_bags::with_open(request_id, |bag| bag.push_http(h));
+}
+
+fn attach_graphql_to_open(request_id: Option<&str>, g: GraphqlLine) {
+    open_bags::with_open(request_id, |bag| bag.push_graphql(g));
+}
+
+fn attach_grpc_to_open(request_id: Option<&str>, g: GrpcLine) {
+    open_bags::with_open(request_id, |bag| bag.push_grpc(g));
+}
+
+fn attach_rabbit_to_open(request_id: Option<&str>, r: RabbitLine) {
+    open_bags::with_open(request_id, |bag| bag.push_rabbit(r));
 }

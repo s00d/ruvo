@@ -39,10 +39,7 @@ impl Ws {
     }
 
     /// Allowed `Origin` values (CSWSH). Empty → allow all (dev).
-    pub fn origins(
-        mut self,
-        origins: impl IntoIterator<Item = impl Into<String>>,
-    ) -> Self {
+    pub fn origins(mut self, origins: impl IntoIterator<Item = impl Into<String>>) -> Self {
         self.origins = origins.into_iter().map(Into::into).collect();
         self
     }
@@ -101,9 +98,6 @@ mod tests {
     fn origin_accepts_match() {
         let mut headers = HeaderMap::new();
         headers.insert("origin", "https://good.test".parse().unwrap());
-        assert!(origin_allowed(
-            &headers,
-            &["https://good.test".to_string()]
-        ));
+        assert!(origin_allowed(&headers, &["https://good.test".to_string()]));
     }
 }

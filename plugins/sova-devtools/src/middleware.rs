@@ -114,10 +114,7 @@ fn disable_bfcache(res: &mut Response) {
         http::header::PRAGMA,
         http::HeaderValue::from_static("no-cache"),
     );
-    h.insert(
-        http::header::EXPIRES,
-        http::HeaderValue::from_static("0"),
-    );
+    h.insert(http::header::EXPIRES, http::HeaderValue::from_static("0"));
 }
 
 fn maybe_inject(

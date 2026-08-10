@@ -14,6 +14,8 @@ pub enum GrpcError {
     NotFound(String),
     #[error("grpc handler: {0}")]
     Handler(String),
+    #[error("grpc rpc {code}: {message}")]
+    Rpc { code: String, message: String },
     #[error("grpc plugin not installed")]
     NotInstalled,
 }

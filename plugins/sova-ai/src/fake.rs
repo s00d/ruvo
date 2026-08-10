@@ -1,8 +1,7 @@
 //! In-memory fake [`LanguageModel`] for tests.
 
 use aisdk::core::capabilities::{
-    ReasoningSupport, StructuredOutputSupport, TextInputSupport, TextOutputSupport,
-    ToolCallSupport,
+    ReasoningSupport, StructuredOutputSupport, TextInputSupport, TextOutputSupport, ToolCallSupport,
 };
 use aisdk::core::language_model::{
     LanguageModel, LanguageModelOptions, LanguageModelResponse, LanguageModelStreamChunk,
@@ -86,10 +85,7 @@ impl FakeAi {
 
     /// Flattened user/system prompt strings across calls.
     pub fn prompts(&self) -> Vec<String> {
-        self.calls()
-            .into_iter()
-            .flat_map(|c| c.prompts)
-            .collect()
+        self.calls().into_iter().flat_map(|c| c.prompts).collect()
     }
 
     pub fn call_count(&self) -> usize {
@@ -137,7 +133,9 @@ impl LanguageModel for FakeAi {
         &mut self,
         options: LanguageModelOptions,
     ) -> AisdkResult<
-        Pin<Box<dyn futures_util::Stream<Item = AisdkResult<Vec<LanguageModelStreamChunk>>> + Send>>,
+        Pin<
+            Box<dyn futures_util::Stream<Item = AisdkResult<Vec<LanguageModelStreamChunk>>> + Send>,
+        >,
     > {
         self.record(&options);
         let text = self.next_text();

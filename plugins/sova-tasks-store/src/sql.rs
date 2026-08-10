@@ -2,11 +2,11 @@
 
 use crate::{BoxFuture, EnqueueOpts, Task, TaskError, TaskStatus, TaskStore};
 use bytes::Bytes;
-use sova_db::DbPool;
 use sea_orm::{
     ConnectionTrait, DatabaseConnection, DbBackend, DbErr, QueryResult, Statement,
     TransactionTrait, Value,
 };
+use sova_db::DbPool;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -200,10 +200,7 @@ fn row_to_task(row: &QueryResult) -> Result<Task, TaskError> {
     let payload: Vec<u8> = row.try_get_by("payload").map_err(map_err)?;
     let attempts: i64 = row
         .try_get_by::<i64, _>("attempts")
-        .or_else(|_| {
-            row.try_get_by::<i32, _>("attempts")
-                .map(i64::from)
-        })
+        .or_else(|_| row.try_get_by::<i32, _>("attempts").map(i64::from))
         .unwrap_or(0);
     Ok(Task {
         id: row.try_get_by("id").map_err(map_err)?,
@@ -217,10 +214,7 @@ fn row_to_task(row: &QueryResult) -> Result<Task, TaskError> {
         worker: row.try_get_by("worker").ok().flatten(),
         priority: row
             .try_get_by::<i32, _>("priority")
-            .or_else(|_| {
-                row.try_get_by::<i64, _>("priority")
-                    .map(|v| v as i32)
-            })
+            .or_else(|_| row.try_get_by::<i64, _>("priority").map(|v| v as i32))
             .unwrap_or(0),
     })
 }
@@ -749,10 +743,7 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(claimed[0].id, id);
-        store
-            .heartbeat(&id, Duration::from_secs(60))
-            .await
-            .unwrap();
+        store.heartbeat(&id, Duration::from_secs(60)).await.unwrap();
         store.fail(&id, None).await.unwrap();
         let listed = store.list("default", 10).await.unwrap();
         assert_eq!(listed.len(), 1);

@@ -3,9 +3,9 @@
 use crate::entity::{refresh_token, user};
 use crate::password::{hash_password, verify_password};
 use chrono::{Duration, Utc};
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 use sova_core::{Error, Request, Result};
 use sova_db::{DbError, DbExt, DbHandle};
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 
 const MIN_PASSWORD_LEN: usize = 8;
 
@@ -70,10 +70,7 @@ impl From<&user::Model> for AuthUser {
 }
 
 pub async fn find_user_by_id(db: &DbHandle, id: i64) -> Result<Option<user::Model>> {
-    user::Entity::find_by_id(id)
-        .one(db)
-        .await
-        .map_err(db_err)
+    user::Entity::find_by_id(id).one(db).await.map_err(db_err)
 }
 
 pub async fn find_user_by_email(db: &DbHandle, email: &str) -> Result<Option<user::Model>> {
@@ -181,10 +178,7 @@ fn db_err(e: sea_orm::DbErr) -> Error {
 }
 
 /// Issue access + refresh JWT pair (requires [`crate::JwtAuth`] installed).
-pub async fn issue_token_pair(
-    req: &Request,
-    user: &user::Model,
-) -> Result<TokenPair> {
+pub async fn issue_token_pair(req: &Request, user: &user::Model) -> Result<TokenPair> {
     use crate::jwt_auth::JwtAuthState;
     let state = req.try_state::<JwtAuthState>().ok_or_else(|| {
         Error::Internal("JwtAuth is not installed (needed to issue tokens)".into())

@@ -30,7 +30,9 @@ impl Http3Service {
         server: SovaServer,
     ) -> Result<Self> {
         if alpn.is_empty() {
-            return Err(Error::Internal("Http3Service: `alpn` must not be empty".into()));
+            return Err(Error::Internal(
+                "Http3Service: `alpn` must not be empty".into(),
+            ));
         }
         Ok(Self {
             bind_addr,
@@ -75,11 +77,7 @@ impl BackgroundService for Http3Service {
         &self.name
     }
 
-    fn run(
-        self: Box<Self>,
-        _state: Arc<StateMap>,
-        shutdown: Shutdown,
-    ) -> SovaBoxFuture<()> {
+    fn run(self: Box<Self>, _state: Arc<StateMap>, shutdown: Shutdown) -> SovaBoxFuture<()> {
         Box::pin(async move {
             let server_config = match build_server_config(&self.tls, self.alpn.clone(), false) {
                 Ok(v) => v,
@@ -251,9 +249,9 @@ mod tests {
     use super::*;
     use crate::config::SkipServerVerification;
     use h3::client;
+    use rcgen::generate_simple_self_signed;
     use sova_core::extend::StateMap;
     use sova_core::{App, Request, Response};
-    use rcgen::generate_simple_self_signed;
     use std::fs;
     use tempfile::TempDir;
 
@@ -262,7 +260,10 @@ mod tests {
         sock.local_addr().expect("local addr")
     }
 
-    fn write_self_signed_pem(tmp: &TempDir, subject: &[&str]) -> (std::path::PathBuf, std::path::PathBuf) {
+    fn write_self_signed_pem(
+        tmp: &TempDir,
+        subject: &[&str],
+    ) -> (std::path::PathBuf, std::path::PathBuf) {
         let subject_alt_names: Vec<String> = subject.iter().map(|s| (*s).into()).collect();
         let cert = generate_simple_self_signed(subject_alt_names).expect("rcgen");
         let cert_pem = cert.cert.pem();
@@ -289,14 +290,8 @@ mod tests {
         app.get("/h3", |_r: Request| async { Response::text("h3-ok") });
         let server = app.build().unwrap();
 
-        let svc = Http3Service::from_pem(
-            bind_addr,
-            &cert_path,
-            &key_path,
-            h3_alpn.clone(),
-            server,
-        )
-        .unwrap();
+        let svc = Http3Service::from_pem(bind_addr, &cert_path, &key_path, h3_alpn.clone(), server)
+            .unwrap();
 
         let (tx, shutdown) = sova_core::shutdown_channel();
         let handle = tokio::spawn(Box::new(svc).run(Arc::new(StateMap::new()), shutdown));
@@ -314,11 +309,14 @@ mod tests {
 
         let mut endpoint = quinn::Endpoint::client(client_bind).unwrap();
         endpoint.set_default_client_config(client_cfg);
-        let conn = endpoint.connect(bind_addr, "localhost").unwrap().await.unwrap();
-
-        let (mut driver, mut send_request) = client::new(h3_quinn::Connection::new(conn))
+        let conn = endpoint
+            .connect(bind_addr, "localhost")
+            .unwrap()
             .await
             .unwrap();
+
+        let (mut driver, mut send_request) =
+            client::new(h3_quinn::Connection::new(conn)).await.unwrap();
         let drive = tokio::spawn(async move {
             let _ = std::future::poll_fn(|cx| driver.poll_close(cx)).await;
         });

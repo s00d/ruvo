@@ -6,12 +6,12 @@
 //! # terminal 3:  curl -X POST http://127.0.0.1:3020/grab
 //! ```
 
+use serde_json::json;
 use sova::extend::{wait_shutdown, BoxFuture, StateMap};
 use sova::{
     App, BackgroundService, Cell, Error, IntoResponse, Json, Request, Response, Result, Shutdown,
     Slot,
 };
-use serde_json::json;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};

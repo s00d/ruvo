@@ -3,10 +3,10 @@
 use crate::job::Schedule;
 use bytes::Bytes;
 use chrono::{DateTime, Utc};
+use serde_json::Value;
 use sova_core::extend::{wait_shutdown, BoxFuture, StateMap};
 use sova_core::{BackgroundService, Shutdown};
 use sova_tasks_store::{EnqueueOpts, TaskStore};
-use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -30,11 +30,7 @@ impl BackgroundService for TaskScheduler {
         "tasks-scheduler"
     }
 
-    fn run(
-        self: Box<Self>,
-        _state: Arc<StateMap>,
-        shutdown: Shutdown,
-    ) -> BoxFuture<()> {
+    fn run(self: Box<Self>, _state: Arc<StateMap>, shutdown: Shutdown) -> BoxFuture<()> {
         Box::pin(async move {
             let mut last: HashMap<String, String> = HashMap::new();
             loop {

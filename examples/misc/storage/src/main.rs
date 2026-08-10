@@ -14,10 +14,10 @@
 //! ```
 
 use bytes::Bytes;
-use sova::prelude::*;
-use sova::{PutOpts, Storage, StorageExt};
 use serde::Deserialize;
 use serde_json::json;
+use sova::prelude::*;
+use sova::{PutOpts, Storage, StorageExt};
 
 #[derive(Deserialize)]
 struct PutBody {

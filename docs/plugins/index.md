@@ -29,12 +29,12 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`cookies`](/plugins/cookies) | HTTP | `0.1.1` | Parse Cookie header into request-local Cookies | `cookies` |
 | [`cors`](/plugins/cors) | HTTP | `0.1.1` | Cross-Origin Resource Sharing headers | `cors` |
 | [`csrf`](/plugins/csrf) | HTTP | `0.1.3` | Session double-submit CSRF (Laravel-style except/XSRF cookie) | `csrf` |
-| [`db`](/plugins/db) | Data | `0.1.5` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
-| [`devtools`](/plugins/devtools) | Ops | `0.1.7` | In-app debug bar (HTML inject, SSE timeline, request snapshots) | `devtools`, `devtools-acme`, `devtools-csrf`, `devtools-fs`, `devtools-i18n`, `devtools-notifications`, `devtools-passport`, `devtools-rate-limit`, `devtools-redis`, `devtools-store` |
+| [`db`](/plugins/db) | Data | `0.1.6` | SeaORM pool, migrate CLI, optional seed CLI | `db`, `db-mysql`, `db-sqlite` |
+| [`devtools`](/plugins/devtools) | Ops | `0.1.10` | In-app debug bar (HTML inject, SSE timeline, request snapshots) | `devtools`, `devtools-acme`, `devtools-console`, `devtools-console-events`, `devtools-console-graphql`, `devtools-console-grpc`, `devtools-console-http-external`, `devtools-console-mail`, `devtools-console-rabbit`, `devtools-console-redis`, `devtools-console-session`, `devtools-console-store`, `devtools-console-tasks`, `devtools-csrf`, `devtools-fs`, `devtools-graphql`, `devtools-grpc`, `devtools-i18n`, `devtools-notifications`, `devtools-passport`, `devtools-rabbit`, `devtools-rate-limit`, `devtools-redis`, `devtools-store` |
 | [`env`](/plugins/env) | HTTP | `0.1.1` | Cascade .env loading for Sova apps (dotenvy) | `env` |
 | [`fs`](/plugins/fs) | Data | `0.1.0` | Local filesystem with jail root (async CRUD + walk) | `fs` |
-| [`graphql`](/plugins/graphql) | Integrations | `0.1.0` | Outbound GraphQL client (+ optional schema mount) | `graphql`, `graphql-server` |
-| [`grpc`](/plugins/grpc) | Integrations | `0.1.0` | Connect-JSON unary RPC client (+ optional server) | `grpc` |
+| [`graphql`](/plugins/graphql) | Integrations | `0.1.2` | Outbound GraphQL client (+ optional schema mount) | `graphql`, `graphql-server` |
+| [`grpc`](/plugins/grpc) | Integrations | `0.1.2` | Connect-JSON unary RPC client (+ optional server) | `grpc` |
 | [`http`](/plugins/http) | Integrations | `0.1.1` | Outbound HTTP client with SSRF guards and named configs | `http-client` |
 | [`i18n`](/plugins/i18n) | Content | `0.1.2` | Locales, catalogs, optional path prefix and cookie | `i18n`, `i18n-cookie` |
 | [`idempotency`](/plugins/idempotency) | HTTP | `0.1.1` | Replay 2xx responses for Idempotency-Key on mutating methods | `idempotency` |
@@ -45,9 +45,9 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`openapi`](/plugins/openapi) | Content | `0.1.1` | OpenAPI 3.1 document + Scalar UI at mount path | `openapi` |
 | [`passport`](/plugins/passport) | Auth | `0.1.3` | Users + access/refresh JWT + personal access tokens | `passport`, `passport-jwt`, `passport-oauth`, `passport-session` |
 | [`quic`](/plugins/quic) | Realtime | `0.1.2` | QUIC datagrams BackgroundService helpers for Sova | `quic-udp` |
-| [`rabbit`](/plugins/rabbit) | Integrations | `0.1.0` | Raw AMQP broker (publish/consume, DLQ, FakeBroker) | `rabbit` |
+| [`rabbit`](/plugins/rabbit) | Integrations | `0.1.1` | Raw AMQP broker (publish/consume, DLQ, FakeBroker) | `rabbit` |
 | [`rate-limit`](/plugins/rate-limit) | HTTP | `0.1.3` | Per-key request rate limiting | `rate-limit` |
-| [`redis`](/plugins/redis) | Data | `0.1.3` | Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues | `redis` |
+| [`redis`](/plugins/redis) | Data | `0.1.4` | Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, list queues | `redis` |
 | [`response-cache`](/plugins/response-cache) | HTTP | `0.1.1` | Cache GET 200 responses in KvStore | `response-cache` |
 | [`session`](/plugins/session) | Auth | `0.1.5` | Cookie sessions backed by a SessionStore | `session`, `session-redis`, `session-sql` |
 | [`shield`](/plugins/shield) | HTTP | `0.1.1` | Baseline security response headers (helmet-style) | `shield` |
@@ -61,7 +61,7 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`udp`](/plugins/udp) | Realtime | `0.1.1` | UDP BackgroundService helpers for Sova | `udp` |
 | [`vld`](/plugins/vld) | Auth | `0.1.4` | Request validation hooks and coverage check | `vld`, `vld-flash`, `vld-flash-templates`, `vld-form`, `vld-i18n`, `vld-openapi` |
 | [`ws`](/plugins/ws) | Realtime | `0.1.1` | WebSocket hub, origin allowlist, max message size | `ws` |
-| [`cli`](/plugins/cli) | Tooling | `0.1.1` | CLI ServerArgs / listen_args for Sova (local dev) | — |
+| [`cli`](/plugins/cli) | Tooling | `0.1.2` | CLI ServerArgs / listen_args for Sova (local dev) | — |
 <!-- /generated:plugins-table -->
 
 ## Stack notes

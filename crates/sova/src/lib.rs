@@ -11,19 +11,20 @@ mod preset;
 
 pub use app::{App, BoundApp};
 pub use error::{AppError, Result};
-#[cfg(feature = "web")]
-pub use preset::WebApp;
 #[cfg(feature = "api")]
 pub use preset::ApiApp;
+#[cfg(feature = "web")]
+pub use preset::WebApp;
 pub use sova_core::{
-    current_accept, ensure_request_id, error_response_for_accept, error_to_problem, html_error_page,
-    logger, logger_should_skip, logger_skip_path, logger_skip_paths, negotiate_error_format, problem_response,
-    problem_with_errors, request_id, status_response_for_accept, with_state, with_accept,
-    BackgroundService, Cell, CheckKind, CheckResult, ClientAddr, ConfigDoc, Error, ErrorFormat,
+    current_accept, ensure_request_id, error_response_for_accept, error_to_problem,
+    html_error_page, logger, logger_should_skip, logger_skip_path, logger_skip_paths,
+    negotiate_error_format, problem_response, problem_with_errors, referer_or, request_id,
+    status_response_for_accept, with_accept, with_state, AppDispatch, BackgroundService, Cell,
+    CheckKind, CheckResult, ClientAddr, ConfigDoc, DevToolsConfigRegistry, Error, ErrorFormat,
     Event, EventBus, FormData, Html, Http, IntoResponse, Json, LogConfig, LogRotate, MatchedRoute,
-    MatchedRouteCapture, NoContent, Next, OnUpgrade, Plugin, PluginMeta, PluginSdkVersion,
-    RateLimitIdentity, Redirect, Request, RequestId, Response, Router, Server, Shutdown, Slot, Text,
-    Upload, UploadRules, PLUGIN_SDK_VERSION, referer_or,
+    MatchedRouteCapture, Next, NoContent, OnUpgrade, Plugin, PluginMeta, PluginSdkVersion,
+    RateLimitIdentity, Redirect, Request, RequestId, Response, Router, Server, Shutdown, Slot,
+    Text, Upload, UploadRules, PLUGIN_SDK_VERSION,
 };
 /// Typed request extractors (`Path`, `Query`, `Json`, `State`, …).
 pub mod extract {
@@ -32,13 +33,13 @@ pub mod extract {
 
 #[cfg(feature = "testing")]
 pub use sova_core::{ClientRequest, ResponseAssert, TestClient};
+/// JSON snapshot helper (insta + common redactions). Prefer this over a bare `insta` call.
+#[cfg(feature = "testing")]
+pub use sova_testing::assert_json_snapshot;
 #[cfg(feature = "testing")]
 pub use sova_testing::{
     apply_migrations, with_json_redactions, SqliteTestDb, TestApp, TestAppBuilder,
 };
-/// JSON snapshot helper (insta + common redactions). Prefer this over a bare `insta` call.
-#[cfg(feature = "testing")]
-pub use sova_testing::assert_json_snapshot;
 
 /// Integration-test surface: [`TestClient`], [`TestApp`], sqlite tempfile, snapshots.
 ///
@@ -52,24 +53,26 @@ pub mod testing {
     };
 }
 
+#[cfg(feature = "acme")]
+pub use sova_acme::{
+    Acme, AcmeFailed, AcmeHandle, AcmeStatus, CertificateIssued, CertificateRenewed,
+};
 #[cfg(feature = "tls")]
 pub use sova_core::Tls;
-#[cfg(feature = "acme")]
-pub use sova_acme::{Acme, AcmeFailed, AcmeHandle, AcmeStatus, CertificateIssued, CertificateRenewed};
 
 /// Everyday imports for application code.
 ///
 /// Status codes: `Response::json(&x).status(201)` or `(201, Json(x))`.
 /// Forms/files: `Request::input` / `form` (feature `multipart` for multipart bodies).
 pub mod prelude {
-    pub use crate::{
-        logger, request_id, App, Error, Html, IntoResponse, Json, Next, NoContent, Plugin, Redirect,
-        Request, RequestId, Response, Result, Router, Text,
-    };
-    #[cfg(feature = "web")]
-    pub use crate::WebApp;
     #[cfg(feature = "api")]
     pub use crate::ApiApp;
+    #[cfg(feature = "web")]
+    pub use crate::WebApp;
+    pub use crate::{
+        logger, request_id, App, Error, Html, IntoResponse, Json, Next, NoContent, Plugin,
+        Redirect, Request, RequestId, Response, Result, Router, Text,
+    };
 }
 
 /// Extension API (handlers, bodies, [`Bind`](extend::Bind), …) — see `sova_core::extend`.
@@ -91,7 +94,9 @@ pub use sova_csrf::{Csrf, CsrfExt, CsrfMismatch, CsrfToken};
 pub use sova_shield::Shield;
 
 #[cfg(feature = "cookies")]
-pub use sova_cookies::{CookieBuilder, CookieLayer, CookieLayerPresent, Cookies, ResponseCookieExt};
+pub use sova_cookies::{
+    CookieBuilder, CookieLayer, CookieLayerPresent, Cookies, ResponseCookieExt,
+};
 
 #[cfg(feature = "static-files")]
 pub use sova_static::Static;
@@ -110,9 +115,9 @@ pub use sova_response_cache::{ResponseCache, ResponseCacheHandle};
 
 #[cfg(feature = "session")]
 pub use sova_session::{
-    memory_sessions, KvSessionStore, SameSite, Session, SessionExt, SessionLayer,
-    SessionLogoutAll, SessionRegenerated, SessionStore, SessionStoreHandle, FLASH_ERRORS,
-    FLASH_OLD, FLASH_STATUS, SESSION_USER_KEY,
+    memory_sessions, KvSessionStore, SameSite, Session, SessionExt, SessionLayer, SessionLogoutAll,
+    SessionRegenerated, SessionStore, SessionStoreHandle, FLASH_ERRORS, FLASH_OLD, FLASH_STATUS,
+    SESSION_USER_KEY,
 };
 
 #[cfg(feature = "session-sql")]
@@ -127,8 +132,10 @@ mod shared_store;
 /// Key-value store backends (`Memory`, `File`, `Sql`, `Redis`, `Redb`).
 #[cfg(feature = "store")]
 pub mod store {
-    pub use sova_store::{namespace, AppStore, Cache, CacheError, KvStore, MemoryStore as Memory, Namespace};
     pub use crate::shared_store::SharedStore;
+    pub use sova_store::{
+        namespace, AppStore, Cache, CacheError, KvStore, MemoryStore as Memory, Namespace,
+    };
 
     #[cfg(feature = "store-file")]
     pub use sova_store::{Durability, FileStore as File};
@@ -192,7 +199,7 @@ pub use sova_db::{
 
 #[cfg(feature = "redis")]
 pub use sova_redis::{
-    Redis, RedisError, RedisExt, RedisMessage, RedisPool, RedisSubscriber,
+    FakeRedis, Redis, RedisError, RedisExt, RedisMessage, RedisPool, RedisSubscriber,
 };
 
 #[cfg(feature = "observability")]
@@ -213,11 +220,8 @@ pub use sova_sse::{sse_response, SseChannel, SseEvent};
 #[cfg(feature = "templates")]
 pub use sova_templates::{
     register_per_request, FrozenAmbient, MiniJinjaEngine, MiniJinjaTemplates, RenderExt,
-    TemplateEngine,
-    TemplateHelpers, Templates,
+    TemplateEngine, TemplateHelpers, Templates,
 };
-
-
 
 #[cfg(feature = "cli")]
 pub use sovax::{Parser, ServerArgs};
@@ -272,22 +276,23 @@ pub use sova_graphql::{
     GraphqlResponse,
 };
 
+#[cfg(feature = "graphql-server")]
+pub use sova_graphql::{GraphqlContext, GraphqlServerExt};
+
 #[cfg(feature = "grpc")]
-pub use sova_grpc::{
-    FakeGrpc, Grpc, GrpcBound, GrpcClient, GrpcError, GrpcExt, GrpcCall,
-};
+pub use sova_grpc::{FakeGrpc, Grpc, GrpcBound, GrpcCall, GrpcClient, GrpcError, GrpcExt};
 
 #[cfg(feature = "rabbit")]
 pub use sova_rabbit::{
     Broker, Delivery, Exchange, ExchangeKind, FakeBroker, QueueOpts, Rabbit, RabbitBound,
-    RabbitError, RabbitExt, SharedBroker,
+    RabbitConsumer, RabbitError, RabbitExt, SharedBroker,
 };
 
 /// AISDK re-exports and agent helpers (`LanguageModelRequest`, `tool!`, …).
 #[cfg(feature = "ai")]
 pub mod ai {
-    pub use sova_ai::prelude::*;
     pub use sova_ai::aisdk;
+    pub use sova_ai::prelude::*;
 }
 
 #[cfg(feature = "storage")]
@@ -325,12 +330,12 @@ pub use sova_passport::{
 
 #[cfg(feature = "auth")]
 pub use sova_auth::{
-    assign_role, create_permission, create_role, delete_permission, delete_role, find_user_by_email,
-    find_user_by_id, list_permissions, list_roles, load_current_user, make_verify_token,
-    mark_email_verified, parse_verify_token, register_user, revoke_role, set_avatar, set_user_roles,
-    sync_role_permissions, update_permission, update_role, user_ids_with_permission,
-    user_ids_with_role, Ability, AuthExt, AuthMigrator, CurrentUser, Feature as AuthFeature,
-    Fortify, FortifyPaths, Policy, UserLoggedIn, UserRegistered,
+    assign_role, create_permission, create_role, delete_permission, delete_role,
+    find_user_by_email, find_user_by_id, list_permissions, list_roles, load_current_user,
+    make_verify_token, mark_email_verified, parse_verify_token, register_user, revoke_role,
+    set_avatar, set_user_roles, sync_role_permissions, update_permission, update_role,
+    user_ids_with_permission, user_ids_with_role, Ability, AuthExt, AuthMigrator, CurrentUser,
+    Feature as AuthFeature, Fortify, FortifyPaths, Policy, UserLoggedIn, UserRegistered,
 };
 
 #[cfg(feature = "auth-mail")]

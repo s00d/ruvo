@@ -71,7 +71,10 @@ async fn origins_list_mirrors_and_varies() {
                 .build(),
         )
         .await;
-    assert!(denied.headers().get("access-control-allow-origin").is_none());
+    assert!(denied
+        .headers()
+        .get("access-control-allow-origin")
+        .is_none());
 }
 
 #[tokio::test]
@@ -161,9 +164,7 @@ async fn default_allow_headers_include_xsrf() {
 #[tokio::test]
 async fn denied_origin_preflight_has_no_acao() {
     let mut app = App::new();
-    Cors::new()
-        .origins(["https://a.test"])
-        .install(&mut app);
+    Cors::new().origins(["https://a.test"]).install(&mut app);
     app.get("/", |_r: Request| async { Response::text("ok") });
 
     let res = app

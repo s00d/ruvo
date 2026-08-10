@@ -1,6 +1,6 @@
 [package]
 name = "sova"
-version = "0.1.26"
+version = "0.1.29"
 authors.workspace = true
 edition.workspace = true
 description = "Express-like HTTP framework for Rust"
@@ -50,6 +50,7 @@ sse-feed = ["dep:sova-sse"]
 devtools = [
     "dep:sova-devtools",
     "sse-feed",
+    "sova-devtools/console",
     "sova-devtools/http",
     "sova-devtools/session",
     "sova-devtools/mail",
@@ -62,8 +63,22 @@ devtools = [
     "db",
     "tasks",
 ]
+devtools-console = ["devtools", "sova-devtools/console"]
+devtools-console-redis = ["devtools-console", "redis", "sova-devtools/console-redis"]
+devtools-console-store = ["devtools-console", "store", "sova-devtools/console-store"]
+devtools-console-graphql = ["devtools-console", "graphql-server", "sova-devtools/console-graphql"]
+devtools-console-tasks = ["devtools-console", "tasks", "sova-devtools/console-tasks"]
+devtools-console-mail = ["devtools-console", "mail", "sova-devtools/console-mail"]
+devtools-console-http-external = ["devtools-console", "http-client", "sova-devtools/console-http-external"]
+devtools-console-events = ["devtools-console", "sova-devtools/console-events"]
+devtools-console-rabbit = ["devtools-console", "rabbit", "sova-devtools/console-rabbit"]
+devtools-console-grpc = ["devtools-console", "grpc", "sova-devtools/console-grpc"]
+devtools-console-session = ["devtools-console", "session", "sova-devtools/console-session"]
+devtools-graphql = ["devtools", "graphql-server", "sova-devtools/graphql"]
+devtools-rabbit = ["devtools", "rabbit", "sova-devtools/rabbit"]
+devtools-grpc = ["devtools", "grpc", "sova-devtools/grpc"]
 devtools-store = ["devtools", "store", "sova-devtools/store"]
-devtools-redis = ["devtools-store", "redis", "sova-devtools/redis"]
+devtools-redis = ["devtools-store", "redis", "sova-devtools/redis", "sova-devtools/console-redis"]
 devtools-i18n = ["devtools", "i18n", "sova-devtools/i18n"]
 devtools-csrf = ["devtools", "csrf", "sova-devtools/csrf"]
 devtools-passport = ["devtools", "passport", "sova-devtools/passport"]
@@ -156,7 +171,7 @@ graphql-server = ["graphql", "sova-graphql/server"]
 # Connect-JSON unary RPC client (+ optional server bind).
 grpc = ["dep:sova-grpc"]
 # Raw AMQP / RabbitMQ broker.
-rabbit = ["dep:sova-rabbit"]
+rabbit = ["dep:sova-rabbit", "sova-rabbit/lapin"]
 testing = [
     "sova-core/testing",
     "dep:sova-testing",

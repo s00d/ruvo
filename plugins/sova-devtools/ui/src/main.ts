@@ -13,9 +13,6 @@ if (mount) {
   app.mount(mount);
   const store = useDevToolsStore();
   void router.isReady().then(() => {
-    if (store.tab && router.currentRoute.value.name !== store.tab) {
-      void router.replace({ name: store.tab });
-    }
     store.boot();
   });
 }

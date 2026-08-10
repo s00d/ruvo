@@ -23,10 +23,8 @@ async fn with_flash_exposes_errors_old_status() {
     ));
     app.get("/seed", |req: Request| async move {
         req.session().flash(FLASH_STATUS, "Saved");
-        req.session()
-            .flash(FLASH_ERRORS, r#"{"email":"bad"}"#);
-        req.session()
-            .flash(FLASH_OLD, r#"{"email":"a@b.c"}"#);
+        req.session().flash(FLASH_ERRORS, r#"{"email":"bad"}"#);
+        req.session().flash(FLASH_OLD, r#"{"email":"a@b.c"}"#);
         sova_core::Response::text("ok")
     });
     app.get("/page", |req: Request| async move {

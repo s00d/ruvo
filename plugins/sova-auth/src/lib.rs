@@ -27,6 +27,7 @@
 //! ```
 
 mod actions;
+mod events;
 mod feature;
 mod forms;
 mod guard;
@@ -36,7 +37,6 @@ mod migration;
 mod paths;
 mod plugin;
 mod policy;
-mod events;
 mod state;
 mod store;
 mod token;
@@ -50,20 +50,21 @@ pub mod entity;
 #[cfg(feature = "testing")]
 pub mod testing;
 
-#[cfg(feature = "mail")]
-pub use mail::{send_reset, send_verify, ResetPasswordMail, VerifyEmailMail};
+pub use events::{UserLoggedIn, UserRegistered};
 pub use feature::Feature;
 pub use guard::AuthExt;
-pub use events::{UserLoggedIn, UserRegistered};
+#[cfg(feature = "mail")]
+pub use mail::{send_reset, send_verify, ResetPasswordMail, VerifyEmailMail};
 pub use migration::AuthMigrator;
 pub use paths::FortifyPaths;
 pub use plugin::Fortify;
 pub use policy::{Ability, Policy};
 pub use store::{
-    assign_role, create_permission, create_role, delete_permission, delete_role, find_user_by_email,
-    find_user_by_id, list_permissions, list_roles, load_current_user, mark_email_verified,
-    register_user, revoke_role, set_avatar, set_user_roles, sync_role_permissions, update_permission,
-    update_role, user_ids_with_permission, user_ids_with_role, CurrentUser,
+    assign_role, create_permission, create_role, delete_permission, delete_role,
+    find_user_by_email, find_user_by_id, list_permissions, list_roles, load_current_user,
+    mark_email_verified, register_user, revoke_role, set_avatar, set_user_roles,
+    sync_role_permissions, update_permission, update_role, user_ids_with_permission,
+    user_ids_with_role, CurrentUser,
 };
 pub use token::{make_verify_token, parse_verify_token};
 

@@ -22,10 +22,7 @@ async fn main() -> Result<()> {
 
 async fn home(req: Request) -> Html<String> {
     let user = req.session().get_or("user", "guest");
-    Html(render(
-        include_str!("views/home.html"),
-        &[("user", &user)],
-    ))
+    Html(render(include_str!("views/home.html"), &[("user", &user)]))
 }
 
 async fn login(req: Request) -> Redirect {

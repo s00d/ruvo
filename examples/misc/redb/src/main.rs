@@ -6,9 +6,9 @@
 //! # curl -c /tmp/c -b /tmp/c http://127.0.0.1:3012/hit
 //! ```
 
+use serde_json::json;
 use sova::prelude::*;
 use sova::{AppStore, RateLimit, SessionExt, SessionLayer, SharedStore};
-use serde_json::json;
 use std::path::PathBuf;
 
 #[tokio::main]

@@ -12,9 +12,7 @@ async fn fake_generate_records_prompt() {
         Ok::<_, sova_core::Error>(Json(serde_json::json!({ "text": text })))
     });
 
-    let res = app
-        .handle_request(Method::POST, "/chat", "")
-        .await;
+    let res = app.handle_request(Method::POST, "/chat", "").await;
     assert_eq!(res.status_code().as_u16(), 200);
     let body = String::from_utf8(res.body_bytes().unwrap().to_vec()).unwrap();
     assert!(body.contains("pong"), "{body}");
@@ -47,8 +45,8 @@ async fn stream_response_is_sse() {
 
 #[tokio::test]
 async fn fake_stream_text_records() {
-    use aisdk::core::LanguageModel;
     use aisdk::core::language_model::LanguageModelOptions;
+    use aisdk::core::LanguageModel;
     use futures_util::StreamExt;
 
     let mut fake = FakeAi::new().stub_text("chunk");

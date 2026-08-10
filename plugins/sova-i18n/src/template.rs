@@ -22,37 +22,42 @@ pub fn template_fn(req: &Request) -> Value {
     let scope = scope_of(req);
     let state = req.try_state::<I18nState>();
 
-    Value::from_function(move |key: String, kwargs: Kwargs| -> Result<String, minijinja::Error> {
-        let Some(state) = state.as_ref() else {
-            kwargs.assert_all_used()?;
-            return Ok(key);
-        };
+    Value::from_function(
+        move |key: String, kwargs: Kwargs| -> Result<String, minijinja::Error> {
+            let Some(state) = state.as_ref() else {
+                kwargs.assert_all_used()?;
+                return Ok(key);
+            };
 
-        let mut text = if kwargs.has("count") {
-            let count: i64 = kwargs.get("count")?;
-            let raw = state.translate(&locale, &scope, &key);
-            pluralize(state.plural_fn.as_ref(), &key, count, &locale, &raw)
-        } else {
-            state.translate(&locale, &scope, &key)
-        };
+            let mut text = if kwargs.has("count") {
+                let count: i64 = kwargs.get("count")?;
+                let raw = state.translate(&locale, &scope, &key);
+                pluralize(state.plural_fn.as_ref(), &key, count, &locale, &raw)
+            } else {
+                state.translate(&locale, &scope, &key)
+            };
 
-        let mut pairs: Vec<(String, String)> = Vec::new();
-        for name in kwargs.args() {
-            if name == "count" {
-                continue;
+            let mut pairs: Vec<(String, String)> = Vec::new();
+            for name in kwargs.args() {
+                if name == "count" {
+                    continue;
+                }
+                let val: Value = kwargs.get(name)?;
+                pairs.push((name.to_string(), kwarg_to_string(&val)));
             }
-            let val: Value = kwargs.get(name)?;
-            pairs.push((name.to_string(), kwarg_to_string(&val)));
-        }
-        kwargs.assert_all_used()?;
+            kwargs.assert_all_used()?;
 
-        if !pairs.is_empty() {
-            let refs: Vec<(&str, &str)> = pairs.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
-            text = interpolate(&text, &refs);
-        }
+            if !pairs.is_empty() {
+                let refs: Vec<(&str, &str)> = pairs
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v.as_str()))
+                    .collect();
+                text = interpolate(&text, &refs);
+            }
 
-        Ok(text)
-    })
+            Ok(text)
+        },
+    )
 }
 
 fn kwarg_to_string(v: &Value) -> String {

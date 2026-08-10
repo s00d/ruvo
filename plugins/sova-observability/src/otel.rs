@@ -16,9 +16,8 @@ static PROVIDER: OnceLock<SdkTracerProvider> = OnceLock::new();
 ///
 /// Env: `OTEL_EXPORTER_OTLP_ENDPOINT` (required to enable), `OTEL_SERVICE_NAME` (default `sova`).
 pub fn install_from_env() -> Result<(), String> {
-    let endpoint = std::env::var("OTEL_EXPORTER_OTLP_ENDPOINT").map_err(|_| {
-        "OTEL_EXPORTER_OTLP_ENDPOINT not set — skipping OTLP".to_string()
-    })?;
+    let endpoint = std::env::var("OTEL_EXPORTER_OTLP_ENDPOINT")
+        .map_err(|_| "OTEL_EXPORTER_OTLP_ENDPOINT not set — skipping OTLP".to_string())?;
     if endpoint.is_empty() {
         return Err("OTEL_EXPORTER_OTLP_ENDPOINT empty".into());
     }
@@ -34,18 +33,12 @@ pub fn install_from_env() -> Result<(), String> {
 
     let provider = SdkTracerProvider::builder()
         .with_batch_exporter(exporter)
-        .with_resource(
-            Resource::builder()
-                .with_service_name(service)
-                .build(),
-        )
+        .with_resource(Resource::builder().with_service_name(service).build())
         .build();
 
     let tracer = provider.tracer("sova");
     let _ = PROVIDER.set(provider);
-    opentelemetry::global::set_tracer_provider(
-        PROVIDER.get().expect("provider just set").clone(),
-    );
+    opentelemetry::global::set_tracer_provider(PROVIDER.get().expect("provider just set").clone());
 
     let otel_layer = tracing_opentelemetry::layer().with_tracer(tracer);
     // Best-effort: if a subscriber is already set, layering fails — warn.

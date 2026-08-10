@@ -19,9 +19,7 @@ pub fn render_html(meta: &ResolvedMeta) -> String {
     } else {
         "index, follow"
     };
-    out.push_str(&format!(
-        "<meta name=\"robots\" content=\"{robots}\">\n"
-    ));
+    out.push_str(&format!("<meta name=\"robots\" content=\"{robots}\">\n"));
     if let Some(ref c) = meta.canonical {
         out.push_str(&format!(
             "<link rel=\"canonical\" href=\"{}\">\n",

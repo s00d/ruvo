@@ -22,14 +22,12 @@ impl<T> std::ops::Deref for State<T> {
 
 impl<T: Send + Sync + 'static> FromRequestParts for State<T> {
     fn from_request_parts(req: &Request) -> Result<Self> {
-        req.try_state::<T>()
-            .map(State)
-            .ok_or_else(|| {
-                Error::Internal(format!(
-                    "state `{}` is not registered — call app.state(..)",
-                    std::any::type_name::<T>()
-                ))
-            })
+        req.try_state::<T>().map(State).ok_or_else(|| {
+            Error::Internal(format!(
+                "state `{}` is not registered — call app.state(..)",
+                std::any::type_name::<T>()
+            ))
+        })
     }
 }
 
@@ -52,14 +50,11 @@ impl<T> std::ops::Deref for Extension<T> {
 
 impl<T: Clone + Send + Sync + 'static> FromRequestParts for Extension<T> {
     fn from_request_parts(req: &Request) -> Result<Self> {
-        req.get::<T>()
-            .cloned()
-            .map(Extension)
-            .ok_or_else(|| {
-                Error::BadRequest(format!(
-                    "missing extension `{}`",
-                    std::any::type_name::<T>()
-                ))
-            })
+        req.get::<T>().cloned().map(Extension).ok_or_else(|| {
+            Error::BadRequest(format!(
+                "missing extension `{}`",
+                std::any::type_name::<T>()
+            ))
+        })
     }
 }

@@ -45,9 +45,7 @@ async fn mailable_send_records_html() {
     app.post("/send", |req: Request| async move {
         req.mail()
             .to("u@example.com")
-            .send_mail(HelloMail {
-                name: "Ada".into(),
-            })
+            .send_mail(HelloMail { name: "Ada".into() })
             .await?;
         Ok::<_, sova_core::Error>(Response::text("ok"))
     });
@@ -111,10 +109,7 @@ async fn mailable_markdown_content() {
 
     let plugin = Mail::fake().from("a@b.c");
     let client = plugin.client();
-    client
-        .send_mail("u@example.com", MdMail)
-        .await
-        .unwrap();
+    client.send_mail("u@example.com", MdMail).await.unwrap();
     let snap = &client.fake().unwrap().sent()[0];
     let html = snap.html.as_deref().unwrap();
     assert!(html.contains("<h2>Hello</h2>"), "{html}");
@@ -162,8 +157,8 @@ async fn content_html_only_and_client_send_mail() {
 #[cfg(all(feature = "templates", feature = "markdown"))]
 #[tokio::test]
 async fn content_markdown_view_via_mailable() {
-    use sova_templates::Templates;
     use serde_json::json;
+    use sova_templates::Templates;
     use tempfile::tempdir;
 
     struct MdViewMail;
@@ -177,11 +172,7 @@ async fn content_markdown_view_via_mailable() {
     }
 
     let dir = tempdir().unwrap();
-    std::fs::write(
-        dir.path().join("note.md"),
-        "# {{ title }}\n\n{{ name }}",
-    )
-    .unwrap();
+    std::fs::write(dir.path().join("note.md"), "# {{ title }}\n\n{{ name }}").unwrap();
 
     let mut app = App::new();
     app.install(Templates::minijinja(dir.path()).autoreload(false));
@@ -189,10 +180,7 @@ async fn content_markdown_view_via_mailable() {
     let client = plugin.client();
     plugin.install(&mut app);
 
-    client
-        .send_mail("u@example.com", MdViewMail)
-        .await
-        .unwrap();
+    client.send_mail("u@example.com", MdViewMail).await.unwrap();
     let html = client.fake().unwrap().sent()[0].html.clone().unwrap();
     assert!(html.contains("<h1>T</h1>"), "{html}");
 }

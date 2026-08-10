@@ -8,9 +8,9 @@ pub use body::collect_limited;
 use crate::app::{App, ListenParts};
 use crate::error::{Error, Result};
 use std::net::SocketAddr;
-use std::pin::Pin;
 #[cfg(unix)]
 use std::path::Path;
+use std::pin::Pin;
 use tokio::net::TcpListener;
 
 /// Peer address stored on each request for rate-limiting etc.
@@ -99,7 +99,8 @@ async fn bind_tcp(bind: SocketAddr, reuseport: bool) -> Result<TcpListener> {
         #[cfg(not(feature = "listen-reuseport"))]
         {
             return Err(Error::Internal(
-                "BoundApp::reuseport(true) / SOVA_REUSEPORT requires feature `listen-reuseport`".into(),
+                "BoundApp::reuseport(true) / SOVA_REUSEPORT requires feature `listen-reuseport`"
+                    .into(),
             ));
         }
     }
@@ -161,8 +162,8 @@ pub async fn listen_with_listener(
         services,
         start_services,
     } = app.into_listen_parts()?;
-    let listener = TcpListener::from_std(listener)
-        .map_err(|e| Error::Internal(format!("from_std: {e}")))?;
+    let listener =
+        TcpListener::from_std(listener).map_err(|e| Error::Internal(format!("from_std: {e}")))?;
     conn::run_tcp(
         inner,
         startups,
@@ -189,8 +190,8 @@ pub async fn listen_with_listener(
         services,
         start_services,
     } = app.into_listen_parts()?;
-    let listener = TcpListener::from_std(listener)
-        .map_err(|e| Error::Internal(format!("from_std: {e}")))?;
+    let listener =
+        TcpListener::from_std(listener).map_err(|e| Error::Internal(format!("from_std: {e}")))?;
     conn::run_tcp(
         inner,
         startups,

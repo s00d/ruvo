@@ -1,0 +1,15 @@
+[package]
+name = "api_rabbit"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "api_rabbit"
+path = "src/main.rs"
+
+[dependencies]
+sova = { workspace = true, features = ["rabbit"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+bytes = { workspace = true }
+serde_json = { workspace = true }

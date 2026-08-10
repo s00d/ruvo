@@ -12,11 +12,11 @@ pub use provider::{OauthProvider, ProfileKind};
 /// Test helpers (PKCE / state / profile parse) — not part of the stable app API.
 #[doc(hidden)]
 pub mod test_support {
+    pub use super::callback_params;
     pub use super::flow::{
         decode_jwt_payload, now_secs, parse_profile, pkce_challenge, random_urlsafe, sign_state,
         verify_state, FlowState,
     };
-    pub use super::callback_params;
 }
 
 use crate::entity::user;
@@ -58,8 +58,11 @@ pub struct OauthTokens {
     pub id_token: Option<String>,
 }
 
-type VerifyFn =
-    Arc<dyn Fn(OauthProfile, OauthTokens, Request) -> BoxFuture<Result<(AuthUser, Request)>> + Send + Sync>;
+type VerifyFn = Arc<
+    dyn Fn(OauthProfile, OauthTokens, Request) -> BoxFuture<Result<(AuthUser, Request)>>
+        + Send
+        + Sync,
+>;
 type SuccessFn = Arc<dyn Fn(AuthUser, Request) -> BoxFuture<Result<Response>> + Send + Sync>;
 
 /// Passport-style OAuth2 plugin.
@@ -304,21 +307,10 @@ async fn callback_handler(mut req: Request) -> Result<Response> {
     if flow.provider != name {
         return Err(Error::BadRequest("oauth provider mismatch".into()));
     }
-    let provider = state
-        .providers
-        .get(&name)
-        .ok_or(Error::NotFound)?
-        .clone();
+    let provider = state.providers.get(&name).ok_or(Error::NotFound)?.clone();
     let redir = redirect_uri(&state, &provider);
 
-    let tokens = exchange_code(
-        &state.http,
-        &provider,
-        &code,
-        &redir,
-        &flow.code_verifier,
-    )
-    .await?;
+    let tokens = exchange_code(&state.http, &provider, &code, &redir, &flow.code_verifier).await?;
     let (mut profile, _raw) = resolve_profile(&state.http, &provider, &tokens).await?;
     if profile.name.is_none() {
         if let Some(n) = apple_user {
@@ -353,7 +345,10 @@ pub async fn callback_params(req: &mut Request) -> Result<(String, String, Optio
     }
 
     // form_post / urlencoded body
-    let form = req.form::<HashMap<String, String>>().await.unwrap_or_default();
+    let form = req
+        .form::<HashMap<String, String>>()
+        .await
+        .unwrap_or_default();
     let code = q_code
         .or_else(|| form.get("code").cloned())
         .ok_or_else(|| Error::BadRequest("missing code".into()))?;

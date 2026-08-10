@@ -197,7 +197,9 @@ impl Response {
     where
         S: futures_util::Stream<Item = Result<Bytes, std::io::Error>> + Send + Sync + 'static,
     {
-        let mapped = stream.map_ok(Frame::data).map_err(|e| -> BoxError { Box::new(e) });
+        let mapped = stream
+            .map_ok(Frame::data)
+            .map_err(|e| -> BoxError { Box::new(e) });
         Self::stream(BodyExt::boxed(StreamBody::new(mapped)))
     }
 
@@ -323,12 +325,9 @@ impl Response {
     /// Consume into status / headers / body without cloning headers.
     pub(crate) fn into_parts(self) -> (StatusCode, HeaderMap, ResponseBody) {
         let body = match self.body {
-            Body::Bytes(b) => Full::new(b)
-                .map_err(|_: Infallible| unreachable!())
-                .boxed(),
+            Body::Bytes(b) => Full::new(b).map_err(|_: Infallible| unreachable!()).boxed(),
             Body::Stream(b) => b,
         };
         (self.status, self.headers, body)
     }
 }
-

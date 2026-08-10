@@ -25,10 +25,16 @@ async fn caches_get_200() {
     let client = TestClient::new(app).unwrap();
     let a = client.get("/public").await;
     a.assert_status(200);
-    assert_eq!(a.headers().get("x-cache").and_then(|v| v.to_str().ok()), Some("MISS"));
+    assert_eq!(
+        a.headers().get("x-cache").and_then(|v| v.to_str().ok()),
+        Some("MISS")
+    );
     let b = client.get("/public").await;
     b.assert_status(200);
-    assert_eq!(b.headers().get("x-cache").and_then(|v| v.to_str().ok()), Some("HIT"));
+    assert_eq!(
+        b.headers().get("x-cache").and_then(|v| v.to_str().ok()),
+        Some("HIT")
+    );
     assert_eq!(hits.load(Ordering::SeqCst), 1);
 }
 

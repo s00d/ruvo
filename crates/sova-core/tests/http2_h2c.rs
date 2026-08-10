@@ -1,8 +1,8 @@
 #[allow(dead_code)]
 mod common;
 
-use common::LiveServer;
 use bytes::Bytes;
+use common::LiveServer;
 use http::Method;
 use http_body_util::BodyExt;
 use http_body_util::Empty;
@@ -51,4 +51,3 @@ async fn h2c_prior_knowledge_get_works() {
 
     server.shutdown().await;
 }
-

@@ -36,7 +36,10 @@ async fn register_submit_vote_comment() {
     let home = c.get("/").await;
     home.assert_status(200);
     let home_body = body_str(&home);
-    assert!(home_body.contains("Sova News") || home_body.contains("No stories"), "{home_body}");
+    assert!(
+        home_body.contains("Sova News") || home_body.contains("No stories"),
+        "{home_body}"
+    );
 
     let reg = c.get("/register").await;
     reg.assert_status(200);
@@ -107,7 +110,10 @@ async fn register_submit_vote_comment() {
     item.assert_status(200);
     let body = body_str(&item);
     assert!(body.contains("First!"), "{body}");
-    assert!(body.contains("2 points") || body.contains("points"), "{body}");
+    assert!(
+        body.contains("2 points") || body.contains("points"),
+        "{body}"
+    );
 
     let top = c.get("/").await;
     top.assert_status(200);
@@ -121,9 +127,7 @@ async fn submit_requires_auth() {
     let res = c.get("/submit").await;
     assert_eq!(res.status_code().as_u16(), 303);
     assert_eq!(
-        res.headers()
-            .get("location")
-            .and_then(|v| v.to_str().ok()),
+        res.headers().get("location").and_then(|v| v.to_str().ok()),
         Some("/login")
     );
 }

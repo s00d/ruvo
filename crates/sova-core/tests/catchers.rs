@@ -10,7 +10,9 @@ async fn scoped_404_html_vs_json() {
     });
 
     let mut app = App::new();
-    app.get("/", |_r: Request| async { Html("<h1>home</h1>".to_string()) });
+    app.get("/", |_r: Request| async {
+        Html("<h1>home</h1>".to_string())
+    });
     app.not_found(|_r: Request| async { Html("<h1>missing</h1>".to_string()) });
     app.mount("/api", api);
 
@@ -30,14 +32,20 @@ async fn scoped_404_html_vs_json() {
 #[tokio::test]
 async fn longest_prefix_wins() {
     let mut inner = Router::new();
-    inner.catch(404, |_r: Request| async { Response::text("inner").status(404) });
+    inner.catch(404, |_r: Request| async {
+        Response::text("inner").status(404)
+    });
 
     let mut api = Router::new();
-    api.catch(404, |_r: Request| async { Response::text("api").status(404) });
+    api.catch(404, |_r: Request| async {
+        Response::text("api").status(404)
+    });
     api.mount("/v1", inner);
 
     let mut app = App::new();
-    app.catch(404, |_r: Request| async { Response::text("root").status(404) });
+    app.catch(404, |_r: Request| async {
+        Response::text("root").status(404)
+    });
     app.mount("/api", api);
 
     assert_eq!(

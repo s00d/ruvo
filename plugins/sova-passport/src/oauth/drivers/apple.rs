@@ -2,8 +2,8 @@
 
 use super::{impl_driver_from, Driver};
 use crate::oauth::provider::{OauthProvider, ProfileKind};
-use sova_core::{Error, Result};
 use serde::Serialize;
+use sova_core::{Error, Result};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Apple Sign In driver.

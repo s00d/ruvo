@@ -75,17 +75,7 @@ pub(crate) async fn serve_in(
 
     if let Some(range) = opts.range.and_then(parse_byte_range) {
         if let Some((start, end)) = range.resolve(len) {
-            return serve_range(
-                &full,
-                &mime,
-                &etag,
-                modified,
-                start,
-                end,
-                len,
-                static_opts,
-            )
-            .await;
+            return serve_range(&full, &mime, &etag, modified, start, end, len, static_opts).await;
         }
         return Response::text("Range Not Satisfiable")
             .status(416)

@@ -81,6 +81,7 @@ impl FakeBroker {
 }
 
 fn topic_match(pattern: &str, key: &str) -> bool {
+    // Test-only topic matcher: `#` matches any suffix (not full AMQP semantics).
     let pat: Vec<&str> = pattern.split('.').collect();
     let key: Vec<&str> = key.split('.').collect();
     let mut i = 0;
@@ -140,29 +141,49 @@ impl Broker for FakeBroker {
         routing_key: &str,
         body: Bytes,
     ) -> Result<(), RabbitError> {
+        let started = std::time::Instant::now();
+        let bytes = body.len() as u64;
         let mut g = self.inner.lock().unwrap();
         if !g.exchanges.contains_key(&exchange.name) {
             g.exchanges.insert(exchange.name.clone(), exchange.kind);
         }
         FakeBroker::route_locked(&mut g, &exchange.name, routing_key, body);
-        Ok(())
+        drop(g);
+        let result: Result<(), RabbitError> = Ok(());
+        crate::trace::emit_publish(
+            &exchange.name,
+            routing_key,
+            bytes,
+            started.elapsed().as_secs_f64() * 1000.0,
+            &result,
+        );
+        result
     }
 
     async fn consume_one(&self, queue: &str) -> Result<Option<Delivery>, RabbitError> {
+        let started = std::time::Instant::now();
         let pending = {
             let mut g = self.inner.lock().unwrap();
             g.queues.get_mut(queue).and_then(|q| q.pop_front())
         };
         let Some(msg) = pending else {
+            crate::trace::emit_consume(
+                queue,
+                None,
+                started.elapsed().as_secs_f64() * 1000.0,
+                &Ok(()),
+                true,
+            );
             return Ok(None);
         };
 
         let broker = self.clone();
-        let queue = queue.to_string();
+        let queue_name = queue.to_string();
         let msg_ack = msg.clone();
         let msg_nack = msg.clone();
+        let bytes = msg.body.len() as u64;
 
-        Ok(Some(Delivery::new(
+        let delivery = Delivery::new(
             msg.exchange,
             msg.routing_key,
             msg.body,
@@ -172,7 +193,7 @@ impl Broker for FakeBroker {
             },
             move |requeue| {
                 let broker = broker.clone();
-                let queue = queue.clone();
+                let queue = queue_name.clone();
                 async move {
                     if requeue {
                         let mut g = broker.inner.lock().unwrap();
@@ -183,25 +204,27 @@ impl Broker for FakeBroker {
                             redelivered: true,
                         });
                     } else {
-                        // dead-letter if configured
                         let mut g = broker.inner.lock().unwrap();
                         if let Some(opts) = g.queue_opts.get(&queue).cloned() {
                             if let Some(dlx) = opts.dead_letter_exchange {
                                 let rk = opts
                                     .dead_letter_routing_key
                                     .unwrap_or_else(|| queue.clone());
-                                FakeBroker::route_locked(
-                                    &mut g,
-                                    &dlx,
-                                    &rk,
-                                    msg_nack.body.clone(),
-                                );
+                                FakeBroker::route_locked(&mut g, &dlx, &rk, msg_nack.body.clone());
                             }
                         }
                     }
                     Ok(())
                 }
             },
-        )))
+        );
+        crate::trace::emit_consume(
+            queue,
+            Some(bytes),
+            started.elapsed().as_secs_f64() * 1000.0,
+            &Ok(()),
+            false,
+        );
+        Ok(Some(delivery))
     }
 }

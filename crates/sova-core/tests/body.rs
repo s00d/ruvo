@@ -27,9 +27,7 @@ async fn form_parse() {
         let f: Form = req.form().await.unwrap();
         Response::text(f.user)
     });
-    let res = app
-        .handle_request(Method::POST, "/f", "user=ada")
-        .await;
+    let res = app.handle_request(Method::POST, "/f", "user=ada").await;
     assert_eq!(res.body_bytes(), Some(b"ada".as_slice()));
 }
 
@@ -45,9 +43,7 @@ async fn query_as_and_param_as() {
         let q: Q = req.query_as().unwrap();
         Response::text(format!("{id}:{}", q.q))
     });
-    let res = app
-        .handle_request(Method::GET, "/u/7?q=hi", "")
-        .await;
+    let res = app.handle_request(Method::GET, "/u/7?q=hi", "").await;
     assert_eq!(res.body_bytes(), Some(b"7:hi".as_slice()));
 }
 
@@ -121,4 +117,3 @@ async fn max_body_route_overrides_app() {
     assert_eq!(allow.status_code().as_u16(), 200);
     assert_eq!(allow.body_bytes(), Some(b"50".as_slice()));
 }
-

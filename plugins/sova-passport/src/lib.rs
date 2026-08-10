@@ -5,8 +5,8 @@
 //! - feature `jwt`: [`JwtAuth`] (users, refresh, migrate)
 //! - feature `oauth`: [`Oauth`] (OAuth2 code + PKCE)
 
-mod extract;
 mod events;
+mod extract;
 mod passport;
 
 #[cfg(feature = "jwt")]
@@ -28,20 +28,20 @@ mod store;
 #[cfg(feature = "oauth")]
 mod oauth;
 
-pub use extract::{Credentials, Extract, Source};
 pub use events::ApiTokenRevoked;
+pub use extract::{Credentials, Extract, Source};
 pub use passport::{passport_serialize, Authenticated, Passport, PassportExt};
 
 #[cfg(feature = "jwt")]
 pub use jwt::{Claims, Jwt, JwtError};
 
 #[cfg(feature = "jwt")]
-pub use jwt_auth::{JwtAuth, JwtAuthExt, JwtAuthState};
-#[cfg(feature = "jwt")]
 pub use api_token::{
     create_api_token, list_api_tokens, revoke_api_token, token_can, user_for_api_token,
     ApiTokenInfo, ApiTokenRow, CreateApiToken, CreatedApiToken, PAT_PREFIX,
 };
+#[cfg(feature = "jwt")]
+pub use jwt_auth::{JwtAuth, JwtAuthExt, JwtAuthState};
 #[cfg(feature = "jwt")]
 pub use migration::AuthMigrator;
 #[cfg(feature = "jwt")]
@@ -52,12 +52,12 @@ pub use store::{
 };
 
 #[cfg(feature = "oauth")]
+pub use oauth::drivers::{Apple, Custom, Driver, Github, Google};
+#[cfg(feature = "oauth")]
 pub use oauth::{
     drivers as oauth_drivers, test_support as oauth_test_support, Oauth, OauthProfile,
     OauthProvider, OauthTokens, ProfileKind,
 };
-#[cfg(feature = "oauth")]
-pub use oauth::drivers::{Apple, Custom, Driver, Github, Google};
 
 use extract::Extract as ExtractChain;
 use sova_core::extend::{named, BoxFuture, MwEntry};
@@ -66,8 +66,7 @@ use std::future::Future;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-type VerifyFn<U> =
-    Arc<dyn Fn(Credentials, &Request) -> BoxFuture<Result<Option<U>>> + Send + Sync>;
+type VerifyFn<U> = Arc<dyn Fn(Credentials, &Request) -> BoxFuture<Result<Option<U>>> + Send + Sync>;
 
 /// Builder before [`AuthBuilder::verify`] binds the user type.
 pub struct AuthBuilder {

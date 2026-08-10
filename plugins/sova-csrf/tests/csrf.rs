@@ -9,7 +9,9 @@ fn app_with_csrf() -> App {
     let mut app = App::new();
     app.install(memory_sessions());
     app.install(Csrf::new());
-    app.get("/", |req: Request| async move { Response::text(req.csrf_token()) });
+    app.get("/", |req: Request| async move {
+        Response::text(req.csrf_token())
+    });
     app.post("/echo", |_req: Request| async { Response::text("ok") });
     app
 }
@@ -60,7 +62,10 @@ async fn get_sets_xsrf_cookie() {
         .await;
     assert_eq!(res.status_code().as_u16(), 200);
     let body = String::from_utf8_lossy(res.body_bytes().unwrap()).into_owned();
-    assert_eq!(cookie_named(&res, "XSRF-TOKEN").as_deref(), Some(body.as_str()));
+    assert_eq!(
+        cookie_named(&res, "XSRF-TOKEN").as_deref(),
+        Some(body.as_str())
+    );
 }
 
 #[tokio::test]
@@ -68,7 +73,9 @@ async fn xsrf_cookie_can_be_disabled() {
     let mut app = App::new();
     app.install(memory_sessions());
     app.install(Csrf::new().xsrf_cookie(false));
-    app.get("/", |req: Request| async move { Response::text(req.csrf_token()) });
+    app.get("/", |req: Request| async move {
+        Response::text(req.csrf_token())
+    });
 
     let res = app
         .handle(Request::builder().method(Method::GET).path("/").build())
@@ -292,7 +299,9 @@ async fn multipart_deferred_without_header() {
     let mut app = App::new();
     app.install(memory_sessions());
     app.install(Csrf::new());
-    app.get("/", |req: Request| async move { Response::text(req.csrf_token()) });
+    app.get("/", |req: Request| async move {
+        Response::text(req.csrf_token())
+    });
     app.post("/upload", |_req: Request| async { Response::text("ok") });
 
     let get = app
@@ -320,7 +329,9 @@ async fn verify_csrf_helper() {
     let mut app = App::new();
     app.install(memory_sessions());
     app.install(Csrf::new().auto(false));
-    app.get("/", |req: Request| async move { Response::text(req.csrf_token()) });
+    app.get("/", |req: Request| async move {
+        Response::text(req.csrf_token())
+    });
     app.post("/manual", |req: Request| async move {
         let q = req.query("csrf").map(str::to_owned);
         match req.verify_csrf(q.as_deref()) {

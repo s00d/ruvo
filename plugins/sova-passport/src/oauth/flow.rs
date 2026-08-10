@@ -2,12 +2,12 @@
 
 use super::provider::{OauthProvider, ProfileKind};
 use super::{OauthProfile, OauthTokens};
-use base64::engine::general_purpose::{URL_SAFE_NO_PAD, STANDARD};
+use base64::engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD};
 use base64::Engine;
 use hmac::{Hmac, Mac};
-use sova_core::{Error, Result};
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
+use sova_core::{Error, Result};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 type HmacSha256 = Hmac<Sha256>;
@@ -345,7 +345,10 @@ pub fn parse_profile(kind: ProfileKind, raw: &serde_json::Value) -> Result<Oauth
                 .ok_or_else(|| Error::Internal("github profile missing id".into()))?;
             Ok(OauthProfile {
                 provider_user_id: id,
-                email: raw.get("email").and_then(|v| v.as_str()).map(str::to_string),
+                email: raw
+                    .get("email")
+                    .and_then(|v| v.as_str())
+                    .map(str::to_string),
                 name: raw
                     .get("name")
                     .and_then(|v| v.as_str())
@@ -370,7 +373,10 @@ pub fn parse_profile(kind: ProfileKind, raw: &serde_json::Value) -> Result<Oauth
                 .to_string();
             Ok(OauthProfile {
                 provider_user_id: id,
-                email: raw.get("email").and_then(|v| v.as_str()).map(str::to_string),
+                email: raw
+                    .get("email")
+                    .and_then(|v| v.as_str())
+                    .map(str::to_string),
                 name: raw.get("name").and_then(|v| v.as_str()).map(str::to_string),
                 raw: raw.clone(),
             })
@@ -387,7 +393,10 @@ pub fn parse_profile(kind: ProfileKind, raw: &serde_json::Value) -> Result<Oauth
                 .ok_or_else(|| Error::Internal("oauth profile missing id/sub".into()))?;
             Ok(OauthProfile {
                 provider_user_id: id,
-                email: raw.get("email").and_then(|v| v.as_str()).map(str::to_string),
+                email: raw
+                    .get("email")
+                    .and_then(|v| v.as_str())
+                    .map(str::to_string),
                 name: raw.get("name").and_then(|v| v.as_str()).map(str::to_string),
                 raw: raw.clone(),
             })
@@ -441,4 +450,3 @@ mod flow_tests {
         assert_eq!(v["sub"], "x");
     }
 }
-

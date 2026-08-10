@@ -41,11 +41,7 @@ impl BackgroundService for UdpService {
         &self.name
     }
 
-    fn run(
-        self: Box<Self>,
-        _state: Arc<StateMap>,
-        shutdown: Shutdown,
-    ) -> BoxFuture<()> {
+    fn run(self: Box<Self>, _state: Arc<StateMap>, shutdown: Shutdown) -> BoxFuture<()> {
         Box::pin(async move {
             let sock = match UdpSocket::bind(self.addr).await {
                 Ok(s) => Arc::new(s),

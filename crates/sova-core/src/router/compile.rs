@@ -1,11 +1,11 @@
 use super::{to_matchit_path, CatcherMap, Router};
+use crate::accept::status_response_for_accept;
 use crate::handler::{wrap_errors, ErrorHandlerFn, FallibleHandler, Handler};
 use crate::middleware::{chain_from_entries, MwEntry};
 use crate::raw::RawHandler;
 use crate::request::{percent_decode, Request};
 use crate::response::Response;
 use crate::route_value::MetaMap;
-use crate::accept::status_response_for_accept;
 use crate::state::{
     Extensions, MatchedMeta, MatchedMetaCapture, MatchedRoute, MatchedRouteCapture, TypeMap,
 };
@@ -150,11 +150,7 @@ impl InnerRouter {
             return invoke_catcher(&self.catchers, req, 405).await;
         }
 
-        let mut res = status_response_for_accept(
-            accept.as_deref(),
-            405,
-            "Method Not Allowed",
-        );
+        let mut res = status_response_for_accept(accept.as_deref(), 405, "Method Not Allowed");
         if let Ok(v) = HeaderValue::from_str(&allow_header(methods.keys())) {
             res.headers.insert(http::header::ALLOW, v);
         }
@@ -311,10 +307,7 @@ fn inject_matched_meta(handler: Handler, meta: MetaMap, route_path: Arc<str>) ->
             }
             match timeout {
                 Some(dur) => {
-                    crate::limits::tighten_deadline(
-                        &mut req,
-                        std::time::Instant::now() + dur,
-                    );
+                    crate::limits::tighten_deadline(&mut req, std::time::Instant::now() + dur);
                     match tokio::time::timeout(dur, handler(req)).await {
                         // Route budget exhausted → 408 Request Timeout (not 504 Gateway).
                         Ok(res) => res,

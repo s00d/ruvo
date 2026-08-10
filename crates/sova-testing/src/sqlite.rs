@@ -1,8 +1,8 @@
 //! Tempfile SQLite database for integration tests.
 
-use sova_db::DbHandle;
 use sea_orm::{Database, DatabaseConnection};
 use sea_orm_migration::MigratorTrait;
+use sova_db::DbHandle;
 use tempfile::TempDir;
 
 /// Isolated sqlite file + URL. Keeps [`TempDir`] alive for the test duration.

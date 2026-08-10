@@ -1,10 +1,10 @@
 //! HTML auth pages (JSON API via axios + session cookie).
 
+use serde_json::json;
 use sova::{
     mark_email_verified, parse_verify_token, AuthExt, CsrfExt, DbExt, IntoResponse, Meta, Redirect,
     RenderExt, Request, Response, Result,
 };
-use serde_json::json;
 
 pub fn register(app: &mut sova::App) {
     app.get("/register", register_get).with(
@@ -17,31 +17,28 @@ pub fn register(app: &mut sova::App) {
             .title("Login")
             .description("Sign in to your cabinet"),
     );
-    app.get("/forgot-password", forgot_get).with(Meta::noindex());
+    app.get("/forgot-password", forgot_get)
+        .with(Meta::noindex());
     app.get("/reset-password", reset_get).with(Meta::noindex());
     app.get("/email/verify", verify_get).with(Meta::noindex());
-    app.get("/two-factor-challenge", challenge_get).with(Meta::noindex());
+    app.get("/two-factor-challenge", challenge_get)
+        .with(Meta::noindex());
     app.get("/user/confirm-password", confirm_password_get)
         .with(Meta::noindex());
     app.get("/user/two-factor-authentication", two_factor_get)
         .with(Meta::noindex());
-    app.get("/admin/roles", admin_roles_get).with(Meta::noindex());
+    app.get("/admin/roles", admin_roles_get)
+        .with(Meta::noindex());
 }
 
 async fn register_get(req: Request) -> Result<Response> {
     let csrf = req.csrf_token();
-    Ok(req.render(
-        "auth/register.html",
-        json!({ "csrf": csrf, "user": null }),
-    )?)
+    Ok(req.render("auth/register.html", json!({ "csrf": csrf, "user": null }))?)
 }
 
 async fn login_get(req: Request) -> Result<Response> {
     let csrf = req.csrf_token();
-    Ok(req.render(
-        "auth/login.html",
-        json!({ "csrf": csrf, "user": null }),
-    )?)
+    Ok(req.render("auth/login.html", json!({ "csrf": csrf, "user": null }))?)
 }
 
 async fn forgot_get(req: Request) -> Result<Response> {

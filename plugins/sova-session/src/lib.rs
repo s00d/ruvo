@@ -7,12 +7,12 @@
 //! [`RedisSessionStore`]. Logout others/all:
 //! [`SessionExt::logout_other_sessions`] / [`SessionExt::logout_all_sessions`].
 
-mod store;
 mod events;
-#[cfg(feature = "sql")]
-mod sql;
 #[cfg(feature = "redis")]
 mod redis_store;
+#[cfg(feature = "sql")]
+mod sql;
+mod store;
 
 use cookie::Cookie;
 pub use cookie::SameSite;
@@ -27,11 +27,11 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub use events::{SessionLogoutAll, SessionRegenerated};
-pub use store::{KvSessionStore, SessionStore, SessionStoreHandle, SESSION_USER_KEY};
-#[cfg(feature = "sql")]
-pub use sql::SqlSessionStore;
 #[cfg(feature = "redis")]
 pub use redis_store::RedisSessionStore;
+#[cfg(feature = "sql")]
+pub use sql::SqlSessionStore;
+pub use store::{KvSessionStore, SessionStore, SessionStoreHandle, SESSION_USER_KEY};
 
 /// Session key for a one-line success/status message (templates: `status`).
 pub const FLASH_STATUS: &str = "flash_status";
@@ -451,9 +451,7 @@ impl Plugin for SessionLayer {
                 let probe = "__sova_session_check__";
                 let mut data = HashMap::new();
                 data.insert("_probe".into(), "1".into());
-                store
-                    .save(probe, &data, Duration::from_secs(5))
-                    .await;
+                store.save(probe, &data, Duration::from_secs(5)).await;
                 let got = store.load(probe).await;
                 store.destroy(probe).await;
                 if got.is_none() {
@@ -465,91 +463,86 @@ impl Plugin for SessionLayer {
 
         app.use_middleware(named(
             "session",
-            with_state(self, move |layer, mut req, next| {
-                async move {
-                    let had_cookie = req
-                        .get::<Cookies>()
-                        .and_then(|c| c.get(&layer.cookie_name).map(|s| s.to_string()));
-                    let is_new = had_cookie.is_none();
-                    let sid = had_cookie.unwrap_or_else(new_sid);
+            with_state(self, move |layer, mut req, next| async move {
+                let had_cookie = req
+                    .get::<Cookies>()
+                    .and_then(|c| c.get(&layer.cookie_name).map(|s| s.to_string()));
+                let is_new = had_cookie.is_none();
+                let sid = had_cookie.unwrap_or_else(new_sid);
 
-                    let data = if is_new {
-                        HashMap::new()
-                    } else {
-                        layer.store.load(&sid).await.unwrap_or_default()
-                    };
-                    let session = Session {
-                        inner: Arc::new(Mutex::new(SessionInner {
-                            id: sid,
-                            data,
-                            dirty: false,
-                            destroyed: false,
-                            old_id: None,
-                            is_new,
-                        })),
-                        events: req.try_state::<EventBus>().map(|b| (*b).clone()),
-                    };
-                    req.set(session.clone());
+                let data = if is_new {
+                    HashMap::new()
+                } else {
+                    layer.store.load(&sid).await.unwrap_or_default()
+                };
+                let session = Session {
+                    inner: Arc::new(Mutex::new(SessionInner {
+                        id: sid,
+                        data,
+                        dirty: false,
+                        destroyed: false,
+                        old_id: None,
+                        is_new,
+                    })),
+                    events: req.try_state::<EventBus>().map(|b| (*b).clone()),
+                };
+                req.set(session.clone());
 
-                    let req = if let Some(hook) = &layer.hook {
-                        match hook(session.clone(), req).await {
-                            Ok(r) => r,
-                            Err(err) => return err.into_response(),
-                        }
-                    } else {
-                        req
-                    };
-
-                    let mut res = next(req).await;
-                    let snap = session.snapshot();
-
-                    if snap.destroyed {
-                        layer.store.destroy(&snap.id).await;
-                        if let Some(old) = &snap.old_id {
-                            layer.store.destroy(old).await;
-                        }
-                        let mut builder = Cookie::build((layer.cookie_name.clone(), ""))
-                            .http_only(layer.http_only)
-                            .same_site(layer.same_site)
-                            .path(layer.path.clone())
-                            .max_age(cookie::time::Duration::seconds(0));
-                        if layer.secure {
-                            builder = builder.secure(true);
-                        }
-                        return res.cookie(builder.build());
+                let req = if let Some(hook) = &layer.hook {
+                    match hook(session.clone(), req).await {
+                        Ok(r) => r,
+                        Err(err) => return err.into_response(),
                     }
+                } else {
+                    req
+                };
 
-                    let should_persist = snap.dirty
-                        || (snap.is_new && layer.save_uninitialized)
-                        || (layer.rolling && !snap.is_new);
+                let mut res = next(req).await;
+                let snap = session.snapshot();
 
-                    if should_persist {
-                        if let Some(old) = &snap.old_id {
-                            layer.store.destroy(old).await;
-                        }
-                        layer
-                            .store
-                            .save(&snap.id, &snap.data, layer.ttl)
-                            .await;
+                if snap.destroyed {
+                    layer.store.destroy(&snap.id).await;
+                    if let Some(old) = &snap.old_id {
+                        layer.store.destroy(old).await;
                     }
-
-                    let should_set_cookie = should_persist || (layer.rolling && !snap.is_new);
-                    if should_set_cookie || (snap.is_new && snap.dirty) {
-                        let mut builder = Cookie::build((layer.cookie_name.clone(), snap.id))
-                            .http_only(layer.http_only)
-                            .same_site(layer.same_site)
-                            .path(layer.path.clone());
-                        if layer.secure {
-                            builder = builder.secure(true);
-                        }
-                        if let Ok(secs) = i64::try_from(layer.ttl.as_secs()) {
-                            builder = builder.max_age(cookie::time::Duration::seconds(secs));
-                        }
-                        res = res.cookie(builder.build());
+                    let mut builder = Cookie::build((layer.cookie_name.clone(), ""))
+                        .http_only(layer.http_only)
+                        .same_site(layer.same_site)
+                        .path(layer.path.clone())
+                        .max_age(cookie::time::Duration::seconds(0));
+                    if layer.secure {
+                        builder = builder.secure(true);
                     }
-
-                    res
+                    return res.cookie(builder.build());
                 }
+
+                let should_persist = snap.dirty
+                    || (snap.is_new && layer.save_uninitialized)
+                    || (layer.rolling && !snap.is_new);
+
+                if should_persist {
+                    if let Some(old) = &snap.old_id {
+                        layer.store.destroy(old).await;
+                    }
+                    layer.store.save(&snap.id, &snap.data, layer.ttl).await;
+                }
+
+                let should_set_cookie = should_persist || (layer.rolling && !snap.is_new);
+                if should_set_cookie || (snap.is_new && snap.dirty) {
+                    let mut builder = Cookie::build((layer.cookie_name.clone(), snap.id))
+                        .http_only(layer.http_only)
+                        .same_site(layer.same_site)
+                        .path(layer.path.clone());
+                    if layer.secure {
+                        builder = builder.secure(true);
+                    }
+                    if let Ok(secs) = i64::try_from(layer.ttl.as_secs()) {
+                        builder = builder.max_age(cookie::time::Duration::seconds(secs));
+                    }
+                    res = res.cookie(builder.build());
+                }
+
+                res
             }),
         ));
         app.with(Needs::<CookieLayerPresent>::new());
@@ -600,19 +593,17 @@ pub trait SessionExt {
     /// Invalidate every other session for the bound user; keep the current cookie.
     ///
     /// Requires [`Session::bind_user`] (done by Passport/Fortify login).
-    fn logout_other_sessions(
-        &self,
-    ) -> impl std::future::Future<Output = Result<u64>> + Send;
+    fn logout_other_sessions(&self) -> impl std::future::Future<Output = Result<u64>> + Send;
 
     /// Invalidate all sessions for the bound user, including this one (clears cookie).
-    fn logout_all_sessions(
-        &mut self,
-    ) -> impl std::future::Future<Output = Result<u64>> + Send;
+    fn logout_all_sessions(&mut self) -> impl std::future::Future<Output = Result<u64>> + Send;
 }
 
 impl SessionExt for sova_core::Request {
     fn session(&self) -> Session {
-        self.get::<Session>().cloned().unwrap_or_else(Session::empty)
+        self.get::<Session>()
+            .cloned()
+            .unwrap_or_else(Session::empty)
     }
 
     async fn logout_other_sessions(&self) -> Result<u64> {
@@ -623,10 +614,7 @@ impl SessionExt for sova_core::Request {
         let handle = self.try_state::<SessionStoreHandle>().ok_or_else(|| {
             Error::Internal("SessionStore missing (is SessionLayer installed?)".into())
         })?;
-        Ok(handle
-            .0
-            .destroy_user(&uid, Some(&sess.id()))
-            .await)
+        Ok(handle.0.destroy_user(&uid, Some(&sess.id())).await)
     }
 
     async fn logout_all_sessions(&mut self) -> Result<u64> {

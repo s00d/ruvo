@@ -1,7 +1,7 @@
 //! Ship tracing log events to Elasticsearch via `_bulk` (feature `elasticsearch`).
 
-use sova_core::{set_log_event_hook, LogRecord};
 use serde_json::{json, Value};
+use sova_core::{set_log_event_hook, LogRecord};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::mpsc;
@@ -29,8 +29,7 @@ impl ElasticsearchLog {
         if url.is_empty() {
             return Err("ELASTICSEARCH_URL empty".into());
         }
-        let index =
-            std::env::var("ELASTICSEARCH_INDEX").unwrap_or_else(|_| "sova-logs".into());
+        let index = std::env::var("ELASTICSEARCH_INDEX").unwrap_or_else(|_| "sova-logs".into());
         let api_key = std::env::var("ELASTICSEARCH_API_KEY")
             .ok()
             .filter(|s| !s.is_empty());

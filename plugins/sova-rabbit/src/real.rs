@@ -9,7 +9,9 @@ use lapin::options::{
     ExchangeDeclareOptions, QueueBindOptions, QueueDeclareOptions,
 };
 use lapin::types::FieldTable;
-use lapin::{BasicProperties, Channel, Connection, ConnectionProperties, ExchangeKind as LapinKind};
+use lapin::{
+    BasicProperties, Channel, Connection, ConnectionProperties, ExchangeKind as LapinKind,
+};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -128,28 +130,47 @@ impl Broker for LapinBroker {
         routing_key: &str,
         body: Bytes,
     ) -> Result<(), RabbitError> {
+        let started = std::time::Instant::now();
+        let bytes = body.len() as u64;
         let ch = self.ch().await?;
-        ch.basic_publish(
+        let result = ch
+            .basic_publish(
+                &exchange.name,
+                routing_key,
+                BasicPublishOptions::default(),
+                &body,
+                BasicProperties::default(),
+            )
+            .await
+            .map_err(|e| RabbitError::Msg(e.to_string()))?
+            .await
+            .map_err(|e| RabbitError::Msg(e.to_string()))
+            .map(|_| ());
+        crate::trace::emit_publish(
             &exchange.name,
             routing_key,
-            BasicPublishOptions::default(),
-            &body,
-            BasicProperties::default(),
-        )
-        .await
-        .map_err(|e| RabbitError::Msg(e.to_string()))?
-        .await
-        .map_err(|e| RabbitError::Msg(e.to_string()))?;
-        Ok(())
+            bytes,
+            started.elapsed().as_secs_f64() * 1000.0,
+            &result,
+        );
+        result
     }
 
     async fn consume_one(&self, queue: &str) -> Result<Option<Delivery>, RabbitError> {
         use futures_util::StreamExt;
+        let started = std::time::Instant::now();
         let ch = self.ch().await?;
+        let tag = format!(
+            "sova-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_nanos())
+                .unwrap_or(0)
+        );
         let mut consumer = ch
             .basic_consume(
                 queue,
-                "sova",
+                &tag,
                 BasicConsumeOptions {
                     no_ack: false,
                     ..BasicConsumeOptions::default()
@@ -159,7 +180,7 @@ impl Broker for LapinBroker {
             .await
             .map_err(|e| RabbitError::Msg(e.to_string()))?;
 
-        let delivery = tokio::time::timeout(std::time::Duration::from_millis(50), consumer.next())
+        let delivery = tokio::time::timeout(std::time::Duration::from_millis(500), consumer.next())
             .await
             .ok()
             .flatten()
@@ -167,12 +188,27 @@ impl Broker for LapinBroker {
             .map_err(|e| RabbitError::Msg(e.to_string()))?;
 
         let Some(del) = delivery else {
+            crate::trace::emit_consume(
+                queue,
+                None,
+                started.elapsed().as_secs_f64() * 1000.0,
+                &Ok(()),
+                true,
+            );
             return Ok(None);
         };
 
+        let bytes = del.data.len() as u64;
         let tag = del.delivery_tag;
         let ch_ack = ch.clone();
         let ch_nack = ch.clone();
+        crate::trace::emit_consume(
+            queue,
+            Some(bytes),
+            started.elapsed().as_secs_f64() * 1000.0,
+            &Ok(()),
+            false,
+        );
         Ok(Some(Delivery::new(
             del.exchange.to_string(),
             del.routing_key.to_string(),

@@ -237,9 +237,7 @@ async fn walk_dir(
     out: &mut Vec<FsEntry>,
 ) -> Result<(), FsError> {
     if depth > max_depth {
-        return Err(FsError::Msg(format!(
-            "walk max_depth={max_depth} exceeded"
-        )));
+        return Err(FsError::Msg(format!("walk max_depth={max_depth} exceeded")));
     }
     let mut rd = tokio::fs::read_dir(dir).await.map_err(map_io)?;
     while let Some(entry) = rd.next_entry().await.map_err(map_io)? {
@@ -267,10 +265,7 @@ async fn walk_dir(
     Ok(())
 }
 
-async fn entry_to_fs(
-    root: &Path,
-    entry: &tokio::fs::DirEntry,
-) -> Result<FsEntry, FsError> {
+async fn entry_to_fs(root: &Path, entry: &tokio::fs::DirEntry) -> Result<FsEntry, FsError> {
     let path = entry.path();
     let meta = entry.metadata().await.map_err(map_io)?;
     let name = entry.file_name().to_string_lossy().into_owned();

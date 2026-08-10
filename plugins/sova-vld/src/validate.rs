@@ -2,9 +2,9 @@
 
 use crate::coerce::coerce_object;
 use crate::ValidationError;
+use serde_json::{Map, Value};
 use sova_core::extend::{named, BoxFuture, MwEntry, RouteTable, RouteValue};
 use sova_core::{App, Request, Response, Router};
-use serde_json::{Map, Value};
 use std::any::type_name;
 use std::borrow::Cow;
 use std::marker::PhantomData;
@@ -104,7 +104,9 @@ impl ValidateHook {
     pub fn body<T: VldParse + Send + Sync + 'static>() -> Self {
         Self::wrap(|mut req| {
             Box::pin(async move {
-                let value = read_body_json(&mut req).await.map_err(|e| e.respond(&req))?;
+                let value = read_body_json(&mut req)
+                    .await
+                    .map_err(|e| e.respond(&req))?;
                 finish::<T>(req, value)
             })
         })
@@ -162,10 +164,10 @@ impl ValidateHook {
             let _ = type_name::<T>();
             Self::wrap(|_req| {
                 Box::pin(async move {
-                    Err(Response::text(
-                        "Validate::form requires sova_vld feature `form`",
+                    Err(
+                        Response::text("Validate::form requires sova_vld feature `form`")
+                            .status(500),
                     )
-                    .status(500))
                 })
             })
         }
@@ -293,14 +295,12 @@ pub trait ValidExt {
 
 impl ValidExt for Request {
     fn valid<T: Send + Sync + 'static>(&self) -> &T {
-        self.get::<Validated<T>>()
-            .map(|v| &v.0)
-            .unwrap_or_else(|| {
-                panic!(
-                    "validated `{}` missing — use `.validate_body::<T>()` (etc.) on the route",
-                    type_name::<T>()
-                )
-            })
+        self.get::<Validated<T>>().map(|v| &v.0).unwrap_or_else(|| {
+            panic!(
+                "validated `{}` missing — use `.validate_body::<T>()` (etc.) on the route",
+                type_name::<T>()
+            )
+        })
     }
 
     fn take_valid<T: Send + Sync + 'static>(&mut self) -> Option<T> {
@@ -514,12 +514,7 @@ impl_ext!(App);
 pub fn missing_validate_routes(table: &RouteTable) -> Vec<String> {
     let mut missing = Vec::new();
     for entry in &table.0 {
-        let sova_core::extend::RouteEntry::Http {
-            method,
-            path,
-            meta,
-        } = entry
-        else {
+        let sova_core::extend::RouteEntry::Http { method, path, meta } = entry else {
             continue;
         };
         if !matches!(

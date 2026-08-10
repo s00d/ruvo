@@ -1,9 +1,7 @@
 //! Maildir-style [`TaskStore`](crate::TaskStore) using `tokio::fs` + rename.
 
+use crate::{BoxFuture, EnqueueOpts, Task, TaskError, TaskStatus, TaskStore};
 use bytes::Bytes;
-use crate::{
-    BoxFuture, EnqueueOpts, Task, TaskError, TaskStatus, TaskStore,
-};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -131,8 +129,8 @@ impl FileTaskStore {
 
     async fn write_task(&self, folder: &str, task: &Task) -> Result<(), TaskError> {
         let path = self.path(folder, &task.id);
-        let data = serde_json::to_vec(&TaskFile::from(task))
-            .map_err(|e| TaskError::Msg(e.to_string()))?;
+        let data =
+            serde_json::to_vec(&TaskFile::from(task)).map_err(|e| TaskError::Msg(e.to_string()))?;
         atomic_write(&path, &data)
             .await
             .map_err(|e| TaskError::Msg(e.to_string()))
@@ -221,7 +219,13 @@ impl TaskStore for FileTaskStore {
                 }
                 let t = self.read_task(&path).await?;
                 if t.queue == queue && t.run_at <= now {
-                    candidates.push((std::cmp::Reverse(t.priority), t.run_at, t.id.clone(), path, t));
+                    candidates.push((
+                        std::cmp::Reverse(t.priority),
+                        t.run_at,
+                        t.id.clone(),
+                        path,
+                        t,
+                    ));
                 }
             }
             candidates.sort_by(|a, b| (&a.0, &a.1, &a.2).cmp(&(&b.0, &b.1, &b.2)));
@@ -271,7 +275,8 @@ impl TaskStore for FileTaskStore {
             self.write_task("done", &t).await?;
             let _ = tokio::fs::remove_file(&path).await;
             if let Some(dk) = t.dedup_key {
-                let _ = tokio::fs::remove_file(self.root.join("meta").join(format!("{dk}.id"))).await;
+                let _ =
+                    tokio::fs::remove_file(self.root.join("meta").join(format!("{dk}.id"))).await;
             }
             Ok(())
         })
@@ -297,9 +302,8 @@ impl TaskStore for FileTaskStore {
                 t.worker = None;
                 self.write_task("failed", &t).await?;
                 if let Some(dk) = &t.dedup_key {
-                    let _ =
-                        tokio::fs::remove_file(self.root.join("meta").join(format!("{dk}.id")))
-                            .await;
+                    let _ = tokio::fs::remove_file(self.root.join("meta").join(format!("{dk}.id")))
+                        .await;
                 }
             }
             let _ = tokio::fs::remove_file(&path).await;

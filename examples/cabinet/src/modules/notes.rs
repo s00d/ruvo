@@ -1,10 +1,10 @@
-use sova::vld;
 use crate::db::{self, Note};
+use serde_json::json;
+use sova::vld;
 use sova::{
     doc_schema, Ability, AuthExt, CsrfExt, DbExt, Event, EventBus, Meta, PageExt, Policy, Redirect,
     RenderExt, Request, Response, Result, Router, SessionExt, ValidExt, ValidateRouteExt,
 };
-use serde_json::json;
 
 vld::schema! {
     #[derive(Debug, Clone)]
@@ -54,7 +54,8 @@ impl Event for NoteCreated {
 pub fn mount(r: &mut Router) {
     r.get("/notes", list).with(Meta::noindex());
     r.post("/notes", create).validate_form::<NoteForm>();
-    r.post("/notes/delete", delete).validate_form::<DeleteNoteForm>();
+    r.post("/notes/delete", delete)
+        .validate_form::<DeleteNoteForm>();
 }
 
 async fn list(req: Request) -> Result<Response> {
@@ -97,9 +98,7 @@ async fn delete(req: Request) -> Result<Response> {
         .parse()
         .map_err(|_| sova::Error::BadRequest("bad note id".into()))?;
     let db = req.db().clone();
-    let note = db::find_note(&db, id)
-        .await?
-        .ok_or(sova::Error::NotFound)?;
+    let note = db::find_note(&db, id).await?.ok_or(sova::Error::NotFound)?;
     req.authorize::<NotePolicy, _>(Ability::Delete, &note)?;
     db::delete_note_by_id(&db, id).await?;
     req.flash_status("Note deleted");

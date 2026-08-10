@@ -105,7 +105,10 @@ impl Plugin for Compress {
     fn install(self, app: &mut App) {
         app.use_middleware(named(
             "compress",
-            with_leaked(self, |cfg, req, next| async move { run(cfg, req, next).await }),
+            with_leaked(
+                self,
+                |cfg, req, next| async move { run(cfg, req, next).await },
+            ),
         ));
     }
 }

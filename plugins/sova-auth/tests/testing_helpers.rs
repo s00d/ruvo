@@ -45,7 +45,10 @@ async fn user_factory_and_acting_as() {
 async fn sqlite_test_db_migrate_only() {
     let tdb = SqliteTestDb::migrate::<AuthMigrator>().await;
     let db = tdb.handle().await;
-    let user = UserFactory::new().email("solo@example.com").create(&db).await;
+    let user = UserFactory::new()
+        .email("solo@example.com")
+        .create(&db)
+        .await;
     assert_eq!(user.email, "solo@example.com");
     assert!(user.roles.iter().any(|r| r == "user"));
 }

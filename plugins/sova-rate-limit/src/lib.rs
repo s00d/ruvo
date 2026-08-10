@@ -4,12 +4,12 @@ mod events;
 
 pub use events::RateLimitExceeded;
 
+use serde_json::Value as JsonValue;
 use sova_core::extend::{named, MwEntry};
 use sova_core::{
     with_state, App, ClientAddr, EventBus, Plugin, RateLimitIdentity, Request, Response,
 };
 use sova_store::KvStore;
-use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::net::IpAddr;
 use std::sync::{Arc, Mutex};
@@ -24,9 +24,7 @@ pub enum RateLimitKey {
     /// [`RateLimitIdentity`] when set, otherwise IP.
     Identity,
     /// `ip` + lowercased form/json field (empty field → IP only).
-    IpAndInput {
-        field: &'static str,
-    },
+    IpAndInput { field: &'static str },
 }
 
 /// Result of a rate-limit check.
@@ -180,8 +178,7 @@ impl RateLimit {
                 if rt.skip.as_ref().is_some_and(|f| f(&req)) {
                     return next(req).await;
                 }
-                let key =
-                    resolve_key(&mut req, rt.key_fn.as_ref(), rt.key, rt.prefix).await;
+                let key = resolve_key(&mut req, rt.key_fn.as_ref(), rt.key, rt.prefix).await;
                 let out = match &rt.backend {
                     RuntimeBackend::Sliding(w) => w.check(&key),
                     RuntimeBackend::Fixed(w) => w.check(&key).await,
@@ -265,8 +262,7 @@ impl Plugin for RateLimit {
                 if rt.skip.as_ref().is_some_and(|f| f(&req)) {
                     return next(req).await;
                 }
-                let key =
-                    resolve_key(&mut req, rt.key_fn.as_ref(), rt.key, rt.prefix).await;
+                let key = resolve_key(&mut req, rt.key_fn.as_ref(), rt.key, rt.prefix).await;
                 let out = match &rt.backend {
                     RuntimeBackend::Sliding(w) => w.check(&key),
                     RuntimeBackend::Fixed(w) => w.check(&key).await,

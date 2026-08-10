@@ -208,12 +208,7 @@ async fn optional_continues() {
     });
 
     let anon = app
-        .handle(
-            Request::builder()
-                .method(Method::GET)
-                .path("/who")
-                .build(),
-        )
+        .handle(Request::builder().method(Method::GET).path("/who").build())
         .await;
     assert_eq!(
         String::from_utf8_lossy(anon.body_bytes().unwrap_or_default()),
@@ -224,8 +219,8 @@ async fn optional_continues() {
 #[cfg(feature = "jwt")]
 #[tokio::test]
 async fn jwt_hs256_helper() {
-    use sova_passport::Jwt;
     use serde::{Deserialize, Serialize};
+    use sova_passport::Jwt;
 
     #[derive(Debug, Serialize, Deserialize)]
     struct Claims {
@@ -310,15 +305,18 @@ fn oauth_state_and_pkce_roundtrip() {
         exp: now_secs() + 60,
     };
     let token = sign_state("secret", &flow).unwrap();
-    assert_eq!(verify_state("secret", &token).unwrap().code_verifier, verifier);
+    assert_eq!(
+        verify_state("secret", &token).unwrap().code_verifier,
+        verifier
+    );
 }
 
 #[cfg(feature = "oauth")]
 #[test]
 fn oauth_profile_parse() {
+    use serde_json::json;
     use sova_passport::oauth_test_support::parse_profile;
     use sova_passport::ProfileKind;
-    use serde_json::json;
     let gh = parse_profile(
         ProfileKind::Github,
         &json!({"id": 42, "login": "ada", "email": "a@b.c"}),
@@ -335,15 +333,13 @@ async fn passport_login_logout_session() {
 
     let mut app = App::new();
     app.install(memory_sessions());
-    app.install(
-        Passport::new().deserialize_user(|id, mut req| async move {
-            req.set(User {
-                id: id.parse().unwrap_or(0),
-                name: format!("user-{id}"),
-            });
-            Ok(req)
-        }),
-    );
+    app.install(Passport::new().deserialize_user(|id, mut req| async move {
+        req.set(User {
+            id: id.parse().unwrap_or(0),
+            name: format!("user-{id}"),
+        });
+        Ok(req)
+    }));
     app.get("/login", |mut req: Request| async move {
         req.login(
             "7",

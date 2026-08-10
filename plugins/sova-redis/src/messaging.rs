@@ -93,11 +93,14 @@ impl RedisPool {
     ) -> Result<i64, RedisError> {
         let started = std::time::Instant::now();
         let ch = channel.as_ref();
-        let mut conn = self.get()?;
-        let res = conn
-            .publish(ch, message.as_ref())
-            .await
-            .map_err(RedisError::from);
+        let res = if let Some(fake) = self.fake() {
+            fake.publish(ch, message.as_ref())
+        } else {
+            let mut conn = self.get()?;
+            conn.publish(ch, message.as_ref())
+                .await
+                .map_err(RedisError::from)
+        };
         let ok = res.is_ok();
         tracing::debug!(
             target: "sova.redis",
@@ -120,6 +123,11 @@ impl RedisPool {
         &self,
         channels: impl IntoIterator<Item = impl AsRef<str>>,
     ) -> Result<RedisSubscriber, RedisError> {
+        if self.is_fake() {
+            return Err(RedisError::msg(
+                "fake redis: use subscribe_fake() for a single channel",
+            ));
+        }
         let url = self.url()?;
         let client = redis::Client::open(url.as_str()).map_err(RedisError::from)?;
         let mut pubsub = client.get_async_pubsub().await.map_err(RedisError::from)?;

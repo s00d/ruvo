@@ -245,18 +245,16 @@ impl Email {
     pub(crate) fn resolve_body(&mut self, client: &MailClient) -> Result<()> {
         #[cfg(feature = "templates")]
         {
-            let needs_templates = self.html_view.is_some()
-                || self.text_view.is_some()
-                || {
-                    #[cfg(feature = "markdown")]
-                    {
-                        self.markdown_view.is_some()
-                    }
-                    #[cfg(not(feature = "markdown"))]
-                    {
-                        false
-                    }
-                };
+            let needs_templates = self.html_view.is_some() || self.text_view.is_some() || {
+                #[cfg(feature = "markdown")]
+                {
+                    self.markdown_view.is_some()
+                }
+                #[cfg(not(feature = "markdown"))]
+                {
+                    false
+                }
+            };
             if needs_templates {
                 let templates = client.templates().ok_or_else(|| {
                     Error::Internal(
@@ -314,7 +312,10 @@ impl Email {
         }
     }
 
-    pub(crate) fn into_message(self, default_from: Option<&str>) -> Result<(EmailSnapshot, Message)> {
+    pub(crate) fn into_message(
+        self,
+        default_from: Option<&str>,
+    ) -> Result<(EmailSnapshot, Message)> {
         if self.to.is_empty() {
             return Err(Error::BadRequest("mail: at least one `to` required".into()));
         }
@@ -343,9 +344,10 @@ impl Email {
                 .map_err(|e| Error::BadRequest(format!("mail cc: {e}")))?);
         }
         for addr in &self.bcc {
-            builder = builder.bcc(addr
-                .parse()
-                .map_err(|e| Error::BadRequest(format!("mail bcc: {e}")))?);
+            builder = builder.bcc(
+                addr.parse()
+                    .map_err(|e| Error::BadRequest(format!("mail bcc: {e}")))?,
+            );
         }
         builder = builder.subject(&self.subject);
 
@@ -411,7 +413,8 @@ fn html_part(body: &str) -> SinglePart {
 
 fn content_type_for(filename: &str) -> ContentType {
     let mime = mime_guess_lite(filename);
-    mime.parse::<ContentType>().unwrap_or(ContentType::TEXT_PLAIN)
+    mime.parse::<ContentType>()
+        .unwrap_or(ContentType::TEXT_PLAIN)
 }
 
 fn mime_guess_lite(filename: &str) -> &'static str {

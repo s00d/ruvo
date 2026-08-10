@@ -76,9 +76,7 @@ async fn validate_params_and_query() {
         Response::text(p.id)
     });
     let server = app.build().unwrap();
-    let res = server
-        .handle_request(Method::GET, "/u/abc", "")
-        .await;
+    let res = server.handle_request(Method::GET, "/u/abc", "").await;
     assert_eq!(res.body_bytes(), Some(b"abc".as_slice()));
 }
 
@@ -254,7 +252,9 @@ async fn missing_validate_routes_coverage() {
     bare.post("/x", |_r: Request| async { Response::text("ok") });
     let bare_missing = missing_validate_routes(&RouteTable(bare.route_entries()));
     assert!(
-        bare_missing.iter().any(|s| s.contains("POST") && s.contains("/x")),
+        bare_missing
+            .iter()
+            .any(|s| s.contains("POST") && s.contains("/x")),
         "{bare_missing:?}"
     );
 
@@ -289,9 +289,7 @@ async fn flash_html_accept_redirects() {
         .await;
     assert_eq!(html.status_code().as_u16(), 303);
     assert_eq!(
-        html.headers()
-            .get("location")
-            .and_then(|v| v.to_str().ok()),
+        html.headers().get("location").and_then(|v| v.to_str().ok()),
         Some("/form")
     );
 
@@ -408,9 +406,7 @@ async fn vld_plugin_audit_and_validate_query_route() {
     bare.post("/x", |_r: Request| async { Response::text("ok") });
     bare.install(Vld);
     let server = bare.build().unwrap();
-    let results = bare
-        .run_checks(server.state(), &[CheckKind::Audit])
-        .await;
+    let results = bare.run_checks(server.state(), &[CheckKind::Audit]).await;
     assert!(results.iter().any(|r| r.name == "vld" && !r.ok));
 
     let mut app = App::new();
@@ -422,9 +418,7 @@ async fn vld_plugin_audit_and_validate_query_route() {
     app.install(Vld);
 
     let server = app.build().unwrap();
-    let ok = server
-        .handle_request(Method::GET, "/search?q=hi", "")
-        .await;
+    let ok = server.handle_request(Method::GET, "/search?q=hi", "").await;
     assert_eq!(ok.body_bytes(), Some(b"hi".as_slice()));
 
     // Coercion path (openapi feature): numeric string → number via schema.

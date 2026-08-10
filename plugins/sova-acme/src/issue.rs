@@ -66,10 +66,7 @@ pub async fn obtain_certificate(
         account
     };
 
-    let identifiers: Vec<Identifier> = domains
-        .iter()
-        .map(|d| Identifier::Dns(d.clone()))
-        .collect();
+    let identifiers: Vec<Identifier> = domains.iter().map(|d| Identifier::Dns(d.clone())).collect();
     let mut order = account
         .new_order(&NewOrder::new(identifiers.as_slice()))
         .await

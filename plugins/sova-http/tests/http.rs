@@ -1,8 +1,8 @@
 use http::Method;
+use serde_json::json;
 use sova_core::extend::Deadline;
 use sova_core::{App, IntoResponse, Request, Response};
 use sova_http::{FakeTransport, Http, HttpError, HttpExt, StubBody};
-use serde_json::json;
 use std::time::{Duration, Instant};
 
 #[tokio::test]
@@ -39,10 +39,7 @@ async fn budget_caps_timeout() {
         Response::text("ok")
     });
     let server = app.build().unwrap();
-    let mut req = Request::builder()
-        .method(Method::GET)
-        .path("/t")
-        .build();
+    let mut req = Request::builder().method(Method::GET).path("/t").build();
     req.set(Deadline(Instant::now() + Duration::from_millis(50)));
     let _ = server.handle(req).await;
     let sent = fake.sent();
@@ -122,12 +119,7 @@ async fn post_without_idempotency_does_not_retry() {
     });
     let server = app.build().unwrap();
     let _ = server
-        .handle(
-            Request::builder()
-                .method(Method::POST)
-                .path("/x")
-                .build(),
-        )
+        .handle(Request::builder().method(Method::POST).path("/x").build())
         .await;
     fake.assert_sent_count(1);
 }
@@ -175,12 +167,7 @@ base_url = "https://api.stripe.com"
     });
     let server = app.build().unwrap();
     let res = server
-        .handle(
-            Request::builder()
-                .method(Method::POST)
-                .path("/pay")
-                .build(),
-        )
+        .handle(Request::builder().method(Method::POST).path("/pay").build())
         .await;
     assert_eq!(res.body_bytes(), Some(b"201".as_slice()));
     fake.assert_sent(Method::POST, "https://api.stripe.com/v1/charges");
@@ -188,7 +175,10 @@ base_url = "https://api.stripe.com"
 
 #[tokio::test]
 async fn http_error_into_response_status() {
-    assert_eq!(HttpError::Timeout.into_response().status_code().as_u16(), 504);
+    assert_eq!(
+        HttpError::Timeout.into_response().status_code().as_u16(),
+        504
+    );
     assert_eq!(
         HttpError::Connect("x".into())
             .into_response()
@@ -221,13 +211,7 @@ bearer_env = "SOVA_TEST_HTTP_TOKEN"
         .with_config_from_app(&app);
     app.install(http);
     app.get("/me", |req: Request| async move {
-        let res = req
-            .http()
-            .named("api")
-            .get("/v1/me")
-            .send()
-            .await
-            .unwrap();
+        let res = req.http().named("api").get("/v1/me").send().await.unwrap();
         Response::text(res.status_u16().to_string())
     });
     let server = app.build().unwrap();

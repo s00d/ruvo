@@ -1,10 +1,10 @@
 //! Notifications insert / list / mark / to_many.
 
-use sova_core::{Json, Request, ResponseAssert, TestClient};
-use sova_notifications::{Channel, Notifications, NotificationsMigrator, Notify, Via};
-use sova_notifications::testing::ActingAs;
-use sova_testing::TestApp;
 use serde_json::json;
+use sova_core::{Json, Request, ResponseAssert, TestClient};
+use sova_notifications::testing::ActingAs;
+use sova_notifications::{Channel, Notifications, NotificationsMigrator, Notify, Via};
+use sova_testing::TestApp;
 
 #[tokio::test]
 async fn insert_list_mark_and_to_many() {

@@ -1,8 +1,8 @@
 //! Redis-backed [`TaskStore`] on the shared [`sova_redis::RedisPool`].
 
 use crate::{BoxFuture, EnqueueOpts, Task, TaskError, TaskStatus, TaskStore};
-use bytes::Bytes;
 use base64::{engine::general_purpose::STANDARD as B64, Engine};
+use bytes::Bytes;
 use redis::AsyncCommands;
 use sova_redis::RedisPool;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -92,7 +92,10 @@ impl RedisTaskStore {
     }
 }
 
-fn task_from_map(id: &str, map: &std::collections::HashMap<String, String>) -> Result<Task, TaskError> {
+fn task_from_map(
+    id: &str,
+    map: &std::collections::HashMap<String, String>,
+) -> Result<Task, TaskError> {
     let payload_b64 = map
         .get("payload")
         .ok_or_else(|| TaskError::Msg("missing payload".into()))?;
@@ -117,14 +120,8 @@ fn task_from_map(id: &str, map: &std::collections::HashMap<String, String>) -> R
         .get("status")
         .map(|s| parse_status(s))
         .unwrap_or(TaskStatus::Pending);
-    let worker = map
-        .get("worker")
-        .filter(|s| !s.is_empty())
-        .cloned();
-    let dedup = map
-        .get("dedup_key")
-        .filter(|s| !s.is_empty())
-        .cloned();
+    let worker = map.get("worker").filter(|s| !s.is_empty()).cloned();
+    let dedup = map.get("dedup_key").filter(|s| !s.is_empty()).cloned();
     let queue = map
         .get("queue")
         .cloned()
@@ -210,10 +207,7 @@ return n
 impl TaskStore for RedisTaskStore {
     fn enqueue<'a>(&'a self, opts: EnqueueOpts) -> BoxFuture<'a, Result<String, TaskError>> {
         Box::pin(async move {
-            let mut conn = self
-                .pool
-                .get()
-                .map_err(|e| TaskError::Msg(e.to_string()))?;
+            let mut conn = self.pool.get().map_err(|e| TaskError::Msg(e.to_string()))?;
 
             if let Some(ref dk) = opts.dedup_key {
                 let existing: Option<String> = conn
@@ -248,10 +242,7 @@ impl TaskStore for RedisTaskStore {
                     ("lease_until", ""),
                     ("status", status_str(TaskStatus::Pending)),
                     ("worker", ""),
-                    (
-                        "dedup_key",
-                        opts.dedup_key.as_deref().unwrap_or(""),
-                    ),
+                    ("dedup_key", opts.dedup_key.as_deref().unwrap_or("")),
                     ("priority", priority_s.as_str()),
                 ],
             );
@@ -275,10 +266,7 @@ impl TaskStore for RedisTaskStore {
         limit: usize,
     ) -> BoxFuture<'a, Result<Vec<Task>, TaskError>> {
         Box::pin(async move {
-            let mut conn = self
-                .pool
-                .get()
-                .map_err(|e| TaskError::Msg(e.to_string()))?;
+            let mut conn = self.pool.get().map_err(|e| TaskError::Msg(e.to_string()))?;
             let ids: Vec<String> = redis::Script::new(CLAIM_LUA)
                 .key(ready_key(queue))
                 .key(LEASE_ZSET)
@@ -307,10 +295,7 @@ impl TaskStore for RedisTaskStore {
         lease: Duration,
     ) -> BoxFuture<'a, Result<(), TaskError>> {
         Box::pin(async move {
-            let mut conn = self
-                .pool
-                .get()
-                .map_err(|e| TaskError::Msg(e.to_string()))?;
+            let mut conn = self.pool.get().map_err(|e| TaskError::Msg(e.to_string()))?;
             let hk = hash_key(id);
             let status: Option<String> = conn
                 .hget(&hk, "status")
@@ -336,10 +321,7 @@ impl TaskStore for RedisTaskStore {
 
     fn complete<'a>(&'a self, id: &'a str) -> BoxFuture<'a, Result<(), TaskError>> {
         Box::pin(async move {
-            let mut conn = self
-                .pool
-                .get()
-                .map_err(|e| TaskError::Msg(e.to_string()))?;
+            let mut conn = self.pool.get().map_err(|e| TaskError::Msg(e.to_string()))?;
             let Some(task) = Self::load_task(&mut conn, id).await? else {
                 return Err(TaskError::NotFound);
             };
@@ -372,10 +354,7 @@ impl TaskStore for RedisTaskStore {
         retry_at: Option<SystemTime>,
     ) -> BoxFuture<'a, Result<(), TaskError>> {
         Box::pin(async move {
-            let mut conn = self
-                .pool
-                .get()
-                .map_err(|e| TaskError::Msg(e.to_string()))?;
+            let mut conn = self.pool.get().map_err(|e| TaskError::Msg(e.to_string()))?;
             let Some(task) = Self::load_task(&mut conn, id).await? else {
                 return Err(TaskError::NotFound);
             };
@@ -419,10 +398,7 @@ impl TaskStore for RedisTaskStore {
 
     fn reap<'a>(&'a self, now: SystemTime) -> BoxFuture<'a, Result<u64, TaskError>> {
         Box::pin(async move {
-            let mut conn = self
-                .pool
-                .get()
-                .map_err(|e| TaskError::Msg(e.to_string()))?;
+            let mut conn = self.pool.get().map_err(|e| TaskError::Msg(e.to_string()))?;
             let n: u64 = redis::Script::new(REAP_LUA)
                 .key(LEASE_ZSET)
                 .arg(ms_from_time(now))
@@ -440,10 +416,7 @@ impl TaskStore for RedisTaskStore {
         limit: usize,
     ) -> BoxFuture<'a, Result<Vec<Task>, TaskError>> {
         Box::pin(async move {
-            let mut conn = self
-                .pool
-                .get()
-                .map_err(|e| TaskError::Msg(e.to_string()))?;
+            let mut conn = self.pool.get().map_err(|e| TaskError::Msg(e.to_string()))?;
             let mut ids: Vec<String> = conn
                 .smembers(all_key(queue))
                 .await

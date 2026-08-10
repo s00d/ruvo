@@ -182,10 +182,7 @@ impl OauthProvider {
     fn has_apple_key(&self) -> bool {
         self.team_id.as_ref().is_some_and(|s| !s.is_empty())
             && self.key_id.as_ref().is_some_and(|s| !s.is_empty())
-            && self
-                .private_key_pem
-                .as_ref()
-                .is_some_and(|s| !s.is_empty())
+            && self.private_key_pem.as_ref().is_some_and(|s| !s.is_empty())
     }
 
     /// Static secret, or mint Apple client_secret JWT from `.p8` key.

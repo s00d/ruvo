@@ -114,7 +114,7 @@ See [`examples/misc/share_demo`](https://github.com/s00d/sova/tree/master/exampl
 
 | Control | Default |
 |---------|---------|
-| `RUST_LOG` | `sova=info` |
+| `RUST_LOG` | `sova=info,sova.store=debug,sova.tasks=debug,sova.redis=debug,sova.grpc=debug,sova.rabbit=debug,sova.graphql=debug` |
 | `SOVA_LOG=off` | skip install |
 | `SOVA_LOG_STDOUT` | `1` |
 | `SOVA_LOG_FILE` | unset |

@@ -5,11 +5,11 @@ editLink: false
 
 # `redis`
 
-**Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, queues**
+**Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, list queues**
 
 | | |
 |--|--|
-| Crate | [`sova-redis`](https://docs.rs/sova-redis/0.1.3) `0.1.3` |
+| Crate | [`sova-redis`](https://docs.rs/sova-redis/0.1.4) `0.1.4` |
 | Plugin id | `redis` |
 | Category | Data |
 

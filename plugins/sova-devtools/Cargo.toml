@@ -1,6 +1,6 @@
 [package]
 name = "sova-devtools"
-version = "0.1.7"
+version = "0.1.10"
 authors.workspace = true
 edition.workspace = true
 description = "In-app DevTools bar for Sova (HTML inject, SSE timeline, request snapshots)"
@@ -14,6 +14,20 @@ categories = ["web-programming::http-server", "development-tools"]
 
 [features]
 default = []
+console = []
+console-redis = ["console", "dep:sova-redis", "dep:redis"]
+console-store = ["console", "dep:sova-store"]
+console-graphql = ["console", "graphql", "dep:async-graphql", "sova-graphql/server"]
+console-tasks = ["console", "dep:sova-tasks"]
+console-mail = ["console", "dep:sova-mail"]
+console-http-external = ["console", "dep:sova-http"]
+console-events = ["console"]
+console-rabbit = ["console", "rabbit"]
+console-grpc = ["console", "grpc"]
+console-session = ["console", "session", "dep:sova-session"]
+graphql = ["dep:sova-graphql"]
+rabbit = ["dep:sova-rabbit"]
+grpc = ["dep:sova-grpc"]
 session = ["dep:sova-session"]
 mail = ["dep:sova-mail"]
 http = []
@@ -35,15 +49,24 @@ sova-core = { workspace = true }
 sova-sse = { workspace = true }
 bytes = { workspace = true }
 http = { workspace = true }
+http-body-util = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-tokio = { workspace = true, features = ["sync", "time", "rt"] }
+serde_urlencoded = { workspace = true }
+tokio = { workspace = true, features = ["sync", "time", "rt", "macros"] }
 tracing = { workspace = true }
-
+redis = { workspace = true, optional = true }
+sova-redis = { workspace = true, optional = true }
+sova-store = { workspace = true, optional = true }
+sova-graphql = { workspace = true, optional = true }
+async-graphql = { workspace = true, optional = true }
+sova-tasks = { workspace = true, optional = true }
+sova-http = { workspace = true, optional = true }
+sova-rabbit = { workspace = true, optional = true }
+sova-grpc = { workspace = true, optional = true }
 sova-session = { workspace = true, optional = true }
 sova-mail = { workspace = true, optional = true }
 sova-db = { workspace = true, optional = true, default-features = false }
-sova-tasks = { workspace = true, optional = true }
 sova-auth = { workspace = true, optional = true, default-features = false }
 sova-i18n = { workspace = true, optional = true }
 sova-csrf = { workspace = true, optional = true }
@@ -56,3 +79,10 @@ sova-fs = { workspace = true, optional = true }
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 sova-core = { workspace = true, features = ["testing"] }
+sova-grpc = { workspace = true }
+serde_json = { workspace = true }
+
+[[test]]
+name = "console"
+path = "tests/console.rs"
+required-features = ["console"]

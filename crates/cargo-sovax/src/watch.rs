@@ -108,10 +108,7 @@ fn path_relevant(path: &Path) -> bool {
     if name == ".env" || name.starts_with(".env.") {
         return true;
     }
-    PathBuf::from(name)
-        .extension()
-        .and_then(|e| e.to_str())
-        == Some("rs")
+    PathBuf::from(name).extension().and_then(|e| e.to_str()) == Some("rs")
 }
 
 #[cfg(test)]

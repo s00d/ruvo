@@ -211,7 +211,11 @@ fn apply_cors(
     }
 }
 
-fn resolve_origin(mode: &OriginMode, req_origin: Option<&str>, credentials: bool) -> Option<String> {
+fn resolve_origin(
+    mode: &OriginMode,
+    req_origin: Option<&str>,
+    credentials: bool,
+) -> Option<String> {
     match mode {
         OriginMode::Exact(o) if o == "*" => {
             if credentials {

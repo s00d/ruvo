@@ -55,9 +55,7 @@ async fn ready_ignores_audit_failures() {
 async fn run_checks_includes_audit_for_cli() {
     let mut app = App::new();
     app.register_check("db", |_s| async { Ok(()) });
-    app.register_audit("openapi", |_s| async {
-        Err(Error::Internal("bad".into()))
-    });
+    app.register_audit("openapi", |_s| async { Err(Error::Internal("bad".into())) });
 
     let server = app.build().unwrap();
     let results = app
@@ -77,7 +75,9 @@ async fn ready_exposes_instance_header() {
     let res = c.get("/ready").await;
     assert_eq!(res.status_code().as_u16(), 200);
     assert_eq!(
-        res.headers().get("x-sova-instance").and_then(|v| v.to_str().ok()),
+        res.headers()
+            .get("x-sova-instance")
+            .and_then(|v| v.to_str().ok()),
         Some("test-instance-1")
     );
     std::env::remove_var("SOVA_INSTANCE_ID");

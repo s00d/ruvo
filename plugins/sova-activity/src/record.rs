@@ -2,10 +2,10 @@
 
 use crate::entity;
 use chrono::Utc;
-use sova_core::{ClientAddr, Request};
-use sova_db::{DbExt, DbHandle};
 use sea_orm::{ActiveModelTrait, Set};
 use serde_json::Value;
+use sova_core::{ClientAddr, Request};
+use sova_db::{DbExt, DbHandle};
 
 /// One activity row to persist.
 #[derive(Debug, Clone)]

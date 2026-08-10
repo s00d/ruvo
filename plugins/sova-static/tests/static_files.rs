@@ -17,9 +17,7 @@ async fn static_blocks_symlink_escape() {
     let mut app = App::new();
     app.install(Static::new("/files", dir.path()));
 
-    let res = app
-        .handle_request(Method::GET, "/files/link.txt", "")
-        .await;
+    let res = app.handle_request(Method::GET, "/files/link.txt", "").await;
     assert_eq!(res.status_code().as_u16(), 403);
 }
 
@@ -30,10 +28,8 @@ async fn static_under_module_guard_is_401() {
 
     let mut admin = Router::new();
     admin.use_middleware(
-        (|_req: Request, _next: Next| async move {
-            Response::text("Unauthorized").status(401)
-        })
-        .into_middleware(),
+        (|_req: Request, _next: Next| async move { Response::text("Unauthorized").status(401) })
+            .into_middleware(),
     );
     Static::new("/files", dir.path()).register(&mut admin);
 

@@ -1,5 +1,5 @@
-use sova_core::{App,  Http, Request, Response};
 use sova_core::extend::Bind;
+use sova_core::{App, Http, Request, Response};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
@@ -40,4 +40,3 @@ async fn http_all_adds_alt_svc_header() {
     let _ = tx.send(());
     let _ = server.await;
 }
-

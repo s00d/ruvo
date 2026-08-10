@@ -9,15 +9,10 @@ use std::panic::AssertUnwindSafe;
 #[tokio::test]
 async fn error_handler_skips_response_errors() {
     let mut app = App::new();
-    app.error_handler(|_err| async move {
-        Response::text("should-not-run").status(418)
-    });
+    app.error_handler(|_err| async move { Response::text("should-not-run").status(418) });
     app.get(
         "/custom",
-        (|_r: Request| async {
-            Err::<Response, Error>(Error::custom(409, "nope"))
-        })
-        .into_handler(),
+        (|_r: Request| async { Err::<Response, Error>(Error::custom(409, "nope")) }).into_handler(),
     );
     let res = app.handle_request(Method::GET, "/custom", "").await;
     assert_eq!(res.status_code().as_u16(), 409);
@@ -27,26 +22,23 @@ async fn error_handler_skips_response_errors() {
 #[tokio::test]
 async fn error_handler_catches_handler_err() {
     let mut app = App::new();
-    app.error_handler(|err| async move {
-        Response::text(format!("custom:{err}")).status(418)
-    });
+    app.error_handler(|err| async move { Response::text(format!("custom:{err}")).status(418) });
     app.get(
         "/deny",
         (|_r: Request| async { Err::<Response, Error>(Error::Unauthorized) }).into_handler(),
     );
     let res = app.handle_request(Method::GET, "/deny", "").await;
     assert_eq!(res.status_code().as_u16(), 418);
-    assert_eq!(
-        res.body_bytes(),
-        Some(b"custom:unauthorized".as_slice())
-    );
+    assert_eq!(res.body_bytes(), Some(b"custom:unauthorized".as_slice()));
 }
 
 #[tokio::test]
 async fn html_json_handler_returns() {
     let mut app = App::new();
     app.get("/h", |_r: Request| async { Html("<p>hi</p>".to_string()) });
-    app.get("/j", |_r: Request| async { Json(serde_json::json!({"n": 1})) });
+    app.get("/j", |_r: Request| async {
+        Json(serde_json::json!({"n": 1}))
+    });
 
     let h = app.handle_request(Method::GET, "/h", "").await;
     assert_eq!(h.body_bytes(), Some(b"<p>hi</p>".as_slice()));

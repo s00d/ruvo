@@ -35,8 +35,5 @@ async fn new_post(_: Request) -> Text<&'static str> {
 
 async fn show(req: Request) -> Html<String> {
     let slug = req.param("slug").unwrap_or("?");
-    Html(render(
-        include_str!("views/show.html"),
-        &[("slug", slug)],
-    ))
+    Html(render(include_str!("views/show.html"), &[("slug", slug)]))
 }

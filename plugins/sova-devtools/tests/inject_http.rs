@@ -125,7 +125,9 @@ async fn store_tracing_fills_cache_lines() {
         serde_json::from_slice(snap.body_bytes().expect("body")).expect("json");
     let cache = body["cache"].as_array().expect("cache arr");
     assert!(
-        cache.iter().any(|c| c["op"] == "get" && c["key"] == "demo:key"),
+        cache
+            .iter()
+            .any(|c| c["op"] == "get" && c["key"] == "demo:key"),
         "{body}"
     );
 }
@@ -166,8 +168,8 @@ async fn tasks_tracing_fills_jobs() {
         serde_json::from_slice(snap.body_bytes().expect("body")).expect("json");
     let jobs = body["jobs"].as_array().expect("jobs");
     assert!(
-        jobs.iter().any(|j| j["name"] == "ping" && j["status"] == "enqueued"),
+        jobs.iter()
+            .any(|j| j["name"] == "ping" && j["status"] == "enqueued"),
         "{body}"
     );
 }
-

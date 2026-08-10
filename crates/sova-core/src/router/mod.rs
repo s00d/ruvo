@@ -1,9 +1,9 @@
 mod compile;
 mod path;
 
-pub use path::{join_paths, normalize_path, to_brace_path};
 pub(crate) use compile::{compile_router, CompiledRouter};
 pub(crate) use path::to_matchit_path;
+pub use path::{join_paths, normalize_path, to_brace_path};
 
 use path::normalize_prefix;
 
@@ -421,7 +421,11 @@ impl Router {
     pub fn explain(&self) -> String {
         use std::fmt::Write;
         let mut out = String::new();
-        let _ = writeln!(out, "root_middleware: [{}]", format_mw_names(&self.middleware));
+        let _ = writeln!(
+            out,
+            "root_middleware: [{}]",
+            format_mw_names(&self.middleware)
+        );
         let _ = writeln!(out, "error_handler: {}", self.error_handler.is_some());
         let mut catch_lines = Vec::new();
         if !self.catchers.is_empty() {
@@ -432,7 +436,11 @@ impl Router {
         for (prefix, map) in &self.scoped_catchers {
             let mut codes: Vec<_> = map.keys().copied().collect();
             codes.sort_unstable();
-            let p = if prefix.is_empty() { "/" } else { prefix.as_str() };
+            let p = if prefix.is_empty() {
+                "/"
+            } else {
+                prefix.as_str()
+            };
             catch_lines.push(format!("{p} → {:?}", codes));
         }
         let _ = writeln!(out, "catchers: [{}]", catch_lines.join("; "));

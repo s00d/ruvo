@@ -1,13 +1,13 @@
 //! Submit a new story (auth required).
 
 use crate::db;
+use serde_json::json;
 use sova::vld;
 use sova::vld::schema::VldSchema;
 use sova::{
     CsrfExt, CurrentUser, DbExt, Fortify, Meta, Redirect, RenderExt, Request, Response, Result,
     Router, ValidationExt,
 };
-use serde_json::json;
 
 vld::schema! {
     #[derive(Debug, Clone)]

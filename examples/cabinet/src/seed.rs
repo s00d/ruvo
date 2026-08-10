@@ -14,7 +14,10 @@ pub async fn seed_demo(state: Arc<sova::extend::StateMap>) -> Result<(), Error> 
     let db = DbHandle::Conn(conn);
 
     let perms = list_permissions(&db).await?;
-    if !perms.iter().any(|p| p.slug == "notifications.orders.publish") {
+    if !perms
+        .iter()
+        .any(|p| p.slug == "notifications.orders.publish")
+    {
         let _ = create_permission(
             &db,
             "Publish order notifications",

@@ -112,6 +112,37 @@ export const mockCurrent: RequestSnapshot = {
       ok: true,
     },
   ],
+  graphql: [
+    {
+      operation: "DashboardStats",
+      kind: "query",
+      duration_ms: 6.2,
+      errors: 0,
+      auth: true,
+    },
+  ],
+  grpc: [
+    {
+      method: "billing.Invoices/List",
+      base: "fake://grpc",
+      direction: "client",
+      duration_ms: 4.5,
+      ok: true,
+      status: 200,
+      bytes_in: 18,
+      bytes_out: 240,
+    },
+  ],
+  rabbit: [
+    {
+      op: "publish",
+      exchange: "events",
+      routing_key: "order.created",
+      bytes: 128,
+      duration_ms: 1.2,
+      ok: true,
+    },
+  ],
   auth: {
     session_id: "sess_abc123",
     user_id: "42",
@@ -201,8 +232,23 @@ export const mockLogs: LogLine[] = mockCurrent.logs;
 
 export const mockConfig = {
   profile: "development",
-  plugins: ["devtools", "db", "session", "mail", "sse", "store", "tasks"],
-  features: ["session", "mail", "http", "db", "tasks", "auth", "store"],
+  plugins: ["devtools", "db", "session", "mail", "sse", "store", "tasks", "graphql"],
+  features: ["session", "mail", "http", "db", "tasks", "auth", "i18n", "store", "graphql", "grpc", "rabbit", "console", "console-redis", "console-store", "console-graphql", "console-grpc", "console-rabbit", "console-tasks", "console-mail", "console-events", "console-session"],
+  mounts: {
+    graphql: {
+      api: "/graphql",
+      graphiql: "/graphiql",
+      subscriptions: "/graphql/ws",
+      sdl: "/graphql/sdl",
+      allow_get_queries: false,
+    },
+    grpc: {
+      client_base: "fake://grpc",
+      methods: ["hello.Greeter/SayHello", "billing.Invoices/List"],
+      bind: null,
+    },
+    rabbit: { mode: "fake" },
+  },
 };
 
 export function mockBundle() {

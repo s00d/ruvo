@@ -29,7 +29,10 @@ pub struct ResolveOptions {
 }
 
 impl ResolveOptions {
-    pub fn new(locales: impl IntoIterator<Item = impl Into<String>>, default: impl Into<String>) -> Self {
+    pub fn new(
+        locales: impl IntoIterator<Item = impl Into<String>>,
+        default: impl Into<String>,
+    ) -> Self {
         Self {
             locales: locales.into_iter().map(|s| s.into()).collect(),
             default: default.into(),
@@ -149,10 +152,7 @@ mod tests {
 
     #[test]
     fn path_beats_query() {
-        let req = Request::builder()
-            .method(Method::GET)
-            .path("/de/x")
-            .build();
+        let req = Request::builder().method(Method::GET).path("/de/x").build();
         // query would be de vs en — path wins
         let mut req = req;
         req.query.insert("locale".into(), "en".into());
@@ -180,7 +180,10 @@ mod tests {
     #[test]
     fn accept_language_negotiation() {
         assert_eq!(
-            negotiate_accept_language("fr-CH, fr;q=0.9, de;q=0.8, en;q=0.7", &["en".into(), "de".into()]),
+            negotiate_accept_language(
+                "fr-CH, fr;q=0.9, de;q=0.8, en;q=0.7",
+                &["en".into(), "de".into()]
+            ),
             Some("de".into())
         );
     }

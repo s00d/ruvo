@@ -40,9 +40,7 @@ impl Plugin for MyStatic {
         let d = Arc::clone(&dir);
         app.get(&mount, move |_req: Request| {
             let d = Arc::clone(&d);
-            async move {
-                Response::file_in(d.as_path(), Path::new("index.html")).await
-            }
+            async move { Response::file_in(d.as_path(), Path::new("index.html")).await }
         });
 
         let d = Arc::clone(&dir);
@@ -65,9 +63,7 @@ async fn external_plugins_install_and_dispatch() {
     std::fs::write(dir.path().join("x.txt"), b"hi").unwrap();
 
     let mut app = App::new();
-    app.install(MyCors {
-        origin: "*".into(),
-    });
+    app.install(MyCors { origin: "*".into() });
     app.install(MyStatic {
         mount: "/pub".into(),
         dir: dir.path().to_path_buf(),

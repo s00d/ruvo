@@ -78,8 +78,7 @@ pub struct SitemapCtx {
     pub state: Arc<StateMap>,
 }
 
-type ProviderFn =
-    Arc<dyn Fn(SitemapCtx) -> BoxFuture<Result<Vec<Entry>, String>> + Send + Sync>;
+type ProviderFn = Arc<dyn Fn(SitemapCtx) -> BoxFuture<Result<Vec<Entry>, String>> + Send + Sync>;
 
 #[derive(Clone)]
 pub struct SitemapProvider {
@@ -141,7 +140,11 @@ pub fn path_is_dynamic(path: &str) -> bool {
     path.contains(':') || path.contains('*')
 }
 
-pub fn should_include_route(method: &Method, path: &str, meta: &sova_core::extend::MetaMap) -> bool {
+pub fn should_include_route(
+    method: &Method,
+    path: &str,
+    meta: &sova_core::extend::MetaMap,
+) -> bool {
     if *method != Method::GET {
         return false;
     }
@@ -217,12 +220,7 @@ pub async fn collect_entries_with(
     if opts.from_routes {
         if let Some(table) = state.get::<RouteTable>() {
             for entry in &table.0 {
-                if let RouteEntry::Http {
-                    method,
-                    path,
-                    meta,
-                } = entry
-                {
+                if let RouteEntry::Http { method, path, meta } = entry {
                     if !should_include_route(method, path.as_str(), meta) {
                         continue;
                     }
@@ -290,10 +288,7 @@ pub fn render_urlset(
             ));
         }
         if let Some(c) = e.changefreq {
-            out.push_str(&format!(
-                "    <changefreq>{}</changefreq>\n",
-                c.as_str()
-            ));
+            out.push_str(&format!("    <changefreq>{}</changefreq>\n", c.as_str()));
         }
         if let Some(p) = e.priority {
             out.push_str(&format!("    <priority>{p:.1}</priority>\n"));
@@ -321,13 +316,7 @@ fn append_xhtml_links(out: &mut String, public_url: &str, entry_path: &str, h: &
                 xml_escape(&href)
             ));
         }
-        let href = localized_url(
-            public_url,
-            &bare,
-            &h.default,
-            &h.default,
-            h.path_prefix,
-        );
+        let href = localized_url(public_url, &bare, &h.default, &h.default, h.path_prefix);
         out.push_str(&format!(
             "    <xhtml:link rel=\"alternate\" hreflang=\"x-default\" href=\"{}\"/>\n",
             xml_escape(&href)

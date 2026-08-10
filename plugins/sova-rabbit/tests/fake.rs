@@ -14,10 +14,7 @@ async fn fake_publish_consume_ack() {
             .declare_queue("jobs", &QueueOpts::durable())
             .await
             .unwrap();
-        req.rabbit()
-            .bind("jobs", "events", "user.*")
-            .await
-            .unwrap();
+        req.rabbit().bind("jobs", "events", "user.*").await.unwrap();
         req.rabbit()
             .publish(&ex, "user.created", Bytes::from_static(b"{\"id\":1}"))
             .await
@@ -38,16 +35,19 @@ async fn fake_publish_consume_ack() {
 #[tokio::test]
 async fn fake_nack_to_dlq() {
     let fake = FakeBroker::new();
-    fake.declare_exchange(&Exchange::direct("dlx")).await.unwrap();
-    fake.declare_queue("dlq", &QueueOpts::durable()).await.unwrap();
+    fake.declare_exchange(&Exchange::direct("dlx"))
+        .await
+        .unwrap();
+    fake.declare_queue("dlq", &QueueOpts::durable())
+        .await
+        .unwrap();
     fake.bind("dlq", "dlx", "jobs").await.unwrap();
-    fake.declare_queue(
-        "jobs",
-        &QueueOpts::durable().with_dlq("dlx", "jobs"),
-    )
-    .await
-    .unwrap();
-    fake.declare_exchange(&Exchange::direct("main")).await.unwrap();
+    fake.declare_queue("jobs", &QueueOpts::durable().with_dlq("dlx", "jobs"))
+        .await
+        .unwrap();
+    fake.declare_exchange(&Exchange::direct("main"))
+        .await
+        .unwrap();
     fake.bind("jobs", "main", "k").await.unwrap();
     fake.publish(&Exchange::direct("main"), "k", Bytes::from_static(b"x"))
         .await

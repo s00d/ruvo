@@ -64,9 +64,10 @@ impl Idempotency {
     pub fn middleware(self) -> MwEntry {
         named(
             "idempotency",
-            with_state(self, |rt, req, next| async move {
-                run(rt, req, next).await
-            }),
+            with_state(
+                self,
+                |rt, req, next| async move { run(rt, req, next).await },
+            ),
         )
     }
 
@@ -103,11 +104,7 @@ fn is_mutating(method: &Method) -> bool {
     )
 }
 
-async fn run(
-    rt: Arc<Idempotency>,
-    req: Request,
-    next: sova_core::Next,
-) -> Response {
+async fn run(rt: Arc<Idempotency>, req: Request, next: sova_core::Next) -> Response {
     if !is_mutating(&req.method) {
         return next(req).await;
     }
@@ -123,9 +120,15 @@ async fn run(
     let cache_key = format!("{}{}", rt.prefix, key);
     if let Some(bytes) = rt.store.get(&cache_key).await {
         if let Ok(cached) = serde_json::from_slice::<CachedResponse>(&bytes) {
-            let mut res = Response::bytes(cached.body, cached.content_type.as_deref().unwrap_or("application/octet-stream"))
-                .status(cached.status)
-                .header("x-idempotency-replay", "true");
+            let mut res = Response::bytes(
+                cached.body,
+                cached
+                    .content_type
+                    .as_deref()
+                    .unwrap_or("application/octet-stream"),
+            )
+            .status(cached.status)
+            .header("x-idempotency-replay", "true");
             if let Some(ct) = cached.content_type {
                 res = res.header("content-type", ct);
             }

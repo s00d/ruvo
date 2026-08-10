@@ -1,7 +1,7 @@
 //! Simple chat over WebSocket at `/ws`.
 
-use sova::{App, Html, Result, Ws, WsRouteExt};
 use sova::Message;
+use sova::{App, Html, Result, Ws, WsRouteExt};
 
 const CHAT_HTML: &str = r#"<!doctype html>
 <html lang="en">
@@ -44,7 +44,6 @@ const CHAT_HTML: &str = r#"<!doctype html>
 
 #[tokio::main]
 async fn main() -> Result<()> {
-
     let mut app = App::new();
     app.install(Ws::new());
 
@@ -54,10 +53,7 @@ async fn main() -> Result<()> {
         let _room = session.join("chat");
         while let Some(Ok(msg)) = session.recv().await {
             if let Message::Text(text) = msg {
-                session
-                    .hub()
-                    .broadcast("chat", Message::Text(text))
-                    .await;
+                session.hub().broadcast("chat", Message::Text(text)).await;
             }
         }
     });

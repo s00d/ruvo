@@ -16,6 +16,9 @@ export interface RequestMeta {
   mail_count: number;
   cache_count?: number;
   job_count?: number;
+  graphql_count?: number;
+  grpc_count?: number;
+  rabbit_count?: number;
 }
 
 export interface QueryLine {
@@ -63,6 +66,37 @@ export interface CacheLine {
   ok?: boolean | null;
 }
 
+export interface GraphqlLine {
+  operation: string;
+  kind: string;
+  duration_ms: number;
+  errors: number;
+  auth?: boolean | null;
+}
+
+export interface GrpcLine {
+  method: string;
+  base: string;
+  direction: string;
+  duration_ms: number;
+  ok: boolean;
+  status?: number | null;
+  error?: string | null;
+  bytes_in?: number | null;
+  bytes_out?: number | null;
+}
+
+export interface RabbitLine {
+  op: string;
+  exchange?: string | null;
+  routing_key?: string | null;
+  queue?: string | null;
+  bytes?: number | null;
+  duration_ms: number;
+  ok: boolean;
+  error?: string | null;
+}
+
 export interface RouteSnap {
   path: string;
   pattern?: string | null;
@@ -97,6 +131,9 @@ export interface RequestSnapshot {
   mail: MailLine[];
   jobs: JobLine[];
   cache?: CacheLine[];
+  graphql?: GraphqlLine[];
+  grpc?: GrpcLine[];
+  rabbit?: RabbitLine[];
   auth?: AuthSnap | null;
   route?: RouteSnap | null;
   locale?: string | null;

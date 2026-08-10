@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sovax`](https://docs.rs/sovax/0.1.1) `0.1.1` |
+| Crate | [`sovax`](https://docs.rs/sovax/0.1.2) `0.1.2` |
 | Plugin id | `cli` |
 | Category | Tooling |
 

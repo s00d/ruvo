@@ -1,0 +1,16 @@
+[package]
+name = "api_graphql_server"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "api_graphql_server"
+path = "src/main.rs"
+
+[dependencies]
+sova = { workspace = true, features = ["graphql-server"] }
+async-graphql = { workspace = true }
+futures-util = { workspace = true, default-features = false, features = ["std"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "sync"] }
+serde_json = { workspace = true }

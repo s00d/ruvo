@@ -5,8 +5,8 @@ use crate::defaults::{MetaDefaults, TrailingSlash};
 use crate::overlay::{MetaOverlay, OverlaySnapshot};
 use crate::page::MetaPage;
 use chrono::{DateTime, Utc};
-use sova_core::Request;
 use serde_json::Value;
+use sova_core::Request;
 
 #[derive(Debug, Clone, Default)]
 pub struct ResolvedMeta {

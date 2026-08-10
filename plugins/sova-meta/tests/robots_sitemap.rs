@@ -73,7 +73,10 @@ async fn robots_builder_user_agent_and_raw() {
     .unwrap();
     assert!(body.contains("User-agent: *"), "{body}");
     assert!(body.contains("Allow: /public"), "{body}");
-    assert!(body.contains("Crawl-delay: 1.5") || body.contains("1.5"), "{body}");
+    assert!(
+        body.contains("Crawl-delay: 1.5") || body.contains("1.5"),
+        "{body}"
+    );
     assert!(body.contains("User-agent: Googlebot"), "{body}");
     assert!(body.contains("Disallow: /nogoogle"), "{body}");
     assert!(body.contains("# custom"), "{body}");

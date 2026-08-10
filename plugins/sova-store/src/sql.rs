@@ -2,10 +2,10 @@
 
 use crate::{BoxFuture, KvStore};
 use bytes::Bytes;
-use sova_db::DbPool;
 use sea_orm::{
     ConnectionTrait, DatabaseConnection, DbBackend, DbErr, Statement, TransactionTrait, Value,
 };
+use sova_db::DbPool;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
@@ -188,11 +188,7 @@ impl KvStore for SqlStore {
                 Err(_) => return None,
             };
             let backend = conn.get_database_backend();
-            let stmt = Statement::from_sql_and_values(
-                backend,
-                select_sql(backend),
-                [val_key(key)],
-            );
+            let stmt = Statement::from_sql_and_values(backend, select_sql(backend), [val_key(key)]);
             let row = match conn.query_one_raw(stmt).await {
                 Ok(r) => r,
                 Err(_) => return None,
@@ -225,7 +221,11 @@ impl KvStore for SqlStore {
                 .execute_raw(Statement::from_sql_and_values(
                     backend,
                     upsert_sql(backend),
-                    [val_key(key), val_bytes(val.as_ref()), val_str(exp.as_deref())],
+                    [
+                        val_key(key),
+                        val_bytes(val.as_ref()),
+                        val_str(exp.as_deref()),
+                    ],
                 ))
                 .await;
         })
@@ -268,8 +268,7 @@ impl KvStore for SqlStore {
                         let row = txn.query_one_raw(stmt).await?;
                         let cur = match row {
                             Some(row) => {
-                                let e: Option<String> =
-                                    row.try_get_by("expires_at").ok().flatten();
+                                let e: Option<String> = row.try_get_by("expires_at").ok().flatten();
                                 if expired(&e) {
                                     0i64
                                 } else {

@@ -28,7 +28,10 @@ async fn api_preset_into_app_routes_and_probes() {
         .await;
     assert_eq!(docs.status_code().as_u16(), 200);
     let body = String::from_utf8(docs.body_bytes().unwrap().to_vec()).unwrap();
-    assert!(body.contains("Coverage API") || body.contains("openapi"), "{body}");
+    assert!(
+        body.contains("Coverage API") || body.contains("openapi"),
+        "{body}"
+    );
 }
 
 #[tokio::test]

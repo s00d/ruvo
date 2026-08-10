@@ -2,8 +2,8 @@
 //!
 //! Reads never hit disk. Survives process restart without an external DB.
 
-use bytes::Bytes;
 use crate::{BoxFuture, KvStore};
+use bytes::Bytes;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -25,9 +25,17 @@ struct Entry {
 }
 
 enum Op {
-    Set { key: String, val: Bytes, ttl_ms: Option<u64> },
-    Remove { key: String },
-    ClearPrefix { prefix: String },
+    Set {
+        key: String,
+        val: Bytes,
+        ttl_ms: Option<u64>,
+    },
+    Remove {
+        key: String,
+    },
+    ClearPrefix {
+        prefix: String,
+    },
 }
 
 struct Inner {
@@ -185,7 +193,10 @@ async fn append_op(inner: &mut Inner, op: &Op) -> std::io::Result<()> {
             v
         }
     };
-    inner.log.write_all(&(line.len() as u32).to_le_bytes()).await?;
+    inner
+        .log
+        .write_all(&(line.len() as u32).to_le_bytes())
+        .await?;
     inner.log.write_all(&line).await?;
     inner.log.flush().await?;
     if inner.durability == Durability::Fsync {
@@ -299,7 +310,13 @@ impl KvStore for FileStore {
         Box::pin(async move {
             let mut g = self.inner.lock().await;
             g.map.remove(key);
-            let _ = append_op(&mut g, &Op::Remove { key: key.to_string() }).await;
+            let _ = append_op(
+                &mut g,
+                &Op::Remove {
+                    key: key.to_string(),
+                },
+            )
+            .await;
         })
     }
 
@@ -308,9 +325,10 @@ impl KvStore for FileStore {
             let mut g = self.inner.lock().await;
             let now = Instant::now();
             let cur = match g.map.get(key) {
-                Some(e) if alive(e, now) => {
-                    std::str::from_utf8(&e.val).unwrap_or("0").parse().unwrap_or(0)
-                }
+                Some(e) if alive(e, now) => std::str::from_utf8(&e.val)
+                    .unwrap_or("0")
+                    .parse()
+                    .unwrap_or(0),
                 _ => 0,
             };
             let next = (cur + by).max(0) as u64;
@@ -372,9 +390,7 @@ mod tests {
         let store = Arc::new(FileStore::open(dir.path()).await.unwrap());
         crate::conformance::run(store.clone()).await;
 
-        store
-            .set("persist", Bytes::from_static(b"yes"), None)
-            .await;
+        store.set("persist", Bytes::from_static(b"yes"), None).await;
         drop(store);
         let store2 = FileStore::open(dir.path()).await.unwrap();
         assert_eq!(

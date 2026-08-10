@@ -1,12 +1,12 @@
 //! Story detail, upvote, comments.
 
 use crate::db;
+use serde_json::json;
 use sova::vld;
 use sova::{
     CsrfExt, CurrentUser, DbExt, Error, Fortify, Meta, Redirect, RenderExt, Request, Response,
     Result, Router, ValidationExt,
 };
-use serde_json::json;
 
 vld::schema! {
     #[derive(Debug, Clone)]

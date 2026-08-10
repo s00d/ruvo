@@ -135,12 +135,7 @@ pub fn run(args: DevArgs) -> Result<(), String> {
     watch_result
 }
 
-fn restart_graceful(
-    guard: &mut Child,
-    project: &Project,
-    drain: Duration,
-    stop: &AtomicBool,
-) {
+fn restart_graceful(guard: &mut Child, project: &Project, drain: Duration, stop: &AtomicBool) {
     let instance_id = new_instance_id();
     let new = match spawn_rust_with_id(project, true, &instance_id) {
         Ok(c) => c,
@@ -151,9 +146,7 @@ fn restart_graceful(
     };
 
     let port = listen_port();
-    eprintln!(
-        "sova: waiting for new process (instance={instance_id}) on :{port}/ready …"
-    );
+    eprintln!("sova: waiting for new process (instance={instance_id}) on :{port}/ready …");
     if !wait_ready(port, &instance_id, READY_DEADLINE, stop) {
         if stop.load(Ordering::SeqCst) {
             let mut new = new;
@@ -257,9 +250,7 @@ fn http_get_ready(port: u16) -> Result<(u16, Option<String>), ()> {
     stream
         .set_write_timeout(Some(Duration::from_secs(2)))
         .map_err(|_| ())?;
-    let req = format!(
-        "GET /ready HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\r\n"
-    );
+    let req = format!("GET /ready HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\r\n");
     stream.write_all(req.as_bytes()).map_err(|_| ())?;
     let mut buf = Vec::new();
     stream.read_to_end(&mut buf).map_err(|_| ())?;

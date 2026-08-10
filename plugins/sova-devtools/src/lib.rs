@@ -11,7 +11,10 @@
 //! Frontend: `ui/` (Vite + Vue + Tailwind + Pinia + Vue Router + TS).
 //! Build: `npm --prefix ui ci && npm --prefix ui run build` → `assets/`.
 
+#[cfg(feature = "console")]
+mod actions;
 mod collector;
+mod console;
 mod hooks;
 mod hub;
 mod inject;

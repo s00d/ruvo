@@ -1,7 +1,7 @@
 //! Minimal AI chat API using `sova-ai` + FakeAi (swap for OpenAI in production).
 
-use sova::{Ai, AiExt, App, FakeAi, Json, Request, Result};
 use serde::Deserialize;
+use sova::{Ai, AiExt, App, FakeAi, Json, Request, Result};
 
 #[derive(Deserialize)]
 struct ChatIn {

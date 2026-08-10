@@ -1,5 +1,6 @@
 //! Fortify::guard / permission middleware offline tests.
 
+use serde_json::json;
 use sova_auth::{
     assign_role, mark_email_verified, AuthExt, AuthMigrator, CurrentUser, Feature, Fortify,
 };
@@ -7,7 +8,6 @@ use sova_core::{Json, Request, Response, ResponseAssert, Router, TestClient};
 use sova_mail::Mail;
 use sova_session::memory_sessions;
 use sova_testing::TestApp;
-use serde_json::json;
 
 const SECRET: &str = "test-fortify-secret-guard-tests!!";
 
@@ -55,22 +55,30 @@ async fn build_with_guards() -> (sova_testing::SqliteTestDb, TestClient) {
 
             let mut verified = Router::new();
             verified.use_middleware(Fortify::verified());
-            verified.get("/ping", |_req: Request| async { Response::text("verified") });
+            verified.get("/ping", |_req: Request| async {
+                Response::text("verified")
+            });
             app.mount("/verified", verified);
 
             let mut verified_to = Router::new();
             verified_to.use_middleware(Fortify::verified_to("/verify-please"));
-            verified_to.get("/ping", |_req: Request| async { Response::text("verified") });
+            verified_to.get("/ping", |_req: Request| async {
+                Response::text("verified")
+            });
             app.mount("/verified-to", verified_to);
 
             let mut pw = Router::new();
             pw.use_middleware(Fortify::password_confirmed());
-            pw.get("/ping", |_req: Request| async { Response::text("confirmed") });
+            pw.get("/ping", |_req: Request| async {
+                Response::text("confirmed")
+            });
             app.mount("/pw-confirmed", pw);
 
             let mut pw_to = Router::new();
             pw_to.use_middleware(Fortify::password_confirmed_to("/confirm-now"));
-            pw_to.get("/ping", |_req: Request| async { Response::text("confirmed") });
+            pw_to.get("/ping", |_req: Request| async {
+                Response::text("confirmed")
+            });
             app.mount("/pw-confirmed-to", pw_to);
 
             app.get("/auth-ext", |req: Request| async move {
@@ -144,10 +152,7 @@ async fn guard_allows_authenticated() {
         .header("accept", "application/json")
         .await;
     res.assert_status(200);
-    assert_eq!(
-        String::from_utf8_lossy(res.body_bytes().unwrap()),
-        "pong"
-    );
+    assert_eq!(String::from_utf8_lossy(res.body_bytes().unwrap()), "pong");
 }
 
 #[tokio::test]
@@ -225,10 +230,7 @@ async fn permission_allows_admin() {
         .header("accept", "application/json")
         .await;
     res.assert_status(200);
-    assert_eq!(
-        String::from_utf8_lossy(res.body_bytes().unwrap()),
-        "admin"
-    );
+    assert_eq!(String::from_utf8_lossy(res.body_bytes().unwrap()), "admin");
 
     let role = c
         .get("/role-admin/ping")
@@ -243,16 +245,11 @@ async fn guard_html_redirects_to_login() {
     let res = c.get("/protected/ping").header("accept", "text/html").await;
     assert_eq!(res.status_code().as_u16(), 303);
     assert_eq!(
-        res.headers()
-            .get("location")
-            .and_then(|v| v.to_str().ok()),
+        res.headers().get("location").and_then(|v| v.to_str().ok()),
         Some("/login")
     );
 
-    let custom = c
-        .get("/guard-to/ping")
-        .header("accept", "text/html")
-        .await;
+    let custom = c.get("/guard-to/ping").header("accept", "text/html").await;
     assert_eq!(custom.status_code().as_u16(), 303);
     assert_eq!(
         custom
@@ -290,9 +287,7 @@ async fn verified_and_password_confirmed_middleware() {
         .await;
     assert_eq!(html.status_code().as_u16(), 303);
     assert_eq!(
-        html.headers()
-            .get("location")
-            .and_then(|v| v.to_str().ok()),
+        html.headers().get("location").and_then(|v| v.to_str().ok()),
         Some("/verify-please")
     );
 

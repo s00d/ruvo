@@ -57,8 +57,7 @@ impl<'a> HtmlInject<'a> {
 
 /// Case-insensitive substring search; returns byte index in `hay` (ASCII tags).
 pub fn find_ci(hay: &str, needle: &str) -> Option<usize> {
-    hay.to_ascii_lowercase()
-        .find(&needle.to_ascii_lowercase())
+    hay.to_ascii_lowercase().find(&needle.to_ascii_lowercase())
 }
 
 /// Insert `fragment` immediately before the first case-insensitive `needle`.
@@ -145,8 +144,9 @@ pub fn inject(html: &str, opts: &HtmlInject<'_>) -> Option<String> {
         HtmlAnchor::BeforeCloseHead => inject_before_close_head(html, &block),
         HtmlAnchor::AfterOpenBody => inject_after_open_tag(html, "<body", &block)
             .or_else(|| Some(format!("{html}\n{block}\n"))),
-        HtmlAnchor::BeforeCloseBody => inject_before(html, "</body>", &block)
-            .or_else(|| Some(format!("{html}\n{block}\n"))),
+        HtmlAnchor::BeforeCloseBody => {
+            inject_before(html, "</body>", &block).or_else(|| Some(format!("{html}\n{block}\n")))
+        }
     }
 }
 

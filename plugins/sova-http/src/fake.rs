@@ -49,11 +49,15 @@ impl FakeTransport {
     }
 
     pub fn get(self, url: impl Into<String>, body: impl Into<StubBody>) -> Self {
-        self.stub(Some(Method::GET), url, StubOutcome::Response {
-            status: StatusCode::OK,
-            headers: HeaderMap::new(),
-            body: body.into(),
-        })
+        self.stub(
+            Some(Method::GET),
+            url,
+            StubOutcome::Response {
+                status: StatusCode::OK,
+                headers: HeaderMap::new(),
+                body: body.into(),
+            },
+        )
     }
 
     pub fn post(self, url: impl Into<String>, status: u16) -> Self {

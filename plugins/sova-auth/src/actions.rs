@@ -13,11 +13,11 @@ use crate::token::{
     parse_verify_token,
 };
 use crate::two_factor;
+use serde_json::json;
 use sova_core::{Error, IntoResponse, Json, Redirect, Request, Response, Result};
 use sova_db::DbExt;
 use sova_passport::verify_password;
 use sova_session::SessionExt;
-use serde_json::json;
 
 #[cfg(feature = "activity")]
 use crate::activity_log::log_event;
@@ -40,11 +40,7 @@ fn json_err(status: u16, msg: &str) -> Response {
 }
 
 fn json_field_err(status: u16, field: &str, msg: &str) -> Response {
-    Error::custom(
-        status,
-        Json(json!({ "errors": { field: [msg] } })),
-    )
-    .into_response()
+    Error::custom(status, Json(json!({ "errors": { field: [msg] } }))).into_response()
 }
 
 fn field_fail(req: &Request, path: &str, field: &str, msg: &str, status: u16) -> Response {
@@ -53,8 +49,8 @@ fn field_fail(req: &Request, path: &str, field: &str, msg: &str, status: u16) ->
     }
     #[cfg(feature = "vld")]
     {
-        use sova_core::FormData;
         use serde_json::json;
+        use sova_core::FormData;
         req.flash_errors(&json!({ field: msg }));
         let mut old = serde_json::Map::new();
         if let Some(data) = req.get::<FormData>() {
@@ -268,10 +264,22 @@ pub async fn register(mut req: Request) -> Result<Response> {
         Ok(u) => u,
         Err(Error::Response(r)) => return Ok(*r),
         Err(Error::BadRequest(m)) if m.contains("password") => {
-            return Ok(field_fail(&req, state.paths.register.as_str(), "password", &m, 400));
+            return Ok(field_fail(
+                &req,
+                state.paths.register.as_str(),
+                "password",
+                &m,
+                400,
+            ));
         }
         Err(e) if e.to_string().contains("already") || matches!(e, Error::Response(_)) => {
-            return Ok(field_fail(&req, state.paths.register.as_str(), "email", "email already registered", 409));
+            return Ok(field_fail(
+                &req,
+                state.paths.register.as_str(),
+                "email",
+                "email already registered",
+                409,
+            ));
         }
         Err(e) => return Ok(map_err(&req, state.paths.register.as_str(), e)),
     };
@@ -350,15 +358,7 @@ pub async fn login(mut req: Request) -> Result<Response> {
         .await?
         .ok_or(Error::Unauthorized)?;
     #[cfg(feature = "activity")]
-    log_event(
-        &req,
-        Some(cu.id),
-        "user.login",
-        "user",
-        cu.id,
-        json!({}),
-    )
-    .await;
+    log_event(&req, Some(cu.id), "user.login", "user", cu.id, json!({})).await;
     finish_login(&mut req, cu, &state).await
 }
 
@@ -403,7 +403,10 @@ pub async fn forgot_password(mut req: Request) -> Result<Response> {
     if wants_json(&req) {
         return Ok(json_ok(json!({ "ok": true })));
     }
-    Ok(ok_redirect(&format!("{}?sent=1", state.paths.forgot_password)))
+    Ok(ok_redirect(&format!(
+        "{}?sent=1",
+        state.paths.forgot_password
+    )))
 }
 
 pub async fn reset_password(mut req: Request) -> Result<Response> {
@@ -471,15 +474,7 @@ pub async fn verify_email(mut req: Request) -> Result<Response> {
     let db = req.db().clone();
     store::mark_email_verified(&db, id).await?;
     #[cfg(feature = "activity")]
-    log_event(
-        &req,
-        Some(id),
-        "email.verified",
-        "user",
-        id,
-        json!({}),
-    )
-    .await;
+    log_event(&req, Some(id), "email.verified", "user", id, json!({})).await;
     if wants_json(&req) {
         return Ok(json_ok(json!({ "ok": true })));
     }
@@ -538,16 +533,10 @@ pub async fn update_profile(mut req: Request) -> Result<Response> {
     {
         let mut changed = serde_json::Map::new();
         if name != user.name {
-            changed.insert(
-                "name".into(),
-                json!({ "old": user.name, "new": name }),
-            );
+            changed.insert("name".into(), json!({ "old": user.name, "new": name }));
         }
         if email != user.email {
-            changed.insert(
-                "email".into(),
-                json!({ "old": user.email, "new": email }),
-            );
+            changed.insert("email".into(), json!({ "old": user.email, "new": email }));
         }
         if !changed.is_empty() {
             log_event(
@@ -703,12 +692,7 @@ pub async fn two_factor_confirm(mut req: Request) -> Result<Response> {
         return Err(Error::Unauthorized);
     };
     let Some(secret) = row.two_factor_secret.as_deref() else {
-        return Ok(fail(
-            &req,
-            &state.two_factor_path,
-            400,
-            "2FA not started",
-        ));
+        return Ok(fail(&req, &state.two_factor_path, 400, "2FA not started"));
     };
     if !two_factor::verify_code(secret, code)? {
         return Ok(field_fail(
@@ -779,7 +763,10 @@ pub async fn two_factor_disable(mut req: Request) -> Result<Response> {
     if wants_json(&req) {
         return Ok(json_ok(json!({ "ok": true })));
     }
-    Ok(ok_redirect(&format!("{}?disabled=1", state.two_factor_path)))
+    Ok(ok_redirect(&format!(
+        "{}?disabled=1",
+        state.two_factor_path
+    )))
 }
 
 pub async fn two_factor_challenge(mut req: Request) -> Result<Response> {
@@ -876,8 +863,7 @@ pub async fn two_factor_recovery_codes_get(req: Request) -> Result<Response> {
             })),
         ));
     };
-    let codes: serde_json::Value =
-        serde_json::from_str(&raw).unwrap_or_else(|_| json!([]));
+    let codes: serde_json::Value = serde_json::from_str(&raw).unwrap_or_else(|_| json!([]));
     Ok(json_ok(json!({ "recovery_codes": codes })))
 }
 

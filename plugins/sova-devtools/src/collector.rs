@@ -46,6 +46,50 @@ pub struct JobLine {
 }
 
 #[derive(Clone, Debug, Serialize)]
+pub struct GraphqlLine {
+    pub operation: String,
+    pub kind: String,
+    pub duration_ms: f64,
+    pub errors: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auth: Option<bool>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct GrpcLine {
+    pub method: String,
+    pub base: String,
+    pub direction: String,
+    pub duration_ms: f64,
+    pub ok: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bytes_in: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bytes_out: Option<u64>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct RabbitLine {
+    pub op: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub exchange: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub routing_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub queue: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bytes: Option<u64>,
+    pub duration_ms: f64,
+    pub ok: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize)]
 pub struct CacheLine {
     /// `get` / `set` / `remember` / `remove` / `incr` / redis cmd
     pub op: String,
@@ -107,6 +151,12 @@ pub struct RequestSnapshot {
     pub mail: Vec<MailLine>,
     pub jobs: Vec<JobLine>,
     pub cache: Vec<CacheLine>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub graphql: Vec<GraphqlLine>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub grpc: Vec<GrpcLine>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub rabbit: Vec<RabbitLine>,
     pub auth: AuthSnap,
     pub route: RouteSnap,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -133,6 +183,9 @@ pub struct RequestMeta {
     pub http_count: usize,
     pub mail_count: usize,
     pub cache_count: usize,
+    pub graphql_count: usize,
+    pub grpc_count: usize,
+    pub rabbit_count: usize,
     pub job_count: usize,
 }
 
@@ -155,6 +208,9 @@ impl From<&RequestSnapshot> for RequestMeta {
             http_count: s.http.len(),
             mail_count: s.mail.len(),
             cache_count: s.cache.len(),
+            graphql_count: s.graphql.len(),
+            grpc_count: s.grpc.len(),
+            rabbit_count: s.rabbit.len(),
             job_count: s.jobs.len(),
         }
     }
@@ -168,6 +224,9 @@ struct BagInner {
     mail: Vec<MailLine>,
     jobs: Vec<JobLine>,
     cache: Vec<CacheLine>,
+    graphql: Vec<GraphqlLine>,
+    grpc: Vec<GrpcLine>,
+    rabbit: Vec<RabbitLine>,
     auth: AuthSnap,
     route: RouteSnap,
     locale: Option<String>,
@@ -247,6 +306,27 @@ impl DevToolsBag {
         }
     }
 
+    pub fn push_graphql(&self, gql: GraphqlLine) {
+        let mut g = self.inner.lock().unwrap();
+        if g.graphql.len() < 50 {
+            g.graphql.push(gql);
+        }
+    }
+
+    pub fn push_grpc(&self, line: GrpcLine) {
+        let mut g = self.inner.lock().unwrap();
+        if g.grpc.len() < 50 {
+            g.grpc.push(line);
+        }
+    }
+
+    pub fn push_rabbit(&self, line: RabbitLine) {
+        let mut g = self.inner.lock().unwrap();
+        if g.rabbit.len() < 50 {
+            g.rabbit.push(line);
+        }
+    }
+
     pub fn set_auth(&self, auth: AuthSnap) {
         self.inner.lock().unwrap().auth = auth;
     }
@@ -292,6 +372,9 @@ impl DevToolsBag {
             mail: inner.mail.clone(),
             jobs: inner.jobs.clone(),
             cache: inner.cache.clone(),
+            graphql: inner.graphql.clone(),
+            grpc: inner.grpc.clone(),
+            rabbit: inner.rabbit.clone(),
             auth: inner.auth.clone(),
             route: inner.route.clone(),
             locale: inner.locale.clone(),

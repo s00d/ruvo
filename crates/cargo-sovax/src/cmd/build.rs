@@ -35,10 +35,7 @@ pub fn run(args: BuildArgs) -> Result<(), String> {
         }
     }
 
-    eprintln!(
-        "sova: cargo build --release -p {}",
-        project.package_name
-    );
+    eprintln!("sova: cargo build --release -p {}", project.package_name);
     let status = Command::new("cargo")
         .args([
             "build",

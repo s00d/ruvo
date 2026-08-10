@@ -3,8 +3,8 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::manifest::{
-    ensure_mail_stack, ensure_resource_stack, ensure_resource_stack_with_fields, ensure_seed_in_main,
-    ensure_tasks_stack,
+    ensure_mail_stack, ensure_resource_stack, ensure_resource_stack_with_fields,
+    ensure_seed_in_main, ensure_tasks_stack,
 };
 use crate::templates::codegen::{
     append_migration_mod, append_pub_mod, ensure_jobs_registry, ensure_mail_layout,
@@ -25,8 +25,12 @@ pub struct GenerateArgs {
 
 #[derive(Subcommand, Debug)]
 pub enum GenerateKind {
-    Module { name: String },
-    Plugin { name: String },
+    Module {
+        name: String,
+    },
+    Plugin {
+        name: String,
+    },
     Model {
         name: String,
         #[arg(long)]
@@ -38,10 +42,16 @@ pub enum GenerateKind {
         #[arg(long)]
         fields: String,
     },
-    Mailer { name: String },
-    Job { name: String },
+    Mailer {
+        name: String,
+    },
+    Job {
+        name: String,
+    },
     /// Alias of [`GenerateKind::Job`].
-    Worker { name: String },
+    Worker {
+        name: String,
+    },
     Resource {
         name: String,
         #[arg(long)]
@@ -57,7 +67,9 @@ pub enum GenerateKind {
         fields: Option<String>,
     },
     /// Seed function under `src/seeds/` (compose via `seeds::run`).
-    Seed { name: String },
+    Seed {
+        name: String,
+    },
 }
 
 pub fn run(args: GenerateArgs) -> Result<(), String> {
@@ -70,9 +82,7 @@ pub fn run(args: GenerateArgs) -> Result<(), String> {
         GenerateKind::Mailer { name } => generate_mailer(&name),
         GenerateKind::Job { name } | GenerateKind::Worker { name } => generate_job(&name),
         GenerateKind::Resource { name, fields, api } => generate_resource(&name, &fields, api),
-        GenerateKind::Migration { name, fields } => {
-            generate_migration(&name, fields.as_deref())
-        }
+        GenerateKind::Migration { name, fields } => generate_migration(&name, fields.as_deref()),
         GenerateKind::Seed { name } => generate_seed(&name),
     }
 }
@@ -310,7 +320,9 @@ fn generate_mailer(name: &str) -> Result<(), String> {
     println!("generated mailer `{ty}`");
     println!("  src/mailers/{snake}.rs");
     println!("  views/mail/{snake}.html");
-    println!("  next: app.install(Templates::minijinja(\"views\")); app.install(Mail::from_env());");
+    println!(
+        "  next: app.install(Templates::minijinja(\"views\")); app.install(Mail::from_env());"
+    );
     println!("  use:  req.mail().to(user).send_mail({ty} {{ name: \"…\".into() }}).await?;");
     Ok(())
 }
@@ -351,9 +363,7 @@ fn generate_migration(name: &str, fields: Option<&str>) -> Result<(), String> {
     fs::create_dir_all("src/migrations").map_err(io_err)?;
 
     let body = if let Some(ref specs) = specs {
-        let table = snake
-            .strip_prefix("create_")
-            .unwrap_or(snake.as_str());
+        let table = snake.strip_prefix("create_").unwrap_or(snake.as_str());
         validate_ident(table)?;
         render_migration(&mig_mod, table, specs)
     } else {
@@ -478,7 +488,11 @@ fn register_module(name: &str) -> Result<(), String> {
         if let Some(parent) = registry.parent() {
             fs::create_dir_all(parent).map_err(io_err)?;
         }
-        fs::write(&registry, "use sova::App;\n\npub fn register(_app: &mut App) {}\n").map_err(io_err)?;
+        fs::write(
+            &registry,
+            "use sova::App;\n\npub fn register(_app: &mut App) {}\n",
+        )
+        .map_err(io_err)?;
     }
     let existing = fs::read_to_string(&registry).map_err(io_err)?;
     let mod_line = format!("pub mod {name};");

@@ -161,11 +161,7 @@ impl TaskStore for MemoryStore {
             let mut ids: Vec<_> = g
                 .tasks
                 .values()
-                .filter(|t| {
-                    t.queue == queue
-                        && t.status == TaskStatus::Pending
-                        && t.run_at <= now
-                })
+                .filter(|t| t.queue == queue && t.status == TaskStatus::Pending && t.run_at <= now)
                 .map(|t| (std::cmp::Reverse(t.priority), t.run_at, t.id.clone()))
                 .collect();
             ids.sort();

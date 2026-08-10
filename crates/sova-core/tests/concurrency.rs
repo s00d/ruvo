@@ -47,8 +47,7 @@ async fn server_handle_is_send_sync_under_load() {
     for i in 0..100 {
         let s = server.clone();
         handles.push(tokio::spawn(async move {
-            s.handle_request(Method::GET, "/", "").await.body_bytes()
-                == Some(b"ok".as_slice())
+            s.handle_request(Method::GET, "/", "").await.body_bytes() == Some(b"ok".as_slice())
                 && i < 1000
         }));
     }
@@ -120,7 +119,10 @@ async fn max_connections_rejects_overflow() {
             rejected += 1;
         }
     }
-    assert!(rejected >= 3, "expected most overflow rejected, got rejected={rejected}");
+    assert!(
+        rejected >= 3,
+        "expected most overflow rejected, got rejected={rejected}"
+    );
 
     let (a, _) = hold_a.await.unwrap();
     let (b, _) = hold_b.await.unwrap();

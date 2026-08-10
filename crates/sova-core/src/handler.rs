@@ -12,11 +12,9 @@ pub type BoxFuture<T> = Pin<Box<dyn Future<Output = T> + Send>>;
 pub type Handler = Arc<dyn Fn(Request) -> BoxFuture<Response> + Send + Sync>;
 
 /// Leaf handler that may return [`Error`] for `error_handler`.
-pub type FallibleHandler =
-    Arc<dyn Fn(Request) -> BoxFuture<Result<Response>> + Send + Sync>;
+pub type FallibleHandler = Arc<dyn Fn(Request) -> BoxFuture<Result<Response>> + Send + Sync>;
 
-pub(crate) type ErrorHandlerFn =
-    Arc<dyn Fn(Error) -> BoxFuture<Response> + Send + Sync>;
+pub(crate) type ErrorHandlerFn = Arc<dyn Fn(Error) -> BoxFuture<Response> + Send + Sync>;
 
 /// Convert async functions into a [`FallibleHandler`].
 pub trait IntoHandler<T> {
@@ -202,10 +200,7 @@ pub fn wrap_errors(handler: FallibleHandler, eh: Option<ErrorHandlerFn>) -> Hand
     Arc::new(move |req| {
         let handler = Arc::clone(&handler);
         let eh = eh.clone();
-        let accept = req
-            .header("accept")
-            .unwrap_or("*/*")
-            .to_string();
+        let accept = req.header("accept").unwrap_or("*/*").to_string();
         Box::pin(async move {
             crate::accept::with_accept(accept, async move {
                 match handler(req).await {

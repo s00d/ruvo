@@ -14,8 +14,7 @@ async fn replays_second_post_with_same_key() {
     let store = Arc::new(MemoryStore::new());
     let mut app = App::new();
     app.install(
-        Idempotency::from_store(store as Arc<dyn sova_store::KvStore>)
-            .ttl(Duration::from_secs(60)),
+        Idempotency::from_store(store as Arc<dyn sova_store::KvStore>).ttl(Duration::from_secs(60)),
     );
     app.post("/items", move |_req: Request| {
         let hits = Arc::clone(&hits2);
@@ -32,7 +31,12 @@ async fn replays_second_post_with_same_key() {
         .json(&serde_json::json!({}))
         .await;
     a.assert_status(201);
-    assert_eq!(a.headers().get("x-idempotency-replay").and_then(|v| v.to_str().ok()), Some("false"));
+    assert_eq!(
+        a.headers()
+            .get("x-idempotency-replay")
+            .and_then(|v| v.to_str().ok()),
+        Some("false")
+    );
 
     let b = client
         .post("/items")
@@ -40,6 +44,11 @@ async fn replays_second_post_with_same_key() {
         .json(&serde_json::json!({}))
         .await;
     b.assert_status(201);
-    assert_eq!(b.headers().get("x-idempotency-replay").and_then(|v| v.to_str().ok()), Some("true"));
+    assert_eq!(
+        b.headers()
+            .get("x-idempotency-replay")
+            .and_then(|v| v.to_str().ok()),
+        Some("true")
+    );
     assert_eq!(hits.load(Ordering::SeqCst), 1);
 }

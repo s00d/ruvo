@@ -15,7 +15,12 @@ pub struct AcmeStatus {
 }
 
 impl AcmeStatus {
-    pub fn from_meta(domains: &[String], staging: bool, meta: Option<&CertMeta>, placeholder: bool) -> Self {
+    pub fn from_meta(
+        domains: &[String],
+        staging: bool,
+        meta: Option<&CertMeta>,
+        placeholder: bool,
+    ) -> Self {
         Self {
             domains: domains.to_vec(),
             staging,

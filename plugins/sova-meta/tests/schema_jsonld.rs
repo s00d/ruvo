@@ -63,9 +63,7 @@ fn offer_breadcrumb_org_website_faq_local() {
     let faq = FAQPage {
         main_entity: vec![FaqEntry {
             name: "Q?".into(),
-            accepted_answer: FaqAnswer {
-                text: "A.".into(),
-            },
+            accepted_answer: FaqAnswer { text: "A.".into() },
         }],
     };
     let v = faq.json_ld();

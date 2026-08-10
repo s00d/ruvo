@@ -21,9 +21,7 @@ pub fn stream_to_response(response: StreamTextResponse) -> Response {
             | LanguageModelStreamChunkType::NotSupported(e) => {
                 Some(Ok::<_, std::convert::Infallible>(format!("error: {e}")))
             }
-            LanguageModelStreamChunkType::ToolCall(t) => {
-                Some(Ok::<_, std::convert::Infallible>(t))
-            }
+            LanguageModelStreamChunkType::ToolCall(t) => Some(Ok::<_, std::convert::Infallible>(t)),
             LanguageModelStreamChunkType::Start => None,
         }
     });

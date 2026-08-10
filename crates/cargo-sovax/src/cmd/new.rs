@@ -54,7 +54,10 @@ fn write_dir_template_rec(
 ) -> Result<(), String> {
     fs::create_dir_all(root).map_err(io_err)?;
     for file in dir.files() {
-        let rel = file.path().strip_prefix(root_dir.path()).map_err(path_err)?;
+        let rel = file
+            .path()
+            .strip_prefix(root_dir.path())
+            .map_err(path_err)?;
         // Nested `Cargo.toml` cannot ship in a crates.io package (cargo skips
         // subdirs that look like other packages). Templates use `_Cargo.toml`.
         let out_rel = if rel.file_name().and_then(|s| s.to_str()) == Some("_Cargo.toml") {
@@ -67,7 +70,10 @@ fn write_dir_template_rec(
             fs::create_dir_all(parent).map_err(io_err)?;
         }
         let src = file.contents_utf8().ok_or_else(|| {
-            format!("template file is not valid UTF-8: {}", file.path().display())
+            format!(
+                "template file is not valid UTF-8: {}",
+                file.path().display()
+            )
         })?;
         let rendered = src.replace("{{name}}", app_name);
         fs::write(out, rendered).map_err(io_err)?;

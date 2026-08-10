@@ -14,10 +14,22 @@ const cfg = computed(
       profile?: string;
       plugins?: string[];
       features?: string[];
+      mounts?: Record<string, Record<string, unknown>>;
     } | null,
 );
 const profile = computed(() => cfg.value?.profile ?? "—");
 const features = computed(() => cfg.value?.features ?? []);
+const hasI18n = computed(() => features.value.includes("i18n"));
+const mounts = computed(() => cfg.value?.mounts ?? {});
+const graphqlMount = computed(
+  () => mounts.value.graphql as Record<string, unknown> | undefined,
+);
+const grpcMount = computed(
+  () => mounts.value.grpc as Record<string, unknown> | undefined,
+);
+const rabbitMount = computed(
+  () => mounts.value.rabbit as Record<string, unknown> | undefined,
+);
 const raw = computed(() => JSON.stringify(store.config ?? {}, null, 2));
 </script>
 
@@ -45,6 +57,71 @@ const raw = computed(() => JSON.stringify(store.config ?? {}, null, 2));
           >no optional DevTools features compiled in</span
         >
       </div>
+      <Pane
+        v-if="hasI18n"
+        title="Internationalization"
+        :icon="FileJson"
+        hint="sova-i18n middleware"
+      >
+        <p class="m-0 text-[11px] leading-relaxed text-[var(--dt-muted)]">
+          When <code class="dt-mono">devtools-i18n</code> is enabled, resolved
+          <code class="dt-mono">locale</code> is captured on each request snapshot
+          (Request tab → locale).
+        </p>
+      </Pane>
+      <Pane
+        v-if="graphqlMount"
+        title="GraphQL server"
+        :icon="FileJson"
+        hint="Mounted paths from sova-graphql"
+      >
+        <div class="mb-2 flex flex-wrap gap-2">
+          <Chip
+            v-for="(val, key) in graphqlMount"
+            :key="key"
+            :label="String(key)"
+            :value="val == null ? 'off' : String(val)"
+            tone="info"
+          />
+        </div>
+        <p class="m-0 text-[11px] leading-relaxed text-[var(--dt-muted)]">
+          Open GraphiQL in the browser for ad-hoc queries; operations on POST
+          <code class="dt-mono">{{ graphqlMount.api ?? '/graphql' }}</code>
+          show up in the GraphQL tab.
+        </p>
+      </Pane>
+      <Pane
+        v-if="grpcMount"
+        title="gRPC client"
+        :icon="FileJson"
+        hint="Connect-JSON from sova-grpc"
+      >
+        <div class="mb-2 flex flex-wrap gap-2">
+          <Chip
+            v-for="(val, key) in grpcMount"
+            :key="key"
+            :label="String(key)"
+            :value="Array.isArray(val) ? val.join(', ') : val == null ? 'off' : String(val)"
+            tone="info"
+          />
+        </div>
+      </Pane>
+      <Pane
+        v-if="rabbitMount"
+        title="RabbitMQ"
+        :icon="FileJson"
+        hint="sova-rabbit broker"
+      >
+        <div class="mb-2 flex flex-wrap gap-2">
+          <Chip
+            v-for="(val, key) in rabbitMount"
+            :key="key"
+            :label="String(key)"
+            :value="val == null ? 'off' : String(val)"
+            tone="info"
+          />
+        </div>
+      </Pane>
       <CodeBlock :code="raw" title="config" language="json" />
     </Pane>
   </div>

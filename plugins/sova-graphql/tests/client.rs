@@ -1,8 +1,8 @@
 //! Client-focused GraphQL smoke tests.
 
+use serde_json::json;
 use sova_core::{App, Request, ResponseAssert, TestClient};
 use sova_graphql::{FakeGraphql, GraphQl, GraphQlExt};
-use serde_json::json;
 
 #[tokio::test]
 async fn fake_client_query() {

@@ -2,8 +2,8 @@
 
 use crate::ext::I18nState;
 use crate::store::{select_tree, ROOT_SCOPE};
-use sova_core::{Request, Response};
 use serde_json::json;
+use sova_core::{Request, Response};
 use std::hash::{Hash, Hasher};
 
 pub async fn locales_json(req: Request) -> Response {
@@ -101,10 +101,7 @@ pub async fn locale_or_scope_json(req: Request) -> Response {
         };
         (bytes, etag)
     } else {
-        (
-            scope_data.payload.to_vec(),
-            scope_data.etag.to_string(),
-        )
+        (scope_data.payload.to_vec(), scope_data.etag.to_string())
     };
 
     if let Some(inm) = req.header("if-none-match") {
@@ -137,10 +134,7 @@ fn with_cache_headers(
         .map(|v| v.as_str() == version)
         .unwrap_or(false);
     if immutable {
-        res = res.header(
-            "cache-control",
-            "public, max-age=31536000, immutable",
-        );
+        res = res.header("cache-control", "public, max-age=31536000, immutable");
     } else {
         res = res.header("cache-control", "no-cache");
     }

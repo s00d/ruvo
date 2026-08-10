@@ -42,11 +42,19 @@ pub struct ServerArgs {
     pub log_rotate: String,
 
     /// Max size before rotate when `--log-rotate=size` (env: `SOVA_LOG_ROTATE_SIZE`).
-    #[arg(long = "log-rotate-size", env = "SOVA_LOG_ROTATE_SIZE", default_value = "10MB")]
+    #[arg(
+        long = "log-rotate-size",
+        env = "SOVA_LOG_ROTATE_SIZE",
+        default_value = "10MB"
+    )]
     pub log_rotate_size: String,
 
     /// How many rotated archives to keep (env: `SOVA_LOG_ROTATE_KEEP`).
-    #[arg(long = "log-rotate-keep", env = "SOVA_LOG_ROTATE_KEEP", default_value_t = 5)]
+    #[arg(
+        long = "log-rotate-keep",
+        env = "SOVA_LOG_ROTATE_KEEP",
+        default_value_t = 5
+    )]
     pub log_rotate_keep: usize,
 
     /// Forwarded to `App::run` CLI (`migrate`, `check`, `routes`, …).
@@ -61,7 +69,7 @@ impl ServerArgs {
             .log_level
             .clone()
             .or_else(|| std::env::var("RUST_LOG").ok())
-            .unwrap_or_else(|| "sova=info".into());
+            .unwrap_or_else(|| LogConfig::default().filter.clone());
 
         let rotate = parse_log_rotate(
             &self.log_rotate,
@@ -173,7 +181,7 @@ mod tests {
         std::env::remove_var("RUST_LOG");
         let args = ServerArgs::try_parse_from(["sova"]).unwrap();
         let cfg = args.log_config().unwrap();
-        assert_eq!(cfg.filter, "sova=info");
+        assert_eq!(cfg.filter, LogConfig::default().filter);
         assert!(cfg.stdout);
         assert!(cfg.file.is_none());
         assert_eq!(cfg.rotate, LogRotate::default());
@@ -209,28 +217,18 @@ mod tests {
 
     #[test]
     fn log_config_never_rotate() {
-        let args = ServerArgs::try_parse_from([
-            "sova",
-            "--log-file",
-            "out.log",
-            "--log-rotate",
-            "never",
-        ])
-        .unwrap();
+        let args =
+            ServerArgs::try_parse_from(["sova", "--log-file", "out.log", "--log-rotate", "never"])
+                .unwrap();
         let cfg = args.log_config().unwrap();
         assert_eq!(cfg.rotate, LogRotate::Never);
     }
 
     #[test]
     fn log_config_ignores_rotate_without_file() {
-        let args = ServerArgs::try_parse_from([
-            "sova",
-            "--log-rotate",
-            "daily",
-            "--log-rotate-keep",
-            "9",
-        ])
-        .unwrap();
+        let args =
+            ServerArgs::try_parse_from(["sova", "--log-rotate", "daily", "--log-rotate-keep", "9"])
+                .unwrap();
         let cfg = args.log_config().unwrap();
         assert!(cfg.file.is_none());
         assert_eq!(cfg.rotate, LogRotate::default());

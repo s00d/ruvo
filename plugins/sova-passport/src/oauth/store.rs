@@ -3,9 +3,9 @@
 use crate::entity::{oauth_account, user};
 use crate::store::{create_oauth_user, find_user_by_email, find_user_by_id, AuthUser};
 use chrono::Utc;
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 use sova_core::{Error, Result};
 use sova_db::{DbError, DbHandle};
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 
 use super::{OauthProfile, OauthTokens};
 

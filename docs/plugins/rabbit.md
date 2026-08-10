@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-rabbit`](https://docs.rs/sova-rabbit/0.1.0) `0.1.0` |
+| Crate | [`sova-rabbit`](https://docs.rs/sova-rabbit/0.1.1) `0.1.1` |
 | Plugin id | `rabbit` |
 | Category | Integrations |
 
@@ -43,7 +43,11 @@ RabbitMQ / AMQP for Sova — raw broker API + [`FakeBroker`].
 
 Not a `TaskStore` backend — use `sova-tasks` for job queues.
 
+Facade feature `rabbit` enables `sova-rabbit/lapin` for live brokers.
+
 ## Fake (tests)
+
+`FakeBroker` auto-creates exchanges on publish (test convenience). Topic binding `#` is a test-only shortcut.
 
 ```rust
 use sova::{Exchange, FakeBroker, QueueOpts, Rabbit, RabbitExt};
@@ -67,9 +71,31 @@ msg.ack().await?;
 app.install(Rabbit::from_env().url("amqp://guest:guest@127.0.0.1:5672/%2f"));
 ```
 
-Toml: `[rabbitmq] url=…` (or `[rabbit]`). Env: `AMQP_URL` / `RABBITMQ_URL`.
+Empty URL fails at startup (like Redis). Toml: `[rabbitmq] url=…` (or `[rabbit]`). Env: `AMQP_URL` / `RABBITMQ_URL`.
+
+## Background consumer
+
+For workers, prefer [`RabbitConsumer`] over polling `consume_one`:
+
+```rust
+use sova::{RabbitConsumer, RabbitExt};
+
+RabbitConsumer::new("jobs", |msg| async move {
+    // process msg.body
+    msg.ack().await?;
+    Ok(())
+})
+.prefetch(10)
+.install(&mut app);
+```
 
 DLQ helper: `req.rabbit().setup_dlq("jobs", "dlx", "dlq", "jobs").await?`.
+
+Example: [`examples/api/api_rabbit`](https://github.com/s00d/sova/tree/master/examples/api/api_rabbit).
+
+## Examples
+
+- [`examples/api/api_rabbit`](https://github.com/s00d/sova/tree/master/examples/api/api_rabbit)
 
 ## Related
 

@@ -1,8 +1,8 @@
 use crate::doc::Doc;
 use crate::validate_meta::OpenApiValidate;
 use http::Method;
-use sova_core::extend::{to_brace_path, RouteEntry, RouteTable};
 use serde_json::{json, Map, Value};
+use sova_core::extend::{to_brace_path, RouteEntry, RouteTable};
 
 /// Fixed validation error body schema (auto-422).
 pub fn validation_error_schema() -> Value {
@@ -40,12 +40,7 @@ pub fn build_document(table: &RouteTable, opts: &BuildOptions<'_>) -> Value {
     let mut paths = Map::new();
 
     for entry in &table.0 {
-        let RouteEntry::Http {
-            method,
-            path,
-            meta,
-        } = entry
-        else {
+        let RouteEntry::Http { method, path, meta } = entry else {
             continue;
         };
 
@@ -112,11 +107,7 @@ fn method_name(method: &Method) -> &'static str {
     }
 }
 
-fn operation_object(
-    express_path: &str,
-    doc: Option<&Doc>,
-    oav: Option<&OpenApiValidate>,
-) -> Value {
+fn operation_object(express_path: &str, doc: Option<&Doc>, oav: Option<&OpenApiValidate>) -> Value {
     let mut op = Map::new();
     let mut parameters = Vec::new();
 

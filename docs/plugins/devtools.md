@@ -9,7 +9,7 @@ editLink: false
 
 | | |
 |--|--|
-| Crate | [`sova-devtools`](https://docs.rs/sova-devtools/0.1.7) `0.1.7` |
+| Crate | [`sova-devtools`](https://docs.rs/sova-devtools/0.1.10) `0.1.10` |
 | Plugin id | `devtools` |
 | Category | Ops |
 
@@ -25,11 +25,25 @@ cargo add sova --features devtools
 |---------|-------------|
 | `devtools` | In-app DevTools bar (HTML inject + SSE timeline; auth/db/tasks soft-hooks). |
 | `devtools-acme` | — |
+| `devtools-console` | — |
+| `devtools-console-events` | — |
+| `devtools-console-graphql` | — |
+| `devtools-console-grpc` | — |
+| `devtools-console-http-external` | — |
+| `devtools-console-mail` | — |
+| `devtools-console-rabbit` | — |
+| `devtools-console-redis` | — |
+| `devtools-console-session` | — |
+| `devtools-console-store` | — |
+| `devtools-console-tasks` | — |
 | `devtools-csrf` | CSRF presence soft-hook. |
 | `devtools-fs` | — |
+| `devtools-graphql` | — |
+| `devtools-grpc` | — |
 | `devtools-i18n` | locale soft-hook on snapshots. |
 | `devtools-notifications` | — |
 | `devtools-passport` | Passport `Authenticated` soft-hook. |
+| `devtools-rabbit` | — |
 | `devtools-rate-limit` | rate-limit header soft-hook marker. |
 | `devtools-redis` | `devtools-store` + Redis messaging traces. |
 | `devtools-store` | `devtools` + KvStore/Cache tracing (`sova.store`). |
@@ -110,6 +124,17 @@ cargo run -p devtools_demo
 # http://127.0.0.1:3030/ — click the bottom bar
 ```
 
-Open Timeline, click another link — SSE updates the list. Mail / HTTP tabs fill after those demo actions.
+Open Timeline, click another link — SSE updates the list. Mail / HTTP / **GraphQL** tabs fill after demo actions (`devtools_demo` mounts a schema at `/graphql`).
+
+**GraphQL server:** when `graphql-server` is installed, operations traced as `sova.graphql` appear in the GraphQL tab; mount paths show under Config → GraphQL server.
+
+**Console (phase 1):** HTTP replay + Redis console in the bottom **Console** drawer. Enable with `.console(true)` and `app.state(AppDispatch::default())`. Redis needs `devtools-console-redis` + `Redis` plugin + `REDIS_URL`.
+
+```rust
+use sova::{App, AppDispatch, DevTools, Parser, ServerArgs};
+
+app.state(AppDispatch::default());
+app.install(DevTools::new().console(true));
+```
 
 **Production:** `cargo build --release` keeps DevTools disabled (even with `.enabled(true)`). Use `SOVA_DEVTOOLS=1` only as an ops escape hatch.

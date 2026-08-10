@@ -26,7 +26,9 @@ impl AppKey {
         if v.is_empty() {
             return Err(format!("env `{name}` is empty"));
         }
-        Ok(Self { bytes: v.into_bytes() })
+        Ok(Self {
+            bytes: v.into_bytes(),
+        })
     }
 
     pub fn from_bytes(bytes: Vec<u8>) -> Self {
@@ -103,16 +105,15 @@ impl<S> Encrypted<S> {
     }
 
     fn decrypt(&self, blob: &[u8]) -> Option<Bytes> {
-        self.try_decrypt_with(&self.ns_key, blob)
-            .or_else(|| {
-                for old in &self.previous {
-                    let k = old.derive_namespace_key(&self.namespace);
-                    if let Some(b) = self.try_decrypt_with(&k, blob) {
-                        return Some(b);
-                    }
+        self.try_decrypt_with(&self.ns_key, blob).or_else(|| {
+            for old in &self.previous {
+                let k = old.derive_namespace_key(&self.namespace);
+                if let Some(b) = self.try_decrypt_with(&k, blob) {
+                    return Some(b);
                 }
-                None
-            })
+            }
+            None
+        })
     }
 
     fn try_decrypt_with(&self, key: &[u8; 32], blob: &[u8]) -> Option<Bytes> {
@@ -138,11 +139,7 @@ fn hex_hmac(key: &[u8; 32], msg: &str) -> String {
 
 mod hex {
     pub fn encode(bytes: impl AsRef<[u8]>) -> String {
-        bytes
-            .as_ref()
-            .iter()
-            .map(|b| format!("{b:02x}"))
-            .collect()
+        bytes.as_ref().iter().map(|b| format!("{b:02x}")).collect()
     }
 }
 
@@ -200,7 +197,11 @@ mod tests {
         let inner = MemoryStore::new();
         let sk;
         {
-            let store = Encrypted::new(inner.clone(), AppKey::from_bytes(b"test-app-key-material!!".to_vec()), "sess");
+            let store = Encrypted::new(
+                inner.clone(),
+                AppKey::from_bytes(b"test-app-key-material!!".to_vec()),
+                "sess",
+            );
             store
                 .set("user:1", Bytes::from_static(b"secret"), None)
                 .await;
@@ -240,7 +241,11 @@ mod tests {
     #[tokio::test]
     async fn incr_bypasses_encryption() {
         let inner = MemoryStore::new();
-        let store = Encrypted::new(inner.clone(), AppKey::from_bytes(b"incr-key!!".to_vec()), "c");
+        let store = Encrypted::new(
+            inner.clone(),
+            AppKey::from_bytes(b"incr-key!!".to_vec()),
+            "c",
+        );
         assert_eq!(store.incr("hits", 1, None).await, 1);
         assert_eq!(store.incr("hits", 2, None).await, 3);
         assert_eq!(store.get("hits").await.unwrap().as_ref(), b"3");

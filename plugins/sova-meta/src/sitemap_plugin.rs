@@ -1,13 +1,13 @@
 //! Plugin `Sitemap` — `/sitemap.xml` (+ pagination).
 
 use crate::defaults::MetaDefaults;
+#[cfg(feature = "store")]
+use crate::sitemap::SITEMAP_KV_KEY;
 use crate::sitemap::{
     build_sitemap_body, collect_entries_with, render_urlset, CollectOpts, Entry, HreflangOpts,
     SitemapCache, SitemapProvider, SitemapRegistry, MAX_URLS,
 };
 use crate::sitemap_config::SitemapConfig;
-#[cfg(feature = "store")]
-use crate::sitemap::SITEMAP_KV_KEY;
 use sova_core::extend::{BoxFuture, RouteTable};
 use sova_core::{App, Plugin, Request, Response};
 use std::sync::Arc;

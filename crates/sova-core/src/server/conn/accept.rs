@@ -11,9 +11,9 @@ use tokio::task::JoinSet;
 use super::ExternalShutdown;
 
 use super::serve::serve_http1;
-use hyper_util::rt::TokioIo;
 #[cfg(feature = "tls")]
 use super::tls::{accept_tls_stream, TlsConnCfg};
+use hyper_util::rt::TokioIo;
 
 pub(super) enum AcceptKind {
     Tcp(TcpListener),
@@ -84,6 +84,9 @@ async fn run_accept_loop_impl(
     #[cfg(feature = "tls")] tls: Option<crate::tls::TlsRuntime>,
 ) -> Result<()> {
     let state = inner.state();
+    if let Some(d) = state.get::<crate::dispatch::AppDispatch>() {
+        d.install_if_needed(&inner);
+    }
     for hook in &startups {
         hook(Arc::clone(&state)).await?;
     }
@@ -113,9 +116,7 @@ async fn run_accept_loop_impl(
         if let Some(redirect_port) = tls_cfg.redirect_http {
             if let Ok(local) = listener.local_addr() {
                 let rx = svc_rx.clone();
-                tokio::spawn(crate::tls::spawn_http_redirect(
-                    redirect_port, local, rx,
-                ));
+                tokio::spawn(crate::tls::spawn_http_redirect(redirect_port, local, rx));
             }
         }
     }
@@ -330,9 +331,7 @@ pub(super) fn log_startup_banner(inner: &AppInner, addr: &str) {
 }
 
 pub(super) async fn drain_tasks(tasks: &mut JoinSet<()>, drain_timeout: Duration) {
-    let drain = async {
-        while tasks.join_next().await.is_some() {}
-    };
+    let drain = async { while tasks.join_next().await.is_some() {} };
     match tokio::time::timeout(drain_timeout, drain).await {
         Ok(()) => tracing::info!("connections drained"),
         Err(_) => {

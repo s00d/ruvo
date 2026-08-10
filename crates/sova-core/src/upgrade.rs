@@ -39,9 +39,7 @@ impl OnUpgrade {
 }
 
 /// Try to take the upgrade; on budget exhaustion returns **503** + `Retry-After`.
-pub(crate) fn take_upgrade(
-    pending: PendingUpgrade,
-) -> Result<OnUpgrade, Box<Response>> {
+pub(crate) fn take_upgrade(pending: PendingUpgrade) -> Result<OnUpgrade, Box<Response>> {
     let permit = match pending.budget.0.clone().try_acquire_owned() {
         Ok(p) => p,
         Err(_) => {

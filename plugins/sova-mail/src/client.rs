@@ -10,8 +10,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 #[cfg(feature = "templates")]
-type TemplatesSlot =
-    Arc<std::sync::RwLock<Option<Arc<sova_templates::MiniJinjaTemplates>>>>;
+type TemplatesSlot = Arc<std::sync::RwLock<Option<Arc<sova_templates::MiniJinjaTemplates>>>>;
 
 enum Backend {
     Smtp(AsyncSmtpTransport<Tokio1Executor>),
@@ -151,7 +150,8 @@ impl Mail {
                 let transport = build_smtp_from_url(&url)?;
                 let mut m = Self::bare(
                     Backend::Smtp(transport),
-                    from.clone().or_else(|| Some("Sova <noreply@localhost>".into())),
+                    from.clone()
+                        .or_else(|| Some("Sova <noreply@localhost>".into())),
                     None,
                 );
                 if from.is_some() {

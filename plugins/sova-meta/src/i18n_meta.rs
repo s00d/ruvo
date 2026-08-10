@@ -9,13 +9,7 @@ pub fn enrich(req: &Request, defaults: &MetaDefaults, resolved: &mut ResolvedMet
     let Some(state) = req.try_state::<I18nState>() else {
         return;
     };
-    enrich_parts(
-        state.as_ref(),
-        req.locale(),
-        &req.path,
-        defaults,
-        resolved,
-    );
+    enrich_parts(state.as_ref(), req.locale(), &req.path, defaults, resolved);
 }
 
 pub fn enrich_parts(
@@ -57,13 +51,7 @@ pub fn enrich_parts(
         if loc.code != current {
             resolved.og_locale_alternate.push(loc.og_locale());
         }
-        let href = localized_url(
-            &public,
-            &bare,
-            &loc.code,
-            default_code,
-            state.path_prefix,
-        );
+        let href = localized_url(&public, &bare, &loc.code, default_code, state.path_prefix);
         resolved.hreflang.push((loc.iso.clone(), href));
     }
     if locales.iter().any(|l| l.seo) {

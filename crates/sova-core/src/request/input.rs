@@ -45,13 +45,7 @@ impl Upload {
     /// Primary MIME type without parameters (`image/png; charset=utf-8` → `image/png`).
     pub fn mime_type(&self) -> Option<String> {
         self.mime()
-            .map(|m| {
-                m.split(';')
-                    .next()
-                    .unwrap_or(m)
-                    .trim()
-                    .to_ascii_lowercase()
-            })
+            .map(|m| m.split(';').next().unwrap_or(m).trim().to_ascii_lowercase())
             .filter(|s| !s.is_empty())
     }
 
@@ -151,23 +145,19 @@ impl UploadRules {
             }
         }
         if !self.extensions.is_empty() {
-            let ext = upload.extension().ok_or_else(|| {
-                Error::BadRequest("file extension required".into())
-            })?;
+            let ext = upload
+                .extension()
+                .ok_or_else(|| Error::BadRequest("file extension required".into()))?;
             if !self.extensions.iter().any(|e| e == &ext) {
-                return Err(Error::BadRequest(format!(
-                    "invalid file extension `{ext}`"
-                )));
+                return Err(Error::BadRequest(format!("invalid file extension `{ext}`")));
             }
         }
         if !self.mimes.is_empty() {
-            let mime = upload.mime_type().ok_or_else(|| {
-                Error::BadRequest("file content-type required".into())
-            })?;
+            let mime = upload
+                .mime_type()
+                .ok_or_else(|| Error::BadRequest("file content-type required".into()))?;
             if !self.mimes.iter().any(|m| m == &mime) {
-                return Err(Error::BadRequest(format!(
-                    "invalid content-type `{mime}`"
-                )));
+                return Err(Error::BadRequest(format!("invalid content-type `{mime}`")));
             }
         }
         Ok(())
@@ -187,10 +177,7 @@ impl FormData {
     }
 
     pub fn get_all(&self, name: &str) -> &[String] {
-        self.texts
-            .get(name)
-            .map(Vec::as_slice)
-            .unwrap_or(&[])
+        self.texts.get(name).map(Vec::as_slice).unwrap_or(&[])
     }
 
     pub fn file(&self, name: &str) -> Option<&Upload> {
@@ -198,10 +185,7 @@ impl FormData {
     }
 
     pub fn files(&self, name: &str) -> &[Upload] {
-        self.files
-            .get(name)
-            .map(Vec::as_slice)
-            .unwrap_or(&[])
+        self.files.get(name).map(Vec::as_slice).unwrap_or(&[])
     }
 
     pub fn text_map(&self) -> &HashMap<String, Vec<String>> {
@@ -345,10 +329,7 @@ async fn parse_multipart(req: &mut Request) -> Result<FormData> {
 }
 
 fn is_safe_relative(path: &Path) -> bool {
-    !path.as_os_str().is_empty()
-        && path
-            .components()
-            .all(|c| matches!(c, Component::Normal(_)))
+    !path.as_os_str().is_empty() && path.components().all(|c| matches!(c, Component::Normal(_)))
 }
 
 #[cfg(test)]
@@ -379,12 +360,8 @@ mod upload_rules_tests {
         assert!(empty.validate(&UploadRules::new()).is_err());
 
         let big = upload("a.txt", None, b"hello");
-        assert!(big
-            .validate(&UploadRules::new().max_bytes(4))
-            .is_err());
-        assert!(big
-            .validate(&UploadRules::new().max_bytes(5))
-            .is_ok());
+        assert!(big.validate(&UploadRules::new().max_bytes(4)).is_err());
+        assert!(big.validate(&UploadRules::new().max_bytes(5)).is_ok());
     }
 
     #[test]
@@ -393,9 +370,7 @@ mod upload_rules_tests {
         assert!(u
             .validate(&UploadRules::new().extensions(["png", "jpg"]))
             .is_ok());
-        assert!(u
-            .validate(&UploadRules::new().extensions(["png"]))
-            .is_err());
+        assert!(u.validate(&UploadRules::new().extensions(["png"])).is_err());
         assert!(u
             .validate(&UploadRules::new().mimes(["image/jpeg"]))
             .is_ok());

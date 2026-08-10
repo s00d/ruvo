@@ -1,7 +1,7 @@
 //! GraphQL outbound client demo (fake in default; set GRAPHQL_URL for live).
 
-use sova::{FakeGraphql, GraphQl, GraphQlExt, App, Json, Request, Result};
 use serde_json::json;
+use sova::{App, FakeGraphql, GraphQl, GraphQlExt, Json, Request, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -9,19 +9,12 @@ async fn main() -> Result<()> {
     if let Ok(url) = std::env::var("GRAPHQL_URL") {
         app.install(GraphQl::client(url));
     } else {
-        let fake = FakeGraphql::new().stub(
-            "hello",
-            json!({ "hello": "from sova-graphql (fake)" }),
-        );
+        let fake = FakeGraphql::new().stub("hello", json!({ "hello": "from sova-graphql (fake)" }));
         app.install(GraphQl::fake(fake));
     }
 
     app.get("/api/hello", |req: Request| async move {
-        let data = req
-            .graphql()
-            .query("query { hello }")
-            .data()
-            .await?;
+        let data = req.graphql().query("query { hello }").data().await?;
         Ok::<_, sova::Error>(Json(data))
     });
 

@@ -66,11 +66,7 @@ pub trait BackgroundService: Send {
     fn name(&self) -> &str;
 
     /// Run until `shutdown` becomes `true` (or the future completes).
-    fn run(
-        self: Box<Self>,
-        state: Arc<StateMap>,
-        shutdown: Shutdown,
-    ) -> BoxFuture<()>;
+    fn run(self: Box<Self>, state: Arc<StateMap>, shutdown: Shutdown) -> BoxFuture<()>;
 }
 
 /// Type-erased service stored on [`crate::App`].

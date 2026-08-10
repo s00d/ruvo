@@ -1,8 +1,8 @@
 //! gRPC-style Connect-JSON client demo (fake by default).
 
 use serde::{Deserialize, Serialize};
-use sova::{App, FakeGrpc, Grpc, GrpcExt, Json, Request, Result};
 use serde_json::json;
+use sova::{App, FakeGrpc, Grpc, GrpcExt, Json, Request, Result};
 
 #[derive(Serialize)]
 struct HelloIn {

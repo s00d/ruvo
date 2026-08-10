@@ -4,9 +4,7 @@ use crate::defaults::TrailingSlash;
 use url::form_urlencoded;
 
 const STRIP_PREFIXES: &[&str] = &["utm_"];
-const STRIP_KEYS: &[&str] = &[
-    "fbclid", "gclid", "yclid", "mc_eid", "mc_cid", "_ga", "ref",
-];
+const STRIP_KEYS: &[&str] = &["fbclid", "gclid", "yclid", "mc_eid", "mc_cid", "_ga", "ref"];
 
 pub fn strip_tracking(path: &str, raw_query: &str) -> String {
     if raw_query.is_empty() {
@@ -25,7 +23,12 @@ pub fn strip_tracking(path: &str, raw_query: &str) -> String {
     if kept.is_empty() {
         path.to_string()
     } else {
-        format!("{path}?{}", form_urlencoded::Serializer::new(String::new()).extend_pairs(&kept).finish())
+        format!(
+            "{path}?{}",
+            form_urlencoded::Serializer::new(String::new())
+                .extend_pairs(&kept)
+                .finish()
+        )
     }
 }
 

@@ -63,10 +63,5 @@ pub fn problem_with_errors<E: Serialize>(
     errors: &[E],
 ) -> Response {
     let errors = serde_json::to_value(errors).unwrap_or(json!([]));
-    problem_response(
-        status,
-        title,
-        detail,
-        [("errors".into(), errors)],
-    )
+    problem_response(status, title, detail, [("errors".into(), errors)])
 }

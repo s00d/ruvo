@@ -5,10 +5,10 @@ use crate::list::{
     list_notifications, mark_all_read, mark_read, unread_count, NotificationFilter, NotificationRow,
 };
 use crate::notify::{NotificationService, NotificationUser, Notify};
-use sova_core::{Error, Json, Request, Response, Result, Router};
-use sova_db::DbExt;
 use serde::Deserialize;
 use serde_json::json;
+use sova_core::{Error, Json, Request, Response, Result, Router};
+use sova_db::DbExt;
 
 pub fn mount_routes(r: &mut Router) {
     r.get("/", list_handler);

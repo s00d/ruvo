@@ -146,14 +146,12 @@ async fn hook_hydrates_request() {
 
     let store = Arc::new(namespace(Arc::new(MemoryStore::new()), "sess"));
     let mut app = App::new();
-    app.install(
-        SessionLayer::new(store).hook(|sess, mut req| async move {
-            if let Some(name) = sess.get("user") {
-                req.set(CurrentUser(name));
-            }
-            Ok(req)
-        }),
-    );
+    app.install(SessionLayer::new(store).hook(|sess, mut req| async move {
+        if let Some(name) = sess.get("user") {
+            req.set(CurrentUser(name));
+        }
+        Ok(req)
+    }));
     app.get("/login", |req: Request| async move {
         req.session().set("user", "ada");
         Html("ok".to_string())

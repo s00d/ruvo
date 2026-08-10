@@ -30,11 +30,7 @@ pub struct WsSession {
 }
 
 impl WsSession {
-    pub(crate) fn new(
-        stream: WebSocketStream<WsIo>,
-        hub: Hub,
-        permit: UpgradePermit,
-    ) -> Self {
+    pub(crate) fn new(stream: WebSocketStream<WsIo>, hub: Hub, permit: UpgradePermit) -> Self {
         let (mut write, read) = stream.split();
         let (out_tx, mut out_rx) = mpsc::unbounded_channel();
         let write_task = tokio::spawn(async move {
@@ -63,9 +59,7 @@ impl WsSession {
     }
 
     pub async fn send(&self, msg: Message) -> Result<(), WsError> {
-        self.out_tx
-            .send(msg)
-            .map_err(|_| WsError::ConnectionClosed)
+        self.out_tx.send(msg).map_err(|_| WsError::ConnectionClosed)
     }
 
     pub fn join(&mut self, room: impl Into<String>) -> RoomHandle {
@@ -84,18 +78,13 @@ pub fn origin_allowed(headers: &HeaderMap, allowed: &[String]) -> bool {
     if allowed.is_empty() {
         return true;
     }
-    let Some(origin) = headers
-        .get("origin")
-        .and_then(|v| v.to_str().ok())
-    else {
+    let Some(origin) = headers.get("origin").and_then(|v| v.to_str().ok()) else {
         return false;
     };
     allowed.iter().any(|o| o == origin)
 }
 
-fn validate_ws_headers(
-    headers: &HeaderMap,
-) -> Result<(), Box<Response>> {
+fn validate_ws_headers(headers: &HeaderMap) -> Result<(), Box<Response>> {
     let upgrade_ok = headers
         .get(UPGRADE)
         .and_then(|v| v.to_str().ok())
@@ -127,10 +116,7 @@ fn ws_key(headers: &HeaderMap) -> Result<&str, Box<Response>> {
 }
 
 /// Perform a WebSocket upgrade from a route handler.
-pub async fn upgrade_ws<F, Fut>(
-    mut req: Request,
-    handler: F,
-) -> Result<Response, Response>
+pub async fn upgrade_ws<F, Fut>(mut req: Request, handler: F) -> Result<Response, Response>
 where
     F: FnOnce(WsSession) -> Fut + Send + 'static,
     Fut: Future<Output = ()> + Send + 'static,

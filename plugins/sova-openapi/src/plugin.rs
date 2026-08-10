@@ -126,7 +126,12 @@ impl Plugin for OpenApi {
             Some(dir) => {
                 // Path relative to mount — apps can static-serve `dir` at `{mount}/`.
                 let file = dir.join("scalar.js");
-                format!("{mount}/{}", file.file_name().and_then(|s| s.to_str()).unwrap_or("scalar.js"))
+                format!(
+                    "{mount}/{}",
+                    file.file_name()
+                        .and_then(|s| s.to_str())
+                        .unwrap_or("scalar.js")
+                )
             }
             None => "https://cdn.jsdelivr.net/npm/@scalar/api-reference".to_string(),
         };

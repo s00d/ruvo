@@ -2,7 +2,7 @@
 
 use crate::api_token::{
     auth_user_for_api_token, create_api_token, is_pat, list_api_tokens, revoke_api_token,
-    ApiTokenInfo, CreateApiToken, CreatedApiToken, ApiTokenRow,
+    ApiTokenInfo, ApiTokenRow, CreateApiToken, CreatedApiToken,
 };
 use crate::extract::Extract;
 use crate::jwt::Jwt;
@@ -11,10 +11,12 @@ use crate::store::{
     TokenPair,
 };
 use crate::AuthExt;
-use sova_core::extend::{named, MwEntry};
-use sova_core::{App, Error, EventBus, Json, Plugin, RateLimitIdentity, Request, Response, Result, Router};
-use sova_db::DbExt;
 use serde::Deserialize;
+use sova_core::extend::{named, MwEntry};
+use sova_core::{
+    App, Error, EventBus, Json, Plugin, RateLimitIdentity, Request, Response, Result, Router,
+};
+use sova_db::DbExt;
 use std::sync::Arc;
 
 const DEFAULT_ACCESS_TTL: u64 = 900;

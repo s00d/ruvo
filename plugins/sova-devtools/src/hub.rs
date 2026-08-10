@@ -1,8 +1,9 @@
 //! Process-wide ring buffer + SSE fan-out.
 
-use crate::collector::{LogLine, RequestMeta, RequestSnapshot, now_ms};
+use crate::collector::{now_ms, LogLine, RequestMeta, RequestSnapshot};
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{json, Map, Value};
+use sova_core::DevToolsConfigRegistry;
 use sova_sse::{SseChannel, SseEvent};
 use std::collections::{HashMap, VecDeque};
 use std::sync::{
@@ -51,6 +52,7 @@ struct HubInner {
     rss_peak: Option<u64>,
     plugins: Vec<String>,
     profile: String,
+    config_registry: Option<DevToolsConfigRegistry>,
     event_seq: u64,
     custom_cap: usize,
     memory_cap: usize,
@@ -78,6 +80,7 @@ impl DevToolsHub {
                 rss_peak: None,
                 plugins: Vec::new(),
                 profile: String::new(),
+                config_registry: None,
                 event_seq: 0,
                 custom_cap: 100,
                 memory_cap: 120,
@@ -92,6 +95,10 @@ impl DevToolsHub {
         let mut g = self.inner.lock().unwrap();
         g.plugins = plugins;
         g.profile = profile;
+    }
+
+    pub fn set_config_registry(&self, registry: DevToolsConfigRegistry) {
+        self.inner.lock().unwrap().config_registry = Some(registry);
     }
 
     fn next_eid(g: &mut HubInner) -> String {
@@ -116,11 +123,8 @@ impl DevToolsHub {
             "meta": meta,
         }))
         .unwrap_or_else(|_| "{}".into());
-        self.channel.publish(
-            SseEvent::data(data)
-                .id(eid)
-                .event("request.finished"),
-        );
+        self.channel
+            .publish(SseEvent::data(data).id(eid).event("request.finished"));
     }
 
     pub fn push_log(&self, line: LogLine) {
@@ -245,10 +249,16 @@ impl DevToolsHub {
 
     pub fn config_json(&self) -> serde_json::Value {
         let g = self.inner.lock().unwrap();
+        let mounts = g
+            .config_registry
+            .as_ref()
+            .map(|r| Value::Object(r.snapshot()))
+            .unwrap_or_else(|| Value::Object(Map::new()));
         json!({
             "profile": g.profile,
             "plugins": g.plugins,
             "features": compile_features(),
+            "mounts": mounts,
         })
     }
 }
@@ -322,14 +332,7 @@ fn macos_rss_bytes() -> Option<u64> {
 
     let mut info = unsafe { std::mem::zeroed::<TaskBasicInfo>() };
     let mut count = TASK_BASIC_INFO_COUNT;
-    let kr = unsafe {
-        task_info(
-            mach_task_self(),
-            TASK_BASIC_INFO,
-            &mut info,
-            &mut count,
-        )
-    };
+    let kr = unsafe { task_info(mach_task_self(), TASK_BASIC_INFO, &mut info, &mut count) };
     if kr == 0 {
         Some(info.resident_size)
     } else {
@@ -375,10 +378,7 @@ pub fn wire_event_bus(app: &mut sova_core::App, hub: DevToolsHub) {
     {
         let h = hub.clone();
         bus.listen::<sova_mail::MailSent, _>(move |e| {
-            h.emit(
-                "mail.sent",
-                json!({ "to": e.to, "subject": e.subject }),
-            );
+            h.emit("mail.sent", json!({ "to": e.to, "subject": e.subject }));
         });
     }
 
@@ -428,10 +428,7 @@ pub fn wire_event_bus(app: &mut sova_core::App, hub: DevToolsHub) {
     {
         let h = hub.clone();
         bus.listen::<sova_session::SessionRegenerated, _>(move |e| {
-            h.emit(
-                "session.regenerated",
-                json!({ "had_user": e.had_user }),
-            );
+            h.emit("session.regenerated", json!({ "had_user": e.had_user }));
         });
         let h = hub.clone();
         bus.listen::<sova_session::SessionLogoutAll, _>(move |e| {
@@ -553,6 +550,34 @@ fn compile_features() -> Vec<&'static str> {
         v.push("notifications");
         #[cfg(feature = "acme")]
         v.push("acme");
+        #[cfg(feature = "console")]
+        v.push("console");
+        #[cfg(feature = "console-redis")]
+        v.push("console-redis");
+        #[cfg(feature = "console-store")]
+        v.push("console-store");
+        #[cfg(feature = "console-graphql")]
+        v.push("console-graphql");
+        #[cfg(feature = "console-tasks")]
+        v.push("console-tasks");
+        #[cfg(feature = "console-mail")]
+        v.push("console-mail");
+        #[cfg(feature = "console-http-external")]
+        v.push("console-http-external");
+        #[cfg(feature = "console-events")]
+        v.push("console-events");
+        #[cfg(feature = "console-rabbit")]
+        v.push("console-rabbit");
+        #[cfg(feature = "console-grpc")]
+        v.push("console-grpc");
+        #[cfg(feature = "console-session")]
+        v.push("console-session");
+        #[cfg(feature = "graphql")]
+        v.push("graphql");
+        #[cfg(feature = "rabbit")]
+        v.push("rabbit");
+        #[cfg(feature = "grpc")]
+        v.push("grpc");
         #[cfg(feature = "fs")]
         v.push("fs");
         v

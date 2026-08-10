@@ -1,8 +1,8 @@
 //! WebSocket plugin tests.
 
 use http::Method;
-use sova_core::{App,  Plugin, Request};
 use sova_core::extend::Bind;
+use sova_core::{App, Plugin, Request};
 use sova_ws::{origin_allowed, Message, Ws, WsRouteExt};
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 
@@ -11,7 +11,10 @@ fn origin_allowlist_unit_cases() {
     let mut headers = http::HeaderMap::new();
     headers.insert("origin", "https://app.test".parse().unwrap());
     assert!(origin_allowed(&headers, &["https://app.test".to_string()]));
-    assert!(!origin_allowed(&headers, &["https://other.test".to_string()]));
+    assert!(!origin_allowed(
+        &headers,
+        &["https://other.test".to_string()]
+    ));
 }
 
 #[tokio::test]
@@ -84,10 +87,7 @@ async fn websocket_upgrade_smoke() {
     let req = url.into_client_request().unwrap();
     let (mut client, _) = connect_async(req).await.expect("websocket handshake");
 
-    client
-        .send(Message::Text("hi".into()))
-        .await
-        .expect("send");
+    client.send(Message::Text("hi".into())).await.expect("send");
     let got = tokio::time::timeout(std::time::Duration::from_secs(2), client.next())
         .await
         .expect("timeout")

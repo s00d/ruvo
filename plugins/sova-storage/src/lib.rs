@@ -15,14 +15,14 @@ mod plugin;
 #[cfg(any(feature = "s3", feature = "gcs", feature = "azure"))]
 mod opendal_store;
 
+#[cfg(feature = "azure")]
+pub use opendal_store::azure_from_env;
+#[cfg(feature = "gcs")]
+pub use opendal_store::gcs_from_env;
 #[cfg(any(feature = "s3", feature = "gcs", feature = "azure"))]
 pub use opendal_store::OpendalStore;
 #[cfg(feature = "s3")]
 pub use opendal_store::{s3_from_env, S3EnvConfig};
-#[cfg(feature = "gcs")]
-pub use opendal_store::gcs_from_env;
-#[cfg(feature = "azure")]
-pub use opendal_store::azure_from_env;
 
 pub use error::StorageError;
 pub use local::LocalStore;
@@ -127,10 +127,7 @@ mod tests {
             .await
             .unwrap();
         assert!(store.exists("a/b.txt").await.unwrap());
-        assert_eq!(
-            store.get("a/b.txt").await.unwrap().unwrap().as_ref(),
-            b"hi"
-        );
+        assert_eq!(store.get("a/b.txt").await.unwrap().unwrap().as_ref(), b"hi");
         store.delete("a/b.txt").await.unwrap();
         assert!(!store.exists("a/b.txt").await.unwrap());
         assert!(store.get("a/b.txt").await.unwrap().is_none());
@@ -233,9 +230,6 @@ mod tests {
 
         let fixed = app.store_as(&upload, "avatars/u42.png").await.unwrap();
         assert_eq!(fixed.key, "avatars/u42.png");
-        assert_eq!(
-            fixed.url.as_deref(),
-            Some("/assets/avatars/u42.png")
-        );
+        assert_eq!(fixed.url.as_deref(), Some("/assets/avatars/u42.png"));
     }
 }

@@ -136,8 +136,8 @@ impl GraphQlClient {
             serde_json::to_vec(&body).map_err(|e| GraphqlError::Decode(e.to_string()))?,
         );
         let resp = self.transport.post(&self.endpoint, bytes).await?;
-        let raw: Value = serde_json::from_slice(&resp)
-            .map_err(|e| GraphqlError::Decode(e.to_string()))?;
+        let raw: Value =
+            serde_json::from_slice(&resp).map_err(|e| GraphqlError::Decode(e.to_string()))?;
         Ok(GraphqlResponse { raw })
     }
 }

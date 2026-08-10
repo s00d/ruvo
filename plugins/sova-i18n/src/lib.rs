@@ -9,15 +9,11 @@ mod store;
 mod template;
 
 pub use ext::{interpolate, I18nExt, I18nRouteExt, I18nScope, I18nState, LocaleCode};
-pub use template::template_fn;
-pub use mount::{
-    localize_path, localized_url, mount_localized, strip_locale_prefix, PrefixMode,
-};
+pub use mount::{localize_path, localized_url, mount_localized, strip_locale_prefix, PrefixMode};
 pub use plural::{default_plural, PluralFn};
-pub use resolve::{
-    negotiate_accept_language, resolve_server_locale, LocaleSource, ResolveOptions,
-};
+pub use resolve::{negotiate_accept_language, resolve_server_locale, LocaleSource, ResolveOptions};
 pub use store::{get_by_path, load_store, Locale, Scope, Store, ROOT_SCOPE};
+pub use template::template_fn;
 
 use arc_swap::ArcSwap;
 use ext::MissingHandler;

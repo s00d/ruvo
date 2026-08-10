@@ -22,14 +22,26 @@ pub fn sanitize_crate_name(raw: &str) -> Result<String, String> {
         .unwrap_or(raw);
     let cleaned: String = base
         .chars()
-        .map(|c| if c == '-' || c.is_ascii_alphanumeric() { c } else { '_' })
+        .map(|c| {
+            if c == '-' || c.is_ascii_alphanumeric() {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect();
     let cleaned = cleaned.trim_matches('_').to_string();
-    let cleaned = cleaned.trim_start_matches(|c: char| c.is_ascii_digit()).to_string();
+    let cleaned = cleaned
+        .trim_start_matches(|c: char| c.is_ascii_digit())
+        .to_string();
     if cleaned.is_empty() {
         return Err(format!("invalid package name derived from `{raw}`"));
     }
-    if !cleaned.chars().next().is_some_and(|c| c == '_' || c.is_ascii_alphabetic()) {
+    if !cleaned
+        .chars()
+        .next()
+        .is_some_and(|c| c == '_' || c.is_ascii_alphabetic())
+    {
         return Err(format!("invalid package name `{cleaned}` from `{raw}`"));
     }
     Ok(cleaned)
@@ -139,4 +151,3 @@ mod tests {
         assert_eq!(to_snake_case("blog_post"), "blog_post");
     }
 }
-

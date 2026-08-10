@@ -112,7 +112,10 @@ async fn post_register_and_login_urlencoded_with_csrf() {
         "register should redirect home"
     );
     assert_eq!(
-        registered.headers().get("location").and_then(|v| v.to_str().ok()),
+        registered
+            .headers()
+            .get("location")
+            .and_then(|v| v.to_str().ok()),
         Some("/home")
     );
 

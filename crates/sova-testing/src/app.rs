@@ -1,9 +1,9 @@
 //! Build an [`App`] with sqlite + migrator + plugins.
 
 use crate::sqlite::{apply_migrations, SqliteTestDb};
+use sea_orm_migration::MigratorTrait;
 use sova_core::{App, Plugin};
 use sova_db::Db;
-use sea_orm_migration::MigratorTrait;
 use std::future::Future;
 use std::pin::Pin;
 

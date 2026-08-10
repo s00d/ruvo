@@ -1,7 +1,7 @@
 //! Request-side OpenAPI schemas attached via `sova_vld` validate sugar.
 
-use sova_core::extend::RouteValue;
 use serde_json::Value;
+use sova_core::extend::RouteValue;
 
 /// Neutral request schemas for OpenAPI (filled by `ValidateRouteExt`).
 #[derive(Debug, Clone, Default)]

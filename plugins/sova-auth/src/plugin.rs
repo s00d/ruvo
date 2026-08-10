@@ -164,8 +164,8 @@ impl Fortify {
         F: Fn(CurrentUser, Request) -> Fut + Send + Sync + 'static,
         Fut: Future<Output = Result<Request>> + Send + 'static,
     {
-        self.after_register = Some(Arc::new(move |u, r| Box::pin(f(u, r)) as BoxFuture<_>)
-            as AfterRegisterFn);
+        self.after_register =
+            Some(Arc::new(move |u, r| Box::pin(f(u, r)) as BoxFuture<_>) as AfterRegisterFn);
         self
     }
 
@@ -235,9 +235,7 @@ impl Plugin for Fortify {
     fn install(self, app: &mut App) {
         if self.secret.is_empty() {
             app.on_startup(|_s| async {
-                Err(Error::Internal(
-                    "FORTIFY_SECRET / APP_KEY is empty".into(),
-                ))
+                Err(Error::Internal("FORTIFY_SECRET / APP_KEY is empty".into()))
             });
             return;
         }
@@ -363,7 +361,10 @@ fn mount_web(web: &mut Router, features: &HashSet<Feature>) {
     );
 
     if features.contains(&Feature::TwoFactor) {
-        web.post("/user/two-factor-authentication", actions::two_factor_enable);
+        web.post(
+            "/user/two-factor-authentication",
+            actions::two_factor_enable,
+        );
 
         web.post(
             "/user/confirmed-two-factor-authentication",
@@ -387,7 +388,10 @@ fn mount_web(web: &mut Router, features: &HashSet<Feature>) {
         web.validate_form::<crate::forms::DisableTwoFactorForm>();
 
         web.get("/user/two-factor-qr-code", actions::two_factor_qr_code);
-        web.get("/user/two-factor-secret-key", actions::two_factor_secret_key);
+        web.get(
+            "/user/two-factor-secret-key",
+            actions::two_factor_secret_key,
+        );
         web.get(
             "/user/two-factor-recovery-codes",
             actions::two_factor_recovery_codes_get,
@@ -464,7 +468,10 @@ fn mount_api(r: &mut Router, features: &HashSet<Feature>, paths: &FortifyPaths) 
         r.validate_body::<crate::forms::DisableTwoFactorForm>();
         r.get(&paths.two_factor_qr, actions::two_factor_qr_code);
         r.get(&paths.two_factor_secret, actions::two_factor_secret_key);
-        r.get(&paths.two_factor_recovery, actions::two_factor_recovery_codes_get);
+        r.get(
+            &paths.two_factor_recovery,
+            actions::two_factor_recovery_codes_get,
+        );
         r.post(
             &paths.two_factor_recovery,
             actions::two_factor_recovery_codes_regen,

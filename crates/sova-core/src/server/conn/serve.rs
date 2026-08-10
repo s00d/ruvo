@@ -138,7 +138,9 @@ pub(super) async fn handle_hyper(
         if is_http2
             && (res.headers.contains_key(http::header::CONNECTION)
                 || res.headers.contains_key(http::header::TRANSFER_ENCODING)
-                || res.headers.contains_key(http::HeaderName::from_static("keep-alive"))
+                || res
+                    .headers
+                    .contains_key(http::HeaderName::from_static("keep-alive"))
                 || res.headers.contains_key(http::header::UPGRADE))
         {
             // Special-case: `426 Upgrade Required` is our explicit, user-facing

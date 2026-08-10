@@ -12,12 +12,12 @@
 //! Declarative toggles also work via `[observability]` in `sova.toml`
 //! (`metrics_path`, `otel`, `elasticsearch`) when not set on the builder.
 
-#[cfg(feature = "prometheus")]
-mod prometheus;
-#[cfg(feature = "otel")]
-mod otel;
 #[cfg(feature = "elasticsearch")]
 mod elasticsearch;
+#[cfg(feature = "otel")]
+mod otel;
+#[cfg(feature = "prometheus")]
+mod prometheus;
 
 #[cfg(feature = "elasticsearch")]
 pub use elasticsearch::ElasticsearchLog;

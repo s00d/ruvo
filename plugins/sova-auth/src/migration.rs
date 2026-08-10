@@ -178,10 +178,7 @@ mod m20260308_000002_fortify {
                         .foreign_key(
                             ForeignKey::create()
                                 .name("fk_auth_permission_role_perm")
-                                .from(
-                                    AuthPermissionRole::Table,
-                                    AuthPermissionRole::PermissionId,
-                                )
+                                .from(AuthPermissionRole::Table, AuthPermissionRole::PermissionId)
                                 .to(AuthPermissions::Table, AuthPermissions::Id)
                                 .on_delete(ForeignKeyAction::Cascade),
                         )

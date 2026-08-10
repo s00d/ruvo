@@ -9,9 +9,7 @@
 //! ```
 
 use sova::prelude::*;
-use sova::{
-    ask, bearer_guard, confirm, info, is_interactive, priority, table, Job, Tasks,
-};
+use sova::{ask, bearer_guard, confirm, info, is_interactive, priority, table, Job, Tasks};
 use std::sync::Arc;
 use std::time::Duration;
 

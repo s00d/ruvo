@@ -13,6 +13,12 @@ import {
   type BusMsg,
   type PageMsg,
 } from "../persist";
+import {
+  isTabVisible,
+  TAB_META,
+  visibleTabMeta,
+  type DevToolsConfig,
+} from "../tabs";
 import type {
   CustomEvent,
   LogLine,
@@ -106,8 +112,19 @@ export const useDevToolsStore = defineStore("devtools", () => {
   const isShell = computed(() => mount.value.shell);
   const isPlayground = computed(() => playground.value);
 
+  const devtoolsConfig = computed(
+    () => config.value as DevToolsConfig | null,
+  );
+
+  const visibleTabs = computed(() =>
+    visibleTabMeta(devtoolsConfig.value, isPlayground.value),
+  );
+
   const sqlTotalMs = computed(() => sumMs(current.value?.queries));
   const httpTotalMs = computed(() => sumMs(current.value?.http));
+  const graphqlTotalMs = computed(() => sumMs(current.value?.graphql));
+  const grpcTotalMs = computed(() => sumMs(current.value?.grpc));
+  const rabbitTotalMs = computed(() => sumMs(current.value?.rabbit));
   const cacheTotalMs = computed(() => sumMs(current.value?.cache));
   const logErrorCount = computed(
     () =>
@@ -143,9 +160,14 @@ export const useDevToolsStore = defineStore("devtools", () => {
       request: 0,
       timeline: timeline.value.length,
       db: c?.queries.length ?? 0,
-      cache: c?.cache?.length ?? 0,
+      cache:
+        c?.cache?.filter((x) => x.backend !== "redis").length ?? 0,
+      redis: c?.cache?.filter((x) => x.backend === "redis").length ?? 0,
       logs: c?.logs.length || globalLogs.value.length,
       http: c?.http.length ?? 0,
+      graphql: c?.graphql?.length ?? 0,
+      grpc: c?.grpc?.length ?? 0,
+      rabbit: c?.rabbit?.length ?? 0,
       mail: c?.mail.length ?? 0,
       jobs: c?.jobs.length ?? 0,
       auth: c?.auth?.session_keys?.length ?? 0,
@@ -202,13 +224,28 @@ export const useDevToolsStore = defineStore("devtools", () => {
   }
 
   function setTab(next: TabId) {
-    tab.value = next;
+    const meta = TAB_META.find((t) => t.id === next);
+    if (
+      meta &&
+      !isTabVisible(meta, devtoolsConfig.value, isPlayground.value)
+    ) {
+      tab.value = "request";
+    } else {
+      tab.value = next;
+    }
     void refresh();
   }
 
+  watch([visibleTabs, tab], ([tabs, currentTab]) => {
+    if (isPlayground.value) return;
+    if (devtoolsConfig.value == null) return;
+    if (!tabs.some((t) => t.id === currentTab)) {
+      tab.value = "request";
+    }
+  });
+
   function openSnap(id: string) {
     snapId.value = id;
-    tab.value = "request";
     void refresh();
   }
 
@@ -243,12 +280,22 @@ export const useDevToolsStore = defineStore("devtools", () => {
     loading.value = false;
   }
 
+  async function loadConfig() {
+    if (playground.value) return;
+    try {
+      config.value = await fetchConfig(api.value);
+    } catch {
+      /* config is optional for traces; tabs fall back to core set */
+    }
+  }
+
   async function refresh() {
     if (playground.value) return;
     if (!open.value && !isEmbed.value) return;
     loading.value = true;
     error.value = null;
     try {
+      if (config.value == null) await loadConfig();
       if (tab.value === "timeline") {
         timeline.value = await fetchTimeline(api.value);
       } else if (tab.value === "config") {
@@ -360,7 +407,10 @@ export const useDevToolsStore = defineStore("devtools", () => {
     connectBus();
     connectSse();
     window.addEventListener("keydown", onKeydown);
-    if (!playground.value) void refresh();
+    if (!playground.value) {
+      void loadConfig();
+      void refresh();
+    }
   }
 
   return {
@@ -382,12 +432,19 @@ export const useDevToolsStore = defineStore("devtools", () => {
     isEmbed,
     isShell,
     isPlayground,
+    api,
     sqlTotalMs,
     httpTotalMs,
+    graphqlTotalMs,
+    grpcTotalMs,
+    rabbitTotalMs,
     cacheTotalMs,
     logErrorCount,
     statusBuckets,
     tabBadges,
+    visibleTabs,
+    devtoolsConfig,
+    loadConfig,
     toggle,
     close,
     setTab,

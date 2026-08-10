@@ -21,9 +21,7 @@
 //!
 //! DB: `sova.toml` `[db] url` (sqlite). Override with `DATABASE_URL`.
 
-use sova::{
-    App, AuthMigrator, Db, JwtAuth, JwtAuthExt, Json, Request, Result, Router,
-};
+use sova::{App, AuthMigrator, Db, Json, JwtAuth, JwtAuthExt, Request, Result, Router};
 use std::path::PathBuf;
 
 fn build_app() -> App {

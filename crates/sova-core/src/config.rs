@@ -57,26 +57,18 @@ impl ConfigDoc {
                 out.extend(t.clone());
             }
         }
-        if let Some(toml::Value::Table(t)) = self
-            .root
-            .get("default")
-            .and_then(|d| d.get(section))
-        {
+        if let Some(toml::Value::Table(t)) = self.root.get("default").and_then(|d| d.get(section)) {
             out.extend(t.clone());
         }
-        if let Some(toml::Value::Table(t)) = self
-            .root
-            .get(&self.profile)
-            .and_then(|d| d.get(section))
+        if let Some(toml::Value::Table(t)) =
+            self.root.get(&self.profile).and_then(|d| d.get(section))
         {
             out.extend(t.clone());
         }
         // Legacy profile aliases: also merge debug/release overlays when active
         // profile is development/production (in case file still uses old names).
         for alias in profile_aliases_for_merge(&self.profile) {
-            if let Some(toml::Value::Table(t)) =
-                self.root.get(alias).and_then(|d| d.get(section))
-            {
+            if let Some(toml::Value::Table(t)) = self.root.get(alias).and_then(|d| d.get(section)) {
                 out.extend(t.clone());
             }
         }
@@ -113,8 +105,7 @@ impl ConfigDoc {
             merge_into(&mut out, http);
         }
         for alias in profile_aliases_for_merge(&self.profile) {
-            if let Some(toml::Value::Table(http)) =
-                self.root.get(alias).and_then(|d| d.get("http"))
+            if let Some(toml::Value::Table(http)) = self.root.get(alias).and_then(|d| d.get("http"))
             {
                 merge_into(&mut out, http);
             }
@@ -178,9 +169,7 @@ fn merge_server(base: ServerProfile, over: ServerProfile) -> ServerProfile {
         max_upgraded_connections: over
             .max_upgraded_connections
             .or(base.max_upgraded_connections),
-        max_concurrent_streams: over
-            .max_concurrent_streams
-            .or(base.max_concurrent_streams),
+        max_concurrent_streams: over.max_concurrent_streams.or(base.max_concurrent_streams),
         max_headers: over.max_headers.or(base.max_headers),
         max_buf_size: over.max_buf_size.or(base.max_buf_size),
         request_timeout: over.request_timeout.or(base.request_timeout),
@@ -213,9 +202,7 @@ fn table_to_server(table: &toml::map::Map<String, toml::Value>) -> ServerProfile
             filtered.insert(key.to_string(), v.clone());
         }
     }
-    toml::Value::Table(filtered)
-        .try_into()
-        .unwrap_or_default()
+    toml::Value::Table(filtered).try_into().unwrap_or_default()
 }
 
 /// Resolve merged `[server]` from canon + legacy layouts.
@@ -317,15 +304,15 @@ fn env_override(app: &mut App) -> Result<()> {
         app.max_connections(n);
     }
     if let Ok(s) = std::env::var("SOVA_MAX_UPGRADED_CONNECTIONS") {
-        let n: usize = s.parse().map_err(|_| {
-            Error::Internal(format!("SOVA_MAX_UPGRADED_CONNECTIONS: {s}"))
-        })?;
+        let n: usize = s
+            .parse()
+            .map_err(|_| Error::Internal(format!("SOVA_MAX_UPGRADED_CONNECTIONS: {s}")))?;
         app.max_upgraded_connections(n);
     }
     if let Ok(s) = std::env::var("SOVA_MAX_CONCURRENT_STREAMS") {
-        let n: usize = s.parse().map_err(|_| {
-            Error::Internal(format!("SOVA_MAX_CONCURRENT_STREAMS: {s}"))
-        })?;
+        let n: usize = s
+            .parse()
+            .map_err(|_| Error::Internal(format!("SOVA_MAX_CONCURRENT_STREAMS: {s}")))?;
         app.max_concurrent_streams(n);
     }
     if let Ok(s) = std::env::var("SOVA_MAX_HEADERS") {

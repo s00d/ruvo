@@ -4,10 +4,7 @@ use sova_core::{App, Request, Response, ResponseAssert, TestClient};
 async fn cookie_jar_round_trip() {
     let mut app = App::new();
     app.get("/set", |_r: Request| async {
-        Response::text("ok").header(
-            "set-cookie",
-            "sid=abc123; Path=/; HttpOnly",
-        )
+        Response::text("ok").header("set-cookie", "sid=abc123; Path=/; HttpOnly")
     });
     app.get("/echo", |req: Request| async move {
         let c = req.header("cookie").unwrap_or("").to_string();

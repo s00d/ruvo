@@ -33,8 +33,7 @@ pub fn load() -> Result<()> {
 pub fn load_from(root: impl AsRef<Path>) -> Result<()> {
     let root = root.as_ref();
     let mode = resolve_mode();
-    let frozen: std::collections::HashSet<String> =
-        std::env::vars().map(|(k, _)| k).collect();
+    let frozen: std::collections::HashSet<String> = std::env::vars().map(|(k, _)| k).collect();
 
     let files = cascade_files(&mode);
     let mut merged = std::collections::HashMap::new();

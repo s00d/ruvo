@@ -1,7 +1,5 @@
-use sova::{
-    CsrfExt, CurrentUser, DbExt, Meta, RenderExt, Request, Response, Result, Router,
-};
 use serde_json::json;
+use sova::{CsrfExt, CurrentUser, DbExt, Meta, RenderExt, Request, Response, Result, Router};
 
 pub fn mount(r: &mut Router) {
     r.get("/", dashboard).with(

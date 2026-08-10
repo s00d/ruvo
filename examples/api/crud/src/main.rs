@@ -14,8 +14,7 @@ mod migrator;
 use entity::prelude::*;
 use migrator::Migrator;
 use sova::{
-    ActiveModelTrait, App, Db, DbExt, EntityTrait, Error, Json, Request, Result, Set,
-    ValidationExt,
+    ActiveModelTrait, App, Db, DbExt, EntityTrait, Error, Json, Request, Result, Set, ValidationExt,
 };
 use std::path::PathBuf;
 

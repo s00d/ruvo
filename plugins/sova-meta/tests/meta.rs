@@ -1,10 +1,10 @@
 use http::Method;
+use serde_json::json;
 use sova_core::{App, Json, Request, Response};
 use sova_meta::{
     absolute_url, render_html, resolve_meta, strip_tracking, Article, Meta, MetaExt, Robots,
     Sitemap, TrailingSlash,
 };
-use serde_json::json;
 
 #[tokio::test]
 async fn field_merge_and_html() {
@@ -59,9 +59,7 @@ async fn slash_redirect() {
         .await;
     assert_eq!(res.status_code().as_u16(), 301);
     assert_eq!(
-        res.headers()
-            .get("location")
-            .and_then(|v| v.to_str().ok()),
+        res.headers().get("location").and_then(|v| v.to_str().ok()),
         Some("/about")
     );
 }
@@ -76,9 +74,7 @@ async fn handler_noindex_sets_x_robots_tag_on_json() {
     });
 
     let server = app.build().unwrap();
-    let res = server
-        .handle_request(Method::GET, "/api/private", "")
-        .await;
+    let res = server.handle_request(Method::GET, "/api/private", "").await;
     assert_eq!(
         res.headers()
             .get("x-robots-tag")
@@ -94,11 +90,7 @@ async fn injects_head_into_bare_html() {
     let mut app = App::new();
     app.install(Meta::new().public_url("https://ex.com").site_name("S"));
     app.get("/about", || async { Html("<h1>About</h1>".to_string()) })
-        .with(
-            Meta::page()
-                .title("About")
-                .description("About page"),
-        );
+        .with(Meta::page().title("About").description("About page"));
 
     let server = app.build().unwrap();
     let body = String::from_utf8(
@@ -148,9 +140,7 @@ async fn moved_to_redirects_301() {
     let res = server.handle_request(Method::GET, "/old", "").await;
     assert_eq!(res.status_code().as_u16(), 301);
     assert_eq!(
-        res.headers()
-            .get("location")
-            .and_then(|v| v.to_str().ok()),
+        res.headers().get("location").and_then(|v| v.to_str().ok()),
         Some("/new")
     );
 }
@@ -170,9 +160,7 @@ async fn sitemap_excludes_noindex_and_doc() {
         .doc(Doc::new().ok_schema(json!({ "type": "object" })));
 
     let server = app.build().unwrap();
-    let res = server
-        .handle_request(Method::GET, "/sitemap.xml", "")
-        .await;
+    let res = server.handle_request(Method::GET, "/sitemap.xml", "").await;
     let body = String::from_utf8(res.body_bytes().unwrap().to_vec()).unwrap();
     assert!(body.contains("/about"));
     assert!(!body.contains("/secret"));
@@ -224,9 +212,7 @@ public_url = "https://ex.com"
     app.install(Meta::new());
     app.install(Robots::new());
     let server = app.build().unwrap();
-    let res = server
-        .handle_request(Method::GET, "/robots.txt", "")
-        .await;
+    let res = server.handle_request(Method::GET, "/robots.txt", "").await;
     let body = String::from_utf8(res.body_bytes().unwrap().to_vec()).unwrap();
     assert!(body.contains("Disallow: /"));
 }
@@ -328,14 +314,12 @@ async fn sitemap_provider() {
 
     let mut app = App::new();
     app.install(Meta::new().public_url("https://ex.com"));
-    app.install(
-        Sitemap::new().provider("/blog/:slug", |_ctx| async move {
-            Ok(vec![
-                Entry::new("/blog/one").changefreq(ChangeFreq::Weekly),
-                Entry::new("/blog/two"),
-            ])
-        }),
-    );
+    app.install(Sitemap::new().provider("/blog/:slug", |_ctx| async move {
+        Ok(vec![
+            Entry::new("/blog/one").changefreq(ChangeFreq::Weekly),
+            Entry::new("/blog/two"),
+        ])
+    }));
     app.get("/home", |_r: Request| async { Response::text("ok") })
         .with(Meta::page().title("H").description("d"));
 
@@ -358,13 +342,9 @@ async fn sitemap_provider() {
 async fn sitemap_provider_error_is_500() {
     let mut app = App::new();
     app.install(Meta::new().public_url("https://ex.com"));
-    app.install(
-        Sitemap::new().provider("/broken", |_ctx| async move { Err("db down".into()) }),
-    );
+    app.install(Sitemap::new().provider("/broken", |_ctx| async move { Err("db down".into()) }));
     let server = app.build().unwrap();
-    let res = server
-        .handle_request(Method::GET, "/sitemap.xml", "")
-        .await;
+    let res = server.handle_request(Method::GET, "/sitemap.xml", "").await;
     assert_eq!(res.status_code().as_u16(), 500);
 }
 
@@ -395,12 +375,8 @@ async fn sitemap_kv_cache_avoids_second_provider_call() {
             }),
     );
     let server = app.build().unwrap();
-    let _ = server
-        .handle_request(Method::GET, "/sitemap.xml", "")
-        .await;
-    let _ = server
-        .handle_request(Method::GET, "/sitemap.xml", "")
-        .await;
+    let _ = server.handle_request(Method::GET, "/sitemap.xml", "").await;
+    let _ = server.handle_request(Method::GET, "/sitemap.xml", "").await;
     assert_eq!(hits.load(Ordering::SeqCst), 1);
 }
 

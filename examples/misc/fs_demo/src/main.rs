@@ -6,9 +6,9 @@
 //! # curl -X POST 'http://127.0.0.1:3011/write?path=notes/hi.txt' -d 'hello'
 //! ```
 
+use serde_json::json;
 use sova::prelude::*;
 use sova::{Fs, FsExt};
-use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -65,7 +65,9 @@ async fn main() -> Result<()> {
             .to_string();
         let body = req.body().await?;
         req.fs().write(&path, &body).await?;
-        Ok::<_, Error>(Json(json!({ "ok": true, "path": path, "bytes": body.len() })))
+        Ok::<_, Error>(Json(
+            json!({ "ok": true, "path": path, "bytes": body.len() }),
+        ))
     });
 
     app.delete("/rm", |req: Request| async move {

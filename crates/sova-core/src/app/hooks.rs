@@ -13,8 +13,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
 
-pub(crate) type StartupHook =
-    Arc<dyn Fn(Arc<StateMap>) -> BoxFuture<Result<()>> + Send + Sync>;
+pub(crate) type StartupHook = Arc<dyn Fn(Arc<StateMap>) -> BoxFuture<Result<()>> + Send + Sync>;
 pub(crate) type ShutdownHook = Arc<dyn Fn() -> BoxFuture<()> + Send + Sync>;
 
 /// Compiled app ready to handle requests without recompiling the router.
@@ -51,6 +50,9 @@ impl Server {
 
     /// Handle a request (tests / embedded). Injects router state.
     pub async fn handle(&self, mut req: Request) -> Response {
+        if let Some(d) = self.inner.state().get::<crate::dispatch::AppDispatch>() {
+            d.install_if_needed(&self.inner);
+        }
         req.state = Arc::clone(&self.inner.compiled.state);
         self.inner.compiled.dispatch(req).await
     }

@@ -92,12 +92,7 @@ pub fn render_robots(
         if group.user_agent == "*" && cfg.from_noindex {
             if let Some(table) = table {
                 for entry in &table.0 {
-                    if let RouteEntry::Http {
-                        method,
-                        path,
-                        meta,
-                    } = entry
-                    {
+                    if let RouteEntry::Http { method, path, meta } = entry {
                         if *method != Method::GET || path_is_dynamic(path) {
                             continue;
                         }
@@ -132,22 +127,19 @@ pub fn render_robots(
         }
     }
 
-    let sitemap = cfg
-        .sitemap_url
-        .clone()
-        .or_else(|| {
-            if cfg.sitemap_from_plugin {
-                sitemap_cfg.and_then(|c| c.sitemap_url()).or_else(|| {
-                    let base = meta.and_then(|m| m.public_url.as_ref())?;
-                    let path = sitemap_cfg
-                        .map(|c| c.path.as_str())
-                        .unwrap_or("/sitemap.xml");
-                    Some(format!("{}{}", base.trim_end_matches('/'), path))
-                })
-            } else {
-                None
-            }
-        });
+    let sitemap = cfg.sitemap_url.clone().or_else(|| {
+        if cfg.sitemap_from_plugin {
+            sitemap_cfg.and_then(|c| c.sitemap_url()).or_else(|| {
+                let base = meta.and_then(|m| m.public_url.as_ref())?;
+                let path = sitemap_cfg
+                    .map(|c| c.path.as_str())
+                    .unwrap_or("/sitemap.xml");
+                Some(format!("{}{}", base.trim_end_matches('/'), path))
+            })
+        } else {
+            None
+        }
+    });
     if let Some(url) = sitemap {
         out.push_str(&format!("Sitemap: {url}\n"));
     }

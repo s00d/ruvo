@@ -212,12 +212,7 @@ impl Plugin for Robots {
             let table = req.try_state::<RouteTable>();
             let sitemap = req.try_state::<SitemapConfig>();
             let meta = req.try_state::<MetaDefaults>();
-            let body = render_robots(
-                &cfg,
-                table.as_deref(),
-                sitemap.as_deref(),
-                meta.as_deref(),
-            );
+            let body = render_robots(&cfg, table.as_deref(), sitemap.as_deref(), meta.as_deref());
             Response::text(body).header("content-type", "text/plain; charset=utf-8")
         });
     }

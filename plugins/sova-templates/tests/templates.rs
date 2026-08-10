@@ -1,7 +1,7 @@
 //! MiniJinjaEngine add_template / render_html.
 
-use sova_templates::MiniJinjaEngine;
 use serde::Serialize;
+use sova_templates::MiniJinjaEngine;
 
 #[derive(Serialize)]
 struct Ctx {
@@ -14,12 +14,7 @@ fn render_html_ok() {
     eng.add_template("hi", "Hello {{ name }}!")
         .expect("add_template");
     let res = eng
-        .render_html(
-            "hi",
-            Ctx {
-                name: "ada".into(),
-            },
-        )
+        .render_html("hi", Ctx { name: "ada".into() })
         .expect("render");
     assert_eq!(res.body_bytes(), Some(b"Hello ada!".as_slice()));
 }
