@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0fdfa"/>
+      <stop offset="0.55" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ecfdf5"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="780" y1="40" x2="1120" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0d9488" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#0f766e" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="420" rx="28" fill="url(#bg)"/>
+  <rect width="1200" height="420" rx="28" fill="url(#glow)"/>
+  <rect x="1" y="1" width="1198" height="418" rx="27" stroke="#0f766e" stroke-opacity="0.12"/>
+  
+    <g transform="translate(48,48) scale(0.187500)" aria-hidden="true">
+<path fill="#155c62" d="M238.00 24.39 A36.00 36.00 0 0 1 274.00 24.39 L447.58 124.61 A36.00 36.00 0 0 1 465.58 155.78 L465.58 356.22 A36.00 36.00 0 0 1 447.58 387.39 L274.00 487.61 A36.00 36.00 0 0 1 238.00 487.61 L64.42 387.39 A36.00 36.00 0 0 1 46.42 356.22 L46.42 155.78 A36.00 36.00 0 0 1 64.42 124.61 Z"/>
+  <path fill="#f8e7cd" d="M220.00 71.00 C220.67 70.83 226.83 68.17 223.00 71.00 C219.17 73.83 206.00 80.83 197.00 88.00 C188.00 95.17 176.17 106.50 169.00 114.00 C161.83 121.50 159.33 124.67 154.00 133.00 C148.67 141.33 141.17 155.17 137.00 164.00 C132.83 172.83 131.33 177.17 129.00 186.00 C126.67 194.83 124.17 207.33 123.00 217.00 C121.83 226.67 121.67 235.17 122.00 244.00 C122.33 252.83 123.50 261.67 125.00 270.00 C126.50 278.33 128.67 286.67 131.00 294.00 C133.33 301.33 135.67 307.00 139.00 314.00 C142.33 321.00 146.50 329.00 151.00 336.00 C155.50 343.00 160.17 349.33 166.00 356.00 C171.83 362.67 180.33 370.83 186.00 376.00 C191.67 381.17 191.83 381.83 200.00 387.00 C208.17 392.17 225.00 402.17 235.00 407.00 C245.00 411.83 252.00 413.67 260.00 416.00 C268.00 418.33 271.67 420.00 283.00 421.00 C294.33 422.00 317.33 422.33 328.00 422.00 C338.67 421.67 340.33 420.50 347.00 419.00 C353.67 417.50 358.50 416.83 368.00 413.00 C377.50 409.17 401.83 394.67 404.00 396.00 C406.17 397.33 390.33 413.00 381.00 421.00 C371.67 429.00 358.33 438.00 348.00 444.00 C337.67 450.00 329.17 453.50 319.00 457.00 C308.83 460.50 299.33 463.33 287.00 465.00 C274.67 466.67 258.00 467.67 245.00 467.00 C232.00 466.33 220.17 463.83 209.00 461.00 C197.83 458.17 185.83 453.17 178.00 450.00 C170.17 446.83 169.00 446.17 162.00 442.00 C155.00 437.83 145.33 432.50 136.00 425.00 C126.67 417.50 114.33 406.17 106.00 397.00 C97.67 387.83 92.17 380.17 86.00 370.00 C79.83 359.83 73.67 348.33 69.00 336.00 C64.33 323.67 60.17 305.17 58.00 296.00 C55.83 286.83 56.33 289.67 56.00 281.00 C55.67 272.33 55.17 255.17 56.00 244.00 C56.83 232.83 58.33 224.33 61.00 214.00 C63.67 203.67 67.00 192.83 72.00 182.00 C77.00 171.17 86.00 156.83 91.00 149.00 C96.00 141.17 96.83 140.67 102.00 135.00 C107.17 129.33 114.83 121.17 122.00 115.00 C129.17 108.83 135.00 103.83 145.00 98.00 C155.00 92.17 171.67 84.17 182.00 80.00 C192.33 75.83 200.83 74.33 207.00 73.00 C213.17 71.67 216.83 72.33 219.00 72.00 C221.17 71.67 219.33 71.17 220.00 71.00 Z"/>
+  <circle cx="275" cy="62" r="2.4" fill="#f8e7cd"/>
+  <circle cx="212" cy="120" r="3" fill="#f8e7cd"/>
+  <circle cx="401" cy="144" r="2.6" fill="#f8e7cd"/>
+  <circle cx="425" cy="191" r="2.2" fill="#f8e7cd"/>
+  <path fill="#f8e7cd" d="M337.5 96.0L340.2 105.3L349.5 108.0L340.2 110.7L337.5 120.0L334.8 110.7L325.5 108.0L334.8 105.3Z"/>
+  <rect x="168" y="172" width="208" height="40" rx="12" fill="#2a8f96"/>
+  <rect x="168" y="247" width="208" height="40" rx="12" fill="#2a8f96"/>
+  <rect x="168" y="322" width="208" height="40" rx="12" fill="#2a8f96"/>
+  <circle cx="188" cy="192" r="4.2" fill="#0d454a"/>
+  <circle cx="212" cy="192" r="4.2" fill="#0d454a"/>
+  <circle cx="188" cy="267" r="4.2" fill="#0d454a"/>
+  <circle cx="212" cy="267" r="4.2" fill="#0d454a"/>
+  <circle cx="188" cy="342" r="4.2" fill="#0d454a"/>
+  <circle cx="212" cy="342" r="4.2" fill="#0d454a"/>
+  <circle cx="343" cy="267" r="8" fill="#5eead4"/>
+  <path fill="none" stroke="#5eead4" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" d="M400 348l18 16-18 16"/>
+  <path fill="none" stroke="#5eead4" stroke-width="7" stroke-linecap="round" d="M426 364h20"/>
+  </g>
+  <text x="168" y="112" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="40" font-weight="750" letter-spacing="0.04em">SOVA</text>
+  <text x="56" y="190" fill="#134e4a" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="52" font-weight="750">cargo-sovax</text>
+  <text x="56" y="242" fill="#0f766e" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="500" opacity="0.85">Scaffold, generate, dev, db CLI</text>
+  <g transform="translate(720,70)" opacity="0.95">
+  <rect x="60" y="50" width="340" height="260" rx="18" fill="#0f172a"/>
+  <circle cx="90" cy="82" r="7" fill="#f87171"/>
+  <circle cx="112" cy="82" r="7" fill="#fbbf24"/>
+  <circle cx="134" cy="82" r="7" fill="#34d399"/>
+  <text x="90" y="140" fill="#ecfdf5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22">$ cargo sovax new</text>
+  <text x="90" y="180" fill="#0d9488" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20">  app --web</text>
+  <text x="90" y="220" fill="#94a3b8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18">created app/</text>
+</g>
+</svg>
