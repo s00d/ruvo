@@ -1,6 +1,6 @@
 [package]
 name = "sova-db"
-version = "0.1.6"
+version = "0.1.7"
 authors.workspace = true
 edition.workspace = true
 description = "SeaORM database plugin for Sova (postgres / sqlite / mysql)"
