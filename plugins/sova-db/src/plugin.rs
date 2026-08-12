@@ -112,6 +112,10 @@ impl Plugin for Db {
     }
 
     fn install(mut self, app: &mut App) {
+        let source_dir = app
+            .config_doc()
+            .and_then(|d| d.source_dir.clone());
+
         // Pinned `.url()` wins; else `DATABASE_URL`, then `[db] url` in toml.
         if !self.url_pinned {
             if let Ok(u) = std::env::var("DATABASE_URL") {
@@ -125,11 +129,16 @@ impl Plugin for Db {
                         .section("db")
                         .and_then(|s| s.get("url").and_then(|v| v.as_str()).map(str::to_string))
                     {
-                        self.url = resolve_sqlite_url(&u, doc.source_dir.as_deref());
+                        self.url = u;
                     }
                 }
             }
         }
+
+        // Relative `sqlite:…` paths are cwd-based; resolve against sova.toml dir so
+        // `cargo sovax` (workspace cwd) + package `.env` still open the right file.
+        self.url = resolve_sqlite_url(&self.url, source_dir.as_deref());
+        ensure_sqlite_parent_dir(&self.url);
 
         // Toml can enable auto migrate/seed without code changes.
         if let Some(doc) = app.config_doc() {
@@ -273,4 +282,29 @@ fn resolve_sqlite_url(url: &str, source_dir: Option<&Path>) -> String {
         Some(q) => format!("sqlite://{}?{q}", abs.display()),
         None => format!("sqlite://{}", abs.display()),
     }
+}
+
+/// SQLite creates the file with `mode=rwc`, but not missing parent directories.
+fn ensure_sqlite_parent_dir(url: &str) {
+    let Some(path) = sqlite_file_path(url) else {
+        return;
+    };
+    if let Some(parent) = path.parent() {
+        if !parent.as_os_str().is_empty() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+    }
+}
+
+fn sqlite_file_path(url: &str) -> Option<std::path::PathBuf> {
+    let rest = url.strip_prefix("sqlite:")?;
+    if rest == ":memory:" || rest.starts_with(":memory:") {
+        return None;
+    }
+    let rest = rest.strip_prefix("//").unwrap_or(rest);
+    let path_part = rest.split_once('?').map(|(p, _)| p).unwrap_or(rest);
+    if path_part.is_empty() {
+        return None;
+    }
+    Some(std::path::PathBuf::from(path_part))
 }

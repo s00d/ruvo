@@ -991,11 +991,7 @@ pub fn render_web_form_view(plural: &str, title: &str, fields: Option<&[FieldSpe
 
 pub fn render_resource_test(name: &str, plural: &str, api: bool) -> String {
     let kind = if api { "api" } else { "resource" };
-    let path = if api {
-        format!("/{plural}")
-    } else {
-        format!("/{plural}")
-    };
+    let path = format!("/{plural}");
     format!(
         r#"//! Smoke scaffold for `{name}` {kind}.
 //!

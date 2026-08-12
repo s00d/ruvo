@@ -67,6 +67,7 @@ sova-devtools = { version = "0.1.10", path = "plugins/sova-devtools", default-fe
 sova-graphql = { version = "0.1.2", path = "plugins/sova-graphql" }
 sova-grpc = { version = "0.1.2", path = "plugins/sova-grpc" }
 sova-rabbit = { version = "0.1.1", path = "plugins/sova-rabbit", default-features = false }
+sova-scope = { version = "0.1.0", path = "plugins/sova-scope" }
 
 
 # Shared third-party

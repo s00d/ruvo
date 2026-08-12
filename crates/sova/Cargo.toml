@@ -105,6 +105,7 @@ ai = ["dep:sova-ai"]
 ai-openai = ["ai", "sova-ai/openai"]
 ai-anthropic = ["ai", "sova-ai/anthropic"]
 ai-google = ["ai", "sova-ai/google"]
+ai-openrouter = ["ai", "sova-ai/openrouter"]
 ai-full = ["ai", "sova-ai/full"]
 ai-prompt = ["ai", "sova-ai/prompt"]
 storage = ["dep:sova-storage"]
@@ -128,6 +129,7 @@ notifications-ws = ["notifications", "ws", "sova-notifications/ws"]
 notifications-mail = ["notifications", "mail", "sova-notifications/mail"]
 notifications-auth = ["notifications", "auth", "sova-notifications/auth"]
 notifications-templates = ["notifications", "templates", "sova-notifications/templates"]
+scope = ["db", "dep:sova-scope"]
 meta = ["dep:sova-meta"]
 meta-openapi = ["meta", "sova-meta/openapi", "openapi"]
 meta-templates = ["meta", "templates", "sova-meta/templates"]
@@ -220,6 +222,7 @@ sova-passport = { workspace = true, optional = true }
 sova-auth = { workspace = true, optional = true }
 sova-activity = { workspace = true, optional = true }
 sova-notifications = { workspace = true, optional = true }
+sova-scope = { workspace = true, optional = true }
 sova-meta = { workspace = true, optional = true }
 sova-observability = { workspace = true, optional = true }
 sova-graphql = { workspace = true, optional = true }

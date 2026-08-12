@@ -49,6 +49,7 @@ Writing a new plugin? See the [Plugin SDK](/api/plugin-sdk) guide (same generato
 | [`rate-limit`](/plugins/rate-limit) | HTTP | `0.1.3` | Per-key request rate limiting | `rate-limit` |
 | [`redis`](/plugins/redis) | Messaging | `0.1.4` | Shared Redis/Valkey connection for KvStore, tasks, cache, pub/sub, list queues | `redis` |
 | [`response-cache`](/plugins/response-cache) | HTTP | `0.1.1` | Cache GET 200 responses in KvStore | `response-cache` |
+| [`scope`](/plugins/scope) | Other | `0.1.0` | Scoped RBAC: membership, role matrix, ownership hooks | `scope` |
 | [`session`](/plugins/session) | Auth | `0.1.5` | Cookie sessions backed by a SessionStore | `session`, `session-redis`, `session-sql` |
 | [`shield`](/plugins/shield) | HTTP | `0.1.1` | Baseline security response headers (helmet-style) | `shield` |
 | [`sse`](/plugins/sse) | Realtime | `0.1.1` | Server-Sent Events helpers for Sova (channels, Last-Event-ID, keep-alive) | `sse-feed` |

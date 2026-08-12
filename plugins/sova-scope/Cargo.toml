@@ -1,0 +1,44 @@
+[package]
+name = "sova-scope"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+description = "Scoped RBAC (tenant/workspace membership, role matrix, ownership hooks) for Sova"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/sova-scope"
+readme = "README.md"
+keywords = ["http", "web", "framework", "authorization", "rbac"]
+categories = ["web-programming::http-server", "authentication"]
+
+[features]
+default = ["sqlite", "invites"]
+sqlite = ["sova-db/sqlite"]
+postgres = ["sova-db/postgres"]
+mysql = ["sova-db/mysql"]
+invites = []
+
+[dependencies]
+sova-core = { workspace = true }
+sova-db = { workspace = true, default-features = false }
+async-trait = { workspace = true }
+sea-orm = { workspace = true, features = ["macros"] }
+sea-orm-migration = { workspace = true }
+chrono = { workspace = true, default-features = false, features = ["clock", "std"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+rand = { workspace = true }
+
+[dev-dependencies]
+sova-core = { workspace = true, features = ["testing"] }
+sova-testing = { workspace = true, features = ["sqlite"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+
+[[test]]
+name = "engine"
+required-features = ["sqlite"]
+
+[[test]]
+name = "app_flow"
+required-features = ["sqlite"]

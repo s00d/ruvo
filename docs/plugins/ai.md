@@ -28,6 +28,7 @@ cargo add sova --features ai-openai
 | `ai-full` | All aisdk providers. |
 | `ai-google` | Google provider. |
 | `ai-openai` | OpenAI provider (`aisdk/openai`). |
+| `ai-openrouter` | OpenRouter provider (`OPENROUTER_API_KEY`). |
 | `ai-prompt` | File-based aisdk prompt templates. |
 
 ## Overview
@@ -63,7 +64,7 @@ app.post("/api/chat", |mut req: Request| async move {
 system = "You are a concise assistant."
 ```
 
-API keys stay with aisdk / env (`OPENAI_API_KEY`, …).
+API keys stay with aisdk / env (`OPENAI_API_KEY`, `OPENROUTER_API_KEY`, …).
 
 ### Testing
 
@@ -75,7 +76,7 @@ fake.assert_called();
 ```
 
 ### Notes
-- Prefer `ai-openai` / `ai-anthropic` / `ai-google` over bare `ai`
+- Prefer `ai-openai` / `ai-anthropic` / `ai-google` / `ai-openrouter` over bare `ai`
 - Re-exports: `sova::ai::aisdk`, `sova::ai::prelude`
 
 ## Quick start

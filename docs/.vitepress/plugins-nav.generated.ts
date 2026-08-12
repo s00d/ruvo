@@ -86,6 +86,12 @@ export const pluginsNav = [
     items: [
     { text: 'cli', link: '/plugins/cli' }
     ],
+  },
+  {
+    text: 'Other',
+    items: [
+    { text: 'scope', link: '/plugins/scope' }
+    ],
   }
 ] as const
 
@@ -184,6 +190,13 @@ export const pluginsSidebar = [
     collapsed: false,
     items: [
     { text: 'cli', link: '/plugins/cli' }
+    ],
+  },
+  {
+    text: 'Other',
+    collapsed: false,
+    items: [
+    { text: 'scope', link: '/plugins/scope' }
     ],
   }
 ]

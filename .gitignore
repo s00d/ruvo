@@ -4,3 +4,9 @@ Cargo.lock
 /ci-smoke-*/
 /.ci-gen/
 node_modules/
+
+# Separate project — not part of the sova monorepo release
+/examples/web/atlas/
+
+# Local sqlite from plugin tests
+/plugins/sova-db/data/

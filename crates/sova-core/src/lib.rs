@@ -47,8 +47,9 @@ mod upgrade;
 
 // Application-facing API (~16–18 names).
 pub use accept::{
-    current_accept, error_response_for_accept, html_error_page, negotiate_error_format,
-    status_response_for_accept, with_accept, ErrorFormat,
+    current_accept, current_path, error_response_for_accept, html_error_page,
+    negotiate_error_format, status_response_for_accept, with_accept, with_request_meta,
+    ErrorFormat,
 };
 pub use app::{App, BoundApp, CheckKind, CheckResult, Http, Server};
 pub use config::ConfigDoc;
@@ -96,8 +97,9 @@ pub use tls::Tls;
 /// (or the `sova` facade) instead.
 pub mod extend {
     pub use crate::accept::{
-        current_accept, error_response_for_accept, html_error_page, negotiate_error_format,
-        status_response_for_accept, with_accept, ErrorFormat,
+        current_accept, current_path, error_response_for_accept, html_error_page,
+        negotiate_error_format, status_response_for_accept, with_accept, with_request_meta,
+        ErrorFormat,
     };
     pub use crate::app::Bind;
     pub use crate::events::{Event, EventBus};

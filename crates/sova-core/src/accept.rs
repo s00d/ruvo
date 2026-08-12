@@ -8,6 +8,7 @@ use std::cell::RefCell;
 
 tokio::task_local! {
     static ACCEPT: RefCell<String>;
+    static PATH: RefCell<String>;
 }
 
 /// Run `fut` with the request `Accept` header visible to [`current_accept`].
@@ -18,9 +19,30 @@ where
     ACCEPT.scope(RefCell::new(accept.into()), fut).await
 }
 
+/// Like [`with_accept`], also recording the request path for API-aware error negotiation.
+pub async fn with_request_meta<F, T>(
+    accept: impl Into<String>,
+    path: impl Into<String>,
+    fut: F,
+) -> T
+where
+    F: std::future::Future<Output = T>,
+{
+    ACCEPT
+        .scope(RefCell::new(accept.into()), async move {
+            PATH.scope(RefCell::new(path.into()), fut).await
+        })
+        .await
+}
+
 /// Accept header captured for the current request (if any).
 pub fn current_accept() -> Option<String> {
     ACCEPT.try_with(|c| c.borrow().clone()).ok()
+}
+
+/// Request path captured for the current request (if any).
+pub fn current_path() -> Option<String> {
+    PATH.try_with(|c| c.borrow().clone()).ok()
 }
 
 /// Preferred error body format from an `Accept` header value.
@@ -106,9 +128,19 @@ fn html_escape(s: &str) -> String {
 }
 
 /// Map [`Error`] using `Accept` (or [`current_accept`] when `accept` is `None`).
+///
+/// Paths under `/api/` always get problem+json so browser address-bar hits on JSON
+/// APIs (common in SPA proxies) do not negotiate HTML error pages.
 pub fn error_response_for_accept(accept: Option<&str>, err: Error) -> Response {
     if let Error::Response(res) = err {
         return *res;
+    }
+    let path = current_path();
+    if path
+        .as_deref()
+        .is_some_and(|p| p == "/api" || p.starts_with("/api/"))
+    {
+        return error_to_problem(err);
     }
     let accept = accept.map(|s| s.to_string()).or_else(current_accept);
     match negotiate_error_format(accept.as_deref()) {

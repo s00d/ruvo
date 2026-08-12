@@ -201,8 +201,9 @@ pub fn wrap_errors(handler: FallibleHandler, eh: Option<ErrorHandlerFn>) -> Hand
         let handler = Arc::clone(&handler);
         let eh = eh.clone();
         let accept = req.header("accept").unwrap_or("*/*").to_string();
+        let path = req.path.clone();
         Box::pin(async move {
-            crate::accept::with_accept(accept, async move {
+            crate::accept::with_request_meta(accept, path, async move {
                 match handler(req).await {
                     Ok(res) => res,
                     // Plugin already decided status/body — do not run error_handler.

@@ -357,6 +357,13 @@ pub use sova_notifications::{
 #[cfg(feature = "notifications-templates")]
 pub use sova_notifications::{preload_unread, UnreadCount};
 
+#[cfg(feature = "scope")]
+pub use sova_scope::{
+    Ability as ScopeAbility, AuthorizeEngine, Capabilities as ScopeCapabilities, Condition,
+    InviteStore, MatrixBuilder, Membership, MembershipCache, MembershipStore, MutateOpts,
+    ResourcePattern, ResourceRef, ScopeAuth, ScopeAuthState, ScopeExt, ScopeRef,
+};
+
 #[cfg(all(feature = "auth", feature = "auth-vld"))]
 pub use sova_auth::{
     ConfirmPasswordForm, DisableTwoFactorForm, ForgotForm, LoginForm, PasswordForm, ProfileForm,

@@ -63,3 +63,37 @@ url = "{url}"
         None => std::env::remove_var("DATABASE_URL"),
     }
 }
+
+#[tokio::test]
+async fn relative_database_url_resolves_against_sova_toml_dir() {
+    use std::fs;
+    use tempfile::tempdir;
+
+    let dir = tempdir().unwrap();
+    let toml_path = dir.path().join("sova.toml");
+    fs::write(&toml_path, "[db]\nurl = \"sqlite::memory:\"\n").unwrap();
+
+    let prev = std::env::var("DATABASE_URL").ok();
+    // Relative path (as in package `.env`) — must open under toml dir, not cwd.
+    std::env::set_var("DATABASE_URL", "sqlite:data/nested.db?mode=rwc");
+
+    let mut app = App::new();
+    app.configure_from_path(&toml_path).unwrap();
+    app.install(Db::from_env());
+    let state = app
+        .run_startup()
+        .await
+        .expect("relative DATABASE_URL against sova.toml dir");
+    let pool = state.get::<DbPool>().expect("DbPool");
+    pool.get().expect("connected").ping().await.unwrap();
+
+    assert!(
+        dir.path().join("data/nested.db").is_file(),
+        "db file should live next to sova.toml, not in process cwd"
+    );
+
+    match prev {
+        Some(v) => std::env::set_var("DATABASE_URL", v),
+        None => std::env::remove_var("DATABASE_URL"),
+    }
+}

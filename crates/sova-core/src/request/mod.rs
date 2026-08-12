@@ -298,6 +298,23 @@ impl Request {
         })
     }
 
+    /// Domain / application service registered with `app.state(...)`.
+    ///
+    /// Prefer this name over [`Self::state`] for repos, ACL facades, mailers, etc.
+    /// Same storage bag — just clearer intent at the call site:
+    ///
+    /// ```ignore
+    /// app.state(WorkspaceService::default());
+    /// // handler:
+    /// let workspaces = req.service::<WorkspaceService>();
+    /// ```
+    pub fn service<T>(&self) -> Arc<T>
+    where
+        T: Send + Sync + 'static,
+    {
+        self.state()
+    }
+
     /// Like [`Self::state`], but returns `T::default()` when unset.
     pub fn state_or_default<T>(&self) -> Arc<T>
     where
@@ -311,6 +328,14 @@ impl Request {
         T: Send + Sync + 'static,
     {
         self.state.get::<T>()
+    }
+
+    /// Optional variant of [`Self::service`].
+    pub fn try_service<T>(&self) -> Option<Arc<T>>
+    where
+        T: Send + Sync + 'static,
+    {
+        self.try_state()
     }
 
     /// Shared application [`StateMap`] (same bag as `app.state(...)`).

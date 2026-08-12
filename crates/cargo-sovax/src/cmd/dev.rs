@@ -145,7 +145,7 @@ fn restart_graceful(guard: &mut Child, project: &Project, drain: Duration, stop:
         }
     };
 
-    let port = listen_port();
+    let port = listen_port(project);
     eprintln!("sova: waiting for new process (instance={instance_id}) on :{port}/ready …");
     if !wait_ready(port, &instance_id, READY_DEADLINE, stop) {
         if stop.load(Ordering::SeqCst) {
@@ -180,12 +180,16 @@ fn spawn_rust_with_id(
     let mut cmd = Command::new("cargo");
     cmd.args(["run", "-p", &project.package_name, "--manifest-path"])
         .arg(project.package_dir.join("Cargo.toml"))
+        // Workspace root keeps Cargo.lock resolution stable; package `.env` is
+        // injected below because `sova_env::load()` previously used cwd only.
         .current_dir(&project.workspace_dir)
         .env("SOVA_ENV", "development")
         .env("SOVA_INSTANCE_ID", instance_id)
         .stdin(Stdio::null())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit());
+
+    inject_package_dotenv(&mut cmd, &project.package_dir);
 
     if reuseport {
         cmd.env("SOVA_REUSEPORT", "1");
@@ -202,6 +206,56 @@ fn spawn_rust_with_id(
         .map_err(|e| format!("failed to spawn cargo run: {e}"))
 }
 
+/// Forward `package_dir/.env*` into the child when the var is not already set
+/// in this process (so `PORT` / secrets work even if cwd is the workspace root).
+fn inject_package_dotenv(cmd: &mut Command, package_dir: &std::path::Path) {
+    for (k, v) in read_package_dotenv(package_dir) {
+        if std::env::var_os(&k).is_none() {
+            cmd.env(k, v);
+        }
+    }
+}
+
+fn read_package_dotenv(package_dir: &std::path::Path) -> Vec<(String, String)> {
+    // Later files win (same idea as sova-env: mode files then `.env`).
+    let mode = std::env::var("SOVA_ENV").unwrap_or_else(|_| "development".into());
+    let short = match mode.as_str() {
+        "development" | "debug" => "dev",
+        "production" | "release" => "prod",
+        "test" => "test",
+        other => other,
+    };
+    let names = [
+        format!(".env.{short}"),
+        format!(".env.{mode}"),
+        ".env.local".into(),
+        ".env".into(),
+    ];
+    let mut map = std::collections::BTreeMap::new();
+    for name in names {
+        let path = package_dir.join(name);
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        for line in text.lines() {
+            let line = line.trim();
+            if line.is_empty() || line.starts_with('#') {
+                continue;
+            }
+            let Some((k, v)) = line.split_once('=') else {
+                continue;
+            };
+            let k = k.trim();
+            if k.is_empty() {
+                continue;
+            }
+            let v = v.trim().trim_matches('"').trim_matches('\'').to_string();
+            map.insert(k.to_string(), v);
+        }
+    }
+    map.into_iter().collect()
+}
+
 fn new_instance_id() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let nanos = SystemTime::now()
@@ -211,11 +265,21 @@ fn new_instance_id() -> String {
     format!("dev-{nanos}")
 }
 
-fn listen_port() -> u16 {
-    std::env::var("PORT")
-        .ok()
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(3000)
+fn listen_port(project: &Project) -> u16 {
+    if let Ok(p) = std::env::var("PORT").and_then(|s| {
+        s.parse()
+            .map_err(|_| std::env::VarError::NotPresent)
+    }) {
+        return p;
+    }
+    for (k, v) in read_package_dotenv(&project.package_dir) {
+        if k == "PORT" {
+            if let Ok(p) = v.parse() {
+                return p;
+            }
+        }
+    }
+    3000
 }
 
 /// Poll until `GET /ready` returns 2xx with matching `x-sova-instance`.
